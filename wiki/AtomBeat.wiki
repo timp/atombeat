@@ -28,7 +28,7 @@ There are a couple of reasons why we've rolled our own Atom Protocol implementat
 
   * At the time of writing, the eXist Atom servlet has a couple of inconsistencies in the way it handles URLs in HTTP headers and Atom links. For example, when POSTing a new Atom entry to a collection, the 201 response should include a "Location" header, whose value should be an absolute URL, but the value returned by eXist is relative to the Atom servlet path. The href attribute values set in edit links are relative to the member's collection, which isn't necessarily incorrect, but is inconvenient if you want to use Atom links to link entries in different collections, then write queries to do joins across those collections. And the href attribute value in the edit-media link is relative to the collection URL with a "/" appended. AtomBeat uses absolute URLs throughout HTTP headers and Atom links, which should make writing client code and server-side queries a bit more straightforward.
 
-== Why "AtomBeat"? ==
+== Why "Atom Beat"? ==
 
 No particular reason. Apparently, "Atom Beat" was the name given to the style of drumming that Pete Best brought back to Liverpool after the Beatles' stint in Hamburg. It's got nothing to do with the Atom Publishing Protocol, but I saw it on an old Beatles gig poster and it caught my eye.
 
