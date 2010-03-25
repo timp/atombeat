@@ -521,7 +521,7 @@ HTTP/1.1 204 No Content
 }}}
 
 
-== History Protocol Examples ==
+= History Protocol Examples =
 
 Below is an excerpt from an HTTP trace obtained from running the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/protocol/TestHistoryProtocol.javaAtomBeat history protocol test case]...
 
