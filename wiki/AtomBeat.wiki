@@ -519,3 +519,304 @@ Host: localhost:8081
 
 HTTP/1.1 204 No Content
 }}}
+
+
+== History Protocol Examples ==
+
+Below is an excerpt from an HTTP trace obtained from running the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/protocol/TestHistoryProtocol.javaAtomBeat history protocol test case]...
+
+{{{
+PUT /atombeat/atombeat/content/0.1995552997730068 HTTP/1.1
+X-Atom-Enable-History: true
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 104
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Collection</atom:title></atom:feed>
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.1995552997730068
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:24:09 GMT
+
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068</atom:id>
+    <atom:updated>2010-03-25T13:24:09.471Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068"/>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.1995552997730068" type="application/atom+xml"/>
+</atom:feed>
+
+
+
+POST /atombeat/atombeat/content/0.1995552997730068 HTTP/1.1
+X-Atom-Revision-Comment: first draft
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 161
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member</atom:title><atom:summary>This is a summary, first daft.</atom:summary></atom:entry>
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:24:09 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</atom:id>
+    <atom:published>2010-03-25T13:24:09.602Z</atom:published>
+    <atom:updated>2010-03-25T13:24:09.602Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:title>Test Member</atom:title>
+    <atom:summary>This is a summary, first daft.</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:updated>2010-03-25T13:24:09.602Z</atom:updated>
+        <atom:summary>first draft</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.1995552997730068" type="application/atom+xml"/>
+</atom:entry>
+
+
+
+PUT /atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom HTTP/1.1
+X-Atom-Revision-Comment: second draft
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 168
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member - Updated</atom:title><atom:summary>This is a summary, updated.</atom:summary></atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:24:09 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</atom:id>
+    <atom:published>2010-03-25T13:24:09.602Z</atom:published>
+    <atom:updated>2010-03-25T13:24:09.781Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:title>Test Member - Updated</atom:title>
+    <atom:summary>This is a summary, updated.</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:updated>2010-03-25T13:24:09.781Z</atom:updated>
+        <atom:summary>second draft</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom" type="application/atom+xml"/>
+</atom:entry>
+
+
+
+PUT /atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom HTTP/1.1
+X-Atom-Revision-Comment: third draft
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 188
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member - Updated Again</atom:title><atom:summary>This is a summary, updated (third draft).</atom:summary></atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:24:09 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</atom:id>
+    <atom:published>2010-03-25T13:24:09.602Z</atom:published>
+    <atom:updated>2010-03-25T13:24:09.915Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:title>Test Member - Updated Again</atom:title>
+    <atom:summary>This is a summary, updated (third draft).</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:updated>2010-03-25T13:24:09.915Z</atom:updated>
+        <atom:summary>third draft</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom" type="application/atom+xml"/>
+</atom:entry>
+
+
+
+GET /atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:24:09 GMT
+
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:title>History</atom:title>
+    <v:history xmlns:v="http://exist-db.org/versioning">
+        <v:document>/db/atom/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</v:document>
+        <v:revisions>
+            <v:revision rev="19">
+                <v:date>2010-03-25T13:24:09.803Z</v:date>
+                <v:user>admin</v:user>
+            </v:revision>
+            <v:revision rev="20">
+                <v:date>2010-03-25T13:24:09.934Z</v:date>
+                <v:user>admin</v:user>
+            </v:revision>
+        </v:revisions>
+    </v:history>
+    <v:version xmlns:v="http://exist-db.org/versioning">
+        <v:properties>
+            <v:document>0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</v:document>
+            <v:user>admin</v:user>
+            <v:date>2010-03-25T13:24:09.803Z</v:date>
+            <v:revision>19</v:revision>
+        </v:properties>
+        <v:diff>
+            <v:delete ref="1.3.1"/>
+            <v:delete ref="1.6.1"/>
+            <v:delete ref="1.7.1"/>
+            <v:delete ref="1.8.2.1"/>
+            <v:delete ref="1.8.3.1"/>
+            <v:insert ref="1.3.1">2010-03-25T13:24:09.781Z</v:insert>
+            <v:insert ref="1.6.1">Test Member - Updated</v:insert>
+            <v:insert ref="1.7.1">This is a summary, updated.</v:insert>
+            <v:insert ref="1.8.2.1">2010-03-25T13:24:09.781Z</v:insert>
+            <v:insert ref="1.8.3.1">second draft</v:insert>
+        </v:diff>
+    </v:version>
+    <v:version xmlns:v="http://exist-db.org/versioning">
+        <v:properties>
+            <v:document>0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</v:document>
+            <v:user>admin</v:user>
+            <v:date>2010-03-25T13:24:09.934Z</v:date>
+            <v:revision>20</v:revision>
+        </v:properties>
+        <v:diff>
+            <v:delete ref="1.3.1"/>
+            <v:delete ref="1.6.1"/>
+            <v:delete ref="1.7.1"/>
+            <v:delete ref="1.8.2.1"/>
+            <v:delete ref="1.8.3.1"/>
+            <v:insert ref="1.3.1">2010-03-25T13:24:09.915Z</v:insert>
+            <v:insert ref="1.6.1">Test Member - Updated Again</v:insert>
+            <v:insert ref="1.7.1">This is a summary, updated (third draft).</v:insert>
+            <v:insert ref="1.8.2.1">2010-03-25T13:24:09.915Z</v:insert>
+            <v:insert ref="1.8.3.1">third draft</v:insert>
+        </v:diff>
+    </v:version>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="1" when="2010-03-25T13:24:09.602Z" initial="yes"/>
+        <atom:link rel="current-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=1"/>
+        <atom:link rel="next-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=2"/>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</atom:id>
+        <atom:published>2010-03-25T13:24:09.602Z</atom:published>
+        <atom:updated>2010-03-25T13:24:09.602Z</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:title>Test Member</atom:title>
+        <atom:summary>This is a summary, first daft.</atom:summary>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>adam</atom:name>
+            </atom:author>
+            <atom:updated>2010-03-25T13:24:09.602Z</atom:updated>
+            <atom:summary>first draft</atom:summary>
+        </ar:comment>
+    </atom:entry>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="2" when="2010-03-25T13:24:09.781Z" initial="no"/>
+        <atom:link rel="current-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=2"/>
+        <atom:link rel="next-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=3"/>
+        <atom:link rel="previous-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=1"/>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</atom:id>
+        <atom:published>2010-03-25T13:24:09.602Z</atom:published>
+        <atom:updated>2010-03-25T13:24:09.781Z</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:title>Test Member - Updated</atom:title>
+        <atom:summary>This is a summary, updated.</atom:summary>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>adam</atom:name>
+            </atom:author>
+            <atom:updated>2010-03-25T13:24:09.781Z</atom:updated>
+            <atom:summary>second draft</atom:summary>
+        </ar:comment>
+    </atom:entry>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="3" when="2010-03-25T13:24:09.915Z" initial="no"/>
+        <atom:link rel="current-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=3"/>
+        <atom:link rel="previous-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom?revision=2"/>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom</atom:id>
+        <atom:published>2010-03-25T13:24:09.602Z</atom:published>
+        <atom:updated>2010-03-25T13:24:09.915Z</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.1995552997730068/0c9ba353-f7ce-4601-a23f-e74ce17f4a87.atom"/>
+        <atom:title>Test Member - Updated Again</atom
+
+:title>
+        <atom:summary>This is a summary, updated (third draft).</atom:summary>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>adam</atom:name>
+            </atom:author>
+            <atom:updated>2010-03-25T13:24:09.915Z</atom:updated>
+            <atom:summary>third draft</atom:summary>
+        </ar:comment>
+    </atom:entry>
+</atom:feed>
+}}}
