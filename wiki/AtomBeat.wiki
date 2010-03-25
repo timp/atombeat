@@ -820,3 +820,400 @@ Date: Thu, 25 Mar 2010 13:24:09 GMT
     </atom:entry>
 </atom:feed>
 }}}
+
+== Security (ACL) Plugin and Protocol Examples ==
+
+Below are excerpts from the HTTP trace from running the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/protocol/TestAclProtocol.java AtomBeat ACL protocol test] against the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/config/shared.xqm example default ACL configuration]...
+
+Retrieve global ACL...
+
+{{{
+GET /atombeat/atombeat/acl/ HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:09 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:content type="application/vnd.atombeat+xml">
+        <acl>
+            <rules>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>create-collection</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>update-collection</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>list-collection</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>create-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>retrieve-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>update-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>delete-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>create-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>retrieve-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>update-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>delete-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_ADMINISTRATOR</role>
+                    <operation>update-acl</operation>
+                </allow><!-- you could also use a wildcard --><!--
+            <allow>
+                <role>ROLE_ADMINISTRATOR</role>
+                <operation>*</operation>
+            </allow>
+            -->
+            </rules>
+        </acl>
+    </atom:content>
+</atom:entry>
+}}}
+
+List collection then retrieve collection ACL...
+
+{{{
+GET /atombeat/atombeat/content/0.7944490448575703 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:09 GMT
+
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.7944490448575703</atom:id>
+    <atom:updated>2010-03-25T13:34:09.607Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.7944490448575703"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.7944490448575703"/>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.7944490448575703" type="application/atom+xml"/>
+</atom:feed>
+
+
+
+GET /atombeat/atombeat/acl/0.7944490448575703 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:09 GMT
+
+ca5
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:content type="application/vnd.atombeat+xml">
+        <acl>
+            <rules><!--  
+            Authors can create entries and media, and can list the collection,
+            but can only retrieve resources they have created.
+            -->
+                <allow>
+                    <role>ROLE_AUTHOR</role>
+                    <operation>create-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_AUTHOR</role>
+                    <operation>create-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_AUTHOR</role>
+                    <operation>list-collection</operation>
+                </allow><!--
+            Editors can list the collection, retrieve and update any member.
+            -->
+                <allow>
+                    <role>ROLE_EDITOR</role>
+                    <operation>list-collection</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_EDITOR</role>
+                    <operation>retrieve-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_EDITOR</role>
+                    <operation>update-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_EDITOR</role>
+                    <operation>delete-member</operation>
+                </allow><!-- Media editors -->
+                <allow>
+                    <role>ROLE_MEDIA_EDITOR</role>
+                    <operation>list-collection</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_MEDIA_EDITOR</role>
+                    <operation>retrieve-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_MEDIA_EDITOR</role>
+                    <operation>retrieve-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_MEDIA_EDITOR</role>
+                    <operation>update-media</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_MEDIA_EDITOR</role>
+                    <operation>delete-media</operation>
+                </allow><!--
+            Readers can list the collection and retrieve any member.
+            -->
+                <allow>
+                    <role>ROLE_READER</role>
+                    <operation>list-collection</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_READER</role>
+                    <operation>retrieve-member</operation>
+                </allow>
+                <allow>
+                    <role>ROLE_READER</role>
+                    <operation>retrieve-media</operation>
+                </allow><!--
+            Data authors can only create media resources with a specific media
+            type.
+            -->
+                <allow>
+                    <role>ROLE_DATA_AUTHOR</role>
+                    <operation>create-media</operation>
+                    <media-range>application/vnd.ms-excel</media-range>
+                </allow>
+            </rules>
+        </acl>
+    </atom:content>
+</atom:entry>
+}}}
+
+Retrieve member then retrieve member ACL...
+
+{{{
+GET /atombeat/atombeat/content/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom HTTP/1.1
+Authorization: Basic YXVkcmV5OnRlc3Q=
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:10 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom</atom:id>
+    <atom:published>2010-03-25T13:34:11.064Z</atom:published>
+    <atom:updated>2010-03-25T13:34:11.064Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom"/>
+    <atom:title>Test Entry</atom:title>
+    <atom:summary>this is a test</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>audrey</atom:name>
+        </atom:author>
+        <atom:updated>2010-03-25T13:34:11.064Z</atom:updated>
+        <atom:summary>initial revision</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom"/>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom" type="application/atom+xml"/>
+</atom:entry>
+
+
+
+GET /atombeat/atombeat/acl/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:11 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:content type="application/vnd.atombeat+xml">
+        <acl>
+            <rules><!-- 
+    The user who created the resource has full rights.
+    -->
+                <allow>
+                    <user>audrey</user>
+                    <operation>retrieve-member</operation>
+                </allow>
+                <allow>
+                    <user>audrey</user>
+                    <operation>update-member</operation>
+                </allow>
+                <allow>
+                    <user>audrey</user>
+                    <operation>delete-member</operation>
+                </allow>
+                <allow>
+                    <user>audrey</user>
+                    <operation>retrieve-media</operation>
+                </allow>
+                <allow>
+                    <user>audrey</user>
+                    <operation>update-media</operation>
+                </allow>
+                <allow>
+                    <user>audrey</user>
+                    <operation>delete-media</operation>
+                </allow>
+                <allow>
+                    <user>audrey</user>
+                    <operation>update-acl</operation>
+                </allow>
+            </rules>
+        </acl>
+    </atom:content>
+</atom:entry>
+}}}
+
+Update global ACL...
+
+{{{
+PUT /atombeat/atombeat/acl/ HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 159
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:content type="application/vnd.atombeat+xml"><acl xmlns=""><rules/></acl></atom:content></atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:14 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:content type="application/vnd.atombeat+xml">
+        <acl>
+            <rules/>
+        </acl>
+    </atom:content>
+</atom:entry>
+}}}
+
+Update collection ACL...
+
+{{{
+PUT /atombeat/atombeat/acl/0.3345439750305319 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 159
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:content type="application/vnd.atombeat+xml"><acl xmlns=""><rules/></acl></atom:content></atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:14 GMT
+
+c1
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:content type="application/vnd.atombeat+xml">
+        <acl>
+            <rules/>
+        </acl>
+    </atom:content>
+</atom:entry>
+}}}
+
+Update resource ACL...
+
+{{{
+PUT /atombeat/atombeat/acl/0.043636994046552746/9875ca44-5402-44dd-a71f-53462e0d35fe.atom HTTP/1.1
+Authorization: Basic YXVkcmV5OnRlc3Q=
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 159
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:content type="application/vnd.atombeat+xml"><acl xmlns=""><rules/></acl></atom:content></atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 13:34:16 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:content type="application/vnd.atombeat+xml">
+        <acl>
+            <rules/>
+        </acl>
+    </atom:content>
+</atom:entry>
+}}}
