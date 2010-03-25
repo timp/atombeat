@@ -26,6 +26,6 @@ There are a couple of reasons why we've rolled our own Atom Protocol implementat
 
   * eXist can be configured to authenticate users via HTTP basic or digest authentication, and the user's credentials can be either stored in the eXist database or can be drawn from an LDAP repository. While this is fine for many situations, other scenarios require integration with single-sign-on authentication systems and a variety of user databases. Rather than try to implement any of this ourselves, we have designed AtomBeat to work with a wide range of authentication systems. For example, it is straightforward to use AtomBeat with Spring Security, which gives you access to implementations of a variety of authentication mechanisms including OpenID and CAS, and configurable integration with a variety of user databases.
 
-= Why "AtomBeat"? =
+== Why "AtomBeat"? ==
 
-Apparently, "Atom Beat" was the name given to the style of drumming that Pete Best brought back to Liverpool after the Beatles' stint in Hamburg. It's got nothing to do with the Atom Publishing Protocol, but I saw it on an old Beatles gig poster and it caught my eye.
+No particular reason. Apparently, "Atom Beat" was the name given to the style of drumming that Pete Best brought back to Liverpool after the Beatles' stint in Hamburg. It's got nothing to do with the Atom Publishing Protocol, but I saw it on an old Beatles gig poster and it caught my eye.
