@@ -29,3 +29,39 @@ There are a couple of reasons why we've rolled our own Atom Protocol implementat
 == Why "AtomBeat"? ==
 
 No particular reason. Apparently, "Atom Beat" was the name given to the style of drumming that Pete Best brought back to Liverpool after the Beatles' stint in Hamburg. It's got nothing to do with the Atom Publishing Protocol, but I saw it on an old Beatles gig poster and it caught my eye.
+
+= Atom Protocol Examples =
+
+Below is an edited version of an HTTP trace obtained from running the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/protocol/TestAclProtocol.java AtomBeat main protocol test case]...
+
+
+{{{
+PUT /atombeat/atombeat/content/0.8781156714199748 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 104
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Collection</atom:title></atom:feed>
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.8781156714199748
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:53 GMT
+
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.8781156714199748</atom:id>
+    <atom:updated>2010-03-25T12:50:53.795Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.8781156714199748"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.8781156714199748"/>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.8781156714199748" type="application/atom+xml"/>
+</atom:feed>
+}}}
