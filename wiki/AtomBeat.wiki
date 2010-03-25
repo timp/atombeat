@@ -25,25 +25,3 @@ There are a couple of reasons why we've rolled our own Atom Protocol implementat
   * eXist has its own security system, which borrows from the Unix model of users and groups. This is fine for many use cases, but there are situations where this is not sufficient to express the desired security model. For example, if you want to have an Atom collection where readers can retrieve any entry, authors can create entries, update any entry they have created, and choose other authors to collaborate with, and editors can update any entry, you cannot implement that with the Unix model of one user (owner) and group per resource. AtomBeat has an experimental security system based on access control lists, which is capable of expressing a wider range of security models. However, there are pros and cons here, see the section on security below (TODO).
 
   * eXist can be configured to authenticate users via HTTP basic or digest authentication, and the user's credentials can be either stored in the eXist database or can be drawn from an LDAP repository. While this is fine for many situations, other scenarios require integration with single-sign-on authentication systems and a variety of user databases. Rather than try to implement any of this ourselves, we have designed AtomBeat to work with a wide range of authentication systems. For example, it is straightforward to use AtomBeat with Spring Security, which gives you access to implementations of a variety of authentication mechanisms including OpenID and CAS, and configurable integration with a variety of user databases.
-
-= TODO =
-
-In no particular order, the following is a memo list of features yet to be implemented...
-
-  * add content-location headers to responses where appropriate
-
-  * change response to update-media (PUT) operation - send 200 with media-link entry and content-location, or 204?
-
-  * make history link appear/disappear depending on whether history is enabled
-
-  * implement search protocol and feed pagination
-
-  * update feed date updated 
-
-  * update entry date updated when media updated
-
-  * send etags and implement conditional GET and PUT with if-match and if-none-match
-
-  * implement history/versioning for media resources
- 
-  * implement link expansion plugin and protocol
