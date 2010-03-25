@@ -26,10 +26,6 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	
 	
 	
-	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
-
-	
-	
 	private String testCollectionUri = null;
 	
 	
@@ -55,7 +51,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-		testCollectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 	}
 	
 	
@@ -73,7 +69,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 
 		PutMethod method = new PutMethod(collectionUri);
 
@@ -97,7 +93,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to update collections
 		
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		PutMethod method = new PutMethod(collectionUri);
 
@@ -121,7 +117,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 
 		PutMethod method = new PutMethod(collectionUri);
 
@@ -142,7 +138,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	
 	public void testUserWithoutAdministratorRoleCannotUpdateCollections() {
 		
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to update collections
@@ -169,7 +165,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 
 		PostMethod method = new PostMethod(collectionUri);
 
@@ -194,7 +190,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 
 		PostMethod method = new PostMethod(collectionUri);
 
@@ -890,7 +886,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	public void testUserWithMediaEditorRoleCanDeleteMediaResource() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -928,7 +924,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResource() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -966,7 +962,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	public void testUserWithMediaEditorRoleCanDeleteMediaResourceViaMediaLinkLocation() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -1004,7 +1000,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResourceViaMediaLinkLocation() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
