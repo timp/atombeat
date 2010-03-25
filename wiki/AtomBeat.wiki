@@ -256,6 +256,8 @@ Content-Length: 168
 Content-Type: application/atom+xml; charset=utf-8
 
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member - Updated</atom:title><atom:summary>This is a summary, updated.</atom:summary></atom:entry>
+
+
 HTTP/1.1 200 OK
 Server: Apache-Coyote/1.1
 pragma: no-cache
@@ -283,4 +285,235 @@ Date: Thu, 25 Mar 2010 12:50:54 GMT
     <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.10891012247077969/28575db0-68d1-42e1-979c-82c66f73710b.atom"/>
     <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.10891012247077969/28575db0-68d1-42e1-979c-82c66f73710b.atom" type="application/atom+xml"/>
 </atom:entry>
+}}}
+
+== Create Media ==
+
+Create media with standard POST request...
+
+{{{
+POST /atombeat/atombeat/content/0.6186523946007124 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 15
+Content-Type: text/plain;charset=utf-8
+
+This is a test.
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:55 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.atom</atom:id>
+    <atom:published>2010-03-25T12:50:56.222Z</atom:published>
+    <atom:updated>2010-03-25T12:50:56.222Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.atom"/>
+    <atom:link rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/atombeat/content/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.media"/>
+    <atom:content src="http://localhost:8081/atombeat/atombeat/content/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.media" type="text/plain"/>
+    <atom:title type="text">download-11e860e2-31af-406e-99e6-88b815aa2bcf.media</atom:title>
+    <atom:summary type="text">media resource (text/plain)</atom:summary>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.atom" type="application/atom+xml"/>
+    <atom:link rel="edit-media-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.6186523946007124/11e860e2-31af-406e-99e6-88b815aa2bcf.media" type="application/atom+xml"/>
+</atom:entry>
+}}}
+
+Create media using a multipart/form-data request...
+
+{{{
+POST /atombeat/atombeat/content/0.20512900924180555 HTTP/1.1
+Accept: application/atom+xml
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 7105
+Content-Type: multipart/form-data; boundary=kXNK-7stkWHMC8f6xX7tlT2GNYAdvwQKdLY
+
+--kXNK-7stkWHMC8f6xX7tlT2GNYAdvwQKdLY
+Content-Disposition: form-data; name="media"; filename="spreadsheet1.xls"
+Content-Type: application/vnd.ms-excel; charset=ISO-8859-1
+Content-Transfer-Encoding: binary
+
+[binary data]
+--kXNK-7stkWHMC8f6xX7tlT2GNYAdvwQKdLY
+Content-Disposition: form-data; name="summary"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+
+this is a great spreadsheet
+--kXNK-7stkWHMC8f6xX7tlT2GNYAdvwQKdLY--
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:58 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.atom</atom:id>
+    <atom:published>2010-03-25T12:50:58.79Z</atom:published>
+    <atom:updated>2010-03-25T12:50:58.79Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.atom"/>
+    <atom:link rel="edit-media" type="application/vnd.ms-excel" href="http://localhost:8081/atombeat/atombeat/content/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.media"/>
+    <atom:content src="http://localhost:8081/atombeat/atombeat/content/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.media" type="application/vnd.ms-excel"/>
+    <atom:title type="text">spreadsheet1.xls</atom:title>
+    <atom:summary type="text">this is a great spreadsheet</atom:summary>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.atom" type="application/atom+xml"/>
+    <atom:link rel="edit-media-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.20512900924180555/b45080c0-fef6-4522-b7a8-09fdad5bbe8e.media" type="application/atom+xml"/>
+</atom:entry>
+}}}
+
+== Update Media ==
+
+{{{
+PUT /atombeat/atombeat/content/0.13068350262951034/5d300938-e060-4afb-9883-2ea2d39b7710.media HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 25
+Content-Type: text/plain;charset=utf-8
+
+This is a test - updated.
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Disposition: attachment; filename=download-5d300938-e060-4afb-9883-2ea2d39b7710.media
+Content-Type: text/plain;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:57 GMT
+
+
+This is a test - updated.
+}}}
+
+== List Collection ==
+
+{{{
+GET /atombeat/atombeat/content/0.07384375682232591 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:57 GMT
+
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.07384375682232591</atom:id>
+    <atom:updated>2010-03-25T12:50:57.324Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.07384375682232591"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.07384375682232591"/>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.07384375682232591" type="application/atom+xml"/>
+</atom:feed>
+}}}
+
+== Retrieve Member ==
+
+{{{
+GET /atombeat/atombeat/content/0.7042458626173562/72d2bfe7-3225-4dc1-80cd-751c4bbde024.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:57 GMT
+
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.7042458626173562/72d2bfe7-3225-4dc1-80cd-751c4bbde024.atom</atom:id>
+    <atom:published>2010-03-25T12:50:57.781Z</atom:published>
+    <atom:updated>2010-03-25T12:50:57.781Z</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.7042458626173562/72d2bfe7-3225-4dc1-80cd-751c4bbde024.atom"/>
+    <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.7042458626173562/72d2bfe7-3225-4dc1-80cd-751c4bbde024.atom"/>
+    <atom:title>Test Entry</atom:title>
+    <atom:summary>this is a test</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:updated>2010-03-25T12:50:57.781Z</atom:updated>
+        <atom:summary>initial revision</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.7042458626173562/72d2bfe7-3225-4dc1-80cd-751c4bbde024.atom"/>
+    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.7042458626173562/72d2bfe7-3225-4dc1-80cd-751c4bbde024.atom" type="application/atom+xml"/>
+</atom:entry>
+}}}
+
+== Retrieve Media ==
+
+{{{
+GET /atombeat/atombeat/content/0.2829441296181656/95559ef5-5838-4d46-8aa9-30aa9029e747.media HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Disposition: attachment; filename=download-95559ef5-5838-4d46-8aa9-30aa9029e747.media
+Content-Type: text/plain;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 25 Mar 2010 12:50:58 GMT
+
+
+This is a test.
+}}}
+
+== Delete Member ==
+
+{{{
+DELETE /atombeat/atombeat/content/0.2356199435327333/f276caed-d199-47e2-b4da-25745a3221d4.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 204 No Content
+}}}
+
+
+== Delete Media ==
+
+A media resource can be deleted *either* by deleting the associated media-link entry as above, or...
+
+{{{
+DELETE /atombeat/atombeat/content/0.7323249953709272/b35973ad-7923-4005-a105-11c9abf5e15e.media HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 204 No Content
 }}}
