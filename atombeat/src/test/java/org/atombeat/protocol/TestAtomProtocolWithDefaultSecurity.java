@@ -1,4 +1,4 @@
-package org.cggh.chassis.spike.atomserver;
+package org.atombeat.protocol;
 
 import java.io.File;
 import java.io.InputStream;
@@ -13,7 +13,7 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import static org.cggh.chassis.spike.atomserver.AtomTestUtils.*;
+import static org.atombeat.protocol.AtomTestUtils.*;
 
 import junit.framework.TestCase;
 
@@ -26,7 +26,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	
 	
 	
-	private static final String SERVER_URI = "http://localhost:8081/atomserver/atomserver/content/";
+	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
 
 	
 	
@@ -38,7 +38,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 
 		// need to run install script once for example setup
 		
-		String installUrl = "http://localhost:8081/atomserver/atomserver/admin/install-example.xql";
+		String installUrl = "http://localhost:8081/atombeat/atombeat/admin/install-example.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		

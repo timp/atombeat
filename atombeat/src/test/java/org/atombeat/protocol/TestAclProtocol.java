@@ -1,8 +1,8 @@
-package org.cggh.chassis.spike.atomserver;
+package org.atombeat.protocol;
 
 
 
-import static org.cggh.chassis.spike.atomserver.AtomTestUtils.*;
+import static org.atombeat.protocol.AtomTestUtils.*;
 
 import java.util.List;
 
@@ -25,8 +25,8 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	private static final String SERVER_URI = "http://localhost:8081/atomserver/atomserver/content/";
-	private static final String ACL_URI = "http://localhost:8081/atomserver/atomserver/acl/";
+	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
+	private static final String ACL_URI = "http://localhost:8081/atombeat/atombeat/acl/";
 
 	
 	
@@ -44,7 +44,7 @@ public class TestAclProtocol extends TestCase {
 
 		// need to run install before each test to ensure default global acl is restored
 		
-		String installUrl = "http://localhost:8081/atomserver/atomserver/admin/install-example.xql";
+		String installUrl = "http://localhost:8081/atombeat/atombeat/admin/install-example.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		

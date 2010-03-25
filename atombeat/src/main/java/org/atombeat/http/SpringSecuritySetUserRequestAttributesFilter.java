@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.cggh.chassis.generic.http;
+package org.atombeat.http;
 
 import java.io.IOException;
 
@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.atombeat.http.HttpFilter;
 import org.exist.xquery.value.ValueSequence;
 import org.exist.xquery.value.StringValue;
 import org.springframework.security.Authentication;
@@ -22,7 +23,7 @@ import org.springframework.security.context.SecurityContextHolder;
  * @author aliman
  *
  */
-public class SpringSecurityRequestAttributeFilter extends HttpFilter {
+public class SpringSecuritySetUserRequestAttributesFilter extends HttpFilter {
 
 	
 	

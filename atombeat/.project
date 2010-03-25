@@ -1,10 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
-	<name>googlecode_dsn-chassis_spike_atomserver</name>
+	<name>googlecode_atombeat</name>
 	<comment></comment>
-	<projects>
-		<project>googlecode_dsn-chassis_generic_lib_java</project>
-	</projects>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.wst.jsdt.core.javascriptValidator</name>

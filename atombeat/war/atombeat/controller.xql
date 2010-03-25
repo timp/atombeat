@@ -13,7 +13,7 @@ return
 	if ( $module = "content" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atomserver/content.xql">
+		    <forward url="/atombeat/content.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>
@@ -21,7 +21,7 @@ return
 	else if ( $module = "history" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atomserver/history.xql">
+		    <forward url="/atombeat/history.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>
@@ -29,7 +29,7 @@ return
 	else if ( $module = "acl" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atomserver/acl.xql">
+		    <forward url="/atombeat/acl.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>
@@ -37,7 +37,7 @@ return
 	else if ( $module = "expansion" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atomserver/expansion.xql">
+		    <forward url="/atombeat/expansion.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>

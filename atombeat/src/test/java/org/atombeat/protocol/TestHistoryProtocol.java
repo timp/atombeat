@@ -1,4 +1,4 @@
-package org.cggh.chassis.spike.atomserver;
+package org.atombeat.protocol;
 
 
 
@@ -8,7 +8,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import static org.cggh.chassis.spike.atomserver.AtomTestUtils.*;
+import static org.atombeat.protocol.AtomTestUtils.*;
 
 import junit.framework.TestCase;
 
@@ -17,7 +17,7 @@ public class TestHistoryProtocol extends TestCase {
 	
 	private static final String USER = "adam"; // should be allowed all operations
 	private static final String PASS = "test";
-	private static final String SERVER_URI = "http://localhost:8081/atomserver/atomserver/content/";
+	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
 
 	
 
