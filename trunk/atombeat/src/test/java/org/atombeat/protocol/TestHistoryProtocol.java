@@ -17,7 +17,6 @@ public class TestHistoryProtocol extends TestCase {
 	
 	private static final String USER = "adam"; // should be allowed all operations
 	private static final String PASS = "test";
-	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
 
 	
 
@@ -31,7 +30,7 @@ public class TestHistoryProtocol extends TestCase {
 				new Header("X-Atom-Enable-History", "true")
 		};
 		
-		collectionUri = createTestCollection(SERVER_URI, USER, PASS, headers);
+		collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers);
 	
 	}
 	

@@ -25,9 +25,6 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
-	private static final String ACL_URI = "http://localhost:8081/atombeat/atombeat/acl/";
-
 	
 	
 
@@ -44,7 +41,7 @@ public class TestAclProtocol extends TestCase {
 
 		// need to run install before each test to ensure default global acl is restored
 		
-		String installUrl = "http://localhost:8081/atombeat/atombeat/admin/install-example.xql";
+		String installUrl = BASE_URI + "admin/install-example.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		
@@ -95,7 +92,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetCollectionAcl() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
@@ -122,7 +119,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetCollectionNoEditAclLink() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
@@ -141,7 +138,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetCollectionAclDenied() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
@@ -165,7 +162,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetMemberAcl() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -194,7 +191,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetMemberNoEditAclLink() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -214,7 +211,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetMemberAclDenied() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -239,7 +236,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetMediaAcl() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		// look for "edit-acl" link
@@ -262,7 +259,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetMediaAclDenied() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		// look for "edit-acl" link
@@ -282,7 +279,7 @@ public class TestAclProtocol extends TestCase {
 	public void testGetMediaAclNoEditMediaAclLink() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String location = getEditLocation(d);
 		
@@ -305,7 +302,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateGlobalAcl() {
 		
 		// make sure adam can create collections
-		String u = createTestCollection(SERVER_URI, "adam", "test");
+		String u = createTestCollection(CONTENT_URI, "adam", "test");
 		assertNotNull(u);
 
 		// strip global acls
@@ -325,7 +322,7 @@ public class TestAclProtocol extends TestCase {
 		verifyDocIsAtomEntryWithAclContent(e);
 		
 		// now try to create a collection
-		String v = createTestCollection(SERVER_URI, "adam", "test");
+		String v = createTestCollection(CONTENT_URI, "adam", "test");
 		assertNull(v);
 		 
 	}
@@ -354,7 +351,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateCollectionAcl() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
  
 		// try to retrieve collection feed as rebecca (reader) to check allowed
 		GetMethod f = new GetMethod(collectionUri);
@@ -397,7 +394,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateCollectionAclDenied() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
  
 		// retrieve collection feed as adam (administrator) to get edit-acl link
 		GetMethod g = new GetMethod(collectionUri);
@@ -426,7 +423,7 @@ public class TestAclProtocol extends TestCase {
 	public void testBadAclRequest() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
  
 		// retrieve collection feed as adam (administrator) to get edit-acl link
 		GetMethod g = new GetMethod(collectionUri);
@@ -456,7 +453,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateMemberAcl() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -494,7 +491,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateMemberAclDenied() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -531,7 +528,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateMediaAcl() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(d);
 		
@@ -569,7 +566,7 @@ public class TestAclProtocol extends TestCase {
 	public void testUpdateMediaAclDenied() {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(d);
 		
@@ -606,7 +603,7 @@ public class TestAclProtocol extends TestCase {
 	
 	public void testCannotOverrideAclLinksOnCreateCollection() {
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		PutMethod method = new PutMethod(collectionUri);
 		String content = 
 			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
@@ -629,7 +626,7 @@ public class TestAclProtocol extends TestCase {
 	public void testCannotOverrideAclLinksOnUpdateCollection() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		
 		// now try to update feed metadata via a PUT request
 		PutMethod method = new PutMethod(collectionUri);
@@ -654,7 +651,7 @@ public class TestAclProtocol extends TestCase {
 	public void testCannotOverrideAclLinksOnCreateMember() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		// now create a new member by POSTing and atom entry document to the
 		// collection URI
@@ -680,7 +677,7 @@ public class TestAclProtocol extends TestCase {
 	public void testCannotOverrideAclLinksOnUpdateMember() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String location = createTestEntryAndReturnLocation(collectionUri, "adam", "test");
 
 		// now put an updated entry document using a PUT request

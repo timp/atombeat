@@ -28,7 +28,6 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
-	private static final String SERVER_URI = "http://localhost:8081/atombeat/atombeat/content/";
 	private static final String USER = "adam"; // should be allowed all operations
 	private static final String PASS = "test";
 
@@ -63,7 +62,7 @@ public class TestAtomProtocol extends TestCase {
 		// feed doc however, we may run this test several times without cleaning
 		// the database so we have to generate a random collection URI
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 
 		doTestPutFeedToCreateCollection(collectionUri);
 		
@@ -82,7 +81,7 @@ public class TestAtomProtocol extends TestCase {
 		// feed doc however, we may run this test several times without cleaning
 		// the database so we have to generate a random collection URI
 		
-		String collectionUri = SERVER_URI + Double.toString(Math.random()) + "/" + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random()) + "/" + Double.toString(Math.random());
 
 		doTestPutFeedToCreateCollection(collectionUri);
 
@@ -123,7 +122,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPutFeedToCreateAndUpdateCollection() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		
 		// now try to update feed metadata via a PUT request
 		PutMethod method = new PutMethod(collectionUri);
@@ -162,7 +161,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPostFeedToCreateCollection() {
 		
 		// setup test
-		String collectionUri = SERVER_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 
 		// setup a new POST request
 		PostMethod method = new PostMethod(collectionUri);
@@ -196,7 +195,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPostEntryToCreateMember() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new member by POSTing and atom entry document to the
 		// collection URI
@@ -236,7 +235,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPutEntryToUpdateMember() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
 
 		// now put an updated entry document using a PUT request
@@ -272,7 +271,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPutEntryToUpdateMemberTwice() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
 
 		// now put an updated entry document using a PUT request
@@ -335,7 +334,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPostTextDocumentToCreateMediaResource() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new media resource by POSTing media to the collection URI
 		PostMethod method = new PostMethod(collectionUri);
@@ -353,7 +352,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPostSpreadsheetToCreateMediaResource() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new media resource by POSTing media to the collection URI
 		PostMethod method = new PostMethod(collectionUri);
@@ -393,7 +392,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testPutTextDocumentToUpdateMediaResource() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
 		assertNotNull(mediaLinkDoc);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
@@ -424,7 +423,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testGetFeed() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now try GET to collection URI
 		GetMethod method = new GetMethod(collectionUri);
@@ -463,7 +462,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testGetEntry() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
 
 		// now try GET to member URI
@@ -489,7 +488,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testGetMedia() {
 
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
 		assertNotNull(mediaLinkDoc);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
@@ -519,7 +518,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testMultipartRequestWithFileAcceptAtom() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
 		PostMethod post = createMultipartRequest(collectionUri);
@@ -548,7 +547,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testMultipartRequestWithFileDefault() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
 		PostMethod post = createMultipartRequest(collectionUri);
@@ -596,7 +595,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testDeleteEntry() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new member by POSTing and atom entry document to the
 		// collection URI
@@ -634,7 +633,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testDeleteMediaResource() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = AtomTestUtils.getEditLocation(mediaLinkDoc);
@@ -671,7 +670,7 @@ public class TestAtomProtocol extends TestCase {
 	public void testDeleteMediaLinkEntry() {
 		
 		// setup test
-		String collectionUri = createTestCollection(SERVER_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = AtomTestUtils.getEditLocation(mediaLinkDoc);
