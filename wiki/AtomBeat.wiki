@@ -821,7 +821,7 @@ Date: Thu, 25 Mar 2010 13:24:09 GMT
 </atom:feed>
 }}}
 
-== Security (ACL) Plugin and Protocol Examples ==
+= Security (ACL) Plugin and Protocol Examples =
 
 Below are excerpts from the HTTP trace from running the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/protocol/TestAclProtocol.java AtomBeat ACL protocol test] against the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/config/shared.xqm example default ACL configuration]...
 
