@@ -31,7 +31,7 @@
 
   <filter>
     <filter-name>HttpMethodOverrideFilter</filter-name>
-    <filter-class>org.cggh.chassis.generic.http.HttpMethodOverrideFilter</filter-class>
+    <filter-class>org.atombeat.http.HttpMethodOverrideFilter</filter-class>
     <init-param>
       <param-name>allowedOverrides</param-name>
       <param-value>PUT DELETE</param-value>
@@ -80,7 +80,7 @@
   
   <filter>
     <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
-    <filter-class>org.cggh.chassis.generic.http.SpringSecurityRequestAttributeFilter</filter-class>
+    <filter-class>org.atombeat.http.SpringSecuritySetUserRequestAttributesFilter</filter-class>
   </filter>
   
   

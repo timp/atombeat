@@ -1,4 +1,4 @@
-package org.cggh.chassis.spike.atomserver;
+package org.atombeat.protocol;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;
@@ -7,7 +7,7 @@ public class AllTests {
 
 	public static Test suite() {
 		TestSuite suite = new TestSuite(
-				"Test for org.cggh.chassis.spike.atomserver");
+				"AtomBeat Protocol Tests");
 		//$JUnit-BEGIN$
 		suite.addTestSuite(TestAtomProtocol.class);
 		suite.addTestSuite(TestHistoryProtocol.class);

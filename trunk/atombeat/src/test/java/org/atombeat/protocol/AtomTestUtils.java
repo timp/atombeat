@@ -1,4 +1,4 @@
-package org.cggh.chassis.spike.atomserver;
+package org.atombeat.protocol;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
