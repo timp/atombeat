@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="1.5.0">
+<wb-module deploy-name="googlecode_dsn-chassis_spike_atomserver">
+<wb-resource deploy-path="/" source-path="/war"/>
+<wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+<wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
+<wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resources"/>
+<dependent-module archiveName="googlecode_dsn-chassis_generic_lib_java.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/googlecode_dsn-chassis_generic_lib_java/googlecode_dsn-chassis_generic_lib_java">
+<dependency-type>uses</dependency-type>
+</dependent-module>
+<property name="context-root" value="atomserver"/>
+<property name="java-output-path"/>
+</wb-module>
+</project-modules>
