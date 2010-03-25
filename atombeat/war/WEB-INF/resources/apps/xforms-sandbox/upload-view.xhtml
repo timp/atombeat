@@ -1,0 +1,171 @@
+<!--
+    Copyright (C) 2004 Orbeon, Inc.
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<html xmlns:f="http://orbeon.org/oxf/xml/formatting"
+      xmlns:xhtml="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:widget="http://orbeon.org/oxf/xml/widget"
+      xmlns="http://www.w3.org/1999/xhtml">
+    <head>
+        <title>Orbeon Forms XForms Sandbox - Run XForms Everywhere!</title>
+        <xforms:model xxforms:state-handling="client">
+
+            <xforms:action ev:event="xforms-ready">
+                <xforms:send submission="samples-submission"/>
+            </xforms:action>
+
+            <xforms:instance id="main-instance">
+                <form xmlns="">
+                    <action>upload</action>
+                    <file filename="" mediatype="" size="" selected="false"/>
+                    <file filename="" mediatype="" size="" valid=""/>
+                    <sample/>
+                    <upload-trigger/>
+                    <download-trigger/>
+                    <sample-trigger/>
+                </form>
+            </xforms:instance>
+            <xforms:bind nodeset="instance('main-instance')">
+                <xforms:bind nodeset="file[2]/@valid" calculate="../../action = 'upload' or
+                        (../../action = 'download' and starts-with(normalize-space(..), 'http://'))"/>
+                <xforms:bind nodeset="file[2]" type="xs:anyURI" constraint="@valid = 'true'"/>
+                
+                <xforms:bind nodeset="upload-trigger" readonly="not(property('xxforms:noscript')) and ../file[1]/@selected = 'false'"/>
+                <xforms:bind nodeset="download-trigger" readonly="not(property('xxforms:noscript')) and ../file[2]/@valid = 'false'"/>
+                <xforms:bind nodeset="sample-trigger" readonly="not(property('xxforms:noscript')) and ../sample = ''"/>
+            </xforms:bind>
+            <xforms:instance id="samples-instance">
+                <directory xmlns=""/>
+            </xforms:instance>
+            <xforms:submission id="upload-submission" method="post" replace="all" action="/xforms-sandbox/run"/>
+            <xforms:submission id="samples-submission" method="get" replace="instance" instance="samples-instance"
+                    action="/xforms-sandbox/service/get-files" serialization="none"/>
+        </xforms:model>
+        <xhtml:style type="text/css">
+            .widget-tab-panel { padding-top: 1em; }
+            .widget-tabs { width: 48em; }
+            .sandbox-note { font-style: italic }
+        </xhtml:style>
+    </head>
+    <body>
+        <xforms:group ref="/form">
+            <p>
+                The Orbeon Forms XForms Sandbox powers XForms documents everywhere: it allows you to easily try your
+                own XForms documents, as well as XForms documents located anywhere on the web.
+            </p>
+            <p>
+                Just point to an XHTML + XForms document, press the "Run XForms" button, and check how the Orbeon Forms
+                XForms engine renders it!
+            </p>
+            <p style="color: orange; font-size: smaller">
+                NOTE: Your document has to be in the XHTML namespace. Plain HTML won't work.
+            </p>
+            <widget:tabs>
+                <widget:tab id="upload-case">
+                    <widget:label>Upload Local File</widget:label>
+                    <xforms:setvalue ev:event="xforms-select" ref="action">upload</xforms:setvalue>
+                    <p>
+                        Please select the local XHTML + XForms file to run:
+                    </p>
+                    <table style="width: 100%">
+                        <tr>
+                            <td style="width: 100%">
+                                <xforms:upload ref="file[1]" xxforms:size="45">
+                                    <xforms:label></xforms:label>
+                                    <xforms:filename ref="@filename"/>
+                                    <xforms:mediatype ref="@mediatype"/>
+                                    <xxforms:size ref="@size"/>
+                                    <xforms:setvalue ev:event="xforms-select" ref="@selected">true</xforms:setvalue>
+                                </xforms:upload>
+                            </td>
+                            <td>
+                                <xforms:trigger ref="upload-trigger">
+                                    <xforms:label>Run XForms</xforms:label>
+                                    <xforms:send ev:event="DOMActivate" submission="upload-submission"/>
+                                </xforms:trigger>
+                            </td>
+                        </tr>
+                    </table>
+                </widget:tab>
+                <widget:tab id="download-case">
+                    <widget:label>Run From the Web</widget:label>
+                    <xforms:setvalue ev:event="xforms-select" ref="action">download</xforms:setvalue>
+                    <p>
+                        Please enter the HTTP URL of the XHTML + XForms to download from the web and run:
+                    </p>
+                    <xforms:group>
+                        <xforms:load ev:event="DOMActivate" if="file[2]/@valid = 'true'" resource="/xforms-sandbox/run?url={file[2]}"/>
+                        <table style="width: 100%">
+                            <tr>
+                                <td style="width: 100%">
+                                    <xforms:input ref="file[2]" xxforms:size="65" incremental="true">
+                                        <xforms:label></xforms:label>
+                                        <xforms:alert>Please enter a valid HTTP URL (starting with "http://")</xforms:alert>
+                                    </xforms:input>
+                                </td>
+                                <td>
+                                    <xforms:trigger ref="download-trigger">
+                                        <xforms:label>Run XForms</xforms:label>
+                                    </xforms:trigger>
+                                </td>
+                            </tr>
+                        </table>
+                    </xforms:group>
+                </widget:tab>
+                <widget:tab id="samples-case">
+                    <widget:label>Test Samples</widget:label>
+                    <xforms:setvalue ev:event="xforms-select" ref="action">download</xforms:setvalue>
+                    <p>
+                        Please select one of the <xforms:output value="count(instance('samples-instance')/file)"/>
+                        existing XForms test samples from the list:
+                    </p>
+                    <xforms:group>
+                        <xforms:load ev:event="DOMActivate" if="sample != ''" resource="/xforms-sandbox/sample/{sample}"/>
+                        <table style="width: 100%">
+                            <tr>
+                                <td style="width: 100%">
+                                    <xforms:select1 ref="sample">
+                                        <xforms:item>
+                                            <xforms:label/>
+                                            <xforms:value/>
+                                        </xforms:item>
+                                        <xforms:itemset nodeset="xxforms:sort(instance('samples-instance')/file, @name, 'text', 'ascending')">
+                                            <xforms:label><xforms:output value="substring(@name, 1, string-length(@name) - 6)"/></xforms:label>
+                                            <xforms:value value="substring(@name, 1, string-length(@name) - 6)"/>
+                                        </xforms:itemset>
+                                    </xforms:select1>
+                                </td>
+                                <td>
+                                    <xforms:trigger ref="sample-trigger">
+                                        <xforms:label>Run XForms</xforms:label>
+                                    </xforms:trigger>
+                                </td>
+                            </tr>
+                        </table>
+                    </xforms:group>
+                </widget:tab>
+            </widget:tabs>
+            <p class="sandbox-note">
+                Tip: With Firefox, once the file is uploaded and displaying, you can do a
+                "shift-reload" in your browser to update the page with modifications you have done
+                to your local file. The browser will re-upload the modified file.
+            </p>
+        </xforms:group>
+    </body>
+</html>
