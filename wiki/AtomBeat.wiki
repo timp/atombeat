@@ -1217,3 +1217,5 @@ Date: Thu, 25 Mar 2010 13:34:16 GMT
     </atom:content>
 </atom:entry>
 }}}
+
+For details of the features and processing model for the ACLs, see the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/lib/test-atom-security.xql atom security XQuery module test case].
