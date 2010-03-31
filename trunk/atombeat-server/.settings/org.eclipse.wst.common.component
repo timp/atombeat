@@ -6,7 +6,7 @@
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/resources"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/test/java"/>
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <property name="context-root" value="orbeon"/>
         <property name="java-output-path" value="/orbeon/build/classes"/>
+        <property name="context-root" value="atombeat-server"/>
     </wb-module>
 </project-modules>
