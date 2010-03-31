@@ -1,0 +1,633 @@
+<!--
+    Copyright (C) 2004 Orbeon, Inc.
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+    xmlns:sql="http://orbeon.org/oxf/xml/sql"
+    datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+    <start>
+        <ref name="config"/>
+    </start>
+
+    <define name="config">
+        <element name="sql:config">
+            <oneOrMore>
+                <ref name="element-or-connection"/>
+            </oneOrMore>
+        </element>
+    </define>
+
+    <define name="element-or-connection">
+        <choice>
+            <element name="sql:connection">
+                <!-- Datasource can now be specified externally -->
+                <optional>
+                    <element name="sql:datasource">
+                        <text/>
+                    </element>
+                </optional>
+                <oneOrMore>
+                    <ref name="element-or-execute"/>
+                </oneOrMore>
+            </element>
+            <ref name="value-of-copy-of"/>
+            <element name="sql:for-each">
+                <attribute name="select"/>
+                <zeroOrMore>
+                    <ref name="element-or-connection"/>
+                    <!-- FIXME: Should not allow nested connection -->
+                </zeroOrMore>
+            </element>
+            <element>
+                <anyName>
+                    <except>
+                        <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                    </except>
+                </anyName>
+                <zeroOrMore>
+                    <choice>
+                        <attribute>
+                            <anyName/>
+                        </attribute>
+                        <text/>
+                        <element name="sql:text">
+                            <text/>
+                        </element>
+                        <ref name="element-or-connection"/>
+                    </choice>
+                </zeroOrMore>
+            </element>
+        </choice>
+    </define>
+
+    <define name="element-or-execute">
+        <choice>
+            <ref name="execute"/>
+            <ref name="value-of-copy-of"/>
+            <element name="sql:text">
+                <text/>
+            </element>
+            <element name="sql:for-each">
+                <attribute name="select"/>
+                <zeroOrMore>
+                    <ref name="element-or-execute"/>
+                </zeroOrMore>
+            </element>
+            <element>
+                <anyName>
+                    <except>
+                        <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                    </except>
+                </anyName>
+                <zeroOrMore>
+                    <choice>
+                        <attribute>
+                            <anyName/>
+                        </attribute>
+                        <text/>
+                        <element name="sql:text">
+                            <text/>
+                        </element>
+                        <element name="sql:attribute">
+                            <attribute name="name"/>
+                            <ref name="getter"/>
+                        </element>
+                        <ref name="element-or-execute"/>
+                    </choice>
+                </zeroOrMore>
+            </element>
+        </choice>
+    </define>
+
+    <define name="execute">
+        <element name="sql:execute">
+            <element>
+                <choice>
+                    <name>sql:update</name>
+                    <name>sql:query</name>
+                    <name>sql:call</name>
+                </choice>
+                <optional><!-- NOTE: This should only be allowed for sql:update -->
+                    <attribute name="select"/>
+                </optional>
+                <optional>
+                    <attribute name="debug"/>
+                </optional>
+                <oneOrMore>
+                    <interleave>
+                        <text/>
+                        <optional>
+                            <choice>
+                                <element>
+                                    <choice>
+                                        <name>sql:parameter</name>
+                                        <name>sql:param</name>
+                                    </choice>
+                                    <choice>
+                                        <group>
+                                            <!-- Types not taking any sql-type -->
+                                            <attribute name="type">
+                                                <choice>
+                                                    <value>xs:string</value>
+                                                    <value>xs:int</value>
+                                                    <value>xs:boolean</value>
+                                                    <value>xs:decimal</value>
+                                                    <value>xs:float</value>
+                                                    <value>xs:double</value>
+                                                    <value>xs:dateTime</value>
+                                                    <value>xs:date</value>
+                                                </choice>
+                                            </attribute>
+                                        </group>
+                                        <group>
+                                            <!-- Inline binary -->
+                                            <attribute name="type">
+                                                <value>xs:base64Binary</value>
+                                            </attribute>
+                                            <optional>
+                                                <attribute name="sql-type">
+                                                    <choice>
+                                                        <value>blob</value>
+                                                    </choice>
+                                                </attribute>
+                                            </optional>
+                                        </group>
+                                        <group>
+                                            <!-- URI -->
+                                            <attribute name="type">
+                                                <choice>
+                                                    <value>xs:anyURI</value>
+                                                </choice>
+                                            </attribute>
+                                            <optional>
+                                                <attribute name="sql-type">
+                                                    <choice>
+                                                        <value>blob</value>
+                                                    </choice>
+                                                </attribute>
+                                            </optional>
+                                        </group>
+                                        <group>
+                                            <!-- XML fragment -->
+                                            <attribute name="type">
+                                                <choice>
+                                                    <data type="QName">
+                                                        <param name="pattern">.+:xmlFragment</param>
+                                                    </data>
+                                                </choice>
+                                            </attribute>
+                                            <optional>2
+                                                <attribute name="sql-type">
+                                                    <choice>
+                                                        <value>char</value>
+                                                        <value>varchar</value>
+                                                        <value>longvarchar</value>
+                                                        <value>clob</value>
+                                                        <value>xmltype</value>
+                                                    </choice>
+                                                </attribute>
+                                            </optional>
+                                        </group>
+                                    </choice>
+                                    <optional>
+                                        <attribute name="replace">
+                                            <value>false</value>
+                                        </attribute>
+                                    </optional>
+                                    <optional>
+                                        <attribute>
+                                            <choice>
+                                                <!-- New name -->
+                                                <name>null</name>
+                                                <!-- Legacy name -->
+                                                <name>null-if</name>
+                                            </choice>
+                                        </attribute>
+                                    </optional>
+                                    <choice>
+                                        <group>
+                                            <attribute name="select"/>
+                                            <optional>
+                                                <attribute name="separator"/>
+                                            </optional>
+                                        </group>
+                                        <ref name="simple-getter"/>
+                                        <ref name="generic-getter"/>
+                                    </choice>
+                                </element>
+                                <element>
+                                    <choice>
+                                        <name>sql:parameter</name>
+                                        <name>sql:param</name>
+                                    </choice>
+                                    <attribute name="type">
+                                        <choice>
+                                            <value>xs:int</value>
+                                            <data type="QName">
+                                                <param name="pattern">.+:literalString</param>
+                                            </data>
+                                        </choice>
+                                    </attribute>
+                                    <attribute name="replace">
+                                        <value>true</value>
+                                    </attribute>
+                                    <optional>
+                                        <attribute>
+                                            <choice>
+                                                <!-- New name -->
+                                                <name>null</name>
+                                                <!-- Legacy name -->
+                                                <name>null-if</name>
+                                            </choice>
+                                        </attribute>
+                                    </optional>
+                                    <choice>
+                                        <attribute name="select"/>
+                                        <ref name="simple-getter"/>
+                                        <ref name="generic-getter"/>
+                                    </choice>
+                                </element>
+                            </choice>
+                        </optional>
+                    </interleave>
+                </oneOrMore>
+            </element>
+            <zeroOrMore>
+                <interleave>
+                    <optional>
+                        <choice>
+                            <element name="sql:results"><!-- deprecated -->
+                                <ref name="element-or-row-results"/>
+                            </element>
+                            <element name="sql:result-set">
+                                <optional>
+                                    <attribute name="result-sets">
+                                        <choice>
+                                            <value>unbounded</value>
+                                            <data type="positiveInteger"/>
+                                        </choice>
+                                    </attribute>
+                                </optional>
+                                <ref name="element-or-row-results"/>
+                            </element>
+                        </choice>
+                    </optional>
+                    <optional>
+                        <ref name="value-of-copy-of"/>
+                    </optional>
+                    <!-- FIXME: It may make sense to allow for-each here as well -->
+                </interleave>
+            </zeroOrMore>
+            <interleave>
+                <optional>
+                    <element name="sql:no-results">
+                        <ref name="element-or-execute"/>
+                    </element>
+                </optional>
+                <optional>
+                    <ref name="value-of-copy-of"/>
+                </optional>
+                <!-- FIXME: It may make sense to allow for-each here as well -->
+            </interleave>
+        </element>
+    </define>
+
+    <define name="element-or-row-results">
+        <choice>
+            <element>
+                <choice>
+                    <name>sql:row-results</name><!-- deprecated -->
+                    <name>sql:row-iterator</name>
+                </choice>
+                <zeroOrMore>
+                    <ref name="element-or-group-or-getter"/>
+                </zeroOrMore>
+            </element>
+            <ref name="value-of-copy-of"/>
+            <ref name="column-iterator"/>
+            <element name="sql:for-each">
+                <attribute name="select"/>
+                <zeroOrMore>
+                    <ref name="element-or-row-results"/>
+                    <!-- FIXME: We must not allow a nested sql:row-results here -->
+                </zeroOrMore>
+            </element>
+            <element>
+                <anyName>
+                    <except>
+                        <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                    </except>
+                </anyName>
+                <zeroOrMore>
+                    <choice>
+                        <attribute>
+                            <anyName/>
+                        </attribute>
+                        <text/>
+                        <element name="sql:text">
+                            <text/>
+                        </element>
+                        <element name="sql:attribute">
+                            <attribute name="name"/>
+                            <ref name="getter"/>
+                        </element>
+                        <ref name="element-or-row-results"/>
+                    </choice>
+                </zeroOrMore>
+            </element>
+        </choice>
+    </define>
+
+    <define name="column-iterator">
+        <element name="sql:column-iterator">
+            <ref name="element-or-getter"/>
+        </element>
+    </define>
+
+    <define name="element-or-getter">
+        <choice>
+            <ref name="getter"/>
+            <ref name="execute"/>
+            <element>
+                <anyName>
+                    <except>
+                        <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                    </except>
+                </anyName>
+                <zeroOrMore>
+                    <choice>
+                        <attribute>
+                            <anyName/>
+                        </attribute>
+                        <text/>
+                        <element name="sql:text">
+                            <text/>
+                        </element>
+                        <element name="sql:attribute">
+                            <attribute name="name"/>
+                            <ref name="getter"/>
+                        </element>
+                        <ref name="element-or-getter"/>
+                    </choice>
+                </zeroOrMore>
+            </element>
+        </choice>
+    </define>
+
+    <define name="element-or-group-or-getter">
+        <choice>
+            <element name="sql:group">
+                <choice>
+                    <attribute name="column"/><!-- deprecated -->
+                    <attribute name="column-name"/>
+                </choice>
+                <zeroOrMore>
+                    <ref name="element-or-member-or-getter"/>
+                </zeroOrMore>
+            </element>
+            <ref name="getter"/>
+            <ref name="execute"/>
+            <ref name="column-iterator"/>
+            <element>
+                <anyName>
+                    <except>
+                        <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                    </except>
+                </anyName>
+                <zeroOrMore>
+                    <choice>
+                        <attribute>
+                            <anyName/>
+                        </attribute>
+                        <text/>
+                        <element name="sql:text">
+                            <text/>
+                        </element>
+                        <element name="sql:attribute">
+                            <attribute name="name"/>
+                            <ref name="getter"/>
+                        </element>
+                        <ref name="element-or-group-or-getter"/>
+                    </choice>
+                </zeroOrMore>
+            </element>
+        </choice>
+    </define>
+
+    <define name="element-or-member-or-getter">
+        <choice>
+            <element name="sql:member">
+                <zeroOrMore>
+                    <ref name="element-or-group-or-getter"/>
+                </zeroOrMore>
+            </element>
+            <ref name="getter"/>
+            <ref name="execute"/>
+            <element>
+                <anyName>
+                    <except>
+                        <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                    </except>
+                </anyName>
+                <zeroOrMore>
+                    <choice>
+                        <attribute>
+                            <anyName/>
+                        </attribute>
+                        <text/>
+                        <element name="sql:text">
+                            <text/>
+                        </element>
+                        <element name="sql:attribute">
+                            <attribute name="name"/>
+                            <ref name="getter"/>
+                        </element>
+                        <ref name="element-or-member-or-getter"/>
+                    </choice>
+                </zeroOrMore>
+            </element>
+        </choice>
+    </define>
+
+    <define name="getter">
+        <choice>
+            <ref name="simple-getter"/><!-- deprecated -->
+            <ref name="generic-getter"/>
+            <element name="sql:get-columns">
+                <optional>
+                    <attribute name="format"/>
+                </optional>
+                <optional>
+                    <attribute name="prefix"/>
+                </optional>
+                <optional>
+                    <attribute name="all-elements">
+                        <choice>
+                            <value>false</value>
+                            <value>true</value>
+                        </choice>
+                    </attribute>
+                </optional>
+                <zeroOrMore>
+                    <element name="sql:exclude">
+                        <text/>
+                    </element>
+                </zeroOrMore>
+            </element>
+            <element>
+                <choice>
+                    <name>sql:get-column-index</name>
+                    <name>sql:get-column-name</name>
+                    <name>sql:get-column-type</name>
+                </choice>
+                <optional>
+                    <choice>
+                        <attribute name="column-name"/>
+                        <attribute name="column-index"/>
+                    </choice>
+                </optional>
+            </element>
+            <element name="sql:get-column-value">
+                <optional>
+                    <ref name="getter-type-attribute"/>
+                </optional>
+                <optional>
+                    <choice>
+                        <!-- Legacy name -->
+                        <attribute name="column"/>
+                        <!-- New name -->
+                        <attribute name="column-name"/>
+                    </choice>
+                </optional>
+            </element>
+            <ref name="value-of-copy-of"/>
+            <!--<element name="sql:column-iterator">-->
+                <!--<zeroOrMore>-->
+                    <!--<ref name="element-or-getter"/>-->
+                <!--</zeroOrMore>-->
+            <!--</element>-->
+            <element name="sql:for-each">
+                <attribute name="select"/>
+                <zeroOrMore>
+                    <ref name="getter"/>
+                </zeroOrMore>
+            </element>
+            <text/>
+            <ref name="execute"/>
+        </choice>
+    </define>
+
+    <define name="simple-getter">
+        <choice>
+            <element>
+                <choice>
+                    <name>sql:get-string</name>
+                    <name>sql:get-int</name>
+                    <name>sql:get-boolean</name>
+                    <name>sql:get-float</name>
+                    <name>sql:get-double</name>
+                    <name>sql:get-decimal</name>
+                    <name>sql:get-date</name>
+                    <name>sql:get-timestamp</name>
+                </choice>
+                <attribute name="column"/>
+                <optional>
+                    <attribute name="ancestor">
+                        <data type="nonNegativeInteger"/>
+                    </attribute>
+                </optional>
+            </element>
+        </choice>
+    </define>
+
+    <define name="generic-getter">
+        <element name="sql:get-column">
+            <ref name="getter-type-attribute"/>
+            <attribute name="column"/>
+            <optional>
+                <attribute name="ancestor">
+                    <data type="nonNegativeInteger"/>
+                </attribute>
+            </optional>
+        </element>
+    </define>
+
+    <define name="getter-type-attribute">
+        <attribute name="type">
+            <choice>
+                <data type="string">
+                    <param name="pattern">.+:string</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:int</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:boolean</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:decimal</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:float</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:double</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:dateTime</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:date</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:base64Binary</param>
+                </data>
+                <data type="string">
+                    <param name="pattern">.+:xmlFragment</param>
+                </data>
+            </choice>
+        </attribute>
+    </define>
+
+    <define name="value-of-copy-of">
+        <element>
+            <choice>
+                <name>sql:value-of</name>
+                <name>sql:copy-of</name>
+            </choice>
+            <attribute name="select"/>
+        </element>
+    </define>
+
+    <!--
+    <define name="any-non-sql-element">
+        <element>
+            <anyName>
+                <except>
+                    <nsName ns="http://orbeon.org/oxf/xml/sql"/>
+                </except>
+            </anyName>
+            <zeroOrMore>
+                <choice>
+                    <attribute>
+                        <anyName/>
+                    </attribute>
+                    <text/>
+                    <ref name="any-non-sql-element"/>
+                </choice>
+            </zeroOrMore>
+        </element>
+    </define>
+    -->
+
+</grammar>

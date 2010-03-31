@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2010 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xxforms:dialog  xmlns:xhtml="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xi="http://www.w3.org/2001/XInclude"
+      xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+      xmlns:fb="http://orbeon.org/oxf/xml/form-builder"
+      xmlns:saxon="http://saxon.sf.net/"
+
+      id="fb-source-editor-dialog" level="modeless" close="true" draggable="true" class="fr-dialog" model="fb-source-editor-model">
+
+    <xforms:label ref="$form-resources/dialog-edit-source/dialog-title"/>
+
+    <xhtml:div class="fb-xml-dialog-view">
+        <xforms:textarea ref="source">
+            <xforms:alert ref="$form-resources/dialog-edit-source/source/alert"/>
+        </xforms:textarea>
+    </xhtml:div>
+    <xhtml:div class="fr-dialog-buttons">
+        <xhtml:span>
+            <fr:button class="fr-inplace-rename" ref="save-trigger">
+                <xforms:label ref="$form-resources/apply/label"/>
+                <xforms:action ev:event="DOMActivate">
+
+                    <!-- Parse the XML and insert it -->
+
+                    <!-- TODO: extra line breaks are added as you edit and save the XML -->
+                    <!--<xforms:message level="xxforms:log-debug">-->
+                        <!--<xforms:output value="replace($variables/new-source, '&#x0d;', '&#x0d;')"/>-->
+                    <!--</xforms:message>-->
+
+                    <xforms:insert nodeset="xxforms:instance('fr-form-instance')" origin="saxon:parse(instance('fb-source-editor-instance')/source)"/>
+                    <!-- Saxon serialization adds an extra meta element -->
+                    <xforms:delete nodeset="xxforms:instance('fr-form-instance')/xhtml:head/meta[@http-equiv = 'Content-Type']"/>
+
+                </xforms:action>
+            </fr:button>
+            <xforms:output value="$form-resources/or/label"/>
+            <xforms:trigger appearance="minimal" class="fr-inplace-cancel">
+                <xforms:label ref="$form-resources/cancel/label"/>
+            </xforms:trigger>
+        </xhtml:span>
+    </xhtml:div>
+    <!-- Hide dialog -->
+    <xxforms:hide ev:event="DOMActivate" dialog="fb-source-editor-dialog"/>
+    <!-- Serialize XML when the dialog opens -->
+    <xforms:setvalue ev:event="xxforms-dialog-open" ref="source"
+                     value="saxon:serialize(xxforms:instance('fr-form-instance'), xxforms:instance('fr-xsl-output-instance'))"/>
+
+    <!-- Model for the source editor -->
+    <xforms:model id="fb-source-editor-model">
+
+        <xxforms:variable name="model" select="xxforms:instance('fr-form-instance')/xhtml:head/xforms:model[@id = 'fr-form-model']"/>
+
+        <xforms:instance id="fb-source-editor-instance">
+            <source-editor>
+                <source/>
+                <save-trigger/>
+            </source-editor>
+        </xforms:instance>
+
+        <xforms:bind nodeset="instance('fb-source-editor-instance')">
+            <xforms:bind nodeset="source" type="xxforms:xml"/>
+            <xforms:bind nodeset="save-trigger" readonly=". = 'disabled'"/>
+        </xforms:bind>
+
+        <!-- Enable/disable trigger -->
+        <xforms:setvalue ev:event="xxforms-invalid" ev:observer="fb-source-editor-instance" ref="instance('fb-source-editor-instance')/save-trigger">disabled</xforms:setvalue>
+        <xforms:setvalue ev:event="xxforms-valid" ev:observer="fb-source-editor-instance" ref="instance('fb-source-editor-instance')/save-trigger">enabled</xforms:setvalue>
+
+    </xforms:model>
+
+</xxforms:dialog>

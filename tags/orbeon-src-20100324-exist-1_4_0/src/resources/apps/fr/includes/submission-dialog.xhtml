@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2009 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xxforms:dialog xmlns:ev="http://www.w3.org/2001/xml-events"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+        xmlns:xforms="http://www.w3.org/2002/xforms"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+        xmlns:saxon="http://saxon.sf.net/"
+        xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+        id="fr-submission-result-dialog" level="modal" close="false" draggable="false" class="fr-dialog" model="fr-submission-result-model">
+
+    <xforms:label ref="$fr-resources/detail/messages/submit-dialog-title"/>
+    
+    <xhtml:div>
+        <xxforms:variable name="content-from-persistence" select="xxforms:property(string-join(('oxf.fr.detail.submit.content-from-persistence', $app, $form), '.'))"/>
+        <xforms:output ref="if ($content-from-persistence) then . else $fr-resources/detail/messages/submit-dialog-message" mediatype="text/html"/>
+    </xhtml:div>
+    <xhtml:div class="fr-dialog-buttons">
+        <xforms:group>
+            <xforms:repeat nodeset="instance('fr-submission-buttons-instance')/*">
+                <!-- Clear button -->
+                <fr:button ref=".[local-name() = 'clear']">
+                    <xforms:label>
+                        <xhtml:img src="/apps/fr/style/clear.gif" alt=""/>
+                        <xhtml:span><xforms:output value="$fr-resources/detail/labels/submit-dialog-clear"/></xhtml:span>
+                    </xforms:label>
+                    <xforms:action ev:event="DOMActivate">
+                        <!-- Restore instance -->
+                        <xforms:dispatch name="fr-clear" targetid="fr-persistence-model"/>
+                        <!-- Perform refresh (fr-clear sets RRR flags already) so that after that we can clear error summary -->
+                        <xforms:refresh/>
+                        <!-- Clear error summary -->
+                        <xforms:dispatch name="fr-unvisit-all" targetid="fr-error-summary-model"/>
+
+                        <xxforms:hide dialog="fr-submission-result-dialog"/>
+                        <xforms:dispatch name="fr-new-document" target="fr-persistence-model"/>
+                    </xforms:action>
+                </fr:button>
+                <!-- Keep button -->
+                <fr:button ref=".[local-name() = 'keep']">
+                    <xforms:label>
+                        <xhtml:img src="/apps/fr/style/close.gif" alt=""/>
+                        <xhtml:span><xforms:output value="$fr-resources/detail/labels/submit-dialog-keep"/></xhtml:span>
+                    </xforms:label>
+                    <xforms:action ev:event="DOMActivate">
+                        <xxforms:hide dialog="fr-submission-result-dialog"/>
+                        <xforms:dispatch name="fr-new-document" target="fr-persistence-model"/>
+                    </xforms:action>
+                </fr:button>
+                <!-- Go button -->
+                <fr:button ref=".[local-name() = 'go']">
+                    <xforms:label>
+                        <xhtml:img src="/apps/fr/style/close.gif" alt=""/>
+                        <xhtml:span><xforms:output value="$fr-resources/detail/labels/submit-dialog-go"/></xhtml:span>
+                    </xforms:label>
+                    <xforms:action ev:event="DOMActivate">
+                        <xxforms:variable name="uri-xpath" select="xxforms:property(string-join(('oxf.fr.detail.submit.go.uri-xpath', $app, $form), '.'))"/>
+                        <xforms:load context="xxforms:instance('fr-form-instance')" resource="{saxon:evaluate($uri-xpath)}"/>
+                    </xforms:action>
+                </fr:button>
+                <!-- Close window button -->
+                <fr:button ref=".[local-name() = 'close-window']">
+                    <xforms:label>
+                        <xhtml:img src="/apps/fr/style/close.gif" alt=""/>
+                        <xhtml:span><xforms:output value="$fr-resources/detail/labels/submit-dialog-close-window"/></xhtml:span>
+                    </xforms:label>
+                    <xxforms:script ev:event="DOMActivate">window.close();</xxforms:script>
+                </fr:button>
+            </xforms:repeat>
+        </xforms:group>
+    </xhtml:div>
+    <!-- Set value when dialog opens -->
+    <xforms:setvalue ev:event="xxforms-dialog-open" ref="." value="event('fr:content')"/>
+    <!-- Clear value when dialog closes -->
+    <xforms:setvalue ev:event="xxforms-dialog-close" ref="."/>
+    <!-- Local model -->
+    <xforms:model id="fr-submission-result-model">
+        <xforms:instance id="fr-submission-result-instance">
+            <content xmlns=""/>
+        </xforms:instance>
+
+        <xforms:instance id="fr-submission-buttons-instance">
+            <buttons xmlns=""/>
+        </xforms:instance>
+
+        <!-- Create list of buttons -->
+        <xforms:action ev:event="xforms-model-construct-done">
+            <!-- Buttons in the dialog -->
+            <xxforms:variable name="submit-buttons" select="tokenize(xxforms:property(string-join(('oxf.fr.detail.submit.buttons', $app, $form), '.')), '\s+')" as="xs:string*"/>
+            <xforms:insert context="instance('fr-submission-buttons-instance')"
+                           origin="(for $b in $submit-buttons return xxforms:element($b))"/>
+        </xforms:action>
+
+        <xxforms:variable name="parameters" select="xxforms:instance('fr-parameters-instance')"/>
+        <xxforms:variable name="app" select="$parameters/app"/>
+        <xxforms:variable name="form" select="$parameters/form"/>
+
+    </xforms:model>
+</xxforms:dialog>

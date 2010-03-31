@@ -1,0 +1,237 @@
+<!--
+    Copyright (C) 2004-2007 Orbeon, Inc.
+  
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+  
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+  
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<grammar xmlns="http://relaxng.org/ns/structure/1.0"
+         datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes"
+         xmlns:p="http://www.orbeon.com/oxf/pipeline">
+
+    <start>
+        <ref name="config"/>
+    </start>
+
+    <define name="config">
+        <element>
+            <choice>
+                <name>p:config</name>
+                <name>p:pipeline</name>
+            </choice>
+            <ref name="anyAttributeOtherNS"/>
+            <optional>
+                <attribute name="id"/>
+            </optional>
+            <ref name="param"/>
+            <ref name="statements"/>
+        </element>
+    </define>
+
+    <define name="param">
+        <zeroOrMore>
+            <element name="p:param">
+                <ref name="anyAttributeOtherNS"/>
+                <attribute name="name"/>
+                <attribute name="type">
+                    <choice>
+                        <value>input</value>
+                        <value>output</value>
+                    </choice>
+                </attribute>
+                <ref name="debug"/>
+                <ref name="schemas"/>
+            </element>
+        </zeroOrMore>
+    </define>
+
+    <define name="statements">
+        <interleave>
+            <zeroOrMore>
+                <ref name="processor"/>
+            </zeroOrMore>
+            <zeroOrMore>
+                <ref name="choose"/>
+            </zeroOrMore>
+            <zeroOrMore>
+                <ref name="for-each"/>
+            </zeroOrMore>
+        </interleave>
+    </define>
+
+    <define name="processor">
+        <element name="p:processor">
+            <ref name="anyAttributeOtherNS"/>
+            <choice>
+                <attribute name="uri"/>
+                <attribute name="name"/>
+            </choice>
+            <optional>
+                <attribute name="id"/>
+            </optional>
+            <optional>
+                <attribute name="encapsulation"/>
+            </optional>
+            <optional>
+                <!-- Because of XInclude -->
+                <attribute name="xml:base">
+                    <data type="anyURI"/>
+                </attribute>
+            </optional>
+
+            <interleave>
+                <zeroOrMore>
+                    <element name="p:input">
+                        <ref name="anyAttributeOtherNS"/>
+                        <attribute name="name"/>
+                        <ref name="debug"/>
+                        <ref name="schemas"/>
+                        <choice>
+                            <!-- Just an href and no inline content -->
+                            <attribute name="href"/>
+                            <!-- Just inline content and no href -->
+                            <ref name="anyElement"/>
+                            <!-- Inline content, href an a transform attribute -->
+                            <group>
+                                <attribute name="href"/>
+                                <attribute name="transform"/>
+                                <ref name="anyElement"/>
+                            </group>
+                        </choice>
+                    </element>
+                </zeroOrMore>
+
+                <zeroOrMore>
+                    <element name="p:output">
+                        <ref name="anyAttributeOtherNS"/>
+                        <attribute name="name"/>
+                        <ref name="schemas"/>
+                        <ref name="debug"/>
+                        <choice>
+                            <attribute name="id"/>
+                            <attribute name="ref"/>
+                            <group>
+                                <attribute name="id"/>
+                                <attribute name="ref"/>
+                            </group>
+                        </choice>
+                    </element>
+                </zeroOrMore>
+            </interleave>
+
+        </element>
+    </define>
+
+    <define name="choose">
+        <element name="p:choose">
+            <ref name="anyAttributeOtherNS"/>
+            <attribute name="href"/>
+            <optional>
+                <attribute name="debug"/>
+            </optional>
+            <oneOrMore>
+                <element name="p:when">
+                    <ref name="anyAttributeOtherNS"/>
+                    <attribute name="test"/>
+                    <ref name="statements"/>
+                </element>
+            </oneOrMore>
+            <optional>
+                <element name="p:otherwise">
+                    <ref name="anyAttributeOtherNS"/>
+                    <ref name="statements"/>
+                </element>
+            </optional>
+        </element>
+    </define>
+
+    <define name="for-each">
+        <element name="p:for-each">
+            <ref name="anyAttributeOtherNS"/>
+            <attribute name="href"/>
+            <attribute name="select"/>
+            <optional>
+                <choice>
+                    <attribute name="id"/>
+                    <attribute name="ref"/>
+                    <group>
+                        <attribute name="id"/>
+                        <attribute name="ref"/>
+                    </group>
+                </choice>
+                <attribute name="root"/>
+            </optional>
+            <optional>
+                <attribute name="input-debug"/>
+            </optional>
+            <optional>
+                <choice>
+                    <attribute name="input-schema-href"/>
+                    <attribute name="input-schema-uri"/>
+                </choice>
+            </optional>
+            <optional>
+                <attribute name="output-debug"/>
+            </optional>
+            <optional>
+                <choice>
+                    <attribute name="output-schema-href"/>
+                    <attribute name="output-schema-uri"/>
+                </choice>
+            </optional>
+            <ref name="statements"/>
+        </element>
+    </define>
+
+    <define name="debug">
+        <optional>
+            <attribute name="debug"/>
+        </optional>
+    </define>
+
+    <define name="schemas">
+        <optional>
+            <choice>
+                <attribute name="schema-href"/>
+                <attribute name="schema-uri"/>
+            </choice>
+        </optional>
+    </define>
+
+    <define name="anyElement">
+        <element>
+            <anyName/>
+            <zeroOrMore>
+                <choice>
+                    <attribute>
+                        <anyName/>
+                    </attribute>
+                    <text/>
+                    <ref name="anyElement"/>
+                </choice>
+            </zeroOrMore>
+        </element>
+    </define>
+
+    <define name="anyAttributeOtherNS">
+        <!-- Can contain any number of extra attributes in any non-null namespace which is not the p: namespace -->
+        <zeroOrMore>
+            <attribute>
+                <anyName>
+                    <except>
+                        <nsName ns=""/>
+                        <nsName ns="http://www.orbeon.com/oxf/pipeline"/>
+                        <nsName ns="http://www.w3.org/XML/1998/namespace"/>
+                    </except>
+                </anyName>
+            </attribute>
+        </zeroOrMore>
+    </define>
+
+</grammar>

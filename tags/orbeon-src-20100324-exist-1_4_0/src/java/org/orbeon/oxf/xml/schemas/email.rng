@@ -1,0 +1,203 @@
+<!--
+    Copyright (C) 2004 Orbeon, Inc.
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+  
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<grammar datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes" xmlns="http://relaxng.org/ns/structure/1.0">
+
+    <start>
+        <element name="message">
+            <optional>
+                <element name="smtp-host">
+                    <data type="string"/>
+                </element>
+			</optional>
+			<optional>
+				<element name="credentials">
+					<interleave>
+						<element name="username">
+							<data type="string"/>
+						</element>
+						<element name="password">
+							<data type="string"/>
+						</element>
+					</interleave>
+				</element>
+			</optional>
+            <element name="from">
+                <ref name="address"/>
+            </element>
+            <oneOrMore>
+                <choice>
+                    <element name="to">
+                        <ref name="address"/>
+                    </element>
+                    <element name="cc">
+                        <ref name="address"/>
+                    </element>
+                    <element name="bcc">
+                        <ref name="address"/>
+                    </element>
+                </choice>
+            </oneOrMore>
+            <element name="subject">
+                <data type="string"/>
+            </element>
+            <zeroOrMore>
+                <element name="header">
+                    <element name="name">
+                        <data type="string"/>
+                    </element>
+                    <element name="value">
+                        <data type="string"/>
+                    </element>
+                </element>
+            </zeroOrMore>
+            <ref name="body"/>
+        </element>
+    </start>
+
+    <define name="address">
+        <interleave>
+            <element name="email">
+                <data type="string"/>
+            </element>
+            <optional>
+                <element name="name">
+                    <data type="string"/>
+                </element>
+            </optional>
+        </interleave>
+    </define>
+
+    <define name="body">
+        <choice>
+            <group>
+                <!-- Old style, one part, text only -->
+                <element name="text">
+                    <data type="string"/>
+                </element>
+            </group>
+            <!-- New style, MIME multipart support -->
+            <group>
+                <element name="body">
+                    <choice>
+                        <group>
+                            <!-- Body contains parts -->
+                            <choice>
+                                <optional>
+                                    <attribute name="mime-multipart">
+                                        <choice>
+                                            <value>mixed</value>
+                                            <value>alternative</value>
+                                            <value>related</value>
+                                        </choice>
+                                    </attribute>
+                                </optional>
+                                <ref name="multipartContenTypeAttribute"/>
+                            </choice>
+                            <oneOrMore>
+                                <ref name="part"/>
+                            </oneOrMore>
+                        </group>
+                        <group>
+                            <!-- Body doesn't contain parts -->
+                            <ref name="nonMultipartContenTypeAttribute"/>
+                            <ref name="bodyOrPartContent"/>
+                        </group>
+                    </choice>
+                </element>
+            </group>
+        </choice>
+    </define>
+
+    <define name="part">
+        <element name="part">
+            <choice>
+                <group>
+                    <!-- Multipart part content -->
+                    <attribute name="name"/>
+                    <ref name="multipartContenTypeAttribute"/>
+                    <optional>
+                        <attribute name="content-id"/>
+                    </optional>
+                    <oneOrMore>
+                        <ref name="part"/>
+                    </oneOrMore>
+                </group>
+                <group>
+                    <!-- Regular part content -->
+                    <attribute name="name"/>
+                    <ref name="nonMultipartContenTypeAttribute"/>
+                    <optional>
+                        <attribute name="content-disposition"/>
+                    </optional>
+                    <optional>
+                        <attribute name="content-id"/>
+                    </optional>
+                    <ref name="bodyOrPartContent"/>
+                </group>
+            </choice>
+        </element>
+    </define>
+
+    <define name="multipartContenTypeAttribute">
+        <attribute name="content-type">
+            <choice>
+                <value>multipart/mixed</value>
+                <value>multipart/alternative</value>
+                <value>multipart/related</value>
+            </choice>
+        </attribute>
+    </define>
+
+    <define name="nonMultipartContenTypeAttribute">
+        <attribute name="content-type">
+            <data type="string">
+                <except>
+                    <data type="string">
+                        <param name="pattern">multipart/.+</param>
+                    </data>
+                </except>
+            </data>
+        </attribute>
+    </define>
+
+    <define name="bodyOrPartContent">
+        <choice>
+            <!-- Out of line content -->
+            <attribute name="src">
+                <data type="anyURI"/>
+            </attribute>
+            <!-- Inline content -->
+            <choice>
+                <ref name="anyElement"/>
+                <text/>
+            </choice>
+        </choice>
+    </define>
+
+    <define name="anyElement">
+        <element>
+            <anyName/>
+            <zeroOrMore>
+                <choice>
+                    <attribute>
+                        <anyName/>
+                    </attribute>
+                    <text/>
+                    <ref name="anyElement"/>
+                </choice>
+            </zeroOrMore>
+        </element>
+    </define>
+
+</grammar>

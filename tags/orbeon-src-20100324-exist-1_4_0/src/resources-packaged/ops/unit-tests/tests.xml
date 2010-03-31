@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2010 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+
+<tests
+    xmlns:oxf="http://www.orbeon.com/oxf/processors"
+    xmlns:xi="http://www.w3.org/2001/XInclude">
+
+    <xi:include href="xforms-server/tests-xforms-misc.xml"/>
+    <xi:include href="xforms-server/tests-xforms-mips.xml"/>
+    <xi:include href="xforms-server/tests-xforms-submission.xml"/>
+    <xi:include href="xforms-server/tests-xforms-xbl.xml"/>
+    <xi:include href="xforms-server/tests-xforms-components.xml"/>
+    <xi:include href="xforms-server/tests-xforms-itemset.xml"/>
+    <xi:include href="xforms-server/tests-xforms-layout.xml"/>
+    <xi:include href="xforms-server/tests-xforms-repeat.xml"/>
+    <xi:include href="xforms-server/tests-xforms-events.xml"/>
+    <xi:include href="xforms-server/tests-xforms-variable.xml"/>
+    <xi:include href="xforms-server/tests-xforms-functions.xml"/>
+    <xi:include href="xforms-server/tests-xforms-validation.xml"/>
+
+    <xi:include href="tests-xpl.xml"/>
+    <xi:include href="processor/file.xml"/>
+
+    <xi:include href="tests-qname-converter.xml"/>
+    <xi:include href="tests-xupdate.xml"/>
+    <xi:include href="tests-validation.xml"/>
+    <xi:include href="tests-transformations.xml"/>
+    <xi:include href="converters/tests-converters.xml"/>
+    <xi:include href="tests-page-flow.xml"/>
+    <xi:include href="tests-java.xml"/>
+    <xi:include href="tests-sql.xml"/>
+    <xi:include href="tests-email.xml"/>
+    <xi:include href="tests-matchers.xml"/>
+    <xi:include href="tests-url-rewrite.xml"/>
+    <xi:include href="url-generator/tests.xml"/>
+    <xi:include href="xinclude/tests-xinclude.xml"/>
+    <xi:include href="cache/tests-cache.xml"/>
+
+<!--    <xi:include href="tests-tamino.xml"/>-->
+<!--    <xi:include href="tests-ldap.xml"/>-->
+
+</tests>

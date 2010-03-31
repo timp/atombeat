@@ -1,0 +1,284 @@
+/**
+ * Copyright (C) 2010 Orbeon, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify it under the terms of the
+ * GNU Lesser General Public License as published by the Free Software Foundation; either version
+ * 2.1 of the License, or (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ * without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the GNU Lesser General Public License for more details.
+ *
+ * The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+ */
+
+/*
+    Alternate shades of blue:
+
+    #004B92
+    #2647A0
+    #146EB4
+*/
+
+/* ***** Colors, fonts, etc. **************************************************************************************** */
+
+/* TODO: repeats and dialogs still have colors and fonts settings in form-runner-base.css */
+
+/* ***** Basic HTML settings **************************************************************************************** */
+
+html { overflow: scroll; background-color: #DDD }/* TODO: add comment about why this is useful (if is actually is) */
+
+body {
+    background-color: #DDD;
+    text-align: left /* Not sure why the YUI resets this to center */
+}
+
+td { border: 0; vertical-align: top }
+i { font-style: italic }
+b { font-weight: bold }
+th, td {border: 0; padding: 0 }
+
+h1, h2, h3 {
+	margin: 1em 0;
+    color: #004B92;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    text-align: left;
+    font-weight: normal;
+    clear: left;
+    padding: 0;
+}
+
+h1 { font-size: 197% }
+
+h2 {
+    font-size: 130%;
+    margin: 1em 0 .5em 0;/* try smaller margins */
+}
+
+h3, h4 {
+    font-size: 110%;
+    line-height: 135%;
+    margin: 1em 0 1em 0;
+}
+
+body, body table, textarea.xforms-textarea, button {
+    font-family: "Lucida Grande", Tahoma, Arial, Verdana, sans-serif;
+}
+
+a { color: #004B92 }
+hr { border: 1px solid #eee }
+
+/* Some definitions from YUI base-min.css */
+strong { font-weight: bold }
+abbr, acronym { border-bottom: 1px dotted #000; cursor: help }
+em { font-style: italic }
+blockquote, ul, ol, dl { margin: 1em }
+ol, ul, dl { margin-left: 2em }
+ol li { list-style: decimal outside }
+ul li { list-style: disc outside }
+dl dd { margin-left: 1em }
+th { font-weight:bold; text-align:center }
+caption { margin-bottom:.5em; text-align:center }
+p, fieldset, table { margin-bottom: 1em }
+
+/* ***** Other ****************************************************************************************************** */
+
+.fr-top, .fr-footer { background-repeat: no-repeat; clear: both }
+.fr-shadow { height: 10px; _height: 5px; font-size: 0; clear: both; } /* Clear is necessary because the previous block contains floated elements */
+.fr-footer { min-height: 10px } /* help display background image */
+/* IE 6 HACK in all the lines below: don't use the PNG background image as it doesn't show properly */
+#doc .fr-shadow { background-image: url(top-750.png); _background-image: none }
+#doc4 .fr-shadow { background-image: url(top-974.png); _background-image: none }
+#doc-fb .fr-shadow { background-image: url(top-974.png); _background-image: none }
+
+#doc .fr-footer { background-image: url(bottom-750.png); _background-image: none }
+#doc4 .fr-footer { background-image: url(bottom-974.png); _background-image: none }
+#doc-fb .fr-footer { background-image: url(bottom-974.png); _background-image: none }
+
+/* Put margins here as they are not needed */
+#fr-form-group { margin: .5em 1em 1em }
+
+.fr-orbeon-version {
+    text-align: center;
+    font-size: smaller;
+    padding: 10px;
+    color: #6E6E6E;
+}
+
+.fr-container {
+    background-color: white;
+    /*border: 1px solid #cccccc;*/
+}
+
+.fr-separator {
+    background-color: #9999CC;
+    height: 4px;    /* size in em seems to cause issues in Firefox as not all separators appear the same height */
+    font-size: 0;   /* help IE */
+}
+
+.fr-bottom {
+    background: #F8F8F8 url(logo-bg.gif) repeat-x top;
+    padding: 1em;
+}
+
+.yui-skin-sam .yui-button button {
+    *height: 2em;   /* IE doesn't honor the min-height provided by YUI */
+}
+
+/* Apply YUI SAM skin style for <input> buttons under IE 6 (other browsers use <button>) */
+.yui-skin-sam .xforms-noscript .yui-button input {
+    color: #000000;
+    font-size: 93%;
+    line-height: 2;
+    min-height: 2em;
+    padding: 0 10px;
+
+    background-color: transparent;
+    cursor: pointer;
+    border: medium none;
+    display: block;
+    margin: 0;
+}
+
+.fr-explanation .xforms-output {
+    display: block;
+    font-style: italic;
+    padding: 1em;
+    background-color: #f8f8f8
+}
+
+.xforms-alert-active {
+    font-weight: bold;
+    font-size: smaller;
+    background-color: #DF731B;
+    color: white;
+    border-radius: 3px; -moz-border-radius: 2px; -webkit-border-radius: 3px; -ms-border-radius: 2px /* radius appears differently w/ Safari 3.1 vs. Firefox 3.0b4*/
+}
+
+.xforms-hint {
+    display: block;
+    clear: both;
+    font-size: smaller;
+    margin-top: .2em;
+    margin-left: 0;/* used to have margin here but with new colors no margin seems better */
+    width: 100%;
+    color: #6E6E6E;
+    font-style: italic
+}
+
+.xforms-label {
+    /* bold seems too much in general*/
+}
+
+.xforms-noscript .xforms-help-panel .xforms-help-group { list-style-type: square }
+
+/* Metadata */
+.fr-header { margin-top: .5em }
+.fr-logo { display: block; float: left }
+.fr-language-choice, .fr-noscript-choice, .fr-goto-content, .fr-doc-links { color: gray; font-size: 85%; float: right; margin-top: .2em; text-align: right }
+.fr-language-choice a, .fr-noscript-choice a, .fr-goto-content a, .fr-doc-links a { color: #6E6E6E }
+.fr-goto-content { border: 2px solid #888888; padding: .5em; float: left; margin-left: 1em }
+
+/* Make button appear the same color as a link */
+.xforms-trigger-appearance-xxforms-minimal, .xforms-trigger-appearance-xxforms-minimal button {
+    color: #6E6E6E;
+}
+
+/* But force minimal buttons color within heading */
+h1 .xforms-trigger-appearance-xxforms-minimal, h2 .xforms-trigger-appearance-xxforms-minimal, h3 .xforms-trigger-appearance-xxforms-minimal {
+    color: #004B92;
+}
+
+/* Set input/textarea controls background */
+.xforms-input input, textarea.xforms-textarea, input.xforms-secret, .xforms-textarea textarea, .xforms-secret input, .xbl-component .xbl-html-input {
+    background-image: url(field.png);
+    background-repeat: repeat-x;
+    border: 1px solid #ccc;
+}
+
+/* Colored border for invalid fields */
+/* NOTE: style required-empty as well to show user which are the required fields */
+.xforms-invalid-visited .xforms-input-input, textarea.xforms-invalid-visited,
+    .xforms-required-empty .xforms-input-input, textarea.xforms-required-empty,
+        input.xforms-required-empty, .xforms-required-empty input
+        { border-color: #DF731B }
+
+/* Upload control information */
+.xforms-upload-info { background-color: transparent }
+
+/* Metadata */
+.fr-top {
+    background: url("../../../ops/yui/assets/skins/sam/sprite.png") repeat-x scroll left -1400px;
+    padding: .5em;
+}
+.fr-separator {
+    /*background-color: #004B92;*/
+    background-color: #004B92;
+}
+.fr-top .fr-form-title, .fr-top .fr-form-description {
+    color: white;
+}
+
+.fr-top .fr-form-title {
+}
+
+.fr-top .fr-form-description {
+    font-size: smaller;
+    font-style: italic;
+}
+
+/* Table of contents */
+.fr-toc { color: #004B92; padding: 0 1em 0 1em }
+
+/* Error summary */
+.xbl-fr-error-summary .fr-error-title {
+    font-size: smaller;
+    font-weight: bold;
+    background-color: #DF731B;
+    color: white;
+    border-radius: 3px; -moz-border-radius: 2px; -webkit-border-radius: 3px; -ms-border-radius: 2px /* radius appears differently w/ Safari 3.1 vs. Firefox 3.0b4*/
+}
+.xbl-fr-error-summary .fr-error-label, .xbl-fr-error-summary .fr-error-row { font-weight: bold }
+.xbl-fr-error-summary .fr-error-alert { color: #DF731B }
+
+/* Section title */
+.fr-section-title, .fr-section-title .xforms-label { font-weight: normal }
+
+/* Add background to static read-only fields and special output fields */
+.xforms-static, .fr-static { background-color: #EEE; min-height: 1em }
+
+/* Messages area */
+.fr-messages {
+    display: block;
+    clear: both;
+    padding: 1em;
+    margin-bottom: 1em;
+    background-color: white;
+    border: 1px solid #DDDDDD;
+}
+
+.fr-messages p {
+    margin: 0;
+}
+
+.fr-messages .fr-message-fatal-error { text-align: center; color: red }
+.fr-messages .fr-message-validation-error { text-align: center; color: #DF731B }
+.fr-messages .fr-message-success { text-align: center; color: green }
+
+.fr-messages p a { color: white }
+
+/* ***** Print and PDF ********************************************************************************************** */
+
+/* This is also used for PDF generation */
+@media print {
+    html, html body { background-color: white; background-image: none }
+    .fr-separator { background-color: black; height: 2px }
+    h1, h2, h3 { color: black }
+    a, .xforms-trigger-appearance-xxforms-minimal { color: black; text-decoration: none }
+    .fr-top .fr-form-title, .fr-toc { color: black }
+    .fr-section-container div.fr-collapsible { color: black }
+    .fr-container { border: none }
+    .fr-top, .fr-bottom { background: none }
+}

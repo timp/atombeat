@@ -1,0 +1,146 @@
+<!--
+  Copyright (C) 2010 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xbl:xbl xmlns:xhtml="http://www.w3.org/1999/xhtml"
+         xmlns:xforms="http://www.w3.org/2002/xforms"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:ev="http://www.w3.org/2001/xml-events"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+         xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+         xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+         xmlns:saxon="http://saxon.sf.net/"
+         xmlns:xbl="http://www.w3.org/ns/xbl"
+         xmlns:xxbl="http://orbeon.org/oxf/xml/xbl"
+         xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+         xmlns:oxf="http://www.orbeon.com/oxf/processors">
+
+    <xbl:script src="/xbl/orbeon/autocomplete/autocomplete.js"/>
+    <xbl:script src="/ops/yui/datasource/datasource.js"/>
+    <xbl:script src="/ops/yui/autocomplete/autocomplete.js"/>
+
+    <xbl:binding id="fr-autocomplete" element="fr|autocomplete">
+        <xbl:resources>
+            <xbl:style src="/ops/yui/autocomplete/assets/skins/sam/autocomplete.css"/>
+            <xbl:style src="/xbl/orbeon/autocomplete/autocomplete.css"/>
+        </xbl:resources>
+        <xbl:handlers>
+            <xbl:handler event="fr-set-label" phase="target">
+                <!--  HACK: Force a refresh so the setvalue will have an effect in the case where the fr-set-value is sent on xforms-ready. -->
+                <!--  This case is tested by the unit test testSetLabelOnXFormsReady, and we'll hopefully soon be able to remove this refresh. -->
+                <xforms:refresh/>
+                <xforms:setvalue ref="textfield-value" value="event('label')"/>
+                <xxforms:script id="arp">YAHOO.xbl.fr.Autocomplete.instance(this).ajaxResponseProcessed();</xxforms:script>
+            </xbl:handler>
+            <xbl:handler event="xforms-focus" phase="target" defaultAction="cancel">
+                <!-- Override default behavior and focus on search input -->
+                <xforms:setfocus control="search"/>
+            </xbl:handler>
+        </xbl:handlers>
+        <xbl:implementation>
+            <!-- Local model -->
+            <xforms:model id="autocomplete-model">
+                <xforms:instance id="autocomplete-instance">
+                    <autocomplete>
+                        <textfield-value/>
+                    </autocomplete>
+                </xforms:instance>
+            </xforms:model>
+        </xbl:implementation>
+        <xbl:template xxbl:transform="oxf:unsafe-xslt">
+            <xsl:transform version="2.0">
+                <xsl:import href="oxf:/oxf/xslt/utils/copy-modes.xsl"/>
+                <xsl:import href="oxf:/oxf/xslt/utils/xbl.xsl"/>
+                <xsl:template match="/*">
+                    <!-- Outer group -->
+                    <xforms:group xxbl:scope="outer" class="fr-autocomplete-container" xbl:attr="model context ref bind">
+                        <xbl:content includes="fr|autocomplete > xforms|label, fr|autocomplete > xforms|help, fr|autocomplete > xforms|hint, fr|autocomplete > xforms|alert"/>
+
+                        <!-- Inner group -->
+                        <xforms:group id="component-inner-group" xxbl:scope="inner">
+
+                            <!-- Variable pointing to external single-node binding -->
+                            <xxforms:variable name="external-value" as="node()?"><xxforms:sequence select="." xxbl:scope="outer"/></xxforms:variable>
+
+                            <!-- Init event -->
+                            <xforms:action id="xf-en" ev:event="xforms-enabled" ev:observer="component-inner-group" ev:target="component-inner-group">
+                                <xxforms:script id="init">YAHOO.xbl.fr.Autocomplete.instance(this).init();</xxforms:script>
+                            </xforms:action>
+
+                            <!-- Configuration -->
+                            <xxforms:variable name="dynamic-itemset" xbl:attr="xbl:text=dynamic-itemset"/>
+                            <xforms:output id="itemset" class="fr-autocomplete-dynamic-itemset" value="$dynamic-itemset" style="display: none"/>
+                            <xsl:copy-of select="xxbl:parameter(., 'max-results-displayed')"/>
+
+                            <!-- Dropdown with value shown by autocomplete -->
+                            <xforms:select1 id="select1" ref="$external-value" class="fr-autocomplete-select1" appearance="minimal" xxforms:encrypt-item-values="false" style="display: none">
+                                <xsl:apply-templates select="xforms:itemset | xforms:item" mode="copy-label"/>
+                                <xsl:apply-templates select="xforms:itemset | xforms:item" mode="copy-value"/>
+                            </xforms:select1>
+                            <!-- Input with external value -->
+                            <xforms:input id="external-value" ref="$external-value" class="fr-autocomplete-external-value" style="display: none"/>
+                            <!-- Bridge so the JS code can notify the XForms code the user typed in the field -->
+                            <xforms:trigger id="value-selected" class="fr-autocomplete-value-selected" style="display: none">
+                                <xforms:label/>
+                            </xforms:trigger>
+                            <!-- Markup with input for the YUI autocomplete -->
+                            <xhtml:div xbl:attr="class style">
+                                <xforms:input id="search" model="autocomplete-model" ref="textfield-value" incremental="true" class="fr-autocomplete-search"  xbl:attr="tabindex accesskey">
+                                    <xforms:action ev:event="xforms-value-changed">
+                                        <!-- If the search value is empty, set the external value to empty as well -->
+                                        <xforms:action if=". = ''">
+                                            <xforms:setvalue ref="$external-value"/>
+                                        </xforms:action>
+                                        <!-- As the user types, dispatch event to notify the external world about the value entered by the user so far -->
+                                        <xforms:action if="$dynamic-itemset = 'true'">
+                                            <xforms:dispatch targetid="fr-autocomplete" name="fr-search-changed">
+                                                <xxforms:context name="fr-search-value" select="."/>
+                                            </xforms:dispatch>
+                                        </xforms:action>
+                                    </xforms:action>
+                                </xforms:input>
+                                <xhtml:div class="fr-autocomplete-yui-div"/>
+                            </xhtml:div>
+
+                            <!-- Stop propagation of all UI events -->
+                            <xforms:action ev:event="#all" ev:propagate="stop"/>
+                        </xforms:group>
+                    </xforms:group>
+                </xsl:template>
+
+                <!-- Add the xxbl:scope="outer" on the xforms:itemset and xforms:item -->
+                <xsl:template match="xforms:itemset | xforms:item" mode="#all">
+                    <xsl:copy>
+                        <xsl:attribute name="xxbl:scope">outer</xsl:attribute>
+                        <xsl:apply-templates select="@* | node()" mode="#current"/>
+                    </xsl:copy>
+                </xsl:template>
+
+                <!-- Don't do anything when the element does not correspond to the mode -->
+                <xsl:template match="xforms:label" mode="copy-value"/>
+                <xsl:template match="xforms:value" mode="copy-label"/>
+
+                <!-- When the element matches the mode, generate the other one -->
+                <xsl:template match="xforms:label" mode="copy-label">
+                    <xsl:copy-of select="."/>
+                    <xforms:value><xsl:copy-of select="@* | node()"/></xforms:value>
+                </xsl:template>
+                <xsl:template match="xforms:value" mode="copy-value">
+                    <xsl:copy-of select="."/>
+                    <xforms:label><xsl:copy-of select="@* | node()"/></xforms:label>
+                </xsl:template>
+            </xsl:transform>
+        </xbl:template>
+    </xbl:binding>
+
+</xbl:xbl>

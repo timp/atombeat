@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2009 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xxforms:dialog xmlns:ev="http://www.w3.org/2001/xml-events"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+        xmlns:xforms="http://www.w3.org/2002/xforms"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+        xmlns:saxon="http://saxon.sf.net/"
+        xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+        id="fr-clear-confirm-dialog" level="modal" close="false" draggable="false" class="fr-dialog">
+    <xforms:label ref="$fr-resources/detail/labels/confirm"/>
+    <xhtml:div>
+        <xhtml:img src="/apps/fr/style/images/pixelmixer/info_64.png" alt="Question" class="fr-dialog-icon"/>
+        <xhtml:div class="fr-dialog-message">
+            <xforms:output value="$fr-resources/detail/messages/clear-confirm-message"/>
+        </xhtml:div>
+    </xhtml:div>
+    <xhtml:div class="fr-dialog-buttons">
+        <xforms:group>
+            <xxforms:hide ev:event="DOMActivate" dialog="fr-clear-confirm-dialog"/>
+            <fr:button>
+                <xforms:label>
+                    <xhtml:img src="/apps/fr/style/clear.gif" alt=""/>
+                    <xhtml:span><xforms:output value="$fr-resources/detail/labels/clear"/></xhtml:span>
+                </xforms:label>
+                <xforms:action ev:event="DOMActivate">
+                    <!-- Restore instance -->
+                    <xforms:dispatch name="fr-clear" targetid="fr-persistence-model"/>
+                    <!-- Perform refresh (fr-clear sets RRR flags already) so that after that we can clear error summary -->
+                    <xforms:refresh/>
+                    <!-- Clear error summary -->
+                    <xforms:dispatch name="fr-unvisit-all" targetid="fr-error-summary-model"/>
+                </xforms:action>
+            </fr:button>
+            <fr:button>
+                <xforms:label>
+                    <xhtml:img src="/apps/fr/style/close.gif" alt=""/>
+                    <xhtml:span><xforms:output value="$fr-resources/detail/labels/cancel"/></xhtml:span>
+                </xforms:label>
+            </fr:button>
+        </xforms:group>
+    </xhtml:div>
+</xxforms:dialog>
