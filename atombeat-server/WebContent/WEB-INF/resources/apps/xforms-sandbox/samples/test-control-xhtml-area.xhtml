@@ -1,0 +1,34 @@
+<xhtml:html xmlns:xforms="http://www.w3.org/2002/xforms"
+        xmlns:f="http://orbeon.org/oxf/xml/formatting"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+        xmlns:widget="http://orbeon.org/oxf/xml/widget"
+        xmlns:ev="http://www.w3.org/2001/xml-events"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema">
+
+    <xhtml:head>
+        <xhtml:title>HTML Editor</xhtml:title>
+        <xforms:model xmlns:xforms="http://www.w3.org/2002/xforms" id="main">
+            <xforms:instance>
+                <gaga>Some &lt;b>text&lt;/b> here</gaga>
+            </xforms:instance>
+        </xforms:model>
+        <xhtml:link type="text/css" rel="stylesheet" href="/ops/yui/logger/assets/logger.css"/>
+        <xhtml:script type="text/javascript" src="/ops/yui/logger/logger.js"/>
+        <xhtml:script type="text/javascript" src="/ops/yui/yuitest/yuitest.js"/>
+        <xhtml:script type="text/javascript" src="/apps/xforms-sandbox/samples/test-control-xhtml-area.js"/>
+    </xhtml:head>
+    <xhtml:body>
+        <xforms:trigger>
+            <xforms:label>Add "42"</xforms:label>
+            <xforms:setvalue ev:event="DOMActivate" ref="/gaga" value="concat(., '42')"/>
+        </xforms:trigger>
+        <xhtml:h2>text/html texarea</xhtml:h2>
+        <xhtml:div>
+            <xforms:textarea id="xhtml-editor" mediatype="text/html" ref="/gaga">
+                <xforms:help>gaga</xforms:help>
+            </xforms:textarea>
+            <xforms:textarea ref="/gaga" id="xhtml-textarea"/>
+        </xhtml:div>
+    </xhtml:body>
+</xhtml:html>
