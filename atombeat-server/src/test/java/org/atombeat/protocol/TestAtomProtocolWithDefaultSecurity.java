@@ -34,7 +34,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 
 		// need to run install script once for example setup
 		
-		String installUrl = "http://localhost:8081/atombeat/atombeat/admin/install-example.xql";
+		String installUrl = BASE_URI + "admin/install-example.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		

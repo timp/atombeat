@@ -399,12 +399,10 @@
     </servlet>-->
     <!-- End SQL examples -->
     
-    <!--
     <servlet-mapping>
         <servlet-name>orbeon-main-servlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
-    -->
     
     <servlet-mapping>
         <servlet-name>orbeon-xforms-server-servlet</servlet-name>

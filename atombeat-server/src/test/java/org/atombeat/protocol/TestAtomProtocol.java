@@ -33,6 +33,22 @@ public class TestAtomProtocol extends TestCase {
 
 	
 	
+	public TestAtomProtocol() {
+
+		// need to run install once to ensure default global acl is stored
+		
+		String installUrl = BASE_URI + "admin/install-example.xql";
+		
+		GetMethod method = new GetMethod(installUrl);
+		
+		int result = executeMethod(method, "adam", "test");
+		
+		if (result != 200) {
+			throw new RuntimeException("installation failed: "+result);
+		}
+
+	}
+	
 
 	
 	protected void setUp() throws Exception {
