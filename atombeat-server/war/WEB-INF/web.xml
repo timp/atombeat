@@ -1,20 +1,102 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app version="2.4" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee">
-    <display-name>Orbeon Forms
-                dev-post-3.7.1.201003310813</display-name>
-    <description>
-                Orbeon Forms is an open source, standard-based web forms solution, which
-                includes Form Builder, a WYSIWYG browser-based authoring tool, and Form
-                Runner, a runtime environment which facilitates the deployment and
-                integration of a large number of complex forms. Orbeon Forms implements
-                different technologies, such as XForms and Ajax, with no need for
-                client-side software or plug-ins.
-            </description>
+<web-app 
+    version="2.4" 
+    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" 
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee">
+    
+    
+    
+    <display-name>AtomBeat Server</display-name>
+    
+    <description>An Atom Protocol server and web application based on eXist and Orbeon.</description>
+    
+    
+    
+    <!--+
+        |
+        | HTTP Method Override Filter
+        | ***************************
+        |
+        | (N.B. put this before spring security, so security is applied to value of
+        | method override if given)
+        |
+        +-->
+    
+    
+    <filter>
+        <filter-name>HttpMethodOverrideFilter</filter-name>
+        <filter-class>org.atombeat.http.HttpMethodOverrideFilter</filter-class>
+        <init-param>
+            <param-name>allowedOverrides</param-name>
+            <param-value>PUT DELETE</param-value>
+        </init-param>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>HttpMethodOverrideFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    <!--+
+        | Spring Security Configuration
+        | *****************************
+        | 
+        +-->
+    
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            WEB-INF/security-example.xml
+        </param-value>
+    </context-param>
+    
+    
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+    
+    <!-- store username in request attribute so it can be accessed easily in xqueries -->
+    
+    <filter>
+        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+        <filter-class>org.atombeat.http.SpringSecuritySetUserRequestAttributesFilter</filter-class>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    
+    <!--+
+        | Orbeon Forms Configuration
+        | *****************************
+        | 
+        +-->
+    
     <!--Initialize main resource manager-->
     <context-param>
         <param-name>oxf.resources.factory</param-name>
         <param-value>org.orbeon.oxf.resources.PriorityResourceManagerFactory</param-value>
     </context-param>
+    
     <!-- Uncomment this for the filesystem resource manager -->
     <!--
     <context-param>
@@ -46,6 +128,7 @@
         <param-value>org.orbeon.oxf.resources.ClassLoaderResourceManagerFactory</param-value>
     </context-param>-->
     <!-- End filesystem resource manager -->
+    
     <!-- Uncomment this for the webapp resource manager -->
     <context-param>
         <param-name>oxf.resources.priority.1</param-name>
@@ -60,6 +143,7 @@
         <param-value>org.orbeon.oxf.resources.ClassLoaderResourceManagerFactory</param-value>
     </context-param>
     <!-- End webapp resource manager -->
+    
     <!--Orbeon Class Loader-->
     <context-param>
         <param-name>oxf.classloader.enable</param-name>
@@ -69,17 +153,21 @@
         <param-name>oxf.classloader.ignore-packages</param-name>
         <param-value>java. javax. org.apache.log4j. org.xml. org.w3c.</param-value>
     </context-param>
+    
     <!--Set location of properties.xml (read by resource manager)-->
     <context-param>
         <param-name>oxf.properties</param-name>
         <param-value>oxf:/config/properties.xml</param-value>
     </context-param>
+    
     <!--Determine whether logging initialization must take place-->
     <context-param>
         <param-name>oxf.initialize-logging</param-name>
         <param-value>true</param-value>
     </context-param>
+    
     <!--Set context listener processors-->
+    
     <!-- Uncomment this for the context listener processors -->
     <!--
     <context-param>
@@ -99,7 +187,9 @@
         <param-value>oxf:/apps/context/context-destroyed.xpl</param-value>
     </context-param>-->
     <!-- End context listener processors -->
+    
     <!--Set session listener processors-->
+    
     <!-- Uncomment this for the session listener processors -->
     <!--
     <context-param>
@@ -119,6 +209,7 @@
         <param-value>oxf:/apps/context/session-destroyed.xpl</param-value>
     </context-param>-->
     <!-- End session listener processors -->
+    
     <!--All JSP files under /xforms-jsp go through the XForms filter-->
     <filter>
         <filter-name>orbeon-xforms-filter</filter-name>
@@ -138,14 +229,17 @@
         <dispatcher>REQUEST</dispatcher>
         <dispatcher>FORWARD</dispatcher>
     </filter-mapping>
+    
     <!--Set context listener-->
     <listener>
         <listener-class>org.orbeon.oxf.webapp.OrbeonServletContextListenerDelegate</listener-class>
     </listener>
+    
     <!--Set session listener-->
     <listener>
         <listener-class>org.orbeon.oxf.webapp.OrbeonSessionListenerDelegate</listener-class>
     </listener>
+    
     <!--This is the main Orbeon Forms servlet-->
     <servlet>
         <servlet-name>orbeon-main-servlet</servlet-name>
@@ -195,6 +289,7 @@
         <!-- End servlet listener processors -->
         <load-on-startup>1</load-on-startup>
     </servlet>
+    
     <!--This is the XForms Server servlet-->
     <servlet>
         <servlet-name>orbeon-xforms-server-servlet</servlet-name>
@@ -219,6 +314,7 @@
         </init-param>
         <load-on-startup>1</load-on-startup>
     </servlet>
+    
     <!--This is the XForms Renderer servlet, used to deploy Orbeon Forms as a separate WAR-->
     <servlet>
         <servlet-name>orbeon-renderer-servlet</servlet-name>
@@ -242,15 +338,18 @@
             <param-value>oxf:/config/error.xpl</param-value>
         </init-param>
     </servlet>
+    
     <servlet>
         <servlet-name>display-chart-servlet</servlet-name>
         <servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
         <load-on-startup>2</load-on-startup>
     </servlet>
+    
     <servlet>
         <servlet-name>exist-xmlrpc-servlet</servlet-name>
         <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
     </servlet>
+    
     <servlet>
         <servlet-name>exist-rest-servlet</servlet-name>
         <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
@@ -268,6 +367,7 @@
         </init-param>
         <load-on-startup>2</load-on-startup>
     </servlet>
+    
     <servlet>
         <servlet-name>exist-webdav-servlet</servlet-name>
         <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
@@ -276,6 +376,7 @@
             <param-value>basic</param-value>
         </init-param>
     </servlet>
+    
     <servlet>
         <servlet-name>exist-atom-servlet</servlet-name>
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
@@ -284,6 +385,7 @@
             <param-value>basic</param-value>
         </init-param>
     </servlet>
+    
     <!-- Uncomment this for the SQL examples -->
     <!--
     <servlet>
@@ -296,34 +398,42 @@
         <load-on-startup>4</load-on-startup>
     </servlet>-->
     <!-- End SQL examples -->
+    
     <servlet-mapping>
         <servlet-name>orbeon-main-servlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>orbeon-xforms-server-servlet</servlet-name>
         <url-pattern>/xforms-server/*</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>orbeon-renderer-servlet</servlet-name>
         <url-pattern>/xforms-renderer</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>exist-xmlrpc-servlet</servlet-name>
         <url-pattern>/exist/xmlrpc</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>exist-rest-servlet</servlet-name>
         <url-pattern>/exist/rest/*</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>exist-webdav-servlet</servlet-name>
         <url-pattern>/exist/webdav/*</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>exist-atom-servlet</servlet-name>
         <url-pattern>/exist/atom/*</url-pattern>
     </servlet-mapping>
+    
     <!-- Uncomment this for the SQL examples -->
     <!--
     <servlet-mapping>
@@ -331,10 +441,12 @@
         <url-pattern>/db</url-pattern>
     </servlet-mapping>-->
     <!-- End SQL examples -->
+    
     <servlet-mapping>
         <servlet-name>display-chart-servlet</servlet-name>
         <url-pattern>/chartDisplay</url-pattern>
     </servlet-mapping>
+    
     <!-- Uncomment this for the SQL examples -->
     <!--
     <resource-ref>
@@ -344,6 +456,7 @@
         <res-auth>Container</res-auth>
     </resource-ref>-->
     <!-- End SQL examples -->
+    
     <!-- Uncomment this for the authentication example -->
     <!--
     <security-constraint>
@@ -366,7 +479,9 @@
         <role-name>orbeon-admin</role-name>
     </security-role>-->
     <!-- End authentication example -->
+    
     <session-config>
         <session-timeout>720</session-timeout>
     </session-config>
+    
 </web-app>
