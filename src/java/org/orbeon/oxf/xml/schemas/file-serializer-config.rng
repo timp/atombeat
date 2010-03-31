@@ -1,0 +1,152 @@
+<!--
+    Copyright (C) 2004 Orbeon, Inc.
+  
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+  
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+  
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<element name="config" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes"
+        xmlns="http://relaxng.org/ns/structure/1.0">
+    <interleave>
+        <choice>
+            <interleave>
+                <element name="file">
+                    <data type="string"/>
+                </element>
+                <optional>
+                    <element name="directory">
+                        <data type="string"/>
+                    </element>
+                </optional>
+                <optional>
+                    <element name="append">
+                        <data type="boolean"/>
+                    </element>
+                </optional>
+                <optional>
+                    <element name="make-directories">
+                        <data type="boolean"/>
+                    </element>
+                </optional>
+            </interleave>
+            <choice>
+                <interleave>
+                    <!-- For request and application, proxy-result cannot be true -->
+                    <element name="scope">
+                        <choice>
+                            <value>request</value>
+                            <value>application</value>
+                        </choice>
+                    </element>
+                    <optional>
+                        <element name="proxy-result">
+                            <value>false</value>
+                        </element>
+                    </optional>
+                </interleave>
+                <interleave>
+                    <!-- For session, proxy-result may be true -->
+                    <element name="scope">
+                        <choice>
+                            <value>session</value>
+                        </choice>
+                    </element>
+                    <optional>
+                        <element name="proxy-result">
+                            <choice>
+                                <value>true</value>
+                                <value>false</value>
+                            </choice>
+                        </element>
+                    </optional>
+                </interleave>
+            </choice>
+        </choice>
+        <optional>
+            <element name="content-type">
+                <data type="string"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="force-content-type">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="ignore-document-content-type">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="encoding">
+                <data type="string"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="force-encoding">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="ignore-document-encoding">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="cache-control">
+                <optional>
+                    <element name="use-local-cache">
+                        <choice>
+                            <value>true</value>
+                            <value>false</value>
+                        </choice>
+                    </element>
+                </optional>
+            </element>
+        </optional>
+
+        <!-- All the options below are only valid for the deprecated legacy File Serializer. They
+        should be removed once backward compatibility is dropped, or put in another schema. -->
+        <optional>
+            <element name="version">
+                <data type="string"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="public-doctype">
+                <data type="string"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="system-doctype">
+                <data type="string"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="omit-xml-declaration">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="standalone">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="indent">
+                <data type="boolean"/>
+            </element>
+        </optional>
+        <optional>
+            <element name="indent-amount">
+                <data type="integer"/>
+            </element>
+        </optional>
+    </interleave>
+</element>

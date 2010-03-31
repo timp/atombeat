@@ -1,0 +1,431 @@
+<!--
+  Copyright (C) 2010 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<grammar datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes"
+         xmlns="http://relaxng.org/ns/structure/1.0"
+         xmlns:xforms="http://www.w3.org/2002/xforms"
+         xmlns:xxforms="http://orbeon.org/oxf/xml/xforms">
+
+    <include href="xforms-server-common.rng"/>
+
+    <start>
+        <element name="xxforms:event-response">
+            <optional>
+                <element name="xxforms:static-state">
+                    <attribute name="container-type">
+                        <choice>
+                            <value>servlet</value>
+                            <value>portlet</value>
+                        </choice>
+                    </attribute>
+                    <data type="string"/>
+                </element>
+            </optional>
+            <optional>
+                <!-- Dynamic state must be sent if there are actions, otherwise content is optional -->
+                <element name="xxforms:dynamic-state">
+                    <data type="string"/>
+                </element>
+                <element name="xxforms:action">
+                    <optional>
+                        <element name="xxforms:control-values">
+                            <zeroOrMore>
+                                <choice>
+                                    <element name="xxforms:control">
+                                        <attribute name="id">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <optional>
+                                            <attribute name="hint"/>
+                                        </optional>
+                                        <optional>
+                                            <attribute name="alert"/>
+                                        </optional>
+                                        <optional>
+                                            <attribute name="label"/>
+                                        </optional>
+                                        <optional>
+                                            <attribute name="help"/>
+                                        </optional>
+                                        <!-- Optional attributes for all controls -->
+                                        <optional>
+                                            <attribute name="style"/>
+                                        </optional>
+                                        <optional>
+                                            <!-- This attribute is a space-separate list of attributes names prefixed with either '-' or an optional '+' -->
+                                            <attribute name="class"/>
+                                        </optional>
+                                        <choice>
+                                            <!-- Optional attributes for xforms:output -->
+                                            <group>
+                                                <optional>
+                                                    <attribute name="mediatype"/>
+                                                </optional>
+                                            </group>
+                                            <!-- Optional attributes for xforms:upload -->
+                                            <group>
+                                                <optional>
+                                                    <attribute name="mediatype"/>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="state">
+                                                        <choice>
+                                                            <value>empty</value>
+                                                            <value>file</value>
+                                                        </choice>
+                                                    </attribute>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="size">
+                                                        <optional>
+                                                            <data type="nonNegativeInteger"/>
+                                                        </optional>
+                                                    </attribute>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="filename"/>
+                                                </optional>
+                                            </group>
+                                            <!-- Optional attributes for xforms:input -->
+                                            <group>
+                                                <optional>
+                                                    <attribute name="size">
+                                                        <optional>
+                                                            <data type="nonNegativeInteger"/>
+                                                        </optional>
+                                                    </attribute>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="maxlength">
+                                                        <optional>
+                                                            <data type="nonNegativeInteger"/>
+                                                        </optional>
+                                                    </attribute>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="autocomplete">
+                                                        <choice>
+                                                            <value>on</value>
+                                                            <value>off</value>
+                                                        </choice>
+                                                    </attribute>
+                                                </optional>
+                                            </group>
+                                            <!-- Optional attributes for xforms:textarea -->
+                                            <group>
+                                                <optional>
+                                                    <attribute name="maxlength">
+                                                        <optional>
+                                                            <data type="nonNegativeInteger"/>
+                                                        </optional>
+                                                    </attribute>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="cols">
+                                                        <optional>
+                                                            <data type="nonNegativeInteger"/>
+                                                        </optional>
+                                                    </attribute>
+                                                </optional>
+                                                <optional>
+                                                    <attribute name="rows">
+                                                        <optional>
+                                                            <data type="nonNegativeInteger"/>
+                                                        </optional>
+                                                    </attribute>
+                                                </optional>
+                                            </group>
+                                            <!-- Other controls -->
+                                            <empty/>
+                                        </choice>
+                                        <ref name="model-item-properties"/>
+                                        <optional>
+                                            <attribute name="static">
+                                                <choice>
+                                                    <value>true</value>
+                                                    <value>false</value>
+                                                </choice>
+                                            </attribute>
+                                        </optional>
+                                        <optional>
+                                            <data type="string"/>
+                                        </optional>
+                                    </element>
+                                    <!-- For selection controls only -->
+                                    <element name="xxforms:itemset">
+                                        <attribute name="id"/>
+                                        <data type="string"/>
+                                    </element>
+                                    <!-- For switch/case and dialog only -->
+                                    <element name="xxforms:div">
+                                        <attribute name="id"/>
+                                        <attribute name="visibility">
+                                            <choice>
+                                                <value>hidden</value>
+                                                <value>visible</value>
+                                            </choice>
+                                        </attribute>
+                                        <!-- For dialog positioning -->
+                                        <optional>
+                                            <attribute name="neighbor"/>
+                                        </optional>
+                                        <!-- For dialog constraining to viewport -->
+                                        <optional>
+                                            <attribute name="constrain">
+                                                <data type="boolean"/>
+                                            </attribute>
+                                        </optional>
+                                    </element>
+                                    <element name="xxforms:attribute">
+                                        <attribute name="id"/>
+                                        <attribute name="name"/>
+                                        <attribute name="for"/>
+                                        <optional>
+                                            <data type="string"/>
+                                        </optional>
+                                    </element>
+                                    <element name="xxforms:text">
+                                        <attribute name="id"/>
+                                        <attribute name="for"/>
+                                        <optional>
+                                            <data type="string"/>
+                                        </optional>
+                                    </element>
+                                    <element name="xxforms:copy-repeat-template">
+                                        <attribute name="id">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <attribute name="parent-indexes">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <choice>
+                                            <attribute name="id-suffix">
+                                                <data type="string"/>
+                                            </attribute>
+                                            <group>
+                                                <attribute name="start-suffix">
+                                                    <data type="string"/>
+                                                </attribute>
+                                                <attribute name="end-suffix">
+                                                    <data type="string"/>
+                                                </attribute>
+                                            </group>
+                                        </choice>
+                                    </element>
+                                    <element name="xxforms:delete-repeat-elements">
+                                        <attribute name="id">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <attribute name="parent-indexes">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <attribute name="count">
+                                            <data type="positiveInteger"/>
+                                        </attribute>
+                                    </element>
+                                    <!-- For repeat iterations only -->
+                                    <element name="xxforms:repeat-iteration">
+                                        <attribute name="id">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <attribute name="iteration">
+                                            <data type="positiveInteger"/>
+                                        </attribute>
+                                        <ref name="model-item-properties"/>
+                                    </element>
+                                    <!-- Inner HTML for an entire control -->
+                                    <element name="xxforms:inner-html">
+                                        <attribute name="id">
+                                            <data type="string"/>
+                                        </attribute>
+                                        <data type="string"/>
+                                    </element>
+                                </choice>
+                            </zeroOrMore>
+                        </element>
+                    </optional>
+                    <optional>
+                        <element name="xxforms:repeat-indexes">
+                            <zeroOrMore>
+                                <element name="xxforms:repeat-index">
+                                    <attribute name="id"/>
+                                    <attribute name="old-index">
+                                        <data type="nonNegativeInteger"/>
+                                    </attribute>
+                                    <attribute name="new-index">
+                                        <data type="nonNegativeInteger"/>
+                                    </attribute>
+                                </element>
+                            </zeroOrMore>
+                        </element>
+                    </optional>
+                    <!-- Allow for zero or more in case there are multiple delays -->
+                    <zeroOrMore>
+                        <element name="xxforms:server-events">
+                            <!-- Optional delay after which the client must send the event -->
+                            <optional>
+                                <attribute name="delay"/>
+                            </optional>
+                            <!-- If discardable="true", the client can discard the event if another Ajax request is sent before the delay expires -->
+                            <optional>
+                                <attribute name="discardable">
+                                    <choice>
+                                        <value>true</value>
+                                        <value>false</value>
+                                    </choice>
+                                </attribute>
+                            </optional>
+                            <optional>
+                                <attribute name="show-progress">
+                                    <choice>
+                                        <value>true</value>
+                                        <value>false</value>
+                                    </choice>
+                                </attribute>
+                                <optional>
+                                    <attribute name="progress-message"/>
+                                </optional>
+                            </optional>
+                            <!-- Encoded server event(s) -->
+                            <data type="string"/>
+                        </element>
+                    </zeroOrMore>
+                    <optional>
+                        <element name="xxforms:submission">
+                            <optional>
+                                <attribute name="action"/>
+                            </optional>
+                            <attribute name="method"/>
+                            <attribute name="replace">
+                                <choice>
+                                    <value>all</value>
+                                    <value>instance</value>
+                                    <value>none</value>
+                                </choice>
+                            </attribute>
+                            <optional>
+                                <attribute name="show-progress">
+                                    <choice>
+                                        <value>true</value>
+                                        <value>false</value>
+                                    </choice>
+                                </attribute>
+                            </optional>
+                            <optional>
+                                <attribute name="target"/>
+                            </optional>
+                        </element>
+                    </optional>
+                    <zeroOrMore>
+                        <element name="xxforms:message">
+                            <attribute name="level"/>
+                            <data type="string"/>
+                        </element>
+                    </zeroOrMore>
+                    <zeroOrMore>
+                        <element name="xxforms:load">
+                            <attribute name="resource"/>
+                            <attribute name="show">
+                                <choice>
+                                    <value>replace</value>
+                                    <value>new</value>
+                                </choice>
+                            </attribute>
+                            <optional>
+                                <attribute name="target"/>
+                            </optional>
+                            <optional>
+                                <attribute name="show-progress">
+                                    <choice>
+                                        <value>true</value>
+                                        <value>false</value>
+                                    </choice>
+                                </attribute>
+                            </optional>
+                        </element>
+                    </zeroOrMore>
+                    <zeroOrMore>
+                        <element name="xxforms:script">
+                            <attribute name="name"/>
+                            <attribute name="target-id"/>
+                            <attribute name="observer-id"/>
+                        </element>
+                    </zeroOrMore>
+                    <optional>
+                        <element name="xxforms:setfocus">
+                            <attribute name="control-id"/>
+                        </element>
+                    </optional>
+                    <optional>
+                        <element name="xxforms:help">
+                            <attribute name="control-id"/>
+                        </element>
+                    </optional>
+                    <optional>
+                        <element name="xxforms:offline">
+                            <optional><!-- Is not present when going offline in response to a request to going online, see XFormsServer.java -->
+                                <element name="xxforms:events">
+                                    <!-- Contains serialized form of all events to replay up to this response -->
+                                    <data type="string"/>
+                                </element>
+                                <element name="xxforms:mappings">
+                                    <!-- Contains mips and variable mappings for offline binds -->
+                                    <data type="string"/>
+                                </element>
+                            </optional>
+                        </element>
+                    </optional>
+                </element>
+            </optional>
+        </element>
+    </start>
+
+    <define name="model-item-properties">
+        <optional>
+            <attribute name="readonly">
+                <choice>
+                    <value>true</value>
+                    <value>false</value>
+                </choice>
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="required">
+                <choice>
+                    <value>true</value>
+                    <value>false</value>
+                </choice>
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="relevant">
+                <choice>
+                    <value>true</value>
+                    <value>false</value>
+                </choice>
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="valid">
+                <choice>
+                    <value>true</value>
+                    <value>false</value>
+                </choice>
+            </attribute>
+        </optional>
+        <optional>
+            <attribute name="type"/>
+        </optional>
+    </define>
+
+</grammar>

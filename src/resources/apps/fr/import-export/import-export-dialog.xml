@@ -1,0 +1,19 @@
+<xxforms:dialog id="fr-download-save-dialog" level="modal" close="true" draggable="false" class="fr-dialog"
+        xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xforms="http://www.w3.org/2002/xforms"
+        xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+        xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+        xmlns:ev="http://www.w3.org/2001/xml-events">
+    <xforms:label ref="$fr-resources/import-export/dialog-title"/>
+    <xforms:output mediatype="text/html" value="saxon:serialize($fr-resources/import-export/dialog-body/*, 'xml')"/>
+    <xhtml:div class="fr-dialog-buttons">
+        <xforms:output mediatype="text/html" value="concat('&lt;a href=&quot;../../../service/import-export/serve?uuid=',
+            xxforms:instance('fr-uuid'), '&amp;filename=',
+            encode-for-uri(concat(xxforms:instance('fr-save-locally-file-name'), '.html')),
+            '&quot; target=&quot;_blank&quot;&gt;', $fr-resources/import-export/link,'&lt;a&gt;')"/>
+    </xhtml:div>
+</xxforms:dialog>

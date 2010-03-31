@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2009 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xbl:xbl xmlns:xhtml="http://www.w3.org/1999/xhtml"
+         xmlns:xforms="http://www.w3.org/2002/xforms"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:ev="http://www.w3.org/2001/xml-events"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+         xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+         xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+         xmlns:saxon="http://saxon.sf.net/"
+         xmlns:xbl="http://www.w3.org/ns/xbl"
+         xmlns:xxbl="http://orbeon.org/oxf/xml/xbl">
+
+    <!--
+        Component to represent a date control based on drop-down menus.
+     -->
+    <xbl:binding id="fr-dropdown-date-binding" element="fr|dropdown-date">
+
+        <!-- Orbeon Form Builder Component Metadata -->
+        <metadata xmlns="http://orbeon.org/oxf/xml/form-builder">
+            <display-name lang="en">Dropdown Date</display-name>
+            <display-name lang="fr">Date avec menu</display-name>
+            <icon lang="en">
+                <small-icon>/ops/images/xforms/calendar.png</small-icon>
+                <large-icon>/ops/images/xforms/calendar.png</large-icon>
+            </icon>
+            <datatype>xforms:date</datatype>
+            <template>
+                 <fr:dropdown-date>
+                     <xforms:label ref=""/>
+                     <xforms:hint ref=""/>
+                     <xforms:help ref=""/>
+                     <xforms:alert ref=""/>
+                </fr:dropdown-date>
+            </template>
+        </metadata>
+
+        <xbl:resources>
+            <xbl:style>
+                .xbl-fr-dropdown-date .fr-component-group select.xforms-select1-appearance-minimal { width: auto }
+            </xbl:style>
+        </xbl:resources>
+        <xbl:implementation>
+            <!-- Local model -->
+            <xforms:model id="date-model">
+                <xforms:instance id="date-instance">
+                    <date>
+                        <year/>
+                        <month/>
+                        <day/>
+                        <is-valid/>
+                    </date>
+                </xforms:instance>
+
+                <!-- Make instance read-only when the form must be read-only -->
+                <xforms:bind nodeset="." readonly="xxforms:instance('fr-parameters-instance')/mode = ('view', 'pdf', 'email')"/>
+
+                <!-- TODO: would need global instances! -->
+                <xforms:instance id="years-itemset">
+                    <years/>
+                </xforms:instance>
+
+                <xforms:instance id="months-itemset">
+                    <months/>
+                </xforms:instance>
+
+                <xforms:instance id="days-itemset">
+                    <days/>
+                </xforms:instance>
+
+                <!-- Initialize itemsets upon initialization -->
+                <xforms:action ev:event="xforms-model-construct-done">
+                    <xforms:action xxforms:iterate="(1970 to year-from-date(current-date()))">
+                        <xxforms:variable name="year" select="." as="xs:string"/>
+                        <xforms:insert context="instance('years-itemset')" origin="xxforms:element('year', $year)"/>
+                    </xforms:action>
+                    <xforms:action xxforms:iterate="(1 to 12)">
+                        <xxforms:variable name="month" select="." as="xs:string"/>
+                        <xforms:insert context="instance('months-itemset')" nodeset="*" origin="xxforms:element('month', $month)"/>
+                    </xforms:action>
+                    <xforms:action xxforms:iterate="(1 to 31)">
+                        <xxforms:variable name="day" select="." as="xs:string"/>
+                        <xforms:insert context="instance('days-itemset')" nodeset="*" origin="xxforms:element('day', $day)"/>
+                    </xforms:action>
+                </xforms:action>
+            </xforms:model>
+        </xbl:implementation>
+        <xbl:template>
+
+            <!-- Local controls -->
+            <xforms:group xbl:attr="model context ref bind" xxbl:scope="outer">
+                <xbl:content includes="xforms|label,xforms|help,xforms|hint,xforms|alert"/>
+
+                <!-- Inner group -->
+                <xforms:group appearance="xxforms:internal" xxbl:scope="inner">
+                    <!-- Variable pointing to external single-node binding -->
+                    <xxforms:variable name="result" as="node()?">
+                        <xxforms:sequence select="." xxbl:scope="outer"/>
+                    </xxforms:variable>
+
+                    <!-- React to update to bound node or control coming into existence -->
+                    <xforms:group ref="$result" appearance="xxforms:internal">
+                        <!-- Only set local values if the bound node is an xs:date -->
+                        <xforms:action ev:event="xforms-value-changed xforms-enabled">
+                            <xforms:action if="$result castable as xs:date">
+                                <xforms:setvalue ref="instance('date-instance')/year" value="year-from-date($result)"/>
+                                <xforms:setvalue ref="instance('date-instance')/month" value="month-from-date($result)"/>
+                                <xforms:setvalue ref="instance('date-instance')/day" value="day-from-date($result)"/>
+                            </xforms:action>
+                            <xforms:action if="not($result castable as xs:date) and normalize-space($result) = ''">
+                                <xforms:setvalue ref="instance('date-instance')/year"/>
+                                <xforms:setvalue ref="instance('date-instance')/month"/>
+                                <xforms:setvalue ref="instance('date-instance')/day"/>
+                            </xforms:action>
+                            <xforms:action if="not($result castable as xs:date) and count(tokenize($result, '-')) ge 3">
+                                <xforms:action xxforms:iterate="tokenize($result, '-')">
+                                    <xxforms:variable name="position" select="position()" as="xs:integer"/>
+                                    <xforms:setvalue ref="instance('date-instance')/*[$position]"
+                                                     value="if (context() castable as xs:integer) then xs:integer(context()) else ''"/>
+                                </xforms:action>
+                            </xforms:action>
+                        </xforms:action>
+                    </xforms:group>
+
+                    <xforms:group class="fr-component-group">
+                        <!-- NOTE: navindex is copied to first field, but need one for second field too! -->
+                        <xforms:select1 ref="year" xbl:attr="navindex navindex=tabindex">
+                            <!--<xforms:label>Year</xforms:label>-->
+                            <xforms:itemset nodeset=".[not(context() = instance('years-itemset')/year)]">
+                                <xforms:label>Year</xforms:label>
+                                <xforms:value/>
+                            </xforms:itemset>
+                            <xforms:itemset nodeset="instance('years-itemset')/year">
+                                <xforms:label ref="."/>
+                                <xforms:value ref="."/>
+                            </xforms:itemset>
+                        </xforms:select1>
+                        <xforms:select1 ref="month">
+                            <!--<xforms:label>Month</xforms:label>-->
+                            <xforms:itemset nodeset=".[not(context() = instance('months-itemset')/month)]">
+                                <xforms:label>Month</xforms:label>
+                                <xforms:value/>
+                            </xforms:itemset>
+                            <xforms:itemset nodeset="instance('months-itemset')/month">
+                                <xforms:label ref="."/>
+                                <xforms:value ref="."/>
+                            </xforms:itemset>
+                        </xforms:select1>
+                        <xforms:select1 ref="day">
+                            <!--<xforms:label>Day</xforms:label>-->
+                            <xforms:itemset nodeset=".[not(context() = instance('days-itemset')/day)]">
+                                <xforms:label>Day</xforms:label>
+                                <xforms:value/>
+                            </xforms:itemset>
+                            <xforms:itemset nodeset="instance('days-itemset')/day">
+                                <xforms:label ref="."/>
+                                <xforms:value ref="."/>
+                            </xforms:itemset>
+                        </xforms:select1>
+
+                        <!-- React to update to local values -->
+                        <xforms:action ev:event="xforms-value-changed">
+                            <xxforms:variable name="c" select="normalize-space(string-join((year, month, day), ''))" as="xs:string"/>
+                            <!-- Blank result -->
+                            <xforms:action if="$c = ''">
+                                <xforms:setvalue ref="is-valid" value="false()"/>
+                                <xforms:setvalue ref="$result"/>
+                            </xforms:action>
+                            <!-- Non-blank result -->
+                            <xforms:action if="$c != ''">
+                                <!-- Compute date parts -->
+                                <xxforms:variable name="y" select="if (year castable as xs:integer) then format-number(xs:integer(year), '0000') else '____'" as="xs:string"/>
+                                <xxforms:variable name="m" select="if (month castable as xs:integer) then format-number(xs:integer(month), '00') else '__'" as="xs:string"/>
+                                <xxforms:variable name="d" select="if (day castable as xs:integer) then format-number(xs:integer(day), '00') else '__'" as="xs:string"/>
+
+                                <!-- Create date string -->
+                                <xxforms:variable name="date-string" select="string-join(($y, $m, $d), '-')" as="xs:string"/>
+
+                                <!-- Set value to format like 2008-02-31 or 0000-12-01 if parts are unknown -->
+                                <xforms:setvalue ref="is-valid" value="$date-string castable as xs:date"/>
+                                <xforms:setvalue ref="$result" value="$date-string"/>
+                            </xforms:action>
+                        </xforms:action>
+                    </xforms:group>
+
+                    <!-- Stop propagation of all UI events -->
+                    <xforms:action ev:event="#all" ev:propagate="stop"/>
+                </xforms:group>
+
+            </xforms:group>
+        </xbl:template>
+    </xbl:binding>
+</xbl:xbl>

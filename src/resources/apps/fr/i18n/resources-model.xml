@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2009 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xforms:model xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xforms="http://www.w3.org/2002/xforms"
+        xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+        xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+        xmlns:ev="http://www.w3.org/2001/xml-events"
+        id="fr-resources-model">
+
+    <!-- Instance containing the current language -->
+    <!-- NOTE: The default language is set during initialization below -->
+    <xforms:instance id="fr-language-instance">
+        <language xmlns=""/>
+    </xforms:instance>
+
+    <!-- Instance containing the default language -->
+    <xforms:instance id="fr-default-language-instance">
+        <language xmlns=""/>
+    </xforms:instance>
+
+    <xxforms:variable name="lang" select="instance('fr-language-instance')"/>
+
+    <!-- Instance containing the Form Runner resources -->
+    <xforms:instance id="fr-fr-resources"><dummy/></xforms:instance>
+    <xforms:submission id="fr-get-fr-resources"
+            serialization="none" method="get"
+            resource="/fr/service/i18n/fr-resources/{xxforms:instance('fr-parameters-instance')/app}/{xxforms:instance('fr-parameters-instance')/form}" 
+            replace="instance" instance="fr-fr-resources" xxforms:readonly="true" xxforms:cache="true"/>
+
+    <!-- Instance containing all the ISO 639-1 languages -->
+    <xforms:instance id="fr-languages-instance" src="oxf:/apps/fr/i18n/languages.xml" xxforms:readonly="true" xxforms:cache="true"/>
+
+    <!-- Copy resources of the selected language, using the first language declared if the no matching language is found -->
+    <xforms:action ev:event="fr-update-language">
+
+        <!-- 1. Explicit: Use language provided as a request parameter if it exists -->
+        <xforms:action if="$lang = ''">
+            <xforms:setvalue ref="$lang" value="xxforms:get-request-parameter('fr-language')"/>
+            <xforms:message if="$lang != ''" level="xxforms:log-debug">Getting language preference from request: <xforms:output value="$lang"/></xforms:message>
+        </xforms:action>
+        <!-- 2. Implicit: Else use language from session if it exists -->
+        <xforms:action if="$lang = ''">
+            <xforms:setvalue ref="$lang" value="xxforms:get-session-attribute('fr-language')"/>
+            <xforms:message if="$lang != ''" level="xxforms:log-debug">Getting language preference from session: <xforms:output value="$lang"/></xforms:message>
+        </xforms:action>
+        <!-- 3. Default: Else use language from property if it exists -->
+        <xforms:action if="$lang = ''">
+            <xforms:setvalue ref="$lang" value="instance('fr-default-language-instance')"/>
+            <xforms:message if="$lang != ''" level="xxforms:log-debug">Getting language preference from property: <xforms:output value="$lang"/></xforms:message>
+        </xforms:action>
+
+        <xxforms:variable name="form-resources" select="xxforms:instance('fr-form-resources')" as="element()?"/>
+        <xforms:action if="exists($form-resources/resource)">
+            <xforms:message level="xxforms:log-debug">Form has resources</xforms:message>
+            <!-- Form has resources -->
+            <xxforms:variable name="missing-resource" select="$lang = '' or not(xs:string($lang) = $form-resources/resource/@xml:lang)" as="xs:boolean"/>
+            <xforms:action if="$missing-resource">
+                <!-- Try first to get default language, or just take first language if default doesn't exist -->
+                <xforms:setvalue ref="$lang" value="$form-resources/(resource[@xml:lang = $lang], resource[1])[1]/@xml:lang"/>
+                <xforms:message level="xxforms:log-debug">Overriding language preference using form resources: <xforms:output value="$lang"/></xforms:message>
+            </xforms:action>
+            <xforms:action if="not($missing-resource)">
+                <xforms:message level="xxforms:log-debug">Using language preference: <xforms:output value="$lang"/></xforms:message>
+            </xforms:action>
+        </xforms:action>
+        <xforms:action if="not(exists($form-resources/resource))">
+            <!-- Form doesn't have resources -->
+            <xforms:message level="xxforms:log-debug">Form doesn't have resources</xforms:message>
+            <xxforms:variable name="missing-resource" select="$lang = '' or not(xs:string($lang) = instance('fr-fr-resources')/resource/@xml:lang)" as="xs:boolean"/>
+            <xforms:action if="$missing-resource">
+                <!-- Try first to get default language, or just take first language if default doesn't exist -->
+                <xforms:setvalue ref="$lang" value="instance('fr-fr-resources')/(resource[@xml:lang = $lang], resource[1])[1]/@xml:lang"/>
+                <xforms:message level="xxforms:log-debug">Overriding language preference using Form Runner resources: <xforms:output value="$lang"/></xforms:message>
+            </xforms:action>
+            <xforms:action if="not($missing-resource)">
+                <xforms:message level="xxforms:log-debug">Using language preference: <xforms:output value="$lang"/></xforms:message>
+            </xforms:action>
+        </xforms:action>
+
+        <!-- Save current language into the session -->
+        <xforms:insert context="." origin="xxforms:set-session-attribute('fr-language', xs:string($lang))"/>
+    </xforms:action>
+
+    <!-- Public variables pointing to current form and Form Runner ressources -->
+    <xxforms:variable name="fr-form-resources" select="xxforms:instance('fr-form-resources')/(resource[@xml:lang = $lang], resource[1])[1]" as="element(resource)?"/>
+    <xxforms:variable name="fr-fr-resources" select="instance('fr-fr-resources')/(resource[@xml:lang = $lang], resource[1])[1]" as="element(resource)?"/>
+
+    <!-- Respond to language change in the UI -->
+    <xforms:action ev:observer="fr-language-selector" ev:event="xforms-value-changed DOMActivate">
+        <xforms:dispatch name="fr-update-language" target="fr-resources-model"/>
+    </xforms:action>
+
+    <!-- Initialize default language -->
+    <xforms:action ev:event="xforms-model-construct-done">
+        <!-- Set default language from property (used above, as well as for UI to show default language first) -->
+        <xforms:setvalue ref="instance('fr-default-language-instance')"
+                         value="xxforms:property(string-join(('oxf.fr.default-language', xxforms:instance('fr-parameters-instance')/app, xxforms:instance('fr-parameters-instance')/form), '.'))"/>
+        <xforms:message level="xxforms:log-debug">Getting default language: <xforms:output value="instance('fr-default-language-instance')"/></xforms:message>
+        <!-- Load all FR resources -->
+        <xforms:send submission="fr-get-fr-resources"/>
+        <!-- Get initial resources for current language (will also save current language into the session) -->
+        <xforms:dispatch name="fr-update-language" target="fr-resources-model"/>
+    </xforms:action>
+
+</xforms:model>

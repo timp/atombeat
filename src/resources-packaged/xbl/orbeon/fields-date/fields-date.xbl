@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2009 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xbl:xbl xmlns:xhtml="http://www.w3.org/1999/xhtml"
+         xmlns:xforms="http://www.w3.org/2002/xforms"
+         xmlns:xs="http://www.w3.org/2001/XMLSchema"
+         xmlns:ev="http://www.w3.org/2001/xml-events"
+         xmlns:xi="http://www.w3.org/2001/XInclude"
+         xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+         xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+         xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+         xmlns:saxon="http://saxon.sf.net/"
+         xmlns:xbl="http://www.w3.org/ns/xbl"
+         xmlns:xxbl="http://orbeon.org/oxf/xml/xbl">
+
+    <!--
+        Component to represent a date control based on separate fields.
+     -->
+    <xbl:binding id="fr-fields-date-binding" element="fr|fields-date">
+
+        <!-- Orbeon Form Builder Component Metadata -->
+        <metadata xmlns="http://orbeon.org/oxf/xml/form-builder">
+            <display-name lang="en">Fields Date</display-name>
+            <display-name lang="fr">Date avec champs</display-name>
+            <icon lang="en">
+                <small-icon>/ops/images/xforms/calendar.png</small-icon>
+                <large-icon>/ops/images/xforms/calendar.png</large-icon>
+            </icon>
+            <datatype>xforms:date</datatype>
+            <template>
+                 <fr:fields-date>
+                     <xforms:label ref=""/>
+                     <xforms:hint ref=""/>
+                     <xforms:help ref=""/>
+                     <xforms:alert ref=""/>
+                </fr:fields-date>
+            </template>
+        </metadata>
+        <xbl:resources>
+            <xbl:style>
+                .xbl-fr-fields-date .xforms-control { display: inline; clear: none }
+                .xbl-fr-fields-date .xforms-group .fr-component-group img { vertical-align: bottom }
+
+                .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-2 input { width: 2em }
+                .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-4 input { width: 4em }
+                <!-- This is not very elegant but we need a strong rule to override the FR defaults -->
+                #doc .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-2 input { width: 2em }
+                #doc .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-4 input { width: 4em }
+                #doc2 .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-2 input { width: 2em }
+                #doc2 .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-4 input { width: 4em }
+                #doc3 .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-2 input { width: 2em }
+                #doc3 .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-4 input { width: 4em }
+                #doc4 .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-2 input { width: 2em }
+                #doc4 .fr-grid .fr-grid-td .fr-grid-content .xbl-fr-fields-date .xforms-group .fr-component-group .fr-width-4 input { width: 4em }
+            </xbl:style>
+        </xbl:resources>
+        <xbl:implementation>
+            <!-- Local model -->
+            <xforms:model id="date-model">
+                <xforms:instance id="date-instance">
+                    <date>
+                        <!-- Individual components of the date -->
+                        <year/>
+                        <month/>
+                        <day/>
+                        <!-- Whether the resulting date is valid -->
+                        <is-valid/>
+                    </date>
+                </xforms:instance>
+                <!-- Set the validity on the whole instance -->
+                <xforms:bind nodeset="." constraint="is-valid = 'true'"/>
+                <!-- Make instance read-only when the form must be read-only -->
+                <xforms:bind nodeset="." readonly="xxforms:instance('fr-parameters-instance')/mode = ('view', 'pdf', 'email')"/>
+            </xforms:model>
+        </xbl:implementation>
+        <xbl:template>
+            <!-- Local controls -->
+            <xforms:group xbl:attr="model context ref bind" xxbl:scope="outer">
+                <xbl:content includes="xforms|label,xforms|help,xforms|hint,xforms|alert"/>
+                
+                <!-- Inner group -->
+                <xforms:group appearance="xxforms:internal" xxbl:scope="inner">
+                    <!-- Variable pointing to external single-node binding -->
+                    <xxforms:variable name="result" as="node()?">
+                        <xxforms:sequence select="." xxbl:scope="outer"/>
+                    </xxforms:variable>
+    
+                    <!-- React to update to bound node or control coming into existence -->
+                    <xforms:group ref="$result" appearance="xxforms:internal">
+                        <!-- Only set local values if the bound node is an xs:date -->
+                        <xforms:action ev:event="xforms-value-changed xforms-enabled">
+                            <xforms:action if="$result castable as xs:date">
+                                <xforms:setvalue ref="instance('date-instance')/year" value="year-from-date($result)"/>
+                                <xforms:setvalue ref="instance('date-instance')/month" value="month-from-date($result)"/>
+                                <xforms:setvalue ref="instance('date-instance')/day" value="day-from-date($result)"/>
+                            </xforms:action>
+                            <xforms:action if="not($result castable as xs:date) and normalize-space($result) = ''">
+                                <xforms:setvalue ref="instance('date-instance')/year"/>
+                                <xforms:setvalue ref="instance('date-instance')/month"/>
+                                <xforms:setvalue ref="instance('date-instance')/day"/>
+                            </xforms:action>
+                            <xforms:action if="not($result castable as xs:date) and count(tokenize($result, '-')) ge 3">
+                                <xforms:action xxforms:iterate="tokenize($result, '-')">
+                                    <xxforms:variable name="position" select="position()" as="xs:integer"/>
+                                    <xforms:setvalue ref="instance('date-instance')/*[$position]"
+                                                     value="if (context() castable as xs:integer) then xs:integer(context()) else ''"/>
+                                </xforms:action>
+                            </xforms:action>
+                        </xforms:action>
+                    </xforms:group>
+    
+                    <xforms:group class="fr-component-group">
+
+                        <!-- NOTE: navindex is copied to first field, but need one for second field too! -->
+                        <xforms:input ref="month" class="fr-width-2" xbl:attr="navindex navindex=tabindex"/>
+                        <xforms:input ref="day" class="fr-width-2"/>
+                        <xforms:input ref="year" class="fr-width-4"/>
+    
+                        <!-- React to update to local values -->
+                        <xforms:action ev:event="xforms-value-changed">
+                            <xxforms:variable name="c" select="normalize-space(string-join((year, month, day), ''))" as="xs:string"/>
+                            <xforms:action if="$c = ''">
+                                <xforms:setvalue ref="is-valid" value="false()"/>
+                                <xforms:setvalue ref="$result"/>
+                            </xforms:action>
+                            <xforms:action if="$c != ''">
+                                <!-- Compute date parts -->
+                                <xxforms:variable name="y" select="if (year castable as xs:integer) then format-number(xs:integer(year), '0000') else '____'" as="xs:string"/>
+                                <xxforms:variable name="m" select="if (month castable as xs:integer) then format-number(xs:integer(month), '00') else '__'" as="xs:string"/>
+                                <xxforms:variable name="d" select="if (day castable as xs:integer) then format-number(xs:integer(day), '00') else '__'" as="xs:string"/>
+
+                                <!-- Create date string -->
+                                <xxforms:variable name="date-string" select="string-join(($y, $m, $d), '-')" as="xs:string"/>
+
+                                <!-- Set value to format like 2008-02-31 or 0000-12-01 if parts are unknown -->
+                                <xforms:setvalue ref="is-valid" value="$date-string castable as xs:date"/>
+                                <xforms:setvalue ref="$result" value="$date-string"/>
+                            </xforms:action>
+                        </xforms:action>
+    
+                        <!-- Date picker -->
+                        <xforms:input ref="$result" appearance="minimal"/>
+                    </xforms:group>
+
+                    <!-- Stop propagation of all UI events -->
+                    <xforms:action ev:event="#all" ev:propagate="stop"/>
+                </xforms:group>
+
+            </xforms:group>
+        </xbl:template>
+    </xbl:binding>
+</xbl:xbl>

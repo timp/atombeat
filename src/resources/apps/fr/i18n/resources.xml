@@ -1,0 +1,485 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright (C) 2010 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<resources>
+    <resource xml:lang="en">
+        <components>
+            <labels>
+                <open-section>Show Section</open-section>
+                <close-section>Hide Section</close-section>
+                <section-name>Section Name</section-name>
+            </labels>
+        </components>
+        <errors>    
+            <summary-title>Your Form Contains the Following Errors</summary-title>
+            <some>Errors on Form</some>
+            <none>No Errors on Form</none>
+            <unsaved>Unsaved Changes</unsaved>
+        </errors>
+        <email>
+            <subject>Orbeon Forms: Confirmation</subject>
+            <body>Please find attached the form in PDF and XML format.</body>
+        </email>
+        <!-- Formats used for PDF template -->
+        <print>
+            <formats>
+                <date>[MNn] [D], [Y]</date>
+                <time>[H01]:[m01]:[s01]</time>
+                <dateTime>[MNn] [D], [Y] [H01]:[m01]:[s01]</dateTime>
+            </formats>
+        </print>
+        <summary>
+            <titles>
+                <summary-title>Summary</summary-title>
+                <row-number>No.</row-number>
+                <created>Created</created>
+                <last-modified>Last Modified</last-modified>
+                <selected>Selected</selected>
+                <refresh>This operation will refresh the page</refresh>
+                <toc>Table of Contents</toc>
+                <help>Help</help>
+                <error-count>Error in Your Form</error-count>
+                <errors-count>Errors in Your Form</errors-count>
+            </titles>
+            <search>
+                <search>Search</search>
+                <search-forms>Search forms</search-forms>
+                <show-options>Show search options</show-options>
+                <close-options>Close search options</close-options>
+                <returned-1>Search returned</returned-1>
+                <returned-2>documents.</returned-2>
+            </search>
+            <paging>
+                <to>to</to>
+                <of>of</of>
+            </paging>
+            <messages>
+                <no-form-found><i>No form data was found.</i></no-form-found>
+            </messages>
+            <labels>
+                <new-form>New</new-form>
+                <import-forms>Import Forms</import-forms>
+                <edit-form>Edit</edit-form>
+                <delete-form>Delete</delete-form>
+                <view-readonly>View HTML</view-readonly>
+                <view-xml>View XML</view-xml>
+                <view-pdf>View PDF</view-pdf>
+                <language-choice>Choose language</language-choice>
+                <form-choice>Choose a Form</form-choice>
+                <free-search>Free Search</free-search>
+                <any>[Any]</any>
+                <previous>Back</previous>
+                <next>Next</next>
+                <script>Full Version</script>
+                <noscript>Accessible Version</noscript>
+                <refresh>Refresh</refresh>
+                <close-box>[close]</close-box>
+                <help-back>Back</help-back>
+                <goto-content>Go to Content</goto-content>
+            </labels>
+            <formats>
+                <date>[MNn] [D], [Y]</date>
+                <time>[H01]:[m01]:[s01]</time>
+                <dateTime>[MNn] [D], [Y] [H01]:[m01]:[s01]</dateTime>
+                <save-datetime>[MNn] [D], [Y] [H01]:[m01]:[s01]</save-datetime>
+            </formats>
+        </summary>
+        <detail>
+            <messages>
+                <save-success>Document saved successfully!</save-success>
+                <form-validation-error>Document not saved: please check for errors in your form before saving again.</form-validation-error>
+                <database-error>Error communicating with the database: please contact your system administrator.</database-error>
+                <clear-confirm-message>Are you sure you want to clear all the fields on this page? Your data will be lost if you haven't saved it.</clear-confirm-message>
+                <submit-dialog-title>Form Submitted</submit-dialog-title>
+                <submit-dialog-message>Your information has been submitted, thank you.</submit-dialog-message>
+                <buttons-message/>
+                <saved-locally-open>Click here to open the document. The information you entered will be displayed on the tool as it was in the moment you saved your work.</saved-locally-open>
+                <buttons-placeholder>Your form's buttons will be placed here</buttons-placeholder>
+            </messages>
+            <labels>
+                <save-document>Save</save-document>
+                <publish>Publish...</publish>
+                <test>Test</test>
+                <save-locally>Save Locally</save-locally>
+                <save-offline>Save Offline</save-offline>
+                <submit-document>Submit</submit-document>
+                <workflow-review>Review</workflow-review>
+                <workflow-edit>Edit</workflow-edit>
+                <workflow-send>Send</workflow-send>
+                <return>Back to Forms</return>
+                <discard>Forget Changes</discard>
+                <language-choice>Language</language-choice>
+                <errors>Summary of errors</errors>
+                <check-errors-in-form>This form contains errors</check-errors-in-form>
+                <error-details>View error details</error-details>
+                <language-choice>Language</language-choice>
+                <close>Close</close>
+                <review>Review</review>
+                <print>Print</print>
+                <print-pdf>PDF</print-pdf>
+                <print-pdf-template>PDF (Template)</print-pdf-template>
+                <clear>Clear</clear>
+                <confirm>Confirm</confirm>
+                <cancel>Cancel</cancel>
+                <offline>Take offline</offline>
+                <online>Take online</online>
+                <alert>Missing or incorrect value</alert>
+                <email>Email</email>
+                <submit-dialog-clear>Clear and close</submit-dialog-clear>
+                <submit-dialog-keep>Keep values and close</submit-dialog-keep>
+                <submit-dialog-go>OK</submit-dialog-go>
+                <submit-dialog-close-window>Close window</submit-dialog-close-window>
+                <collapse-all>Collapse all</collapse-all>
+                <expand-all>Expand all</expand-all>
+            </labels>
+            <view>
+                <explanation>
+                    This is a read-only view of your data.
+                </explanation>
+            </view>
+        </detail>
+        <import-export>
+            <dialog-title>Save</dialog-title>
+            <dialog-body>
+                <div>
+                    <p>
+                        To save the data you entered; click on the link below and save the document on your machine.
+                    </p>
+                    <p>
+                        To reopen the information you entered, double click on the file you saved on your machine and
+                        the tool will automatically retrieve the information entered preciously.
+                    </p>
+                    <p>
+                        <b>Note:</b> No data is kept on the server and if you delete the file you saved your data will
+                        be lost.
+                    </p>
+                </div>
+            </dialog-body>
+            <link>Save</link>
+        </import-export>
+    </resource>
+    <resource xml:lang="fr">
+        <components>
+            <labels>
+                <open-section>Montrer section</open-section>
+                <close-section>Cacher section</close-section>
+                <section-name>Nom de la section</section-name>
+            </labels>
+        </components>
+        <errors>
+            <summary-title>Votre formulaire contient les erreurs suivantes</summary-title>
+            <some>Ce formulaire contient des erreurs</some>
+            <none>Ce formulaire ne contient pas d'erreurs</none>
+            <unsaved>Modifications non enregistrées</unsaved>
+        </errors>
+        <email>
+            <subject>Orbeon Forms: Confirmation</subject>
+            <body>Veuillez trouver en attachement le formulaire au formats XML et PDF.</body>
+        </email>
+        <print>
+            <formats>
+                <date>Le [D] [Mn] [Y]</date>
+                <time>[H01]:[m01]:[s01]</time>
+                <dateTime>Le [D] [Mn] [Y] à [H01]:[m01]:[s01]</dateTime>
+            </formats>
+        </print>
+        <summary>
+            <titles>
+                <summary-title>Sommaire</summary-title>
+                <row-number>No.</row-number>
+                <created>Création</created>
+                <last-modified>Dernière modification</last-modified>
+                <selected>Sélection</selected>
+                <refresh>Cette opération rafraichit la page</refresh>
+                <toc>Table des matières</toc>
+                <help>Aide</help>
+                <error-count>erreur de saisie dans votre formulaire</error-count>
+                <errors-count>erreurs de saisie dans votre formulaire</errors-count>
+            </titles>
+            <search>
+                <search>Recherche</search>
+                <search-forms>Rechercher</search-forms>
+                <show-options>Montrer les options de recherche</show-options>
+                <close-options>Cacher les options de recherche</close-options>
+                <returned-1>La recherche a retourné</returned-1>
+                <returned-2>documents.</returned-2>
+            </search>
+            <paging>
+                <to>à</to>
+                <of>sur</of>
+            </paging>
+            <messages>
+                <no-form-found><i>Aucun formulaire trouvé.</i></no-form-found>
+            </messages>
+            <labels>
+                <new-form>Nouveau</new-form>
+                <import-forms>Importer</import-forms>
+                <edit-form>Editer</edit-form>
+                <delete-form>Supprimer</delete-form>
+                <view-readonly>Vue HTML</view-readonly>
+                <view-xml>Vue XML</view-xml>
+                <view-pdf>Vue PDF</view-pdf>
+                <language-choice>Choix de la langue</language-choice>
+                <form-choice>Choisisez un formulaire</form-choice>
+                <free-search>Recherche libre</free-search>
+                <any>[Tous]</any>
+                <previous>Précédent</previous>
+                <next>Suivant</next>
+                <script>Version complète</script>
+                <noscript>Version accessible</noscript>
+                <refresh>Rafraîchir</refresh>
+                <close-box>[fermer]</close-box>
+                <help-back>Retour</help-back>
+                <goto-content>Aller au contenu</goto-content>
+            </labels>
+            <formats>
+                <date>Le [D] [Mn] [Y]</date>
+                <time>[H01]:[m01]:[s01]</time>
+                <dateTime>[D] [Mn] [Y] à [H01]:[m01]:[s01]</dateTime>
+                <save-datetime>[D] [Mn] [Y] à [H01]:[m01]:[s01]</save-datetime>
+            </formats>
+        </summary>
+        <detail>
+            <messages>
+                <save-success>Document enregistré avec succès!</save-success>
+                <form-validation-error>Document non enregistré: veuillez vérifier que le formulaire ne contienne pas d'erreurs.</form-validation-error>
+                <database-error>Erreur de base de données: veuillez contacter votre administrateur système.</database-error>
+                <clear-confirm-message>Êtes-vous sûr de vouloir effacer tous les champs de cette page? Vos données seront perdues si vous ne les avez pas enregistrées.</clear-confirm-message>
+                <submit-dialog-title>Formulaire envoyé</submit-dialog-title>
+                <submit-dialog-message>Merci, vos informations ont été envoyées.</submit-dialog-message>
+                <buttons-message/>
+                <!-- TODO: check translation -->
+                <saved-locally-open>Cliquer ici pour ouvrir le document. Les informations entrées seront affichées telles qu'elles ont été sauvegardées.</saved-locally-open>
+                <buttons-placeholder>Les boutons de votre formulaire seront placés ici</buttons-placeholder>
+            </messages>
+            <labels>
+                <save-document>Enregistrer</save-document>
+                <publish>Publier...</publish>
+                <test>Tester</test>
+                <save-locally>Enregistrement Local</save-locally>
+                <save-offline>Enregistrement Hors-ligne</save-offline>
+                <submit-document>Envoyer</submit-document>
+                <workflow-review>Valider</workflow-review>
+                <workflow-send>Envoyer</workflow-send>
+                <workflow-edit>Editer</workflow-edit>
+                <return>Retour</return>
+                <discard>Ignorer Changements</discard>
+                <language-choice>Langue</language-choice>
+                <errors>Résumé des erreurs</errors>
+                <check-errors-in-form>Ce formulaire contient des erreurs</check-errors-in-form>
+                <error-details>Détail des erreurs</error-details>
+                <language-choice>Langue</language-choice>
+                <close>Fermer</close>
+                <review>Visualiser</review>
+                <print>Imprimer</print>
+                <print-pdf>PDF</print-pdf>
+                <print-pdf-template>PDF (Template)</print-pdf-template>
+                <clear>Effacer</clear>
+                <confirm>Confirmer</confirm>
+                <cancel>Annuler</cancel>
+                <offline>Or-ligne</offline>
+                <online>En-ligne</online>
+                <alert>Valeur manquante ou incorrecte</alert>
+                <email>Email</email>
+                <submit-dialog-clear>Effacer et fermer</submit-dialog-clear>
+                <submit-dialog-keep>Garder les valeurs et fermer</submit-dialog-keep>
+                <submit-dialog-go>OK</submit-dialog-go>
+                <submit-dialog-close-window>Fermer la fenêtre</submit-dialog-close-window>
+                <collapse-all>Fermer sections</collapse-all>
+                <expand-all>Ouvrir sections</expand-all>
+            </labels>
+            <view>
+                <explanation>
+                    Ceci est une vue en lecture seule de vos données. 
+                </explanation>
+            </view>
+        </detail>
+        <import-export>
+            <dialog-title>[Save]</dialog-title>
+            <dialog-body>
+                <div>
+                    <!-- TODO: i18n -->
+                    <p>
+                        [To save the data you entered; click on the link below and save the document on your machine.
+                    </p>
+                    <p>
+                        To reopen the information you entered, double click on the file you saved on your machine and
+                        the tool will automatically retrieve the information entered preciously.
+                    </p>
+                    <p>
+                        <b>Note:</b> No data is kept on the server and if you delete the file you saved your data will
+                        be lost.]
+                    </p>
+                </div>
+            </dialog-body>
+            <link>Save</link>
+        </import-export>
+    </resource>
+    <resource xml:lang="es">
+        <components>
+            <labels>
+                <open-section>Mostrar sección</open-section>
+                <close-section>Cerrar sección</close-section>
+                <section-name>Nombre de la sección</section-name>
+            </labels>
+        </components>
+        <errors>
+            <summary-title>Su formulario contiene los siguientes errores</summary-title>
+            <some>Errores en el formulario</some>
+            <none>No hay errores en el formulario</none>
+            <unsaved>[Unsaved Changes]</unsaved>
+        </errors>
+        <email>
+            <subject>[Orbeon Forms: Confirmation]</subject>
+            <body>[Please find attached the form in PDF and XML format.]</body>
+        </email>
+        <print>
+            <formats>
+                <date>[MNn] [D], [Y]</date>
+                <time>[H01]:[m01]:[s01]</time>
+                <dateTime>[MNn] [D], [Y] [H01]:[m01]:[s01]</dateTime>
+            </formats>
+        </print>
+        <summary>
+            <titles>
+                <summary-title>Síntesis</summary-title>
+                <row-number>Número</row-number>
+                <created>Creado</created>
+                <last-modified>Fecha de modificación</last-modified>
+                <selected>Seleccionado</selected>
+                <refresh>Este botón actualizará la página</refresh>
+                <toc>Tabla de contenidos</toc>
+                <help>Ayuda</help>
+                <error-count>Errores en su formulario</error-count>
+                <errors-count>Errores en su formulario</errors-count>
+            </titles>
+            <search>
+                <search>Buscar</search>
+                <search-forms>Buscar formulario</search-forms>
+                <show-options>Mostrar opciones de búsqueda</show-options>
+                <close-options>Cerrar opciones de búsqueda</close-options>
+                <returned-1>Resultado de la búsqueda</returned-1>
+                <returned-2>documentos.</returned-2>
+            </search>
+            <paging>
+                <to>al</to>
+                <of>de</of>
+            </paging>
+            <messages>
+                <no-form-found><i>No se encontró el formulario.</i></no-form-found>
+            </messages>
+            <labels>
+                <new-form>Nuevo</new-form><!-- Formulario -->
+                <import-forms>Importar Formulario</import-forms>
+                <edit-form>Editar</edit-form><!-- Formulario -->
+                <delete-form>Eliminar</delete-form><!-- Formulario -->
+                <view-readonly>Ver HTML</view-readonly>
+                <view-xml>Ver XML</view-xml>
+                <view-pdf>Ver PDF</view-pdf>
+                <language-choice>Elegir idioma</language-choice>
+                <form-choice>Eligir un Formulario</form-choice>
+                <free-search>Búsqueda Libre</free-search>
+                <any>Alguna</any>
+                <previous>Anterior</previous>
+                <next>Siguiente</next>
+                <script>Versión Completa</script>
+                <noscript>Versión accesible</noscript>
+                <refresh>Actualizar</refresh>
+                <close-box>Cerrrar</close-box>
+                <help-back>Atrás</help-back>
+                <goto-content>[Go to Content]</goto-content>
+            </labels>
+            <formats>
+                <date>[MNn] [D], [Y]</date>
+                <time>[H01]:[m01]:[s01]</time>
+                <dateTime>[MNn] [D], [Y] [H01]:[m01]:[s01]</dateTime>
+                <save-datetime>[MNn] [D], [Y] [H01]:[m01]:[s01]</save-datetime>
+            </formats>
+        </summary>
+        <detail>
+            <messages>
+                <save-success>Documento guardado correctamente!</save-success>
+                <form-validation-error>Documento no guardado: por favor, compruebe si existen errores en su formulario antes de grabar de nuevo.</form-validation-error>
+                <database-error>Documento no guardado: por favor, contacte al administrador del sistema.</database-error>
+                <clear-confirm-message>¿Está seguro de que desea borrar todos los campos de esta página? Sus datos se perderán si no ha guardado.</clear-confirm-message>
+                <submit-dialog-title>Su formulario ha sido enviado</submit-dialog-title>
+                <submit-dialog-message>Su información ha sido enviada. Gracias</submit-dialog-message>
+                <buttons-message/>
+                <saved-locally-open>Haga clic aquí para abrir el documento. La herramienta recuperará automáticamente la información que usted ingresó al momento de guardar su documento.</saved-locally-open>
+                <buttons-placeholder>Botones del formulario será colocado aquí</buttons-placeholder>
+            </messages>
+            <labels>
+                <save-document>Guardar Documento</save-document>
+                <publish>Publicar...</publish>
+                <test>Probar</test>
+                <save-locally>Guardar en su computador</save-locally>
+                <save-offline>Guardar Sin conexión</save-offline>
+                <submit-document>Enviar</submit-document>
+                <workflow-review>[Review]</workflow-review>
+                <workflow-edit>[Edit]</workflow-edit>
+                <workflow-send>[Send]</workflow-send>
+                <return>Volver al formulario</return>
+                <discard>No guardar los cambios</discard>
+                <language-choice>Idioma</language-choice>
+                <errors>Resumen de errores</errors>
+                <check-errors-in-form>Este formulario contiene errores</check-errors-in-form>
+                <error-details>Ver detalles de error</error-details>
+                <language-choice>Idioma</language-choice>
+                <close>Cerrar</close>
+                <review>[Review]</review>
+                <print>Imprimir</print>
+                <print-pdf>PDF</print-pdf>
+                <print-pdf-template>Modelo PDF</print-pdf-template>
+                <clear>Borrar</clear>
+                <confirm>Confirmar</confirm>
+                <cancel>Cancelar</cancel>
+                <offline>Sin conexión</offline>
+                <online>En línea</online>
+                <alert>Valor no especificado o incorrecto</alert>
+                <email>Correo Electrónico</email>
+                <submit-dialog-clear>Borrar y cerrar</submit-dialog-clear>
+                <submit-dialog-keep>Mantener los datos y cerrar</submit-dialog-keep>
+                <submit-dialog-go>Aceptar</submit-dialog-go>
+                <submit-dialog-close-window>Cerrar Ventana</submit-dialog-close-window>
+                <collapse-all>Cerrar Secciones</collapse-all>
+                <expand-all>Abrir Secciones</expand-all>
+            </labels>
+            <view>
+                <explanation>
+                    [This is a read-only view of your data.]
+                </explanation>
+            </view>
+        </detail>
+        <import-export>
+            <dialog-title>Guardar</dialog-title>
+            <dialog-body>
+                <div>
+                    <p>
+                        Para guardar la información que usted ha ingresado haga clic en el siguiente enlace y guarde el
+                        documento en su computador.
+                    </p>
+                    <p>
+                        Para recuperar la información, haga doble clic sobre documento guardado y se abrirá
+                        automáticamente la aplicación con la información ingresada anteriormente.
+                    </p>
+                    <p>
+                        <b>Nota:</b> La información no será almacenada en el sistema. Si usted elimina el archivo
+                        perderá su información.
+                    </p>
+                </div>
+            </dialog-body>
+            <link>Guardar</link>
+        </import-export>
+    </resource>
+</resources>

@@ -1,0 +1,692 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Copyright (C) 2009 Orbeon, Inc.
+
+  This program is free software; you can redistribute it and/or modify it under the terms of the
+  GNU Lesser General Public License as published by the Free Software Foundation; either version
+  2.1 of the License, or (at your option) any later version.
+
+  This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  See the GNU Lesser General Public License for more details.
+
+  The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+  -->
+<xforms:model id="fr-persistence-model"
+              xmlns:xs="http://www.w3.org/2001/XMLSchema"
+              xmlns:xforms="http://www.w3.org/2002/xforms"
+              xmlns:ev="http://www.w3.org/2001/xml-events"
+              xmlns:exforms="http://www.exforms.org/exf/1-0"
+              xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+              xmlns:xi="http://www.w3.org/2001/XInclude"
+              xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+              xmlns:f="http://orbeon.org/oxf/xml/formatting"
+              xmlns:xhtml="http://www.w3.org/1999/xhtml"
+              xmlns:saxon="http://saxon.sf.net/"
+              xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+              xmlns:pipeline="java:org.orbeon.oxf.processor.pipeline.PipelineFunctionLibrary">
+
+    <xxforms:variable name="parameters" select="xxforms:instance('fr-parameters-instance')"/>
+    <xxforms:variable name="app" select="$parameters/app"/>
+    <xxforms:variable name="form" select="$parameters/form"/>
+    <xxforms:variable name="document" select="$parameters/document"/>
+
+    <!-- Model initialization -->
+    <!-- TODO: Should not do this on summary page, for example -->
+    <xforms:action ev:event="xforms-model-construct-done">
+
+        <!-- Initialize form service URI -->
+        <xforms:setvalue ref="instance('fr-uris-instance')/form-collection"
+                         value="xxforms:property(string-join(('oxf.fr.persistence.app.uri', $app, $form, 'form'), '.'))"/>
+        <!-- Initialize data service URI -->
+        <xforms:setvalue ref="instance('fr-uris-instance')/data-collection"
+                         value="xxforms:property(string-join(('oxf.fr.persistence.app.uri', $app, $form, 'data'), '.'))"/>
+        <!-- Initialize new service URI -->
+        <xforms:setvalue ref="instance('fr-uris-instance')/new-service-uri"
+                         value="xxforms:property(string-join(('oxf.fr.detail.new.service.uri', $app, $form), '.'))"/>
+
+        <!-- Initialize parameters to pass to "new" service -->
+        <xxforms:variable name="pass-request-parameters" select="xxforms:property(string-join(('oxf.fr.detail.new.service.passing-request-parameters', $app, $form), '.'))"/>
+        <xforms:action xxforms:iterate="tokenize($pass-request-parameters, '\s+')">
+            <xxforms:variable name="parameter-name" select="."/>
+            <xxforms:variable name="parameter-value" select="xxforms:get-request-parameter($parameter-name)"/>
+            <xforms:insert context="instance('fr-service-parameters')" origin="xxforms:element($parameter-name, $parameter-value)"/>
+        </xforms:action>
+
+        <!-- Initialize username and roles -->
+        <xforms:action if="xxforms:property('oxf.fr.authentication.method') = 'container'">
+            <!-- Case where we get the username and roles from the container -->
+            <xforms:setvalue ref="instance('fr-authentication-headers')/header[@name = 'username']/@value" value="xxforms:get-remote-user()"/>
+            <xforms:message level="xxforms:log-debug">Roles: <xforms:output value="xxforms:property('oxf.fr.authentication.container.roles')"/></xforms:message>
+            <xforms:action xxforms:iterate="tokenize(xxforms:property('oxf.fr.authentication.container.roles'), '\s+')">
+                <xxforms:variable name="role" select="."/>
+                <xforms:action if="xxforms:is-user-in-role($role)">
+                    <xforms:setvalue ref="instance('fr-authentication-headers')/header[@name = 'roles']/@value" value="if (. = '') then $role else concat(., ' ', $role)"/>
+                </xforms:action>
+            </xforms:action>
+        </xforms:action>
+        <xforms:action if="xxforms:property('oxf.fr.authentication.method') = 'header'">
+            <!-- Case where we get the username and roles from headers -->
+            <xforms:setvalue ref="instance('fr-authentication-headers')/header[@name = 'username']/@value" value="xxforms:get-request-header(xxforms:property('oxf.fr.authentication.header.username'))"/>
+            <xforms:setvalue ref="instance('fr-authentication-headers')/header[@name = 'roles']/@value" value="xxforms:get-request-header(xxforms:property('oxf.fr.authentication.header.roles'))"/>
+        </xforms:action>
+
+        <!-- Load current form configuration -->
+        <xxforms:variable name="source-form" select="xxforms:get-request-attribute('fr-form-definition')"/>
+        <xforms:action if="exists($source-form)">
+            <!-- Got it from the request -->
+            <xforms:message level="xxforms:log-debug">Got source form from request.</xforms:message>
+            <xforms:insert nodeset="instance('fr-source-form-instance')" origin="$source-form"/>
+        </xforms:action>
+        <xforms:action if="not(exists($source-form))">
+            <!--  Try submission -->
+            <xforms:message level="xxforms:log-debug">Could not get source form from request. Trying submission instead.</xforms:message>
+            <xforms:send submission="get-source-form-submission"/>
+        </xforms:action>
+
+        <!-- Whether a document id is provided -->
+        <xxforms:variable name="is-document-id-provided" select="$document != ''" as="xs:boolean"/>
+        <xforms:action if="$is-document-id-provided">
+            <!-- A document id is provided -->
+            <xxforms:variable name="form-data" select="xxforms:get-request-attribute('fr-form-data')" as="document-node()?"/>
+            <xforms:action if="$form-data">
+                <!-- An id is provided, but the form data is also available in the request, so we use that first -->
+                <xforms:insert nodeset="xxforms:instance('fr-form-instance')" origin="$form-data"/>
+                <!-- Set initial data as dirty, because this is the case typically of switching between script/noscript
+                     mode, and we can't really know if the data is clean or dirty but would like to enable the save button -->
+                <xforms:setvalue ref="instance('fr-persistence-instance')/initial-data-status">dirty</xforms:setvalue>
+            </xforms:action>
+            <xforms:action if="not($form-data)">
+                <!-- Load document with that id from persistence layer -->
+                <xforms:send submission="fr-get-document-submission"/>
+            </xforms:action>
+        </xforms:action>
+        <xforms:action if="not($is-document-id-provided)">
+            <!-- No document id is provided -->
+            <!-- Are we in new/edit mode -->
+            <xxforms:variable name="is-new-document" select="$parameters/mode = ('new', 'edit')" as="xs:boolean"/>
+            <xforms:action if="$is-new-document">
+                <!-- Create random document id -->
+                <xforms:setvalue ref="$document" value="digest(string(random(true)), 'MD5', 'hex')"/>
+                <!-- Do we call a service to initialize the instance? -->
+                <xforms:action if="xxforms:property(string-join(('oxf.fr.detail.new.service.enable', $app, $form), '.'))">
+                    <xforms:send submission="fr-get-instance-from-service"/>
+                </xforms:action>
+                <!-- Do we accept data posted to this page? -->
+                <xforms:action if="xxforms:property(string-join(('oxf.fr.detail.new.accept-post', $app, $form), '.'))">
+                    <xxforms:variable name="form-data" select="xxforms:get-request-parameter('fr-form-data')"/>
+                    <!-- Do we have data posted to this form? -->
+                    <xforms:action if="$form-data">
+                        <xxforms:variable name="xml-data" select="saxon:parse(saxon:base64Binary-to-string(xs:base64Binary($form-data), 'UTF-8'))"/>
+                        <xforms:insert nodeset="xxforms:instance('fr-form-instance')" origin="$xml-data"/>
+                    </xforms:action>
+                </xforms:action>
+            </xforms:action>
+        </xforms:action>
+
+    </xforms:action>
+
+    <xforms:action ev:event="xforms-ready">
+        <!-- In case there is an error, show it (error occurred when the controls are not yet ready) -->
+        <xforms:toggle if="instance('fr-persistence-instance')/is-error = 'true'" case="fr-message-fatal-error"/>
+
+        <!-- Force all this so we can safely set the data status -->
+        <xforms:rebuild/>
+        <xforms:recalculate/>
+        <xforms:revalidate/>
+        <xforms:refresh/>
+        <!-- Set the initial data status -->
+        <xforms:setvalue ref="instance('fr-persistence-instance')/data-status" value="../initial-data-status"/>
+    </xforms:action>
+
+    <!-- Clear operation -->
+    <xforms:action ev:event="fr-clear">
+        <!-- Copy original instance -->
+        <xxforms:variable name="instance-element" as="element(xforms:instance)"
+                          select="instance('fr-source-form-instance')/xhtml:head/xforms:model[@id = 'fr-form-model']/xforms:instance[@id = 'fr-form-instance']"/>
+        <!-- Case of inline template -->
+        <xforms:insert if="not($instance-element/@src)" nodeset="xxforms:instance('fr-form-instance')" origin="$instance-element/*"/>
+        <!-- Case of @src template -->
+        <xforms:insert if="$instance-element/@src" nodeset="xxforms:instance('fr-form-instance')" origin="doc($instance-element/@src)"/>
+    </xforms:action>
+
+    <!-- New document operation -->
+    <xforms:setvalue ev:event="fr-new-document" ref="$document" value="digest(string(random(true)), 'MD5', 'hex')"/>
+
+    <!-- Delete operation -->
+    <xforms:action ev:event="fr-delete-data">
+        <xforms:send submission="fr-delete-document-submission">
+            <xxforms:context name="document-id" select="event('document-id')"/>
+        </xforms:send>
+    </xforms:action>
+
+    <xforms:submission id="fr-delete-document-submission"
+            method="delete" serialization="none"
+            resource="{instance('fr-uris-instance')/data-collection}/crud/{$app}/{$form}/data/{event('document-id')}/data.xml"
+            replace="none">
+        <xi:include href="persistence-model-headers.xml"/>
+    </xforms:submission>
+
+    <!-- Respond to save button activation -->
+    <xforms:action ev:event="DOMActivate" ev:observer="fr-save-button">
+        <xforms:setvalue ref="instance('fr-persistence-instance')/submit-or-save-or-send">save</xforms:setvalue>
+        <xforms:dispatch name="fr-save-action" target="fr-persistence-model">
+            <xxforms:context name="fr:check-data-valid" select="true()"/>
+        </xforms:dispatch>
+    </xforms:action>
+
+    <!-- Respond to submit button activation -->
+    <xforms:action ev:event="DOMActivate" ev:observer="fr-submit-button">
+        <xforms:setvalue ref="instance('fr-persistence-instance')/submit-or-save-or-send">submit</xforms:setvalue>
+        <xforms:dispatch name="fr-save-action" target="fr-persistence-model">
+            <xxforms:context name="fr:check-data-valid" select="true()"/>
+        </xforms:dispatch>
+    </xforms:action>
+
+    <!-- Respond to workflow preview button activation -->
+    <xforms:action ev:event="DOMActivate" ev:observer="fr-workflow-review-button">
+        <!-- Just send the submission -->
+        <xforms:send submission="fr-workflow-review-submission"/>
+    </xforms:action>
+
+    <!-- Respond to workflow edit button activation -->
+    <xforms:action ev:event="DOMActivate" ev:observer="fr-workflow-edit-button">
+        <!-- Just send the submission -->
+        <xforms:send submission="fr-workflow-edit-submission"/>
+    </xforms:action>
+
+    <!-- Respond to send button activation -->
+    <xforms:action ev:event="DOMActivate" ev:observer="fr-workflow-send-button">
+        <xforms:setvalue ref="instance('fr-persistence-instance')/submit-or-save-or-send">send</xforms:setvalue>
+        <xforms:dispatch name="fr-save-action" target="fr-persistence-model">
+            <xxforms:context name="fr:check-data-valid" select="true()"/>
+        </xforms:dispatch>
+    </xforms:action>
+
+    <xforms:action ev:event="fr-save-action">
+        <!-- fr:check-data-valid   xs:boolean   * true if the data needs to be valid to perform this action (generally the
+                                                  case this is called in response to users' actions such as click on a
+                                                  Save button).
+                                                * false if this action should be performed even if the data is invalid
+                                                  (e.g. when doing an auto-save).
+        -->
+        <xxforms:variable name="check-data-valid" select="event('fr:check-data-valid')"/>
+
+        <xforms:setvalue ref="instance('fr-persistence-instance')/save-attempted">true</xforms:setvalue>
+        <xforms:action if="$document != ''">
+
+            <!-- Check validity of data before trying to save, because 1) we don't want to save attachments if the form
+                 is invalid and 2) submission doesn't check validity anymore -->
+            <!-- NOTE: We use instance('fr-error-summary-instance')/valid and not xxforms:valid() because the instance
+                 validity may not be reflected with the use of XBL components. -->
+            <xxforms:variable name="continue-with-save" select="not($check-data-valid) or xxforms:instance('fr-error-summary-instance')/valid = 'true'" as="xs:boolean"/>
+
+            <xforms:action if="not($continue-with-save)">
+                <!-- Data not valid: display error -->
+                <xforms:setvalue ref="xxforms:instance('fr-persistence-instance')/message"
+                                 model="fr-resources-model" select="$fr-fr-resources/detail/messages/form-validation-error"/>
+                <xforms:toggle case="fr-message-validation-error"/>
+                <!-- Mark all active alerts as visited -->
+                <xforms:dispatch name="fr-visit-alerts" target="fr-persistence-model"/>
+            </xforms:action>
+            <xforms:action if="$continue-with-save">
+                <!-- Data valid: proceed with saving attachments and data -->
+
+                <!-- Handle attachments -->
+                <xxforms:variable name="attachment-controls" as="element()*"
+                                  select="instance('fr-source-form-instance')/xhtml:body//(xforms:* | fr:*)[@bind and @class and tokenize(@class, '\s+') = 'fr-attachment']"/>
+
+                <!-- Find all binds with fb-attachment, or to which controls with fb-attachment are bound -->
+                <xxforms:variable name="attachment-binds" as="element(xforms:bind)*"
+                                  select="instance('fr-source-form-instance')/xhtml:head/xforms:model//xforms:bind[(@class and tokenize(@class, '\s+') = 'fr-attachment')
+                                            or @id = $attachment-controls/@bind]"/>
+
+                <!--<xforms:message level="xxforms:log-debug">-->
+                    <!--xxx <xforms:output value="count($attachment-controls)"/> xxx-->
+                <!--</xforms:message>-->
+
+                <!-- Use a global variable to determine whether we must continue -->
+                <xforms:setvalue ref="instance('fr-persistence-instance')/is-error">false</xforms:setvalue>
+                <xforms:setvalue ref="instance('fr-persistence-instance')/error"/>
+
+                <!-- Iterate over attachment controls while there is no submission error -->
+                <xforms:action xxforms:iterate="(1 to count($attachment-binds))">
+
+                    <xforms:action if="instance('fr-persistence-instance')/is-error = 'false'">
+                        <xxforms:variable name="bind" as="element(xforms:bind)"
+                                          select="(instance('fr-source-form-instance')/xhtml:head/xforms:model//xforms:bind[(@class and tokenize(@class, '\s+') = 'fr-attachment')
+                                                    or @id = $attachment-controls/@bind])[number(context())]"/>
+
+                        <!--
+                            NOTE: Finally as of 20090617 the "ancestor-or-self" bug is fixed
+                            http://forge.ow2.org/tracker/?group_id=168&atid=350207&func=detail&aid=304850
+                        -->
+
+                        <xxforms:variable name="expression" as="xs:string"
+                                          select="string-join($bind/ancestor-or-self::xforms:bind/@nodeset, '/')"/>
+
+                        <xxforms:variable name="holders" model="fr-form-model" select="instance('fr-form-instance')/saxon:evaluate($expression)"/>
+
+                        <!--<xxforms:variable name="binds" select="($bind/ancestor-or-self::xforms:bind)[position() gt 1]" as="element(xforms:bind)+"/>-->
+                        <!--<xforms:message level="xxforms:log-debug">-->
+                            <!--xxx Expression: <xforms:output value="$expression"/> xxx-->
+                            <!--xxx Straight: <xforms:output value="string-join($binds/@nodeset, '/')"/> xxx-->
+                            <!--xxx Combined straight: <xforms:output value="string-join(($bind/ancestor-or-self::xforms:bind/@nodeset), '/')"/> xxx-->
+                            <!--xxx Combined reversed: <xforms:output value="string-join(reverse($bind/ancestor-or-self::xforms:bind/@nodeset), '/')"/> xxx-->
+                            <!--xxx Count holders: <xforms:output value="count($holders)"/> xxx-->
+                            <!--xxx Holders content: <xforms:output value="string-join($holders, ' - ')"/> xxx-->
+                        <!--</xforms:message>-->
+
+                        <xforms:action xxforms:iterate="$holders">
+                            <xxforms:variable name="holder" select="." as="node()"/>
+                            <!-- Found attachment URI location -->
+                            <xxforms:variable name="uri" select="normalize-space($holder)" as="xs:string"/>
+                            <xforms:action if="$uri != '' and starts-with($uri, 'file:')">
+                                <!-- There is a URI to process -->
+
+                                <xxforms:variable name="upload-extension" select="normalize-space(tokenize($holder/@filename, '\.')[last()])" as="xs:string"/>
+                                <xxforms:variable name="upload-has-extension" select="count(tokenize($holder/@filename, '\.')) gt 1 and $upload-extension != ''" as="xs:string"/>
+                                <xxforms:variable name="new-id" select="digest(string(random(true)), 'MD5', 'hex')" as="xs:string"/>
+                                <xxforms:variable name="new-filename" select="string-join(($new-id,
+                                                                                            if (not($upload-has-extension)) then 'bin' else $upload-extension), '.')" as="xs:string"/>
+                                <xxforms:variable name="resource" as="xs:string"
+                                                  select="concat(instance('fr-uris-instance')/data-collection, '/crud/',
+                                                            $app, '/', $form, '/data/',
+                                                            $document, '/', $new-filename)"/>
+
+                                <!--<xforms:message level="xxforms:log-debug">-->
+                                    <!--<xforms:output value="$upload-extension"/> - -->
+                                    <!--<xforms:output value="$upload-has-extension"/> - -->
+                                    <!--<xforms:output value="$new-id"/> - -->
+                                    <!--<xforms:output value="$new-filename"/> - -->
+                                    <!--<xforms:output value="$resource"/>-->
+                                <!--</xforms:message>-->
+
+                                <!-- Save attachment -->
+                                <xforms:send submission="fr-create-update-attachment-submission">
+                                    <xxforms:context name="holder" select="$holder"/>
+                                    <xxforms:context name="resource" select="$resource"/>
+                                </xforms:send>
+
+                                <!-- Only keep the last part of the path -->
+                                <xforms:setvalue ref="$holder" value="$resource"/>
+
+                            </xforms:action>
+                        </xforms:action>
+                    </xforms:action>
+
+                </xforms:action>
+
+                <!-- Handle XML document if there was no submission error -->
+                <xforms:send submission="fr-create-update-submission" if="instance('fr-persistence-instance')/is-error = 'false'">
+                    <xxforms:context name="holder" select="xxforms:instance('fr-form-instance')"/>
+                    <!-- We always store form data as "data.xml" -->
+                    <xxforms:context name="resource" select="'data.xml'"/>
+                </xforms:send>
+            </xforms:action>
+        </xforms:action>
+    </xforms:action>
+
+    <!-- Persistence URIs -->
+    <xforms:instance id="fr-uris-instance">
+        <uris xmlns="">
+            <form-collection/>
+            <data-collection/>
+            <new-service-uri/>
+        </uris>
+    </xforms:instance>
+
+    <!-- Instance to store the result of the create/update submission -->
+    <xforms:instance id="fr-create-update-submission-response">
+        <response xmlns=""/>
+    </xforms:instance>
+
+    <!-- Submission to create/update the XML form -->
+    <!-- TODO: not sure why we use xxforms:ensure-uploads="false" here (could be cause we assume that attachments have all been uploaded in the background?) -->
+    <!-- Note about validate="false": In general, when the user saves data, the data needs to be valid. This will be
+         enforced by the "Save" button being disabled. But there are other cases where we want to call this persistence
+         code and where the data might not be valid. For instance: auto-save, or saving as Draft as soon as a new
+         form instance is created. -->
+    <xforms:submission id="fr-create-update-submission"
+            validate="false" relevant="false" method="put"
+            ref="event('holder')" xxforms:ensure-uploads="false"
+            resource="{instance('fr-uris-instance')/data-collection}/crud/{$app}/{$form}/data/{$document}/{event('resource')}"
+            replace="text" target="instance('fr-create-update-submission-response')">
+        <xi:include href="persistence-model-headers.xml"/>
+    </xforms:submission>
+
+    <!-- Submission to create/update an attachment -->
+    <!-- TODO: not sure why we use xxforms:ensure-uploads="false" here (could be cause we assume that attachments have all been uploaded in the background?) -->
+    <xforms:submission id="fr-create-update-attachment-submission"
+            method="put" serialization="application/octet-stream"
+            ref="event('holder')" xxforms:ensure-uploads="false"
+            resource="{event('resource')}"
+            replace="none">
+        <xi:include href="persistence-model-headers.xml"/>
+    </xforms:submission>
+
+    <!-- Get document -->
+    <xforms:submission id="fr-get-document-submission"
+            method="get" serialization="none"
+            resource="{instance('fr-uris-instance')/data-collection}/crud/{$app}/{$form}/data/{$document}/data.xml"
+            replace="instance" xxforms:instance="fr-form-instance">
+        <xi:include href="persistence-model-headers.xml"/>
+    </xforms:submission>
+
+    <!-- Source form with metadata -->
+    <xforms:instance id="fr-source-form-instance" xxforms:readonly="false"><!-- Set to false so that xforms:insert works -->
+        <form xmlns=""/>
+    </xforms:instance>
+
+    <xforms:submission id="get-source-form-submission"
+            method="get" serialization="none"
+            resource="{instance('fr-uris-instance')/form-collection}/crud/{$app}/{$form}/form/form.xhtml"
+            replace="instance" instance="fr-source-form-instance" xxforms:readonly="true" xxforms:cache="true" xxforms:xinclude="true">
+        <xi:include href="persistence-model-headers.xml"/>
+    </xforms:submission>
+
+    <xforms:instance id="fr-service-parameters">
+        <parameters/>
+    </xforms:instance>
+
+    <!-- Calls a service to get the initial instance -->
+    <xforms:submission id="fr-get-instance-from-service"
+            method="get" separator="&amp;" ref="instance('fr-service-parameters')"
+            resource="{instance('fr-uris-instance')/new-service-uri}"
+            replace="instance" xxforms:instance="fr-form-instance"/>
+
+    <xforms:instance id="fr-persistence-instance">
+        <save xmlns="">
+            <!-- Initial data status -->
+            <initial-data-status>clean</initial-data-status>
+            <!-- Whether form data is clean or dirty (i.e. saved or not saved) -->
+            <data-status>clean</data-status>
+            <!-- Whether an attempt to submit was ever done -->
+            <save-attempted>false</save-attempted>
+            <!-- Success or error message to display -->
+            <message/>
+            <!-- Error document returned -->
+            <error/>
+            <!-- Whether an error was received -->
+            <is-error>false</is-error>
+            <!-- Whether the last action that triggered the fr-create-update-submission is a "submit" or a "save" -->
+            <submit-or-save-or-send/>
+            <!-- Flag to override data-safe -->
+            <data-safe-override/>
+            <!-- Whether data is safe -->
+            <data-safe/>
+        </save>
+    </xforms:instance>
+
+    <xforms:bind nodeset="instance('fr-persistence-instance')">
+        <xforms:bind nodeset="data-safe" calculate="../data-status = 'clean' or ../data-safe-override = 'true'"/>
+    </xforms:bind>
+
+    <!-- Configuration for Saxon serialization -->
+    <xforms:instance id="fr-xsl-output-instance">
+        <xsl:output xmlns:xsl="http://www.w3.org/1999/XSL/Transform" method="xml" omit-xml-declaration="yes" indent="yes" saxon:indent-spaces="4"/>
+    </xforms:instance>
+
+    <xforms:instance id="fr-triggers-instance">
+        <triggers xmlns="">
+            <!-- Regular save/submuit -->
+            <save/>
+            <submit/>
+            <!-- These versions are disabled when possible -->
+            <strict-save/>
+            <strict-submit/>
+            <!-- Form Builder stuff, should not be here! -->
+            <publish/>
+            <!-- Workflow buttons -->
+            <workflow-review/>
+            <workflow-edit/>
+            <workflow-send/>
+            <!-- Discard button -->
+            <discard/>
+        </triggers>
+    </xforms:instance>
+
+    <xforms:instance id="fr-authentication-headers">
+        <headers>
+            <header name="username" value=""/>
+            <header name="roles" value=""/>
+        </headers>
+    </xforms:instance>
+
+    <xforms:bind nodeset="instance('fr-triggers-instance')">
+        <!--
+            NOTE: Don't disable basic save/submit buttons so that user can always press it. This arguably yields a
+            better experience in non-incremental mode and also allows user to force showing errors.
+        -->
+
+        <!-- Condition for disabling strict Save button -->
+        <xforms:bind nodeset="strict-save" readonly="not(property('xxforms:noscript'))
+            and (instance('fr-persistence-instance')/data-status = 'clean' or xxforms:instance('fr-error-summary-instance')/valid = 'false')"/>
+        <!-- Condition for disabling strict Submit button -->
+        <xforms:bind nodeset="strict-submit" readonly="not(property('xxforms:noscript')) and xxforms:instance('fr-error-summary-instance')/valid = 'false'"/>
+
+        <!-- Condition for disabling Publish button -->
+        <xforms:bind nodeset="publish" readonly="not(property('xxforms:noscript'))
+            and not(instance('fr-persistence-instance')/data-status = 'clean') or xxforms:instance('fr-error-summary-instance')/valid = 'false'"/>
+
+        <!-- Conditions for disabling workflow buttons -->
+        <xforms:bind nodeset="workflow-review" readonly="exforms:readonly(../submit)"/>
+        <xforms:bind nodeset="workflow-edit" readonly="exforms:readonly(../strict-submit)"/>
+        <xforms:bind nodeset="workflow-send" readonly="exforms:readonly(../strict-submit)"/>
+    </xforms:bind>
+
+    <!-- HACK: dependencies: recalculate this model when there is a change in the instance holding error/validity
+         information, so that the above binds are kept in sync. Ideally would need smart dependency system. -->
+    <xforms:recalculate ev:event="xxforms-value-changed" ev:observer="fr-error-summary-instance"/>
+
+    <!-- React to successful submission when saving/updating -->
+    <xforms:action ev:event="xforms-submit-done" ev:target="fr-create-update-submission">
+        <xforms:setvalue ref="instance('fr-persistence-instance')/message"
+                         model="fr-resources-model" select="$fr-fr-resources/detail/messages/save-success"/>
+
+        <!-- Show success message -->
+        <xforms:toggle case="fr-message-success"/>
+
+        <!-- HACK: Force this before cleaning the status because we do a setvalue just before calling the submission -->
+        <xforms:recalculate/>
+        <xforms:refresh/>
+
+        <xforms:setvalue ref="instance('fr-persistence-instance')/data-status">clean</xforms:setvalue>
+
+        <!-- If the document was saved because of a "submit", handle the rest of the submission process in dialog -->
+        <xforms:action if="instance('fr-persistence-instance')/submit-or-save-or-send = 'submit'">
+            <!-- Show the submission result dialog -->
+            <xxforms:show dialog="fr-submission-result-dialog">
+                <xxforms:context name="fr:content" select="instance('fr-create-update-submission-response')"/>
+            </xxforms:show>
+        </xforms:action>
+
+        <!-- If the document was saved because of a "send", handle the rest of the submission process -->
+        <xforms:action if="instance('fr-persistence-instance')/submit-or-save-or-send = 'send'">
+            <!-- TODO: move this to separate model (fr-send-model or fr-workflow-model) -->
+
+            <!-- Create PDF if requested -->
+            <xforms:send if="xxforms:property(string-join(('oxf.fr.detail.send.pdf', $app, $form), '.'))
+                                or xxforms:property(string-join(('oxf.fr.email.attach-pdf', $app, $form), '.'))
+                                or xxforms:property(string-join(('oxf.fr.alfresco.send-pdf', $app, $form), '.'))" submission="fr-pdf-service-submission"/>
+
+            <xforms:action if="instance('fr-persistence-instance')/is-error = 'false'">
+                <!-- Send to Alfresco if requested -->
+                <xforms:action if="xxforms:property(string-join(('oxf.fr.detail.send.alfresco', $app, $form), '.'))">
+
+                    <!-- Form definition -->
+                    <xxforms:variable name="html" select="instance('fr-source-form-instance')" as="element(xhtml:html)"/>
+
+                    <!-- Pass metadata with current language, or first language if current language is not found -->
+                    <xxforms:variable name="form-titles" select="$html/xhtml:head//xforms:instance[@id = 'fr-form-metadata']/*/title" as="xs:string"/>
+                    <xxforms:variable name="form-descriptions" select="$html/xhtml:head//xforms:instance[@id = 'fr-form-metadata']/*/description" as="xs:string"/>
+                    <xxforms:variable name="form-title" select="($form-titles[@xml:lang = xxforms:instance('fr-language-instance')], $form-titles[1])[1]" as="xs:string"/>
+                    <xxforms:variable name="form-description" select="($form-descriptions[@xml:lang = xxforms:instance('fr-language-instance')], $form-descriptions[1])[1]" as="xs:string"/>
+
+                    <!-- Send PDF data if requested -->
+                    <xforms:action if="xxforms:property(string-join(('oxf.fr.alfresco.send-pdf', $app, $form), '.'))">
+                        <!-- Get URI of PDF data -->
+                        <xxforms:variable name="pdf-uri" select="pipeline:rewriteServiceURI(instance('fr-workflow-confirmation-instance'), true())" as="xs:anyURI"/>
+
+                        <!-- Send everything to Alfresco -->
+                        <xforms:dispatch target="fr-alfresco-model" name="alfresco-send-document">
+                            <xxforms:context name="fr:name" select="concat($form-title, ' (#', $document, ').pdf')"/>
+                            <xxforms:context name="fr:title" select="$form-title"/>
+                            <xxforms:context name="fr:description" select="$form-description"/>
+                            <xxforms:context name="fr:mimetype" select="'application/pdf'"/>
+                            <!-- Content as Base64 -->
+                            <xxforms:context name="fr:content" select="xxforms:doc-base64($pdf-uri)"/>
+                        </xforms:dispatch>
+                    </xforms:action>
+                    <!-- Send XML data if requested -->
+                    <xforms:action if="xxforms:property(string-join(('oxf.fr.alfresco.send-xml', $app, $form), '.'))">
+                        <!-- Send data to Alfresco -->
+                        <xforms:dispatch target="fr-alfresco-model" name="alfresco-send-document">
+                            <xxforms:context name="fr:name" select="concat($form-title, ' (#', $document, ').xml')"/>
+                            <xxforms:context name="fr:title" select="$form-title"/>
+                            <xxforms:context name="fr:description" select="$form-description"/>
+                            <xxforms:context name="fr:mimetype" select="'application/xml'"/>
+                            <!-- XML data -> string -> Base64 -->
+                            <xxforms:context name="fr:content" select="saxon:string-to-base64Binary(saxon:serialize(xxforms:instance('fr-form-instance'), 'xml'), 'UTF-8')"/>
+                        </xforms:dispatch>
+                    </xforms:action>
+                </xforms:action>
+            </xforms:action>
+
+            <xforms:action if="instance('fr-persistence-instance')/is-error = 'false'">
+                <!-- Send email if requested -->
+                <xforms:send if="xxforms:property(string-join(('oxf.fr.detail.send.email', $app, $form), '.'))" submission="fr-email-service-submission"/>
+            </xforms:action>
+
+            <xforms:action if="instance('fr-persistence-instance')/is-error = 'false'">
+                <!-- Navigate to the confirmation page -->
+                <xforms:send submission="fr-workflow-confirmation-submission"/>
+            </xforms:action>
+        </xforms:action>
+
+    </xforms:action>
+
+    <!-- Send to final confirmation page -->
+    <!--
+        NOTE: Use xxforms:ensure-uploads="false" here because we now all uploads have been processed at this point.
+    -->
+    <xforms:submission id="fr-workflow-confirmation-submission"
+        resource="{xxforms:property(string-join(('oxf.fr.detail.send.uri', $app, $form), '.'))}"
+        method="post" ref="instance('fr-workflow-confirmation-instance')" replace="all" xxforms:ensure-uploads="false"/>
+
+    <!-- Call email service -->
+    <!--
+        NOTE: Use xxforms:ensure-uploads="false" here because 1) when this is called, uploads have already been
+        processed because this reacts to a create/save submission and 2) not doing so will cause a failure when we call
+        the final submission/load.
+    -->
+    <xforms:submission id="fr-email-service-submission"
+        resource="/fr/service/{$app}/{$form}/email/{$document}?fr-language={xxforms:instance('fr-language-instance')}{if (property('xxforms:noscript')) then '&amp;fr-noscript=true' else ''}"
+        method="post" ref="xxforms:instance('fr-form-instance')" replace="none" xxforms:ensure-uploads="false"/>
+
+    <!-- Call PDF service -->
+    <!--
+        NOTE: Use xxforms:ensure-uploads="false" here because 1) when this is called, uploads have already been
+        processed because this reacts to a create/save submission and 2) not doing so will cause a failure when we call
+        the final submission/load.
+    -->
+    <xforms:submission id="fr-pdf-service-submission"
+        resource="/fr/service/{$app}/{$form}/pdf/{$document}?fr-language={xxforms:instance('fr-language-instance')}{if (property('xxforms:noscript')) then '&amp;fr-noscript=true' else ''}"
+        method="post" ref="xxforms:instance('fr-form-instance')"
+        replace="instance" instance="fr-workflow-confirmation-instance" xxforms:ensure-uploads="false"/>
+
+    <xforms:instance id="fr-workflow-confirmation-instance">
+        <uri/>
+    </xforms:instance>
+
+    <!-- Mark all active alerts as visited -->
+    <xxforms:script ev:event="fr-visit-alerts">
+        <![CDATA[
+        var rootElement = ORBEON.util.Dom.getElementById("fr-form");
+        var elements = YAHOO.util.Dom.getElementsByClassName("xforms-alert-active", "label", rootElement);
+        for (var i = 0; i < elements.length; i++) {
+            var element = elements[i];
+            YAHOO.util.Dom.addClass(element, "xforms-alert-active-visited")
+        }
+        ]]>
+    </xxforms:script>
+
+    <!-- React to failed submission when saving, updating, getting, creating PDF, sending to Alfresco, sending email,
+         or sending to workflow -->
+    <xforms:action ev:event="xforms-submit-error" ev:observer="fr-persistence-model"
+                   ev:target="fr-create-update-submission fr-create-update-attachment-submission fr-get-document-submission fr-pdf-service-submission fr-email-service-submission fr-workflow-review-submission fr-workflow-confirmation-submission">
+        <!-- Remember there was an error -->
+        <xforms:setvalue ref="instance('fr-persistence-instance')/error" value="event('response-body')"/>
+        <xforms:setvalue ref="instance('fr-persistence-instance')/is-error">true</xforms:setvalue>
+        <!-- Log error -->
+        <xforms:message level="xxforms:log-debug">Error with submission: <xforms:output value="event('xxforms:targetid')"/></xforms:message>
+        <xforms:message level="xxforms:log-debug"><xforms:output value="event('response-body')"/></xforms:message>
+        <!-- Set error message and show error section in UI -->
+        <xforms:action if="event('error-type') = 'validation-error'">
+            <xforms:setvalue ref="instance('fr-persistence-instance')/message"
+                             model="fr-resources-model" select="$fr-fr-resources/detail/messages/form-validation-error"/>
+            <xforms:toggle case="fr-message-validation-error"/>
+        </xforms:action>
+        <xforms:action if="event('error-type') != 'validation-error'">
+            <xforms:setvalue ref="instance('fr-persistence-instance')/message"
+                             model="fr-resources-model" select="$fr-fr-resources/detail/messages/database-error"/>
+            <xforms:toggle case="fr-message-fatal-error"/>
+        </xforms:action>
+        <!-- Mark all active alerts as visited -->
+        <xforms:dispatch name="fr-visit-alerts" target="fr-persistence-model"/>
+    </xforms:action>
+
+    <!-- TODO: duplicated for now from above, which is no good; we need to implement the @handler attribute and
+         ev:listener to allow for a single xforms:action element, but two ev:listener registrations -->
+    <xforms:action ev:event="xforms-submit-error" ev:observer="fr-alfresco-model">
+        <!-- Remember there was an error -->
+        <xforms:setvalue ref="instance('fr-persistence-instance')/error" value="event('response-body')"/>
+        <xforms:setvalue ref="instance('fr-persistence-instance')/is-error">true</xforms:setvalue>
+        <!-- Log error -->
+        <xforms:message level="xxforms:log-debug">Error with submission: <xforms:output value="event('xxforms:targetid')"/></xforms:message>
+        <xforms:message level="xxforms:log-debug"><xforms:output value="event('response-body')"/></xforms:message>
+        <!-- Set error message and show error section in UI -->
+        <xforms:action if="event('error-type') = 'validation-error'">
+            <xforms:setvalue ref="instance('fr-persistence-instance')/message"
+                             model="fr-resources-model" select="$fr-fr-resources/detail/messages/form-validation-error"/>
+            <xforms:toggle case="fr-message-validation-error"/>
+        </xforms:action>
+        <xforms:action if="event('error-type') != 'validation-error'">
+            <xforms:setvalue ref="instance('fr-persistence-instance')/message"
+                             model="fr-resources-model" select="$fr-fr-resources/detail/messages/database-error"/>
+            <xforms:toggle case="fr-message-fatal-error"/>
+        </xforms:action>
+        <!-- Mark all active alerts as visited -->
+        <xforms:dispatch name="fr-visit-alerts" target="fr-persistence-model"/>
+    </xforms:action>
+
+    <!-- React to instance mutation events -->
+    <xforms:action ev:observer="fr-form-instance" ev:event="xforms-insert xforms-delete xxforms-value-changed">
+        <!-- Mark status as dirty if data changes -->
+        <!-- Test mode we don't want the status to be marked as dirty, so that the browser's alert dialog doesn't show -->
+        <xforms:setvalue if="not($parameters/mode = 'test')" ref="instance('fr-persistence-instance')/data-status">dirty</xforms:setvalue>
+    </xforms:action>
+
+    <!-- Clear message upon DOMFocusIn on #fr-form-group -->
+    <xforms:action ev:observer="fr-view fb-editor-switch" ev:event="DOMFocusIn xforms-value-changed">
+        <xforms:toggle case="fr-message-none"/>
+        <xforms:setvalue ref="instance('fr-persistence-instance')/message"/>
+        <xforms:setvalue ref="instance('fr-persistence-instance')/error"/>
+    </xforms:action>
+
+    <!-- Perform background submission upon xforms-select for xforms:upload -->
+    <!-- NOTE: We used to check on event('xxforms:binding')/root()/* is xxforms:instance('fr-form-instance'), but this
+         doesn't work with nested XBL components which handle their own local data. So now just rely on observers. -->
+    <xforms:action ev:observer="fr-form-group fb-logo-group fr-dialogs-group" ev:event="xforms-select"
+            if="for $b in xxforms:event('xxforms:binding') return $b/(@filename and @mediatype and @size)">
+        <xforms:send submission="fr-upload-attachment-submission"/>
+    </xforms:action>
+
+    <xforms:submission id="fr-upload-attachment-submission"
+                       ref="xxforms:instance('fr-form-instance')" validate="false" relevant="false"
+                       method="post" replace="none" resource="test:">
+        <xi:include href="persistence-model-headers.xml"/>
+    </xforms:submission>
+
+</xforms:model>

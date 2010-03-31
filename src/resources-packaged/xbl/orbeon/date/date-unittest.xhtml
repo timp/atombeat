@@ -1,0 +1,124 @@
+<!--
+    Copyright (C) 2008 Orbeon, Inc.
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<xhtml:html xmlns:xforms="http://www.w3.org/2002/xforms"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+        xmlns:ev="http://www.w3.org/2001/xml-events"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+        xmlns:xi="http://www.w3.org/2001/XInclude"
+        xmlns:xxi="http://orbeon.org/oxf/xml/xinclude"
+        xmlns:xbl="http://www.w3.org/ns/xbl"
+        xmlns:fr="http://orbeon.org/oxf/xml/form-runner">
+
+    <xhtml:head>
+        <xhtml:title>XBL - Date</xhtml:title>
+        <xforms:model id="main-model">
+
+            <xforms:instance id="main-instance">
+                <instance>
+                    <date>2009-05-15</date>
+                    <mindate>2009-05-05</mindate>
+                    <maxdate>2009-05-25</maxdate>
+                    <pagedate>2009-04-01</pagedate>
+                </instance>
+            </xforms:instance>
+            <xforms:bind nodeset="/instance/*" type="xs:date"/>
+        </xforms:model>
+        <xhtml:style type="text/css">
+            label { display: inline-block; width: 10em; }
+            .xbl-fr-date { float: left; margin-right: 1em;}
+        </xhtml:style>
+    </xhtml:head>
+    <xhtml:body>
+        <xhtml:div>
+            <xhtml:fieldset>
+                <xhtml:legend>Min/max dates</xhtml:legend>
+                <xhtml:div>
+                    <xforms:input ref="mindate" tabindex="1">
+                        <xforms:label>Min:</xforms:label>
+                    </xforms:input>
+                </xhtml:div>
+                <xhtml:div>
+                    <xforms:input ref="maxdate">
+                        <xforms:label>Max:</xforms:label>
+                    </xforms:input>
+                </xhtml:div>
+                <xhtml:div>
+                    <xforms:input ref="pagedate" tabindex="2">
+                        <xforms:label>Page date:</xforms:label>
+                    </xforms:input>
+                </xhtml:div>
+            </xhtml:fieldset>
+            <xhtml:fieldset>
+                <xhtml:legend>fr:date with default appearance</xhtml:legend>
+                <xhtml:div>
+                    <fr:date ref="date">
+                        <xforms:label>Dynamic min/max:</xforms:label>
+                        <fr:mindate ref="../mindate"/>
+                        <fr:maxdate ref="../maxdate"/>
+                    </fr:date>
+                </xhtml:div>
+                <xhtml:div>
+                    <fr:date ref="date" tabindex="3" accesskey="F">
+                        <xforms:label>Dynamic min:</xforms:label>
+                        <fr:mindate ref="../mindate"/>
+                    </fr:date>
+                </xhtml:div>
+                <xhtml:div>
+                    <fr:date ref="date">
+                        <xforms:label>Dynamic max:</xforms:label>
+                        <fr:maxdate ref="../maxdate"/>
+                    </fr:date>
+                </xhtml:div>
+                <xhtml:div>
+                    <fr:date ref="date" mindate="2009-05-06" maxdate="2009-05-24" tabindex="4">
+                        <xforms:label>Static min/max:</xforms:label>
+                    </fr:date>
+                </xhtml:div>
+            </xhtml:fieldset>
+        </xhtml:div>
+        <xhtml:fieldset>
+            <xhtml:legend>fr:date with pagedate set</xhtml:legend>
+            <xhtml:div>
+                <fr:date ref="date">
+                    <xforms:label>Dynamic page date:</xforms:label>
+                    <fr:pagedate ref="../pagedate"/>
+                </fr:date>
+            </xhtml:div>
+            <fr:date ref="date" appearance="fr:inline" pagedate="2009-04-01">
+                <xforms:label>Static page date:</xforms:label>
+            </fr:date>
+        </xhtml:fieldset>
+        <xhtml:fieldset>
+            <xhtml:legend>fr:date with inline appearance</xhtml:legend>
+            <fr:date ref="date" appearance="fr:inline">
+                <xforms:label>Dynamic min/max:</xforms:label>
+                <fr:mindate ref="../mindate"/>
+                <fr:maxdate ref="../maxdate"/>
+            </fr:date>
+            <fr:date ref="date" appearance="fr:inline">
+                <xforms:label>Dynamic min:</xforms:label>
+                <fr:mindate ref="../mindate"/>
+            </fr:date>
+            <fr:date ref="date" appearance="fr:inline">
+                <xforms:label>Dynamic max:</xforms:label>
+                <fr:maxdate ref="../maxdate"/>
+            </fr:date>
+            <fr:date ref="date" mindate="2009-05-06" maxdate="2009-05-24" appearance="fr:inline">
+                <xforms:label>Static min/max:</xforms:label>
+            </fr:date>
+        </xhtml:fieldset>
+    </xhtml:body>
+</xhtml:html>
