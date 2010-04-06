@@ -182,7 +182,7 @@ declare function hp:before-update-member(
     let $comment := request:get-header("X-Atom-Revision-Comment")
 	let $log := util:log( "debug" , $comment )
     
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key ) 
 	let $log := util:log( "debug" , $user-name )
     
     let $published := current-dateTime()
