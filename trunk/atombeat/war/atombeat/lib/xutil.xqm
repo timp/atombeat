@@ -3,6 +3,11 @@ xquery version "1.0";
 module namespace xutil = "http://www.cggh.org/2010/atombeat/xquery/xutil";
 
 
+declare namespace math="java:java.lang.Math";
+declare namespace long="java:java.lang.Long";
+declare namespace double="java:java.lang.Double";
+
+
 
 
 declare function xutil:get-or-create-collection(
@@ -83,3 +88,37 @@ declare function xutil:enable-versioning(
 	return $config-resource-path
     
 };
+
+
+
+declare function xutil:lpad(
+    $value as xs:string ,
+    $length as xs:integer ,
+    $padder as xs:string 
+) as xs:string
+{
+	if ( string-length( $value ) < $length )
+	then
+		let $value := concat( $padder , $value )
+		return xutil:lpad( $value , $length , $padder )
+	else $value
+};
+
+
+
+declare function xutil:random-alphanumeric(
+    $num-chars as xs:integer
+) as xs:string
+{
+    let $rnd := math:random()
+    let $multiplier := math:pow( xs:double( 36 ) , xs:double( $num-chars ) )
+    let $rnd := $rnd * $multiplier
+    let $rnd := double:long-value( $rnd )
+    let $rnd := long:to-string( $rnd , 36 )
+    let $rnd := xutil:lpad ( $rnd , $num-chars , "0" ) 
+    return $rnd
+};
+
+
+
+
