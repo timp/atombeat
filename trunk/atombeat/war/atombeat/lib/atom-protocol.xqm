@@ -18,7 +18,7 @@ import module namespace plugin = "http://www.cggh.org/2010/atombeat/xquery/plugi
 
 declare variable $ap:param-request-path-info := "request-path-info" ; 
 
- 
+
 
 
 (:
