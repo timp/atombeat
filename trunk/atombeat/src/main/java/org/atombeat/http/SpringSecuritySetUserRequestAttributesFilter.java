@@ -8,6 +8,7 @@ import java.io.IOException;
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 
 import org.apache.commons.logging.Log;
@@ -34,6 +35,7 @@ public class SpringSecuritySetUserRequestAttributesFilter extends HttpFilter {
 	
 	public static final String USERNAMEREQUESTATTRIBUTEKEY = "user-name";
 	public static final String USERROLESREQUESTATTRIBUTEKEY = "user-roles";
+	public static final String USERROLESXMLREQUESTATTRIBUTEKEY = "user-roles-xml";
 	
 	
 	
@@ -44,9 +46,11 @@ public class SpringSecuritySetUserRequestAttributesFilter extends HttpFilter {
 
 		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
 		
+		String name = null;
+		
 		if (authentication != null) {
 			
-			String name = authentication.getName();
+			name = authentication.getName();
 			log.debug("found username: "+name);
 			
 			request.setAttribute(USERNAMEREQUESTATTRIBUTEKEY, new StringValue(name));
@@ -62,10 +66,44 @@ public class SpringSecuritySetUserRequestAttributesFilter extends HttpFilter {
 			}
 
 			request.setAttribute(USERROLESREQUESTATTRIBUTEKEY, roles);
+			
+			String rolesXml = "<roles xmlns=''>";
+			for (GrantedAuthority a : authorities) {
+				rolesXml += "<role>" + a.toString() + "</role>";
+			}
+			rolesXml += "</roles>";
+
+			request.setAttribute(USERROLESXMLREQUESTATTRIBUTEKEY, rolesXml);
 
 		}
 		
-		chain.doFilter(request, response);
+		HttpServletRequest wrappedRequest = new HttpServletRequestWrapper(request) {
+			
+			@Override
+			public String getRemoteUser() {
+				Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+				if (authentication != null) {
+					return authentication.getName();
+				}
+				return null;
+			};
+			
+			@Override
+			public boolean isUserInRole(String role) {
+				Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+				if (authentication != null) {
+					GrantedAuthority[] authorities = authentication.getAuthorities();
+					for (GrantedAuthority a : authorities) {
+						if (role.equals(a.toString()))
+							return true;
+					}
+				}
+				return false;
+			}
+			
+		};
+		
+		chain.doFilter(wrappedRequest, response);
 
 		log.debug("response outbound");
 	}
