@@ -237,6 +237,20 @@ declare function atomdb:update-collection(
 
 
 
+declare function atomdb:generate-member-identifier(
+    $collection-path-info as xs:string
+) as xs:string
+{
+    let $id := config:generate-identifier( $collection-path-info )
+    return
+        let $member-path-info := concat( $collection-path-info , "/" , $id , ".atom" )
+        return 
+            if ( atomdb:member-available( $member-path-info ) )
+            then atomdb:generate-member-identifier( $collection-path-info ) (: try again :)
+            else $id
+};
+
+
 
 declare function atomdb:create-member(
 	$request-path-info as xs:string ,
@@ -253,9 +267,9 @@ declare function atomdb:create-member(
 		let $log := util:log( "debug" , "atomdb:create-member()" )
 		let $log := util:log( "debug" , $request-data )
 				
-	    let $uuid := util:uuid()
+	    let $member-id := atomdb:generate-member-identifier( $request-path-info ) 
 	    
-	    let $entry := atomdb:create-entry( $request-path-info, $request-data , $uuid )
+	    let $entry := atomdb:create-entry( $request-path-info, $request-data , $member-id )
 		let $log := util:log( "debug" , $entry )
 	    
 		(:
@@ -263,7 +277,7 @@ declare function atomdb:create-member(
 		 : e.g., "/db/foo".
 		 :)
 		 
-        let $entry-doc-db-path := atomdb:store-member( $request-path-info , concat( $uuid , ".atom" ) , $entry )
+        let $entry-doc-db-path := atomdb:store-member( $request-path-info , concat( $member-id , ".atom" ) , $entry )
         
 	    return $entry-doc-db-path
 		
@@ -501,20 +515,17 @@ declare function atomdb:update-feed(
 declare function atomdb:create-entry(
 	$request-path-info as xs:string ,
     $request-data as element(atom:entry) ,
-    $uuid as xs:string 
+    $member-id as xs:string 
 ) as element(atom:entry)
 {
 
-	(: 
-	 : TODO add edit-acl link.
-	 :)
-	 
-    let $id := concat( $config:service-url , $request-path-info , "/" , $uuid , ".atom" )
+    let $id := concat( $config:service-url , $request-path-info , "/" , $member-id , ".atom" )
     let $published := current-dateTime()
     let $updated := $published
     let $self-uri := $id
     let $edit-uri := $id
     
+    (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
     let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
     
     return
@@ -537,25 +548,25 @@ declare function atomdb:create-entry(
 
 declare function atomdb:create-media-link-entry(
 	$request-path-info as xs:string ,
-    $uuid as xs:string ,
+    $member-id as xs:string ,
     $media-type as xs:string ,
     $media-link-title as xs:string? ,
     $media-link-summary as xs:string? 
 ) as element(atom:entry)
 {
 
-    let $id := concat( $config:service-url , $request-path-info , "/" , $uuid , ".atom" )
+    let $id := concat( $config:service-url , $request-path-info , "/" , $member-id , ".atom" )
     let $log := util:log( "debug", $id )
     
     let $published := current-dateTime()
     let $updated := $published
     let $self-uri := $id
     let $edit-uri := $id
-    let $media-uri := concat( $config:service-url , $request-path-info , "/" , $uuid , ".media" )
+    let $media-uri := concat( $config:service-url , $request-path-info , "/" , $member-id , ".media" )
     
     let $title :=
     	if ( $media-link-title ) then $media-link-title
-    	else concat( "download-" , $uuid , ".media" )
+    	else concat( "download-" , $member-id , ".media" )
     	
     let $summary :=
     	if ( $media-link-summary ) then $media-link-summary
@@ -621,15 +632,15 @@ declare function atomdb:create-media-resource(
 
 	let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
 
-    let $uuid := util:uuid()
+    let $member-id := atomdb:generate-member-identifier( $request-path-info ) 
     
-	let $media-resource-name := concat( $uuid , ".media" )
+	let $media-resource-name := concat( $member-id , ".media" )
 
 	let $media-resource-db-path := xmldb:store( $collection-db-path , $media-resource-name , $request-data , $media-type )
 	
-    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $uuid , $media-type , $media-link-title , $media-link-summary )
+    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary )
     
-    let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $uuid , ".atom" ) , $media-link-entry )    
+    let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry )    
     
     return $media-link-entry-doc-db-path
 	 
