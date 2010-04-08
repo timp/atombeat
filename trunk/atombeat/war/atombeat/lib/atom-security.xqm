@@ -16,13 +16,38 @@ declare variable $atomsec:decision-allow as xs:string           := "allow" ;
 
 
 
+declare variable $atomsec:logger-name := "org.atombeat.xquery.lib.atom-security" ;
+
+
+
+declare function local:debug(
+    $message as item()*
+) as empty()
+{
+    util:log-app( "debug" , $atomsec:logger-name , $message )
+};
+
+
+
+
+declare function local:info(
+    $message as item()*
+) as empty()
+{
+    util:log-app( "info" , $atomsec:logger-name , $message )
+};
+
+
+
+
+
 declare function atomsec:store-global-acl(
     $acl as element(acl)
 ) as item()*
 {
     
-    let $log := util:log( "debug" , "== atomsec:store-global-acl ==" )
-    let $log := util:log( "debug" , $acl )
+    let $log := local:debug(  "== atomsec:store-global-acl ==" )
+    let $log := local:debug(  $acl )
     
     let $base-acl-collection-db-path := xutil:get-or-create-collection( $config:base-acl-collection-path )
     
@@ -186,7 +211,7 @@ declare function atomsec:decide(
 ) as xs:string
 {
 
-    let $log := util:log( "debug" , "== atomsec:decide ==" )
+    let $log := local:debug( "== atomsec:decide ==" )
     
     (: first we need to find the relevant ACLs :)
     
@@ -194,17 +219,17 @@ declare function atomsec:decide(
      : then we need to find the resource ACL first :)
      
     let $resource-acl := atomsec:retrieve-resource-acl( $request-path-info )
-    let $log := util:log( "debug" , $resource-acl )
+    let $log := local:debug( $resource-acl )
     
     (: we also need the collection ACL :)
     
     let $collection-acl := atomsec:retrieve-collection-acl( $request-path-info )
-    let $log := util:log( "debug" , $collection-acl )
+    let $log := local:debug( $collection-acl )
     
     (: we also need the global ACL :)
     
     let $global-acl := atomsec:retrieve-global-acl()
-    let $log := util:log( "debug" , $global-acl )
+    let $log := local:debug( $global-acl )
     
     (: start from default decision :)
     
@@ -214,7 +239,7 @@ declare function atomsec:decide(
      : then global ACL. :)
     
     let $resource-decision := atomsec:apply-rules( $resource-acl , $operation , $media-type , $user , $roles )
-    let $log := util:log( "debug" , concat( "$resource-decision: " , $resource-decision ) )
+    let $log := local:debug( concat( "$resource-decision: " , $resource-decision ) )
     
     (: any resource decision overrides default decision :)
     
@@ -224,7 +249,7 @@ declare function atomsec:decide(
         else $decision
         
     let $collection-decision := atomsec:apply-rules( $collection-acl , $operation , $media-type , $user , $roles )   
-    let $log := util:log( "debug" , concat( "$collection-decision: " , $collection-decision ) )
+    let $log := local:debug( concat( "$collection-decision: " , $collection-decision ) )
 
     (: any collection decision overrides resource decision :)
     
@@ -234,7 +259,7 @@ declare function atomsec:decide(
         else $decision
         
     let $global-decision := atomsec:apply-rules( $global-acl , $operation , $media-type , $user , $roles )  
-    let $log := util:log( "debug" , concat( "$global-decision: " , $global-decision ) )
+    let $log := local:debug( concat( "$global-decision: " , $global-decision ) )
     
     (: any global decision overrides resource decision :)
 
@@ -243,8 +268,8 @@ declare function atomsec:decide(
         then $global-decision
         else $decision
     
-    let $log-message := concat( "security decision (" , $decision , ") for user (" , $user , "), roles (" , string-join( $roles , " " ) , "), request-path-info (" , $request-path-info , "), operation(" , $operation , "), media-type (" , $media-type , ")" )
-    let $log := util:log( "info" , $log-message )  
+    let $message := ( "security decision (" , $decision , ") for user (" , $user , "), roles (" , string-join( $roles , " " ) , "), request-path-info (" , $request-path-info , "), operation(" , $operation , "), media-type (" , $media-type , ")" )
+    let $log := local:info( $message )  
     
     return $decision
     
@@ -283,8 +308,8 @@ declare function atomsec:match-rules(
 ) as element()*
 {
 
-    let $log := util:log( "debug" , "== atomsec:match-rules ==" )
-    let $log := util:log( "debug" , $acl )
+    let $log := local:debug( "== atomsec:match-rules ==" )
+    let $log := local:debug( $acl )
     
     let $matching-rules :=
     
@@ -303,7 +328,7 @@ declare function atomsec:match-rules(
          
 (:        for $rule in $acl/*[local-name(.) = "rules"]/* :)
         
-        let $log := util:log( "debug" , $rule )
+        let $log := local:debug( $rule )
         
         return
         
@@ -325,7 +350,7 @@ declare function atomsec:match-rules(
             
             else ()
             
-    let $log := util:log( "debug" , $matching-rules )
+    let $log := local:debug( $matching-rules )
     
     return $matching-rules
     
@@ -375,22 +400,36 @@ declare function atomsec:match-group(
 ) as xs:boolean
 {
 
-    let $groups :=
+    let $log := local:debug( "== atomsec:match-group() ==" )
+    let $log := local:debug( $rule )
     
-        for $group in $acl/groups/group
-        let $src := $group/@src
-        let $name := $group/@name
-        return
-            if ( exists( $src) ) then atomsec:dereference-group( $name , $src )
-            else $group
-
-    let $groups-for-user := $groups[user=$user]/@name
+    let $group := $rule/group
+    let $log := local:debug( concat( "found group in rule: " , $group ) ) 
     
-    return
+    return 
     
-        ( xs:string( $rule/group ) = "*" )
-        or ( exists( $rule/group) and exists( index-of( $groups-for-user , xs:string( $rule/group ) ) ) )
+        if ( empty( $group ) ) then false()
         
+        else if ( xs:string( $group ) = "*" ) then true()
+        
+        else
+    
+            let $groups :=
+            
+                for $group in $acl/groups/group
+                let $src := $group/@src
+                let $name := $group/@name
+                return
+                    if ( exists( $src) ) then atomsec:dereference-group( $name , $src )
+                    else $group
+        
+            let $groups-for-user := $groups[user=$user]/@name
+            
+            let $group-has-user := exists( index-of( $groups-for-user , xs:string( $group ) ) )
+            let $log := local:debug( concat( "$group-has-user: " , $group-has-user ) )
+            
+            return $group-has-user
+    
 };
 
 
