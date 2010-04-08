@@ -16,7 +16,31 @@ import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomd
 import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace plugin = "http://www.cggh.org/2010/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
 
-declare variable $ap:param-request-path-info := "request-path-info" ; 
+declare variable $ap:param-request-path-info := "request-path-info" ;
+
+
+
+declare variable $ap:logger-name := "org.atombeat.xquery.lib.atom-protocol" ;
+
+
+
+declare function local:debug(
+    $message as item()*
+) as empty()
+{
+    util:log-app( "debug" , $ap:logger-name , $message )
+};
+
+
+
+
+declare function local:info(
+    $message as item()*
+) as empty()
+{
+    util:log-app( "info" , $ap:logger-name , $message )
+};
+
 
 
 
@@ -230,8 +254,8 @@ declare function ap:op-create-member(
 ) as item()*
 {
 
-	let $log := util:log( "debug" , "op-create-member" )
-	let $log := util:log( "debug" , $request-data )
+	let $log := local:debug( "op-create-member" )
+	let $log := local:debug( $request-data )
 	
 	let $entry-doc-db-path := atomdb:create-member( $request-path-info , $request-data )
 
@@ -1278,10 +1302,10 @@ declare function ap:apply-op(
 ) as item()*
 {
 
-	let $log := util:log( "debug" , "EXPERIMENTAL: call plugin functions before main operation" )
+	let $log := local:debug( "EXPERIMENTAL: call plugin functions before main operation" )
 	
 	let $before-advice := ap:apply-before( $plugin:before , $op-name , $request-path-info , $request-data , $request-media-type )
-	let $log := util:log( "debug" , count( $before-advice ) )
+	let $log := local:debug( count( $before-advice ) )
 	
 	let $status-code as xs:integer := $before-advice[1]
 	
@@ -1291,18 +1315,18 @@ declare function ap:apply-op(
 		
 		then 
 		
-			let $log := util:log( "debug" , "bail out - plugin has overridden default behaviour" )
+			let $log := local:info( ( "bail out - plugin has overridden default behaviour, status: " , $status-code ) )
 		
 			let $response-data := $before-advice[2]
 			let $response-content-type := $before-advice[3]
-			let $log := util:log( "debug" , concat( "$status-code: " , $status-code ) )
-			let $log := util:log( "debug" , concat( "$response-data: " , $response-data ) )
-			let $log := util:log( "debug" , concat( "$response-content-type: " , $response-content-type ) )
+			let $log := local:debug( concat( "$status-code: " , $status-code ) )
+			let $log := local:debug( concat( "$response-data: " , $response-data ) )
+			let $log := local:debug( concat( "$response-content-type: " , $response-content-type ) )
 			return ap:send-response( $status-code , $response-data , $response-content-type ) 
 		  
 		else
 		
-			let $log := util:log( "debug" , "carry on as normal - execute main operation" )
+			let $log := local:debug( "carry on as normal - execute main operation" )
 			
 			let $request-data := $before-advice[2] (: request data may have been modified by plugins :)
 
@@ -1311,7 +1335,7 @@ declare function ap:apply-op(
 			let $response-data := $result[2]
 			let $response-content-type := $result[3]
 
-			let $log := util:log( "debug" , "EXPERIMENTAL: call plugin functions after main operation" ) 
+			let $log := local:debug( "EXPERIMENTAL: call plugin functions after main operation" ) 
 			 
 			let $after-advice := ap:apply-after( $plugin:after , $op-name , $request-path-info , $response-data , $response-content-type )
 			
