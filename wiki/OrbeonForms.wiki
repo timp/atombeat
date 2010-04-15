@@ -1,5 +1,7 @@
 #summary notes on integrating orbeon and exist
 
+*N.B. the current version of this process misses out the lucene jars from the exist patching process. This needs to be fixed*
+
 = Introduction =
 
 We'd like to use AtomBeat with [http://www.orbeon.com/ Orbeon Forms], but Orbeon comes with eXist 1.2.6 embedded, and AtomBeat requires eXist 1.4.0.
@@ -103,6 +105,4 @@ ant clean
 ant orbeon-dist-war 
 # deploy to tomcat and test
 }}}
-
-
 
