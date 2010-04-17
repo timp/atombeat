@@ -6,6 +6,7 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
+import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "constants.xqm" ;
 import module namespace xutil = "http://www.cggh.org/2010/atombeat/xquery/xutil" at "xutil.xqm" ;
 import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 
@@ -51,7 +52,7 @@ declare function atomsec:store-global-acl(
     
     let $base-acl-collection-db-path := xutil:get-or-create-collection( $config:base-acl-collection-path )
     
-    let $global-acl-doc-db-path := xmldb:store( $base-acl-collection-db-path , ".acl" , $acl )
+    let $global-acl-doc-db-path := xmldb:store( $base-acl-collection-db-path , ".acl" , $acl , $CONSTANT:MEDIA-TYPE-XML )
     
     return $global-acl-doc-db-path
     
@@ -74,7 +75,7 @@ declare function atomsec:store-collection-acl(
         
         let $acl-collection-db-path := xutil:get-or-create-collection( $acl-collection-db-path )
         
-        let $acl-doc-db-path := xmldb:store( $acl-collection-db-path , ".acl" , $acl )
+        let $acl-doc-db-path := xmldb:store( $acl-collection-db-path , ".acl" , $acl , $CONSTANT:MEDIA-TYPE-XML )
         
         return $acl-doc-db-path
 
@@ -106,7 +107,7 @@ declare function atomsec:store-resource-acl(
     	
     	let $acl-doc-name := concat( $resource-name , ".acl" )
     	
-    	let $acl-doc-db-path := xmldb:store( $acl-collection-db-path , $acl-doc-name , $acl )
+    	let $acl-doc-db-path := xmldb:store( $acl-collection-db-path , $acl-doc-name , $acl , $CONSTANT:MEDIA-TYPE-XML )
     	
     	return $acl-doc-db-path
         

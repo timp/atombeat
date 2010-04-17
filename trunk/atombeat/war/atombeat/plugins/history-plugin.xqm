@@ -182,7 +182,7 @@ declare function hp:before-update-member(
     let $comment := request:get-header("X-Atom-Revision-Comment")
 	let $log := util:log( "debug" , $comment )
     
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key ) 
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
 	let $log := util:log( "debug" , $user-name )
     
     let $published := current-dateTime()
@@ -266,6 +266,10 @@ declare function hp:after(
 		else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
 		
 		then hp:after-update-member( $request-path-info , $response-data , $content-type )
+		
+		else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
+		
+		then hp:after-list-collection( $request-path-info , $response-data , $content-type )
 
 		else 
 
@@ -315,6 +319,29 @@ declare function hp:after-update-member(
 
 	let $response-data := hp:append-history-link( $response-data ) (: N.B. workaround here!!! :)
 
+	return ( $response-data , $content-type )
+};
+
+
+
+
+declare function hp:after-list-collection(
+	$request-path-info as xs:string ,
+	$response-data as element(atom:feed) ,
+	$content-type as xs:string?
+) as item()*
+{
+
+	let $response-data := 
+		<atom:feed>
+		{
+			$response-data/attribute::* ,
+			$response-data/child::*[not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI )] ,
+			for $entry in $response-data/atom:entry
+			return hp:append-history-link( $entry )
+		}
+		</atom:feed>
+	
 	return ( $response-data , $content-type )
 };
 
