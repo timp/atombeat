@@ -82,7 +82,7 @@ declare function xutil:enable-versioning(
 	let $config-collection-path := xutil:get-or-create-collection( $config-collection-path )
 	let $log := util:log( "debug" , concat( "$config-collection-path: " , $config-collection-path ) )
 	
-	let $config-resource-path := xmldb:store( $config-collection-path , "collection.xconf" , $collection-config )
+	let $config-resource-path := xmldb:store( $config-collection-path , "collection.xconf" , $collection-config , "application/xml" )
 	let $log := util:log( "debug" , concat( "$config-resource-path: " , $config-resource-path ) )
 	
 	return $config-resource-path
@@ -117,6 +117,33 @@ declare function xutil:random-alphanumeric(
     let $rnd := long:to-string( $rnd , 36 )
     let $rnd := xutil:lpad ( $rnd , $num-chars , "0" ) 
     return $rnd
+};
+
+
+
+declare function xutil:random-alphanumeric(
+    $num-chars as xs:integer ,
+    $radix as xs:integer ,
+    $map as xs:string ,
+    $trans as xs:string 
+) as xs:string
+{
+(:
+    let $num-chars := 4
+    let $radix := 21
+    let $map := "0123456789abcdefghijklmnopqrstuvwxyz"
+    let $trans := "abcdefghjkmnpqrstuxyz"
+:)  
+    let $rnd := math:random()
+    let $multiplier := math:pow( xs:double( $radix ) , xs:double( $num-chars ) )
+    let $rnd := $rnd * $multiplier
+    let $rnd := double:long-value( $rnd )
+    let $rnd := long:to-string( $rnd , $radix )
+    let $rnd := xutil:lpad ( $rnd , $num-chars , "0" ) 
+    let $rnd := translate( $rnd , $map , $trans )
+    
+    return $rnd
+         
 };
 
 

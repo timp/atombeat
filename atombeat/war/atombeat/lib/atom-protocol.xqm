@@ -8,7 +8,7 @@ import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
-
+ 
 import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "constants.xqm" ;
 import module namespace mime = "http://www.cggh.org/2010/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "atomdb.xqm" ;
@@ -185,7 +185,7 @@ declare function ap:op-create-collection(
 
 	let $feed-doc-db-path := atomdb:create-collection( $request-path-info , $request-data )
 
-	let $feed := doc( $feed-doc-db-path )/atom:feed
+	let $feed := doc( $feed-doc-db-path )/*
             
 	let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
 	
@@ -265,7 +265,7 @@ declare function ap:op-create-member(
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 	
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/* , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 };
 
@@ -334,7 +334,7 @@ declare function ap:op-create-media(
 	
 	let $slug := request:get-header( $CONSTANT:HEADER-SLUG )
 	
-	(: check for summary :)
+	(: check for summary :) 
 	
 	let $summary := request:get-header( "X-Atom-Summary" )
 	
@@ -346,7 +346,7 @@ declare function ap:op-create-media(
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 			    
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/* , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
@@ -456,7 +456,7 @@ declare function ap:op-create-media-from-multipart-form-data (
 		 
 		if ( $accept = "application/atom+xml" )
 		
-		then $media-link-doc/atom:entry
+		then $media-link-doc/*
 	
 		else 
 		
@@ -631,7 +631,7 @@ declare function ap:op-update-collection(
 
 	let $feed-doc-db-path := atomdb:update-collection( $request-path-info , $request-data )
 		
-	let $feed := doc( $feed-doc-db-path )/atom:feed
+	let $feed := doc( $feed-doc-db-path )/*
             
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 
@@ -859,8 +859,13 @@ declare function ap:op-retrieve-member(
 {
 
 	let $entry-doc := atomdb:retrieve-entry( $request-path-info )
+	
+	let $log := local:debug( $entry-doc )
 
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
+    (: The form below causes problems because updates are not seen, something to do with indexes? :)
+	(: return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM ) :)
+	
+	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/* , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
@@ -1334,6 +1339,10 @@ declare function ap:apply-op(
 			let $response-status := $result[1]
 			let $response-data := $result[2]
 			let $response-content-type := $result[3]
+			
+			let $log := local:debug( $response-status )
+			let $log := local:debug( $response-data )
+			let $log := local:debug( $response-content-type )
 
 			let $log := local:debug( "EXPERIMENTAL: call plugin functions after main operation" ) 
 			 

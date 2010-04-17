@@ -78,6 +78,7 @@ declare function config:generate-identifier(
 {
     util:uuid()
     (: xutil:random-alphanumeric( 6 ) :) (: N.B. it's OK to use randoms because atomdb will automatically check for collisions :)
+    (: xutil:random-alphanumeric( 7 , 21 , "0123456789abcdefghijk" , "abcdefghjkmnpqrstuxyz" ) :) 
 };
 
 
@@ -165,7 +166,7 @@ declare variable $config:default-global-acl :=
  :)
 declare function config:default-collection-acl(
     $request-path-info as xs:string ,
-    $user as xs:string
+    $user as xs:string?
 ) as element(acl)
 { 
     <acl>

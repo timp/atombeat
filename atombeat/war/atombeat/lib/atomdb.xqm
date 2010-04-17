@@ -15,6 +15,30 @@ import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/confi
 
 
 
+declare variable $atomdb:logger-name := "org.atombeat.xquery.lib.atomdb" ;
+
+
+
+declare function local:debug(
+    $message as item()*
+) as empty()
+{
+    util:log-app( "debug" , $atomdb:logger-name , $message )
+};
+
+
+
+
+declare function local:info(
+    $message as item()*
+) as empty()
+{
+    util:log-app( "info" , $atomdb:logger-name , $message )
+};
+
+
+
+
 declare function atomdb:collection-available(
 	$request-path-info as xs:string
 ) as xs:boolean
@@ -191,7 +215,7 @@ declare function atomdb:create-collection(
 
 		let $feed := atomdb:create-feed( $request-path-info , $request-data )
 		
-		let $feed-doc-db-path := xmldb:store( $collection-db-path , $config:feed-doc-name , $feed )
+		let $feed-doc-db-path := xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 		return $feed-doc-db-path
 			
@@ -231,7 +255,7 @@ declare function atomdb:update-collection(
 
 		let $feed := atomdb:update-feed( doc( $feed-doc-db-path )/atom:feed , $request-data )
 		
-		return xmldb:store( $collection-db-path , $config:feed-doc-name , $feed )
+		return xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 			
 };
 
@@ -294,7 +318,7 @@ declare function atomdb:store-member(
 
     let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
 
-    let $entry-doc-db-path := xmldb:store( $collection-db-path , $resource-name , $entry )    
+    let $entry-doc-db-path := xmldb:store( $collection-db-path , $resource-name , $entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
     return $entry-doc-db-path
 
@@ -322,7 +346,7 @@ declare function atomdb:update-member(
 		 
 		let $member-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
 	
-		let $entry := atomdb:update-entry( doc( $member-db-path )/atom:entry , $request-data )
+		let $entry := atomdb:update-entry( doc( $member-db-path )/* , $request-data )
 
 		let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
 		
@@ -330,7 +354,7 @@ declare function atomdb:update-member(
 		
 		let $entry-resource-name := $groups[3]
 		
-		let $entry-db-path := xmldb:store( $collection-db-path , $entry-resource-name , $entry )
+		let $entry-db-path := xmldb:store( $collection-db-path , $entry-resource-name , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 		(: 
 		 : N.B. we return the entry here, rather than just the path, because of
@@ -623,7 +647,7 @@ declare function atomdb:update-entry(
 
 declare function atomdb:create-media-resource(
 	$request-path-info as xs:string , 
-	$request-data as xs:base64Binary , 
+	$request-data as item()* , 
 	$media-type as xs:string ,
 	$media-link-title as xs:string? ,
 	$media-link-summary as xs:string? 
@@ -640,7 +664,7 @@ declare function atomdb:create-media-resource(
 	
     let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary )
     
-    let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry )    
+    let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
     return $media-link-entry-doc-db-path
 	 
@@ -750,8 +774,12 @@ declare function atomdb:retrieve-entry(
 		 :)
 		 
 		let $entry-doc-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+		let $log := local:debug( concat( "entry-doc-db-path: " , $entry-doc-db-path ) )
 		
-		return doc( $entry-doc-db-path )
+		let $entry-doc := doc( $entry-doc-db-path )
+		let $log := local:debug( $entry-doc )
+		
+		return $entry-doc
 
 };
 
