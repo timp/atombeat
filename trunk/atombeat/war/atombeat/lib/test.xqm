@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace test = "http://www.cggh.org/2010/atombeat/xquery/test";
+module namespace test = "http://atombeat.org/xquery/test";
 
 
 

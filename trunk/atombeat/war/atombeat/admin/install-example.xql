@@ -2,8 +2,8 @@ declare namespace atom = "http://www.w3.org/2005/Atom" ;
 
 import module namespace response = "http://exist-db.org/xquery/response" ;
 
-import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
-import module namespace atomsec = "http://www.cggh.org/2010/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
+import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
+import module namespace atomsec = "http://atombeat.org/xquery/atom-security" at "../lib/atom-security.xqm" ;
 
 let $login := xmldb:login( "/" , "admin" , "" )
 

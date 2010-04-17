@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace logger-plugin = "http://www.cggh.org/2010/atombeat/xquery/logger-plugin";
+module namespace logger-plugin = "http://atombeat.org/xquery/logger-plugin";
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
