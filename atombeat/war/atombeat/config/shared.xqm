@@ -1,11 +1,11 @@
 xquery version "1.0";
 
-module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config";
+module namespace config = "http://atombeat.org/xquery/config";
 
 
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
-import module namespace xutil = "http://www.cggh.org/2010/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
+import module namespace xutil = "http://atombeat.org/xquery/xutil" at "../lib/xutil.xqm" ;
 
 
 (:

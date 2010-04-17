@@ -1,4 +1,4 @@
-module namespace atomsec = "http://www.cggh.org/2010/atombeat/xquery/atom-security";
+module namespace atomsec = "http://atombeat.org/xquery/atom-security";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 
@@ -6,11 +6,11 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
-import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "constants.xqm" ;
-import module namespace xutil = "http://www.cggh.org/2010/atombeat/xquery/xutil" at "xutil.xqm" ;
-import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "constants.xqm" ;
+import module namespace xutil = "http://atombeat.org/xquery/xutil" at "xutil.xqm" ;
+import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "atomdb.xqm" ;
 
-import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
 
 declare variable $atomsec:decision-deny as xs:string            := "deny" ;
 declare variable $atomsec:decision-allow as xs:string           := "allow" ;

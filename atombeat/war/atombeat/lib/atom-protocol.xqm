@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace ap = "http://www.cggh.org/2010/xquery/atom-protocol";
+module namespace ap = "http://atombeat.org/xquery/atom-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 
@@ -9,12 +9,12 @@ import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
  
-import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "constants.xqm" ;
-import module namespace mime = "http://www.cggh.org/2010/atombeat/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "constants.xqm" ;
+import module namespace mime = "http://atombeat.org/xquery/mime" at "mime.xqm" ;
+import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "atomdb.xqm" ;
  
-import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
-import module namespace plugin = "http://www.cggh.org/2010/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
+import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
+import module namespace plugin = "http://atombeat.org/xquery/plugin" at "../config/plugins.xqm" ;
 
 declare variable $ap:param-request-path-info := "request-path-info" ;
 
@@ -201,7 +201,7 @@ declare function ap:op-create-collection(
 
 
 declare variable $ap:op-create-collection as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
 ;
 
 
@@ -276,7 +276,7 @@ declare function ap:op-create-member(
  : TODO doc me
  :)
 declare variable $ap:op-create-member as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
 ;
 
 
@@ -354,7 +354,7 @@ declare function ap:op-create-media(
 
 
 declare variable $ap:op-create-media as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
 ;
 
 
@@ -490,7 +490,7 @@ declare function ap:op-create-media-from-multipart-form-data (
 
 
 declare variable $ap:op-create-media-from-multipart-form-data as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 )
 ;
 
 
@@ -641,7 +641,7 @@ declare function ap:op-update-collection(
 
 
 declare variable $ap:op-update-collection as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
 ;
 
 
@@ -709,7 +709,7 @@ declare function ap:op-update-member(
 
 
 declare variable $ap:op-update-member as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
 ;
 
 
@@ -793,7 +793,7 @@ declare function ap:op-update-media(
 
 
 declare variable $ap:op-update-media as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
 ;
 
 
@@ -873,7 +873,7 @@ declare function ap:op-retrieve-member(
 
 
 declare variable $ap:op-retrieve-member as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
 ;
 
 
@@ -931,7 +931,7 @@ declare function ap:op-retrieve-media(
 
 
 declare variable $ap:op-retrieve-media as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
 ;
 
 
@@ -971,7 +971,7 @@ declare function ap:op-list-collection(
 
 
 declare variable $ap:op-list-collection as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
 ;
 
 
@@ -1059,7 +1059,7 @@ declare function ap:op-delete-member(
 
 
 declare variable $ap:op-delete-member as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
 ;
 
 
@@ -1097,7 +1097,7 @@ declare function ap:op-delete-media(
 
 
 declare variable $ap:op-delete-media as function :=
-	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
+	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
 ;
 
 

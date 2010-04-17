@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace sp = "http://www.cggh.org/2010/atombeat/xquery/security-plugin";
+module namespace sp = "http://atombeat.org/xquery/security-plugin";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 
@@ -10,14 +10,14 @@ import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
-import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "../lib/constants.xqm" ;
+import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "../lib/constants.xqm" ;
 
-import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
 
-import module namespace xutil = "http://www.cggh.org/2010/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
-import module namespace mime = "http://www.cggh.org/2010/atombeat/xquery/mime" at "../lib/mime.xqm" ;
-import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
-import module namespace atomsec = "http://www.cggh.org/2010/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
+import module namespace xutil = "http://atombeat.org/xquery/xutil" at "../lib/xutil.xqm" ;
+import module namespace mime = "http://atombeat.org/xquery/mime" at "../lib/mime.xqm" ;
+import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "../lib/atomdb.xqm" ;
+import module namespace atomsec = "http://atombeat.org/xquery/atom-security" at "../lib/atom-security.xqm" ;
 
 
 
