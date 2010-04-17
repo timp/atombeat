@@ -12,14 +12,17 @@
     The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
 -->
 <html xmlns="http://www.w3.org/1999/xhtml"
-      xmlns:xforms="http://www.w3.org/2002/xforms">
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms">
     <head>
         <title>AtomBeat DataWiki</title>
         
         <xforms:model>
         
             <xforms:instance id="ins-table">
-            	<table>
+            	<table xmlns="">
             		<thead>
             			<tr>
             				<th>Foo</th>
@@ -38,21 +41,91 @@
             		</tbody>
             	</table>
             </xforms:instance>
+            
+            <xforms:instance id="ins-tr-template">
+            	<tr xmlns="">
+            		<td/>
+            		<td/>
+            	</tr>
+            </xforms:instance>
+
+            <xforms:instance id="ins-td-template">
+           		<td xmlns=""/>
+            </xforms:instance>
+
+            <xforms:instance id="ins-th-template">
+           		<th xmlns="">Spong</th>
+            </xforms:instance>
+            
+            <xforms:bind nodeset="instance('ins-table')/tbody/tr/td[1]" type="xs:integer"/>
 
         </xforms:model>
+        
+        <style type="text/css">
+            .data-table { background-color: #fce5b6 }
+            .data-table .add-td {  }
+            .data-table .form-td { background: transparent; padding: 0 }
+            .data-table thead .xforms-repeat-selected-item-1 { background: transparent }
+        
+        </style>
 
     </head>
     <body>
-        <p>
-            <i>This example is described in details in the <a href="/doc/intro-tutorial">Orbeon Forms Tutorial</a>.</i>
-        </p>
-        <p>
-            <xforms:input ref="/first-name" incremental="true">
-                <xforms:label>Please enter your first name:</xforms:label>
-            </xforms:input>
-        </p>
-        <p>
-            <xforms:output value="if (normalize-space(/first-name) = '') then '' else concat('Hello, ', /first-name, '!')"/>
-        </p>
+    
+    	<p>Welcome to DataWiki!</p>
+    	
+		<table class="data-table">
+			<thead>
+				<tr>
+					<th>-</th>
+					<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
+						<th class="add-td">
+							<xforms:output value="context()/text()"/>
+						</th>
+					</xforms:repeat>
+				</tr>
+			</thead>
+			<tbody>
+				<xforms:repeat nodeset="instance('ins-table')/tbody/tr">
+					<tr>
+						<td>
+							<xforms:output value="position()"/>
+						</td>
+						<xforms:repeat nodeset="context()/td">
+							<td class="form-td">
+								<xforms:input ref="context()">
+									<xforms:label/>
+									<xforms:alert>The data are not valid.</xforms:alert>
+								</xforms:input>
+							</td>
+						</xforms:repeat>
+					</tr>
+				</xforms:repeat>
+			</tbody>
+		</table>
+		
+		<xforms:trigger appearance="minimal">
+			<xforms:label>Add a Row</xforms:label>
+			<xforms:insert ev:event="DOMActivate" context="instance('ins-table')" nodeset="tbody/tr" at="last()" position="after" origin="instance('ins-tr-template')"/>
+		</xforms:trigger>
+
+		<xforms:trigger appearance="minimal">
+			<xforms:label>Add a Column</xforms:label>
+			<xforms:insert 
+				ev:event="DOMActivate" 
+				context="instance('ins-table')" 
+				nodeset="thead/tr/th" at="last()" 
+				position="after" 
+				origin="instance('ins-th-template')"/>
+			<xforms:insert 
+				ev:event="DOMActivate" 
+				xxforms:iterate="instance('ins-table')/tbody/tr"
+				nodeset="context()/td" 
+				at="last()" 
+				position="after" 
+				origin="instance('ins-td-template')"/>
+		</xforms:trigger>
+		
+		
     </body>
 </html>
