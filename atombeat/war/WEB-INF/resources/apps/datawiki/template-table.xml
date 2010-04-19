@@ -17,27 +17,55 @@
 			<id>3</id>
 			<label>Gender</label>
 			<datatype>xs:string</datatype>
-			<required>true</required>
+			<required>false</required>
 		</variable>
 	</variables>
 	<data>
 		<datum>
-			<variable></variable>
-			<tuple></tuple>
-			<value></value>
+			<variable>1</variable>
+			<tuple>1</tuple>
+			<value>Al</value>
+		</datum>
+		<datum>
+			<variable>2</variable>
+			<tuple>1</tuple>
+			<value>31</value>
+		</datum>
+		<datum>
+			<variable>3</variable>
+			<tuple>1</tuple>
+			<value>M</value>
+		</datum>
+		<datum>
+			<variable>1</variable>
+			<tuple>2</tuple>
+			<value>Laura</value>
+		</datum>
+		<datum>
+			<variable>2</variable>
+			<tuple>1</tuple>
+			<value>27</value>
+		</datum>
+		<datum>
+			<variable>3</variable>
+			<tuple>1</tuple>
+			<value>F</value>
 		</datum>
 	</data>
 	<view>
 		<orientation>vertical</orientation>
 		<variables>
-			<variable></variable>
+			<variable>1</variable>
+			<variable>2</variable>
+			<variable>3</variable>
 		</variables>
 		<tuples>
-			<tuple></tuple>
+			<tuple>1</tuple>
+			<tuple>2</tuple>
 		</tuples>
 	</view>
 	<counters>
-		<variables></variables>
-		<tuples></tuples>
+		<variables>4</variables>
+		<tuples>3</tuples>
 	</counters>
 </table>
