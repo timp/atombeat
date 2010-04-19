@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<table>
+	<variables>
+		<variable>
+			<id>1</id>
+			<label>Name</label>
+			<datatype>xs:string</datatype>
+			<required>true</required>
+		</variable>
+		<variable>
+			<id>2</id>
+			<label>Age</label>
+			<datatype>xs:integer</datatype>
+			<required>true</required>
+		</variable>
+		<variable>
+			<id>3</id>
+			<label>Gender</label>
+			<datatype>xs:string</datatype>
+			<required>true</required>
+		</variable>
+	</variables>
+	<data>
+		<datum>
+			<variable></variable>
+			<tuple></tuple>
+			<value></value>
+		</datum>
+	</data>
+	<view>
+		<orientation>vertical</orientation>
+		<variables>
+			<variable></variable>
+		</variables>
+		<tuples>
+			<tuple></tuple>
+		</tuples>
+	</view>
+	<counters>
+		<variables></variables>
+		<tuples></tuples>
+	</counters>
+</table>
