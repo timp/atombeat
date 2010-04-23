@@ -1,0 +1,125 @@
+<!--
+    Copyright (C) 2010 University of Oxford
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+      xmlns:atom="http://www.w3.org/2005/Atom">
+      
+    <head>
+        <title>AtomBeat DataWiki</title>
+        
+        <xforms:model id="mod-main">
+        
+        	<xforms:instance id="ins-feed">
+        		<atom:feed/>
+        	</xforms:instance>
+        	
+            <xforms:instance id="ins-entry" src="/apps/datawiki/template-entry.xml"/>
+            
+      		<xforms:submission 
+      			id="sub-get-feed"
+      			method="get"
+      			resource="/atombeat/content/datawiki"
+      			replace="instance"
+      			instance="ins-feed">
+      		</xforms:submission>
+      		
+      		<xforms:send ev:event="xforms-model-construct-done" submission="sub-get-feed"/>
+      		
+      		<xforms:submission
+      			id="sub-post-entry"
+      			method="post"
+      			resource="/atombeat/content/datawiki"
+      			ref="instance('ins-entry')"
+      			mediatype="application/atom+xml"
+      			replace="none">
+      			<xforms:send ev:event="xforms-submit-done" submission="sub-get-feed"/>	
+      		</xforms:submission>
+            
+        </xforms:model>
+        
+        <style type="text/css">
+.yui-skin-sam tr.yui-dt-selected td, .yui-skin-sam tr.yui-dt-selected td.yui-dt-asc, .yui-skin-sam tr.yui-dt-selected td.yui-dt-desc {
+	background-color:inherit;
+	color:inherit;
+}        </style>
+
+    </head>
+    
+    <body>
+    
+    	<h1>DataWiki</h1>
+    	
+    	<p>
+    		<xforms:input ref="instance('ins-entry')/atom:title">
+    			<xforms:label>Title: </xforms:label>
+    		</xforms:input>
+    		<xforms:submit submission="sub-post-entry">
+    			<xforms:label>New Entry</xforms:label>
+    		</xforms:submit>
+    	</p>
+
+		<h2>Entries</h2>
+		
+		<xforms:group ref="instance('ins-feed')">
+  			
+   			<fr:datatable 
+   				paginated="true" 
+   				sortAndPaginationMode="internal" 
+   				rowsPerPage="10"
+   				maxNbPagesToDisplay="9"
+   				width="100%">
+   			
+   				<thead>
+   					<tr>
+						<th fr:sortable="true" fr:resizeable="true">
+							Title
+						</th>	    						
+						<th fr:sortable="true" fr:resizeable="true">
+							Created
+						</th>	    						
+						<th fr:sortable="true" fr:resizeable="true">
+							Updated
+						</th>	    						
+   					</tr>
+   				</thead>
+   				
+   				<tbody>
+   					<xforms:repeat nodeset="atom:entry">
+   						<tr>
+							<td>
+								<a href="view?entry={atom:link[@rel='edit']/@href}">
+									<xforms:output ref="atom:title"/>
+								</a>
+							</td>	    						
+							<td>
+								<xforms:output ref="atom:published" xxforms:format="format-dateTime(., '[D01]/[M01]/[Y] - [h01]:[m01]:[s01]')"/>
+							</td>	    						
+							<td>
+								<xforms:output ref="atom:updated" xxforms:format="format-dateTime(., '[D01]/[M01]/[Y] - [h01]:[m01]:[s01]')"/>
+							</td>	    						
+   						</tr>
+   					</xforms:repeat>
+   				</tbody>
+   				
+   			</fr:datatable>
+
+		</xforms:group>
+		    	
+    	
+    </body>
+</html>
