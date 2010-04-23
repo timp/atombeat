@@ -67,9 +67,10 @@
     	<p>
     		<xforms:input ref="instance('ins-entry')/atom:title">
     			<xforms:label>Title: </xforms:label>
+    			<xforms:send ev:event="DOMActivate" submission="sub-post-entry"/>
     		</xforms:input>
     		<xforms:submit submission="sub-post-entry">
-    			<xforms:label>New Entry</xforms:label>
+    			<xforms:label><img src="/apps/fr/style/new.gif"/> New Entry</xforms:label>
     		</xforms:submit>
     	</p>
 
@@ -82,7 +83,7 @@
    				sortAndPaginationMode="internal" 
    				rowsPerPage="10"
    				maxNbPagesToDisplay="9"
-   				width="100%">
+   				>
    			
    				<thead>
    					<tr>

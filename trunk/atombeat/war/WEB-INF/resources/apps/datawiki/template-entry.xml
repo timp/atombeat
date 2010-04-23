@@ -12,16 +12,19 @@
 						<label>Name</label>
 						<datatype>string</datatype>
 						<required>true</required>
+						<default/>
 					</th>
 					<th>
 						<label>Age</label>
 						<datatype>integer</datatype>
 						<required>true</required>
+						<default/>
 					</th>
 					<th>
 						<label>Gender</label>
 						<datatype>string</datatype>
 						<required>false</required>
+						<default/>
 					</th>
 				</tr>
 			</thead>

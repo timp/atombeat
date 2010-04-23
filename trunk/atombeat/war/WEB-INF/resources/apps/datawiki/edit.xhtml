@@ -16,25 +16,86 @@
       xmlns:xs="http://www.w3.org/2001/XMLSchema"
       xmlns:ev="http://www.w3.org/2001/xml-events"
       xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
-      xmlns:fr="http://orbeon.org/oxf/xml/form-runner">
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+      xmlns:atom="http://www.w3.org/2005/Atom">
       
     <head>
         <title>AtomBeat DataWiki</title>
         
         <xforms:model id="mod-main">
         
-            <xforms:instance id="ins-table" src="/apps/datawiki/template-table.xml"/>
+			<xforms:submission 
+				id="sub-get-entry"
+				resource="{xxforms:get-request-parameter('entry')}"
+				method="get"
+				replace="instance"
+				instance="ins-entry">
+			</xforms:submission>        
+
+			<xforms:submission 
+				id="sub-refresh-entry"
+				resource="{instance('ins-entry')/atom:link[@rel='edit']/@href}"
+				method="get"
+				replace="instance"
+				instance="ins-entry"
+				validate="false">
+                <xforms:message ev:event="xforms-submit-error" level="modal">An error occurred (<xforms:output value="event('error-type')"/>) while reloading data.</xforms:message>
+		        <xforms:message ev:event="xforms-submit-done" level="modal">The data have been restored to the last saved version.</xforms:message>
+			</xforms:submission>        
+
+			<xforms:send ev:event="xforms-model-construct-done" submission="sub-get-entry"/>
+			
+            <xforms:instance id="ins-entry">
+            	<atom:entry/>
+            </xforms:instance>
             
-            <xforms:bind nodeset="instance('ins-table')/tbody/tr">
+            <xforms:bind nodeset="instance('ins-entry')/atom:content/table/tbody/tr">
             
             	<xforms:bind nodeset="td">
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-table')/thead/tr/th[$p]/datatype = 'integer']" type="xs:integer"/>
+					
+					<!-- type integer -->
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'integer']" type="xs:integer"/>
+
+					<!-- required -->
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/required = 'true']" required="true()"/>
+
 	           	</xforms:bind>
  
             </xforms:bind>
             
+            <xforms:submission
+            	id="sub-put-entry"
+            	resource="{instance('ins-entry')/atom:link[@rel='edit']/@href}"
+            	ref="instance('ins-entry')"
+            	method="put"
+            	mediatype="application/atom+xml"
+            	replace="instance"
+            	instance="ins-entry"
+            	validate="false">
+                <xforms:message ev:event="xforms-submit-error" level="modal">An error occurred (<xforms:output value="event('error-type')"/>) while saving changes.</xforms:message>
+		        <xforms:message ev:event="xforms-submit-done" level="modal">
+		        	Your changes have been saved. Thank you.
+	        	</xforms:message>
+           	</xforms:submission>
+           	
+           	<xforms:instance id="ins-row-template">
+           		<tr xmlns=""/>
+           	</xforms:instance>
+           	
+           	<xforms:instance id="ins-cell-template">
+           		<td xmlns=""/>
+           	</xforms:instance>
+           	
+           	<!-- initialise row template depending on number of headers -->
+           	<xforms:action ev:event="xforms-model-construct-done" xxforms:iterate="instance('ins-entry')/atom:content/table/thead/tr/th">
+           		<xforms:insert context="instance('ins-row-template')" nodeset="td" origin="instance('ins-cell-template')"/> 
+           	</xforms:action>
+
         </xforms:model>
         
+        <link rel="stylesheet" type="text/css" href="/ops/yui/tabview/assets/skins/sam/tabview.css"></link>
+        <link rel="stylesheet" type="text/css" href="/ops/yui/datatable/assets/skins/sam/datatable.css"></link>
+
         <style type="text/css">
             .data-table { background-color: #fce5b6 }
             .data-table .add-td {  }
@@ -46,8 +107,155 @@
     </head>
     
     <body>
-    
-    	<p>Welcome to DataWiki! - Edit</p>
+
+    	<xforms:group ref="instance('ins-entry')">
+	
+			<p><a href="./">DataWiki</a></p>
+			
+			<h1><xforms:output ref="atom:title"/></h1>  
+			
+			<p></p>  	
+    	
+    		<div class="yui-navset yui-navset-top">
+    			<ul class="yui-nav">
+    				<li>
+    					<a href="view?entry={atom:link[@rel='edit']/@href}">
+	    					<em>View</em>
+    					</a>
+    				</li>
+    				<li class="selected">
+    					<a href="edit?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Edit</em>
+    					</a>
+   					</li>
+    				<li>
+    					<a href="schema?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Schema</em>
+    					</a>
+   					</li>
+    			</ul>
+    			
+    			<div class="yui-content">
+    				
+    				<p>
+    					<xforms:submit submission="sub-put-entry">
+    						<xforms:label><img src="/apps/fr/style/save.gif"/> Save Changes</xforms:label>
+   						</xforms:submit>
+    					<xforms:submit submission="sub-refresh-entry">
+    						<xforms:label><img src="/apps/fr/style/trash.gif"/> Discard Changes</xforms:label>
+   						</xforms:submit>
+    				</p>
+    			
+    				<hr/>
+    				
+					<xforms:group ref="atom:content/table">
+					
+						<div class="yui-dt">
+							<div class="yui-dt-hd">
+								<table class="yui-dt-table">
+									<thead>
+										<tr>
+											<th>
+												<div class="yui-dt-liner">
+								                    <xforms:trigger appearance="minimal">
+								                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+								                        <xforms:insert 
+								                            ev:event="DOMActivate" 
+								                            context="tbody" 
+								                            nodeset="tr" 
+								                            at="1" 
+								                            position="before" 
+								                            origin="instance('ins-row-template')"/>
+								                    </xforms:trigger>
+												
+												</div>
+											</th>
+											<xforms:repeat nodeset="thead/tr/th">
+												<th>
+													<div class="yui-dt-liner">
+														<xforms:output value="label/text()"/>
+													</div>
+												</th>
+											</xforms:repeat>
+										</tr>
+									</thead>
+									<tbody class="yui-dt-data">
+										<xforms:repeat nodeset="tbody/tr" id="rep-row">
+											<tr class="
+												{if ( position() = 1 ) then 'yui-dt-first' else '' }
+												{if ( position() mod 2 = 0 ) then 'yui-dt-even' else 'yui-dt-odd' }">
+												<td>
+													<div class="yui-dt-liner">
+									                    <xforms:trigger appearance="minimal">
+									                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+									                        <xforms:insert 
+									                            ev:event="DOMActivate" 
+									                            context="." 
+									                            nodeset="." 
+									                            at="position()" 
+									                            position="after" 
+									                            origin="instance('ins-row-template')"/>
+									                    </xforms:trigger>
+								                        <xforms:trigger appearance="minimal">
+								                            <xforms:delete 
+								                                ev:event="DOMActivate" 
+								                                context="." 
+								                                nodeset="." 
+								                                at="index('rep-row')"/>
+								                            <xforms:label><img src="/apps/fr/style/delete.gif"/></xforms:label>
+								                        </xforms:trigger>
+								                        <xforms:trigger appearance="minimal" ref=".[preceding-sibling::*]">
+								                            <xforms:label><img src="/apps/fr/style/up.gif"/></xforms:label>
+								                            <xforms:action ev:event="DOMActivate">
+								                                <xforms:insert origin="context()" nodeset="preceding-sibling::*[1]" position="before"/>
+								                                <xforms:delete nodeset="."/>
+								                            </xforms:action>
+								                        </xforms:trigger>
+								                        <xforms:trigger appearance="minimal" ref=".[following-sibling::*]">
+								                            <xforms:label><img src="/apps/fr/style/down.gif"/></xforms:label>
+								                            <xforms:action ev:event="DOMActivate">
+								                                <xforms:insert origin="context()" nodeset="following-sibling::*[1]"/>
+								                                <xforms:delete nodeset="."/>
+								                            </xforms:action>
+								                        </xforms:trigger>
+													</div>
+												
+												</td>
+												<xforms:repeat nodeset="context()/td">
+													<td class="form-td">
+														<div class="yui-dt-liner">
+															<xforms:input ref="context()">
+																<xforms:label/>
+																<xforms:alert>The data are not valid.</xforms:alert>
+															</xforms:input>
+														</div>
+													</td>
+												</xforms:repeat>
+											</tr>
+										</xforms:repeat>
+									</tbody>
+								</table>
+							</div>
+						</div>
+		
+					</xforms:group>
+	
+					<hr/>
+					
+    				<p>
+    					<xforms:submit submission="sub-put-entry">
+    						<xforms:label><img src="/apps/fr/style/save.gif"/> Save Changes</xforms:label>
+   						</xforms:submit>
+    					<xforms:submit submission="sub-refresh-entry">
+    						<xforms:label><img src="/apps/fr/style/trash.gif"/> Discard Changes</xforms:label>
+   						</xforms:submit>
+    				</p>
+    			
+    			</div>
+    			
+   			</div>
+    			
+    	</xforms:group>
     	
     	<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
     		<p>
@@ -59,31 +267,6 @@
     		</p>
     	</xforms:repeat>
     			
-		<table class="data-table">
-			<thead>
-				<tr>
-					<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
-						<th class="add-td">
-							<xforms:output value="context()/text()"/>
-						</th>
-					</xforms:repeat>
-				</tr>
-			</thead>
-			<tbody>
-				<xforms:repeat nodeset="instance('ins-table')/tbody/tr">
-					<tr>
-						<xforms:repeat nodeset="context()/td">
-							<td class="form-td">
-								<xforms:input ref="context()">
-									<xforms:label/>
-									<xforms:alert>The data are not valid.</xforms:alert>
-								</xforms:input>
-							</td>
-						</xforms:repeat>
-					</tr>
-				</xforms:repeat>
-			</tbody>
-		</table>
     	
     </body>
 </html>

@@ -1,0 +1,297 @@
+<!--
+    Copyright (C) 2010 University of Oxford
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+      xmlns:atom="http://www.w3.org/2005/Atom">
+      
+    <head>
+        <title>AtomBeat DataWiki</title>
+        
+        <xforms:model id="mod-main">
+        
+			<xforms:submission 
+				id="sub-get-entry"
+				resource="{xxforms:get-request-parameter('entry')}"
+				method="get"
+				replace="instance"
+				instance="ins-entry">
+			</xforms:submission>        
+
+			<xforms:submission 
+				id="sub-refresh-entry"
+				resource="{instance('ins-entry')/atom:link[@rel='edit']/@href}"
+				method="get"
+				replace="instance"
+				instance="ins-entry">
+                <xforms:message ev:event="xforms-submit-error" level="modal">An error occurred (<xforms:output value="event('error-type')"/>) while saving changes.</xforms:message>
+		        <xforms:message ev:event="xforms-submit-done" level="modal">The data have been restored to the last saved version.</xforms:message>
+			</xforms:submission>        
+
+			<xforms:send ev:event="xforms-model-construct-done" submission="sub-get-entry"/>
+			
+            <xforms:instance id="ins-entry">
+            	<atom:entry/>
+            </xforms:instance>
+            
+            <xforms:bind nodeset="instance('ins-entry')/atom:content/table/thead/tr/th">
+            
+            	<xforms:bind nodeset="required" type="xs:boolean"/>
+ 
+            </xforms:bind>
+            
+            <xforms:bind nodeset="instance('ins-th-template')/required" type="xs:boolean"/>
+            
+            <xforms:submission
+            	id="sub-put-entry"
+            	resource="{instance('ins-entry')/atom:link[@rel='edit']/@href}"
+            	ref="instance('ins-entry')"
+            	method="put"
+            	mediatype="application/atom+xml"
+            	replace="instance"
+            	instance="ins-entry"
+            	validate="false">
+                <xforms:message ev:event="xforms-submit-error" level="modal">An error occurred (<xforms:output value="event('error-type')"/>) while reloading data.</xforms:message>
+		        <xforms:message ev:event="xforms-submit-done" level="modal">Your changes have been saved. Thank you.</xforms:message>
+           	</xforms:submission>
+           	
+           	<xforms:instance id="ins-th-template">
+           		<th xmlns="">
+           			<label>new column</label>
+           			<datatype>string</datatype>
+           			<required>true</required>
+           			<default/>
+           		</th>
+           	</xforms:instance>
+           	
+           	<xforms:instance id="ins-td-template">
+           		<td xmlns=""/>
+           	</xforms:instance>
+           	
+           	<!-- initialise row template depending on number of headers -->
+           	<xforms:action ev:event="xforms-model-construct-done" xxforms:iterate="instance('ins-entry')/atom:content/table/thead/tr/th">
+           		<xforms:insert context="instance('ins-row-template')" nodeset="td" origin="instance('ins-cell-template')"/> 
+           	</xforms:action>
+
+        </xforms:model>
+        
+        <link rel="stylesheet" type="text/css" href="/ops/yui/tabview/assets/skins/sam/tabview.css"></link>
+        <link rel="stylesheet" type="text/css" href="/ops/yui/datatable/assets/skins/sam/datatable.css"></link>
+
+        <style type="text/css">
+.xforms-repeat-selected-item-1 {
+	background-color: inherit;
+}        
+        </style>
+
+    </head>
+    
+    <body>
+
+    	<xforms:group ref="instance('ins-entry')">
+	
+			<p><a href="./">DataWiki</a></p>
+			
+			<h1><xforms:output ref="atom:title"/></h1>  
+			
+			<p></p>  	
+    	
+    		<div class="yui-navset yui-navset-top">
+    			<ul class="yui-nav">
+    				<li>
+    					<a href="view?entry={atom:link[@rel='edit']/@href}">
+	    					<em>View</em>
+    					</a>
+    				</li>
+    				<li>
+    					<a href="edit?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Edit</em>
+    					</a>
+   					</li>
+    				<li class="selected">
+    					<a href="schema?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Schema</em>
+    					</a>
+   					</li>
+    			</ul>
+    			
+    			<div class="yui-content">
+    				
+    				<p>
+    					<xforms:submit submission="sub-put-entry">
+    						<xforms:label><img src="/apps/fr/style/save.gif"/> Save Changes</xforms:label>
+   						</xforms:submit>
+    					<xforms:submit submission="sub-refresh-entry">
+    						<xforms:label><img src="/apps/fr/style/trash.gif"/> Discard Changes</xforms:label>
+   						</xforms:submit>
+    				</p>
+    				
+    				<hr/>
+    			
+					<xforms:group ref="atom:content/table">
+					
+	    				<h3>Add a Column</h3>
+
+						<xforms:group ref="instance('ins-th-template')">
+						
+							<p>
+								<xforms:input ref="label">
+									<xforms:label>Label: </xforms:label>
+								</xforms:input>
+							</p>
+							
+							<p>
+								<xforms:select1 ref="datatype">
+									<xforms:label>Datatype: </xforms:label>
+									<xforms:item>
+										<xforms:label>string</xforms:label>
+										<xforms:value>string</xforms:value>
+									</xforms:item>
+									<xforms:item>
+										<xforms:label>integer</xforms:label>
+										<xforms:value>integer</xforms:value>
+									</xforms:item>
+								</xforms:select1>
+							</p>
+							
+							<p>
+								<xforms:input ref="required">
+									<xforms:label>Required: </xforms:label>
+								</xforms:input>
+							</p>
+							
+							<p>
+								<xforms:input ref="default">
+									<xforms:label>Default value: </xforms:label>
+								</xforms:input>
+							</p>
+						</xforms:group>
+	    				
+	                    <xforms:trigger>
+	                        <xforms:label><img src="/apps/fr/style/add.gif"/> Add Column</xforms:label>
+	                        <xforms:insert 
+	                            ev:event="DOMActivate" 
+	                            context="thead/tr" 
+	                            nodeset="th" 
+	                            at="last()" 
+	                            position="after" 
+	                            origin="instance('ins-th-template')"/>
+                            <xforms:action ev:event="DOMActivate" xxforms:iterate="tbody/tr">
+	                            <xforms:insert
+	                            	context="."
+	                            	nodeset="td"
+	                            	at="last()"
+	                            	position="after"
+	                            	origin="instance('ins-td-template')"/>
+                            	<xforms:setvalue
+                            		ref="td[last()]"
+                            		value="instance('ins-th-template')/default"/>
+                            </xforms:action>
+	                    </xforms:trigger>
+						
+						<hr/>
+						
+						<xforms:repeat nodeset="thead/tr/th" id="rep-th">
+						
+							<h2><xforms:output ref="label"/></h2>
+							
+							<p>
+								<xforms:input ref="label">
+									<xforms:label>Label: </xforms:label>
+								</xforms:input>
+							</p>
+							
+							<p>
+								<xforms:select1 ref="datatype">
+									<xforms:label>Datatype: </xforms:label>
+									<xforms:item>
+										<xforms:label>string</xforms:label>
+										<xforms:value>string</xforms:value>
+									</xforms:item>
+									<xforms:item>
+										<xforms:label>integer</xforms:label>
+										<xforms:value>integer</xforms:value>
+									</xforms:item>
+								</xforms:select1>
+							</p>
+							
+							<p>
+								<xforms:input ref="required">
+									<xforms:label>Required: </xforms:label>
+								</xforms:input>
+							</p>
+							
+							<p>
+								<xforms:input ref="default">
+									<xforms:label>Default value: </xforms:label>
+								</xforms:input>
+							</p>
+							
+							<p>
+		                        <xforms:trigger>
+		                        	<xforms:action
+		                        		ev:event="DOMActivate">
+		                        		<xforms:delete
+		                        			context="."
+		                        			nodeset="."/>	
+	                        		</xforms:action>
+		                        	<xforms:action
+		                        		ev:event="DOMActivate"
+		                        		xxforms:iterate="instance('ins-entry')/atom:content/table/tbody/tr">
+			                            <xforms:delete 
+			                                context="." 
+			                                nodeset="td" 
+			                                at="index('rep-th')"/>
+	                        		</xforms:action>
+		                            <xforms:label><img src="/apps/fr/style/delete.gif"/> Delete Column</xforms:label>
+		                        </xforms:trigger>
+							</p>
+							
+						</xforms:repeat>
+						
+					</xforms:group>
+
+    				<hr/>
+
+    				<p>
+    					<xforms:submit submission="sub-put-entry">
+    						<xforms:label><img src="/apps/fr/style/save.gif"/> Save Changes</xforms:label>
+   						</xforms:submit>
+    					<xforms:submit submission="sub-refresh-entry">
+    						<xforms:label><img src="/apps/fr/style/trash.gif"/> Discard Changes</xforms:label>
+   						</xforms:submit>
+    				</p>
+    			
+    			</div>
+    			
+   			</div>
+    			
+    	</xforms:group>
+    	
+    	<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
+    		<p>
+    			<xforms:output value="label"/>
+    			<xforms:input ref="datatype">
+    				<xforms:label>datatype: </xforms:label>
+    				<xforms:rebuild ev:event="xforms-value-changed"/>
+    			</xforms:input>
+    		</p>
+    	</xforms:repeat>
+    			
+    	
+    </body>
+</html>
