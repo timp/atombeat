@@ -18,6 +18,11 @@ declare variable $collection-spec :=
             <path-info>/foo</path-info>
             <enable-history>true</enable-history>
         </collection>   
+        <collection>
+            <title>DataWiki</title>
+            <path-info>/datawiki</path-info>
+            <enable-history>true</enable-history>
+        </collection>   
     </spec>
 ;
 
