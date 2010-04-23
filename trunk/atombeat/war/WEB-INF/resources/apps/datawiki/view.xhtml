@@ -25,14 +25,14 @@
         
             <xforms:instance id="ins-table" src="/apps/datawiki/template-table.xml"/>
             
-            <xforms:bind nodeset="instance('ins-table')">
+            <xforms:bind nodeset="instance('ins-table')/tbody/tr">
             
-            	<xforms:bind id="bin-th-integer" nodeset="thead/tr/th[datatype='integer']"/>
-            
-            	<xforms:bind nodeset="tbody/tr/td[position() = instance('ins-table')/thead/tr/th[datatype='integer']/position()]" type="xs:integer"/>
-            
+            	<xforms:bind nodeset="td">
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-table')/thead/tr/th[$p]/datatype = 'integer']" type="xs:integer"/>
+	           	</xforms:bind>
+ 
             </xforms:bind>
-            
+
         </xforms:model>
         
         <style type="text/css">
@@ -49,77 +49,40 @@
     
     	<p>Welcome to DataWiki!</p>
     	
-    	<fr:tabview>
-    		<fr:tab>
-    			<fr:label>View Data</fr:label>
-    			
-    			<xforms:group ref="instance('ins-table')">
-    			
-	    			<fr:datatable 
-	    				paginated="true" 
-	    				sortAndPaginationMode="internal" 
-	    				rowsPerPage="10"
-	    				maxNbPagesToDisplay="9">
-	    			
-	    				<thead>
-	    					<tr>
-	    						<xforms:repeat nodeset="thead/tr/th">
-									<th fr:sortable="true" fr:resizeable="true">
-										<xforms:output value="label"/>
-									</th>	    						
-	    						</xforms:repeat>
-	    					</tr>
-	    				</thead>
-	    				
-	    				<tbody>
-	    					<xforms:repeat nodeset="tbody/tr">
-	    						<tr>
-		    						<xforms:repeat nodeset="td">
-										<td>
-											<xforms:output value="."/>
-										</td>	    						
-		    						</xforms:repeat>
-	    						</tr>
-	    					</xforms:repeat>
-	    				</tbody>
-	    				
-	    			</fr:datatable>
+  			<xforms:group ref="instance('ins-table')">
+  			
+   			<fr:datatable 
+   				paginated="true" 
+   				sortAndPaginationMode="internal" 
+   				rowsPerPage="10"
+   				maxNbPagesToDisplay="9">
+   			
+   				<thead>
+   					<tr>
+   						<xforms:repeat nodeset="thead/tr/th">
+							<th fr:sortable="true" fr:resizeable="true">
+								<xforms:output value="label"/>
+							</th>	    						
+   						</xforms:repeat>
+   					</tr>
+   				</thead>
+   				
+   				<tbody>
+   					<xforms:repeat nodeset="tbody/tr">
+   						<tr>
+    						<xforms:repeat nodeset="td">
+								<td>
+									<xforms:output value="."/>
+								</td>	    						
+    						</xforms:repeat>
+   						</tr>
+   					</xforms:repeat>
+   				</tbody>
+   				
+   			</fr:datatable>
 
-    			</xforms:group>
-    			
-    		</fr:tab>
-    		
-    		<fr:tab>
-    			<fr:label>Edit Data</fr:label>
-    			
-				<table class="data-table">
-					<thead>
-						<tr>
-							<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
-								<th class="add-td">
-									<xforms:output value="context()/text()"/>
-								</th>
-							</xforms:repeat>
-						</tr>
-					</thead>
-					<tbody>
-						<xforms:repeat nodeset="instance('ins-table')/tbody/tr">
-							<tr>
-								<xforms:repeat nodeset="context()/td">
-									<td class="form-td">
-										<xforms:input ref="context()">
-											<xforms:label/>
-											<xforms:alert>The data are not valid.</xforms:alert>
-										</xforms:input>
-									</td>
-								</xforms:repeat>
-							</tr>
-						</xforms:repeat>
-					</tbody>
-				</table>
-    			
-    		</fr:tab>
-    	</fr:tabview>
+		</xforms:group>
+ 			
     	
     </body>
 </html>

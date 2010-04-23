@@ -25,6 +25,14 @@
         
             <xforms:instance id="ins-table" src="/apps/datawiki/template-table.xml"/>
             
+            <xforms:bind nodeset="instance('ins-table')/tbody/tr">
+            
+            	<xforms:bind nodeset="td">
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-table')/thead/tr/th[$p]/datatype = 'integer']" type="xs:integer"/>
+	           	</xforms:bind>
+ 
+            </xforms:bind>
+            
         </xforms:model>
         
         <style type="text/css">
@@ -39,46 +47,43 @@
     
     <body>
     
-    	<p>Welcome to DataWiki!</p>
+    	<p>Welcome to DataWiki! - Edit</p>
     	
-    	<fr:tabview>
-    		<fr:tab>
-    			<fr:label>View Data</fr:label>
+    	<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
+    		<p>
+    			<xforms:output value="label"/>
+    			<xforms:input ref="datatype">
+    				<xforms:label>datatype: </xforms:label>
+    				<xforms:rebuild ev:event="xforms-value-changed"/>
+    			</xforms:input>
+    		</p>
+    	</xforms:repeat>
     			
-    			<xforms:group ref="instance('ins-table')">
-    			
-	    			<fr:datatable>
-	    			
-	    				<thead>
-	    					<tr>
-	    						<xforms:repeat nodeset="view/variables/variable" id="rep-view-variables">
-									<th fr:sortable="true" fr:resizeable="true">
-										<xforms:output value="instance('ins-table')/variables/variable[id=xxforms:context('rep-view-variables')]/label"/>
-									</th>	    						
-	    						</xforms:repeat>
-	    					</tr>
-	    				</thead>
-	    				
-	    				<tbody>
-	    					<xforms:repeat nodeset="view/tuples/tuple" id="rep-view-tuples">
-	    						<tr>
-		    						<xforms:repeat nodeset="instance('ins-table')/view/variables/variable" id="rep-row-view-variables">
-										<td>
-											<xforms:output value="instance('ins-table')/data/datum[tuple=xxforms:context('rep-view-tuples') and variable=xxforms:context('rep-row-view-variables')]/value"/>
-										</td>	    						
-		    						</xforms:repeat>
-	    						</tr>
-	    					</xforms:repeat>
-	    				</tbody>
-	    			</fr:datatable>
-
-    			</xforms:group>
-    			
-    		</fr:tab>
-    		<fr:tab>
-    			<fr:label>TODO</fr:label>
-    		</fr:tab>
-    	</fr:tabview>
+		<table class="data-table">
+			<thead>
+				<tr>
+					<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
+						<th class="add-td">
+							<xforms:output value="context()/text()"/>
+						</th>
+					</xforms:repeat>
+				</tr>
+			</thead>
+			<tbody>
+				<xforms:repeat nodeset="instance('ins-table')/tbody/tr">
+					<tr>
+						<xforms:repeat nodeset="context()/td">
+							<td class="form-td">
+								<xforms:input ref="context()">
+									<xforms:label/>
+									<xforms:alert>The data are not valid.</xforms:alert>
+								</xforms:input>
+							</td>
+						</xforms:repeat>
+					</tr>
+				</xforms:repeat>
+			</tbody>
+		</table>
     	
     </body>
 </html>

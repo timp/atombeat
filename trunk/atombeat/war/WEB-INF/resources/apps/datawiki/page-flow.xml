@@ -13,7 +13,9 @@
 -->
 <config xmlns="http://www.orbeon.com/oxf/controller">
 
-    <page path-info="*" view="view.xhtml"/>
+    <page path-info="/datawiki/view" view="view.xhtml"/>
+    <page path-info="/datawiki/view-denormalised" view="view-denormalised.xhtml"/>
+    <page path-info="/datawiki/edit" view="edit.xhtml"/>
 
     <epilogue url="oxf:/config/epilogue.xpl"/>
 
