@@ -20,6 +20,9 @@
     access control decisions to atombeat -->
     <intercept-url pattern="/atombeat/**" access="ROLE_USER" />
 
+    <!-- force authentication for all requests to datawiki -->
+    <intercept-url pattern="/datawiki/**" access="ROLE_USER" />
+
   </http>
   
   <authentication-provider>
