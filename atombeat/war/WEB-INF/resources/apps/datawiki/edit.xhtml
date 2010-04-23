@@ -198,7 +198,13 @@
 						</p>				
 						<p>
 							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
-								<xforms:label>&lt; previous</xforms:label>
+								<xforms:label>&lt;&lt; first</xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
+								<xforms:label>&lt; prev</xforms:label>
 								<xforms:action ev:event="DOMActivate">
 									<xforms:setvalue ref="instance('ins-page')/offset" value="max( ( 1, instance('ins-page')/offset - instance('ins-page')/items - 1 ) )"/>
 								</xforms:action>
@@ -207,6 +213,12 @@
 								<xforms:label>next ></xforms:label>
 								<xforms:action ev:event="DOMActivate">
 									<xforms:setvalue ref="instance('ins-page')/offset" value="instance('ins-page')/offset + instance('ins-page')/items + 1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
+								<xforms:label>last >></xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="( ( count(instance('ins-entry')/atom:content/table/tbody/tr) div ( instance('ins-page')/items + 1 ) ) cast as xs:integer ) * ( instance('ins-page')/items + 1 ) + 1"/>
 								</xforms:action>
 							</xforms:trigger>
 						</p>
@@ -307,15 +319,27 @@
 
 						<p>
 							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
-								<xforms:label>&lt; previous</xforms:label>
+								<xforms:label>&lt;&lt; first</xforms:label>
 								<xforms:action ev:event="DOMActivate">
-									<xforms:setvalue ref="instance('ins-page')/offset" value="instance('ins-page')/offset - instance('ins-page')/items - 1"/>
+									<xforms:setvalue ref="instance('ins-page')/offset" value="1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
+								<xforms:label>&lt; prev</xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="max( ( 1, instance('ins-page')/offset - instance('ins-page')/items - 1 ) )"/>
 								</xforms:action>
 							</xforms:trigger>
 							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
 								<xforms:label>next ></xforms:label>
 								<xforms:action ev:event="DOMActivate">
 									<xforms:setvalue ref="instance('ins-page')/offset" value="instance('ins-page')/offset + instance('ins-page')/items + 1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
+								<xforms:label>last >></xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="( ( count(instance('ins-entry')/atom:content/table/tbody/tr) div ( instance('ins-page')/items + 1 ) ) cast as xs:integer ) * ( instance('ins-page')/items + 1 ) + 1"/>
 								</xforms:action>
 							</xforms:trigger>
 						</p>
