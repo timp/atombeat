@@ -41,7 +41,14 @@
             <xforms:bind nodeset="instance('ins-entry')/atom:content/table/tbody/tr">
             
             	<xforms:bind nodeset="td">
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'integer']" type="xs:integer"/>
+            	
+					<!-- type bindings - needed to ensure datatable sorts properly -->
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'integer']" type="xforms:integer"/>
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'boolean']" type="xforms:boolean"/>
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'date']" type="xforms:date"/>
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'time']" type="xforms:time"/>
+    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'decimal']" type="xforms:decimal"/>
+
 	           	</xforms:bind>
  
             </xforms:bind>
@@ -53,7 +60,19 @@
 .yui-skin-sam tr.yui-dt-selected td, .yui-skin-sam tr.yui-dt-selected td.yui-dt-asc, .yui-skin-sam tr.yui-dt-selected td.yui-dt-desc {
 	background-color:inherit;
 	color:inherit;
-}        </style>
+}
+
+.yui-skin-sam .yui-dt-scrollable .yui-dt-hd {
+	border-top: none;
+	border-bottom: none;
+	border-left: none;
+	border-right: none;
+}
+
+.yui-skin-sam .yui-dt-scrollable table {
+	border: 1px solid #7F7F7F;
+}
+        </style>
 
     </head>
     
@@ -88,39 +107,170 @@
     			
     			<div class="yui-content">
     			
-					<xforms:group ref="atom:content/table">
+    				<p>
+    					Rows per page:
+    					<xforms:trigger appearance="minimal">
+    						<xforms:label>10</xforms:label>
+    						<xforms:toggle ev:event="DOMActivate" case="view-10"/>
+    					</xforms:trigger> |
+    					<xforms:group ref="instance('ins-entry')[count(atom:content/table/tbody/tr) gt 50]">
+	    					<xforms:trigger appearance="minimal">
+	    						<xforms:label>50</xforms:label>
+	    						<xforms:toggle ev:event="DOMActivate" case="view-50"/>
+	    					</xforms:trigger> |
+    					</xforms:group>
+    					<xforms:group ref="instance('ins-entry')[count(atom:content/table/tbody/tr) gt 100]">
+	    					<xforms:trigger appearance="minimal">
+	    						<xforms:label>100</xforms:label>
+	    						<xforms:toggle ev:event="DOMActivate" case="view-100"/>
+	    					</xforms:trigger> |
+    					</xforms:group>
+    					<xforms:trigger appearance="minimal">
+    						<xforms:label>view all</xforms:label>
+    						<xforms:toggle ev:event="DOMActivate" case="view-all"/>
+    					</xforms:trigger>
+    				</p>
+    			
+					<xforms:group ref="atom:content/table" appearance="xxforms:internal">
 					
-			   			<fr:datatable 
-			   				paginated="true" 
-			   				sortAndPaginationMode="internal" 
-			   				rowsPerPage="10"
-			   				maxNbPagesToDisplay="9">
-			   			
-			   				<thead>
-			   					<tr>
-			   						<xforms:repeat nodeset="thead/tr/th">
-										<th fr:sortable="true" fr:resizeable="true">
-											<xforms:output value="label"/>
-										</th>	    						
-			   						</xforms:repeat>
-			   					</tr>
-			   				</thead>
-			   				
-			   				<tbody>
-			   					<xforms:repeat nodeset="tbody/tr">
-			   						<tr>
-			    						<xforms:repeat nodeset="td">
-											<td>
-												<xforms:output value="."/>
-											</td>	    						
-			    						</xforms:repeat>
-			   						</tr>
-			   					</xforms:repeat>
-			   				</tbody>
-			   				
-			   			</fr:datatable>
-		
-					</xforms:group>
+    				<xforms:switch>
+    				
+    					<xforms:case id="view-10" selected="true">
+    					
+				   			<fr:datatable 
+				   				paginated="true" 
+				   				sortAndPaginationMode="internal" 
+				   				rowsPerPage="10"
+				   				maxNbPagesToDisplay="9">
+				   			
+				   				<thead>
+				   					<tr>
+				   						<xforms:repeat nodeset="thead/tr/th">
+											<th fr:sortable="true" fr:resizeable="true">
+												<xforms:output value="label"/>
+											</th>	    						
+				   						</xforms:repeat>
+				   					</tr>
+				   				</thead>
+				   				
+				   				<tbody>
+				   					<xforms:repeat nodeset="tbody/tr">
+				   						<tr>
+				    						<xforms:repeat nodeset="td">
+												<td>
+													<xforms:output value="."/>
+												</td>	    						
+				    						</xforms:repeat>
+				   						</tr>
+				   					</xforms:repeat>
+				   				</tbody>
+				   				
+				   			</fr:datatable>
+				
+    					</xforms:case>
+    					
+    					<xforms:case id="view-50">
+    					
+				   			<fr:datatable 
+				   				paginated="true" 
+				   				sortAndPaginationMode="internal" 
+				   				rowsPerPage="50"
+				   				maxNbPagesToDisplay="9">
+				   			
+				   				<thead>
+				   					<tr>
+				   						<xforms:repeat nodeset="thead/tr/th">
+											<th fr:sortable="true" fr:resizeable="true">
+												<xforms:output value="label"/>
+											</th>	    						
+				   						</xforms:repeat>
+				   					</tr>
+				   				</thead>
+				   				
+				   				<tbody>
+				   					<xforms:repeat nodeset="tbody/tr">
+				   						<tr>
+				    						<xforms:repeat nodeset="td">
+												<td>
+													<xforms:output value="."/>
+												</td>	    						
+				    						</xforms:repeat>
+				   						</tr>
+				   					</xforms:repeat>
+				   				</tbody>
+				   				
+				   			</fr:datatable>
+			
+    					</xforms:case>
+    					
+    					<xforms:case id="view-100">
+   					
+				   			<fr:datatable 
+				   				paginated="true" 
+				   				sortAndPaginationMode="internal" 
+				   				rowsPerPage="100"
+				   				maxNbPagesToDisplay="9">
+				   			
+				   				<thead>
+				   					<tr>
+				   						<xforms:repeat nodeset="thead/tr/th">
+											<th fr:sortable="true" fr:resizeable="true">
+												<xforms:output value="label"/>
+											</th>	    						
+				   						</xforms:repeat>
+				   					</tr>
+				   				</thead>
+				   				
+				   				<tbody>
+				   					<xforms:repeat nodeset="tbody/tr">
+				   						<tr>
+				    						<xforms:repeat nodeset="td">
+												<td>
+													<xforms:output value="."/>
+												</td>	    						
+				    						</xforms:repeat>
+				   						</tr>
+				   					</xforms:repeat>
+				   				</tbody>
+				   				
+				   			</fr:datatable>
+				
+    					</xforms:case>
+    					
+    					<xforms:case id="view-all" selected="true">
+    					
+				   			<fr:datatable 
+				   				paginated="false">
+				   			
+				   				<thead>
+				   					<tr>
+				   						<xforms:repeat nodeset="thead/tr/th">
+											<th fr:sortable="true" fr:resizeable="true">
+												<xforms:output value="label"/>
+											</th>	    						
+				   						</xforms:repeat>
+				   					</tr>
+				   				</thead>
+				   				
+				   				<tbody>
+				   					<xforms:repeat nodeset="tbody/tr">
+				   						<tr>
+				    						<xforms:repeat nodeset="td">
+												<td>
+													<xforms:output value="."/>
+												</td>	    						
+				    						</xforms:repeat>
+				   						</tr>
+				   					</xforms:repeat>
+				   				</tbody>
+				   				
+				   			</fr:datatable>
+			
+    					</xforms:case>
+    					
+    				</xforms:switch>
+    				
+    				</xforms:group>
 
     			</div>
     			

@@ -73,7 +73,7 @@
            		<th xmlns="">
            			<label>new column</label>
            			<datatype>string</datatype>
-           			<required>true</required>
+           			<required>false</required>
            			<default/>
            		</th>
            	</xforms:instance>
@@ -86,6 +86,35 @@
            	<xforms:action ev:event="xforms-model-construct-done" xxforms:iterate="instance('ins-entry')/atom:content/table/thead/tr/th">
            		<xforms:insert context="instance('ins-row-template')" nodeset="td" origin="instance('ins-cell-template')"/> 
            	</xforms:action>
+           	
+           	<xforms:instance id="ins-datatypes">
+           		<items xmlns="">
+					<item>
+						<label>string</label>
+						<value>string</value>
+					</item>
+					<item>
+						<label>decimal</label>
+						<value>decimal</value>
+					</item>
+					<item>
+						<label>integer</label>
+						<value>integer</value>
+					</item>
+					<item>
+						<label>boolean</label>
+						<value>boolean</value>
+					</item>
+					<item>
+						<label>date</label>
+						<value>date</value>
+					</item>
+					<item>
+						<label>time</label>
+						<value>time</value>
+					</item>
+           		</items>
+           	</xforms:instance>
 
         </xforms:model>
         
@@ -157,14 +186,10 @@
 							<p>
 								<xforms:select1 ref="datatype">
 									<xforms:label>Datatype: </xforms:label>
-									<xforms:item>
-										<xforms:label>string</xforms:label>
-										<xforms:value>string</xforms:value>
-									</xforms:item>
-									<xforms:item>
-										<xforms:label>integer</xforms:label>
-										<xforms:value>integer</xforms:value>
-									</xforms:item>
+									<xforms:itemset nodeset="instance('ins-datatypes')/item">
+										<xforms:label ref="label"/>
+										<xforms:value ref="value"/>
+									</xforms:itemset>
 								</xforms:select1>
 							</p>
 							
@@ -218,14 +243,10 @@
 							<p>
 								<xforms:select1 ref="datatype">
 									<xforms:label>Datatype: </xforms:label>
-									<xforms:item>
-										<xforms:label>string</xforms:label>
-										<xforms:value>string</xforms:value>
-									</xforms:item>
-									<xforms:item>
-										<xforms:label>integer</xforms:label>
-										<xforms:value>integer</xforms:value>
-									</xforms:item>
+									<xforms:itemset nodeset="instance('ins-datatypes')/item">
+										<xforms:label ref="label"/>
+										<xforms:value ref="value"/>
+									</xforms:itemset>
 								</xforms:select1>
 							</p>
 							

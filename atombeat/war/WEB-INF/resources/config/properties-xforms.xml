@@ -59,7 +59,7 @@
     <property as="xs:string"  name="oxf.xforms.format.output.double"                    value="if (. castable as xs:double) then format-number(xs:double(.),'#,##0.000') else ."/>
 
 
-    <property as="xs:string"  name="oxf.xforms.format.input.date"                       value="[M]/[D]/[Y]"/> <!-- [M]/[D]/[Y]  or [D]/[M]/[Y] or [D].[M].[Y]-->
+    <property as="xs:string"  name="oxf.xforms.format.input.date"                       value="[D]/[M]/[Y]"/> <!-- [M]/[D]/[Y]  or [D]/[M]/[Y] or [D].[M].[Y]-->
     <property as="xs:string"  name="oxf.xforms.format.input.time"                       value="[h]:[m]:[s] [P]"/> <!-- [h]:[m]:[s] [P]  or  [H]:[m]:[s] -->
 
     <!-- XForms cache configuration -->
