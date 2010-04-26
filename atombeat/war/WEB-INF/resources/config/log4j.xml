@@ -142,7 +142,7 @@
     </category>
     
     <category name="org.orbeon">
-        <priority value="info"/>
+        <priority value="debug"/>
     </category>
     
     <category name="org.atombeat.http">
