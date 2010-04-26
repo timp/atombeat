@@ -53,16 +53,188 @@
             
             	<xforms:bind nodeset="td">
 					
+					<!--+
+						| N.B. These bindings assume that any changes to the schema will not happen dynamically. 
+						| If changes to the schema were made dynamically, the bindings would required a model 
+						| rebuild before being correct. 
+						+-->
+
+					<!-- required binding -->
+					
+    	       		<xforms:bind 
+    	       			id="bin-required"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/required = 'true']" 
+    	       			required="true()"/>
+
 					<!-- type bindings - N.B. use xforms:* types rather than xs:* types because xforms:* allow empty values, which permits typed but not required fields -->
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'integer']" type="xforms:integer"/>
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'boolean']" type="xforms:boolean"/>
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'date']" type="xforms:date"/>
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'time']" type="xforms:time"/>
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'decimal']" type="xforms:decimal"/>
+					
+    	       		<xforms:bind 
+    	       			id="bin-type-integer"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'integer']" 
+    	       			type="xforms:integer"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-boolean"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'boolean']" 
+    	       			type="xforms:boolean"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-date"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'date']" 
+    	       			type="xforms:date"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-time"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'time']" 
+    	       			type="xforms:time"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-decimal"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'decimal']" 
+    	       			type="xforms:decimal"/>
 
-					<!-- required -->
-    	       		<xforms:bind nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/required = 'true']" required="true()"/>
+					<!-- range bindings -->
+					
+					<!--+
+						| N.B. We cannot, unfortunately, use the index-of function
+						| to get the position of a node in the context of its
+						| siblings (which is needed to look up the corresponding th) 
+						| because index-of uses equality rather than
+						| identity to compare nodes, and two nodes are equal
+						| if they have the same name and content.
+						+-->
 
+					<xforms:bind id="bin-max-integer"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'integer'
+											and exists( $th/max/text() )
+											and $th/max castable as xs:integer
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:integer ) then 
+												if ( $th/max/@bound='inclusive' ) then ( xs:integer( $td ) le xs:integer( $th/max ) )
+												else ( xs:integer( $td ) lt xs:integer( $th/max ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-max-decimal"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'decimal'
+											and exists( $th/max/text() )
+											and $th/max castable as xs:decimal
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:decimal ) then 
+												if ( $th/max/@bound='inclusive' ) then ( xs:decimal( $td ) le xs:decimal( $th/max ) )
+												else ( xs:decimal( $td ) lt xs:decimal( $th/max ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-min-integer"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'integer'
+											and exists( $th/min/text() )
+											and $th/min castable as xs:integer
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:integer ) then 
+												if ( $th/min/@bound='inclusive' ) then ( xs:integer( $td ) ge xs:integer( $th/min ) )
+												else ( xs:integer( $td ) gt xs:integer( $th/min ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-min-decimal"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'decimal'
+											and exists( $th/min/text() )
+											and $th/min castable as xs:decimal
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:decimal ) then 
+												if ( $th/min/@bound='inclusive' ) then ( xs:decimal( $td ) ge xs:decimal( $th/min ) )
+												else ( xs:decimal( $td ) gt xs:decimal( $th/min ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-pattern"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[exists( $th/pattern/text() )]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											matches( $td/text() , $th/pattern/text() ) 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-enumeration"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[exists( $th/enumeration/item )]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											( $td = $th/enumeration/item ) 
+									else ()
+						"
+					/>
+					
+					
 	           	</xforms:bind>
  
             </xforms:bind>
@@ -257,7 +429,9 @@
 										</tr>
 									</thead>
 									<tbody class="yui-dt-data">
-										<xforms:repeat nodeset="for $i in instance('ins-page')/from to instance('ins-page')/to return tbody/tr[$i]" id="rep-row">
+										<xforms:repeat 
+											nodeset="for $i in instance('ins-page')/from to instance('ins-page')/to return tbody/tr[$i]" 
+											id="rep-row">
 											<tr class="
 												{if ( position() = 1 ) then 'yui-dt-first' else '' }
 												{if ( position() mod 2 = 0 ) then 'yui-dt-even' else 'yui-dt-odd' }">
@@ -300,13 +474,40 @@
 													</div>
 												
 												</td>
-												<xforms:repeat nodeset="context()/td">
+												<xforms:repeat 
+													nodeset="context()/td"
+													id="rep-cell">
 													<td class="form-td">
 														<div class="yui-dt-liner">
-															<xforms:input ref="context()">
+														
+															<xforms:input ref="
+																for $p in (position()) return
+																	context()[empty(instance('ins-entry')/atom:content/table/thead/tr/th[$p]/enumeration/item)]">
 																<xforms:label/>
 																<xforms:alert>The data are not valid.</xforms:alert>
 															</xforms:input>
+															
+															<xforms:select1 ref="
+																for $p in (position()) return
+																	context()[exists(instance('ins-entry')/atom:content/table/thead/tr/th[$p]/enumeration/item)]">
+																<xforms:label/>
+																<xforms:item>
+																	<xforms:label>select...</xforms:label>
+																	<xforms:value/>
+																</xforms:item>
+																<xforms:itemset nodeset="
+																	for $p in ../td/position() return
+																		for $td in ../td[$p] return
+																			if ( . is $td ) then 
+																				for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+																					$th/enumeration/item
+																			else ()">
+																	<xforms:label ref="."/>
+																	<xforms:value ref="."/>
+																</xforms:itemset>
+																<xforms:alert>The data are not valid.</xforms:alert>
+															</xforms:select1>
+
 														</div>
 													</td>
 												</xforms:repeat>
@@ -362,17 +563,6 @@
    			</div>
     			
     	</xforms:group>
-    	
-    	<xforms:repeat nodeset="instance('ins-table')/thead/tr/th">
-    		<p>
-    			<xforms:output value="label"/>
-    			<xforms:input ref="datatype">
-    				<xforms:label>datatype: </xforms:label>
-    				<xforms:rebuild ev:event="xforms-value-changed"/>
-    			</xforms:input>
-    		</p>
-    	</xforms:repeat>
-    			
     	
     </body>
 </html>

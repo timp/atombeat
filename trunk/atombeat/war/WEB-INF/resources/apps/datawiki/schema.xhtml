@@ -51,10 +51,22 @@
             <xforms:bind nodeset="instance('ins-entry')/atom:content/table/thead/tr/th">
             
             	<xforms:bind nodeset="required" type="xs:boolean"/>
- 
+            	<xforms:bind nodeset="min" relevant="../datatype = 'integer' or ../datatype='decimal'"/>
+            	<xforms:bind nodeset="max" relevant="../datatype = 'integer' or ../datatype='decimal'"/>
+            	<xforms:bind nodeset="pattern" relevant="../datatype = 'string' and empty(../enumeration/item)"/>
+            	<xforms:bind nodeset="enumeration" relevant="../datatype != 'boolean' and ( empty(../pattern/text()) or ../pattern/text() = '') "/>
+
             </xforms:bind>
             
-            <xforms:bind nodeset="instance('ins-th-template')/required" type="xs:boolean"/>
+            <xforms:bind nodeset="instance('ins-th-template')">
+            
+            	<xforms:bind nodeset="required" type="xs:boolean"/>
+            	<xforms:bind nodeset="min" relevant="../datatype = 'integer' or ../datatype='decimal'"/>
+            	<xforms:bind nodeset="max" relevant="../datatype = 'integer' or ../datatype='decimal'"/>
+            	<xforms:bind nodeset="pattern" relevant="../datatype = 'string' and empty(../enumeration/item)"/>
+            	<xforms:bind nodeset="enumeration" relevant="../datatype != 'boolean' and ( empty(../pattern/text()) or ../pattern/text() = '') "/>
+
+            </xforms:bind>
             
             <xforms:submission
             	id="sub-put-entry"
@@ -75,11 +87,19 @@
            			<datatype>string</datatype>
            			<required>false</required>
            			<default/>
+					<min bound="inclusive"/>
+					<max bound="inclusive"/>
+					<pattern/>
+					<enumeration/>
            		</th>
            	</xforms:instance>
            	
            	<xforms:instance id="ins-td-template">
            		<td xmlns=""/>
+           	</xforms:instance>
+           	
+           	<xforms:instance id="ins-item-template">
+           		<item xmlns=""/>
            	</xforms:instance>
            	
            	<!-- initialise row template depending on number of headers -->
@@ -204,30 +224,166 @@
 									<xforms:label>Default value: </xforms:label>
 								</xforms:input>
 							</p>
+							
+							<p>
+								<xforms:input ref="min">
+									<xforms:label>Minimum: </xforms:label>
+								</xforms:input>
+								<xforms:select1 ref="min/@bound">
+									<xforms:label/>
+									<xforms:item>
+										<xforms:label>inclusive</xforms:label>
+										<xforms:value>inclusive</xforms:value>
+									</xforms:item>
+									<xforms:item>
+										<xforms:label>exclusive</xforms:label>
+										<xforms:value>exclusive</xforms:value>
+									</xforms:item>
+								</xforms:select1>
+							</p>
+							
+							<p>
+								<xforms:input ref="max">
+									<xforms:label>Maximum: </xforms:label>
+								</xforms:input>
+								<xforms:select1 ref="max/@bound">
+									<xforms:label/>
+									<xforms:item>
+										<xforms:label>inclusive</xforms:label>
+										<xforms:value>inclusive</xforms:value>
+									</xforms:item>
+									<xforms:item>
+										<xforms:label>exclusive</xforms:label>
+										<xforms:value>exclusive</xforms:value>
+									</xforms:item>
+								</xforms:select1>
+							</p>
+							
+							<p>
+								<xforms:input ref="pattern">
+									<xforms:label>Pattern: </xforms:label>
+								</xforms:input>
+							</p>
+							
+							<xforms:group ref="enumeration">
+							
+								<p>Enumeration: </p>
+								<div class="yui-dt">
+									<div class="yui-dt-hd">
+										<table class="yui-dt-table">
+											<thead>
+												<tr>
+													<th>
+														<div class="yui-dt-liner">
+										                    <xforms:trigger appearance="minimal">
+										                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+										                        <xforms:insert 
+										                            ev:event="DOMActivate" 
+										                            context="." 
+										                            nodeset="item" 
+										                            at="1" 
+										                            position="before" 
+										                            origin="instance('ins-item-template')"/>
+										                    </xforms:trigger>
+														</div>
+													</th>
+													<th>
+														<div class="yui-dt-liner">
+										                    <xforms:trigger appearance="minimal">
+										                        <xforms:label>Add an Item</xforms:label>
+										                        <xforms:insert 
+										                            ev:event="DOMActivate" 
+										                            context="." 
+										                            nodeset="item" 
+										                            at="1" 
+										                            position="before" 
+										                            origin="instance('ins-item-template')"/>
+										                    </xforms:trigger>
+														</div>
+													</th>
+												</tr>
+											</thead>
+											<tbody class="yui-dt-data">
+												<xforms:repeat 
+													nodeset="item" 
+													id="rep-item">
+													<tr class="
+														{if ( position() = 1 ) then 'yui-dt-first' else '' }
+														{if ( position() mod 2 = 0 ) then 'yui-dt-even' else 'yui-dt-odd' }">
+														<td>
+															<div class="yui-dt-liner">
+											                    <xforms:trigger appearance="minimal">
+											                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+											                        <xforms:insert 
+											                            ev:event="DOMActivate" 
+											                            context="." 
+											                            nodeset="." 
+											                            at="position()" 
+											                            position="after" 
+											                            origin="instance('ins-item-template')"/>
+											                    </xforms:trigger>
+											                    <xforms:trigger appearance="minimal">
+										                            <xforms:delete 
+										                                ev:event="DOMActivate" 
+										                                context="." 
+										                                nodeset="." 
+										                                at="index('rep-item')"/>
+										                            <xforms:label><img src="/apps/fr/style/delete.gif"/></xforms:label>
+										                        </xforms:trigger>
+										                        <xforms:trigger appearance="minimal" ref=".[preceding-sibling::*]">
+										                            <xforms:label><img src="/apps/fr/style/up.gif"/></xforms:label>
+										                            <xforms:action ev:event="DOMActivate">
+										                                <xforms:insert origin="context()" nodeset="preceding-sibling::*[1]" position="before"/>
+										                                <xforms:delete nodeset="."/>
+										                            </xforms:action>
+										                        </xforms:trigger>
+										                        <xforms:trigger appearance="minimal" ref=".[following-sibling::*]">
+										                            <xforms:label><img src="/apps/fr/style/down.gif"/></xforms:label>
+										                            <xforms:action ev:event="DOMActivate">
+										                                <xforms:insert origin="context()" nodeset="following-sibling::*[1]"/>
+										                                <xforms:delete nodeset="."/>
+										                            </xforms:action>
+										                        </xforms:trigger>
+															</div>
+														</td>
+														<td>
+															<xforms:input ref=".">
+																<xforms:label/>
+															</xforms:input>
+														</td>
+													</tr>
+												</xforms:repeat>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</xforms:group>
+
 						</xforms:group>
 	    				
-	                    <xforms:trigger>
-	                        <xforms:label><img src="/apps/fr/style/add.gif"/> Add Column</xforms:label>
-	                        <xforms:insert 
-	                            ev:event="DOMActivate" 
-	                            context="thead/tr" 
-	                            nodeset="th" 
-	                            at="last()" 
-	                            position="after" 
-	                            origin="instance('ins-th-template')"/>
-                            <xforms:action ev:event="DOMActivate" xxforms:iterate="tbody/tr">
-	                            <xforms:insert
-	                            	context="."
-	                            	nodeset="td"
-	                            	at="last()"
-	                            	position="after"
-	                            	origin="instance('ins-td-template')"/>
-                            	<xforms:setvalue
-                            		ref="td[last()]"
-                            		value="instance('ins-th-template')/default"/>
-                            </xforms:action>
-	                    </xforms:trigger>
-						
+	    				<p>
+		                    <xforms:trigger>
+		                        <xforms:label><img src="/apps/fr/style/add.gif"/> Add Column</xforms:label>
+		                        <xforms:insert 
+		                            ev:event="DOMActivate" 
+		                            context="thead/tr" 
+		                            nodeset="th" 
+		                            at="last()" 
+		                            position="after" 
+		                            origin="instance('ins-th-template')"/>
+	                            <xforms:action ev:event="DOMActivate" xxforms:iterate="tbody/tr">
+		                            <xforms:insert
+		                            	context="."
+		                            	nodeset="td"
+		                            	at="last()"
+		                            	position="after"
+		                            	origin="instance('ins-td-template')"/>
+	                            	<xforms:setvalue
+	                            		ref="td[last()]"
+	                            		value="instance('ins-th-template')/default"/>
+	                            </xforms:action>
+		                    </xforms:trigger>
+						</p>
 						<hr/>
 						
 						<xforms:repeat nodeset="thead/tr/th" id="rep-th">
@@ -263,6 +419,137 @@
 							</p>
 							
 							<p>
+								<xforms:input ref="min">
+									<xforms:label>Minimum: </xforms:label>
+								</xforms:input>
+								<xforms:select1 ref="min/@bound">
+									<xforms:label/>
+									<xforms:item>
+										<xforms:label>inclusive</xforms:label>
+										<xforms:value>inclusive</xforms:value>
+									</xforms:item>
+									<xforms:item>
+										<xforms:label>exclusive</xforms:label>
+										<xforms:value>exclusive</xforms:value>
+									</xforms:item>
+								</xforms:select1>
+							</p>
+							
+							<p>
+								<xforms:input ref="max">
+									<xforms:label>Maximum: </xforms:label>
+								</xforms:input>
+								<xforms:select1 ref="max/@bound">
+									<xforms:label/>
+									<xforms:item>
+										<xforms:label>inclusive</xforms:label>
+										<xforms:value>inclusive</xforms:value>
+									</xforms:item>
+									<xforms:item>
+										<xforms:label>exclusive</xforms:label>
+										<xforms:value>exclusive</xforms:value>
+									</xforms:item>
+								</xforms:select1>
+							</p>
+
+							<p>
+								<xforms:input ref="pattern">
+									<xforms:label>Pattern: </xforms:label>
+								</xforms:input>
+							</p>
+
+
+							<xforms:group ref="enumeration">
+							
+								<p>Enumeration: </p>
+								<div class="yui-dt">
+									<div class="yui-dt-hd">
+										<table class="yui-dt-table">
+											<thead>
+												<tr>
+													<th>
+														<div class="yui-dt-liner">
+										                    <xforms:trigger appearance="minimal">
+										                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+										                        <xforms:insert 
+										                            ev:event="DOMActivate" 
+										                            context="." 
+										                            nodeset="item" 
+										                            at="1" 
+										                            position="before" 
+										                            origin="instance('ins-item-template')"/>
+										                    </xforms:trigger>
+														</div>
+													</th>
+													<th>
+														<div class="yui-dt-liner">
+										                    <xforms:trigger appearance="minimal">
+										                        <xforms:label>Add an Item</xforms:label>
+										                        <xforms:insert 
+										                            ev:event="DOMActivate" 
+										                            context="." 
+										                            nodeset="item" 
+										                            at="1" 
+										                            position="before" 
+										                            origin="instance('ins-item-template')"/>
+										                    </xforms:trigger>
+														</div>
+													</th>
+												</tr>
+											</thead>
+											<tbody class="yui-dt-data">
+												<xforms:repeat 
+													nodeset="item" 
+													id="rep-entry-item">
+													<tr class="
+														{if ( position() = 1 ) then 'yui-dt-first' else '' }
+														{if ( position() mod 2 = 0 ) then 'yui-dt-even' else 'yui-dt-odd' }">
+														<td>
+															<div class="yui-dt-liner">
+											                    <xforms:trigger appearance="minimal">
+											                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+											                        <xforms:insert 
+											                            ev:event="DOMActivate" 
+											                            context="." 
+											                            nodeset="." 
+											                            at="position()" 
+											                            position="after" 
+											                            origin="instance('ins-item-template')"/>
+											                    </xforms:trigger><xforms:trigger appearance="minimal">
+										                            <xforms:delete 
+										                                ev:event="DOMActivate" 
+										                                context="." 
+										                                nodeset="." 
+										                                at="index('rep-entry-item')"/>
+										                            <xforms:label><img src="/apps/fr/style/delete.gif"/></xforms:label>
+										                        </xforms:trigger><xforms:trigger appearance="minimal" ref=".[preceding-sibling::*]">
+										                            <xforms:label><img src="/apps/fr/style/up.gif"/></xforms:label>
+										                            <xforms:action ev:event="DOMActivate">
+										                                <xforms:insert origin="context()" nodeset="preceding-sibling::*[1]" position="before"/>
+										                                <xforms:delete nodeset="."/>
+										                            </xforms:action>
+										                        </xforms:trigger><xforms:trigger appearance="minimal" ref=".[following-sibling::*]">
+										                            <xforms:label><img src="/apps/fr/style/down.gif"/></xforms:label>
+										                            <xforms:action ev:event="DOMActivate">
+										                                <xforms:insert origin="context()" nodeset="following-sibling::*[1]"/>
+										                                <xforms:delete nodeset="."/>
+										                            </xforms:action>
+										                        </xforms:trigger>
+															</div>
+														</td>
+														<td>
+															<xforms:input ref=".">
+																<xforms:label/>
+															</xforms:input>
+														</td>
+													</tr>
+												</xforms:repeat>
+											</tbody>
+										</table>
+									</div>
+								</div>
+							</xforms:group>
+							<p>
 		                        <xforms:trigger>
 		                        	<xforms:action
 		                        		ev:event="DOMActivate">
@@ -280,6 +567,38 @@
 	                        		</xforms:action>
 		                            <xforms:label><img src="/apps/fr/style/delete.gif"/> Delete Column</xforms:label>
 		                        </xforms:trigger>
+		                        
+		                        <xforms:trigger ref=".[preceding-sibling::*]">
+		                            <xforms:label><img src="/apps/fr/style/up.gif"/> Move Up</xforms:label>
+
+		                            <xforms:action ev:event="DOMActivate" xxforms:iterate="instance('ins-entry')/atom:content/table/tbody/tr">
+		                            	<xforms:insert origin="context()/td[index('rep-th')]" nodeset="context()/td[index('rep-th')-1]" position="before"/> 
+		                            	<xforms:delete nodeset="context()/td[index('rep-th')+1]"/>
+		                            </xforms:action>
+		                            
+		                            <xforms:action ev:event="DOMActivate">
+		                                <xforms:insert origin="context()" nodeset="preceding-sibling::*[1]" position="before"/>
+		                                <xforms:delete nodeset="."/>
+		                            </xforms:action>
+		                            
+		                        </xforms:trigger>
+		                        
+		                        <xforms:trigger ref=".[following-sibling::*]">
+		                            <xforms:label><img src="/apps/fr/style/down.gif"/> Move Down</xforms:label>
+
+		                            <xforms:action ev:event="DOMActivate" xxforms:iterate="instance('ins-entry')/atom:content/table/tbody/tr">
+		                            	<xforms:insert origin="context()/td[index('rep-th')]" nodeset="context()/td[index('rep-th')+1]"/> 
+		                            	<xforms:delete nodeset="context()/td[index('rep-th')]"/>
+		                            </xforms:action>
+		                            
+		                            <xforms:action ev:event="DOMActivate">
+		                                <xforms:insert origin="context()" nodeset="following-sibling::*[1]"/>
+		                                <xforms:delete nodeset="."/>
+		                            </xforms:action>
+		                            
+		                        </xforms:trigger>
+		                        
+		                        
 							</p>
 							
 						</xforms:repeat>
