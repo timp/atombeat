@@ -428,7 +428,7 @@ declare function sp:filter-feed-by-acls(
                     return 
                         if ( not( $forbidden ) ) 
                         then 
-                            let $can-update-acl := sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () )
+                            let $can-update-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
                             return
                                 if ( $can-update-acl ) then sp:append-edit-acl-links( $entry-path-info , $entry ) 
                                 else $entry
