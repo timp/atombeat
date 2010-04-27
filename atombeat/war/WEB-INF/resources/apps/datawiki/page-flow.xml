@@ -17,6 +17,8 @@
     <page path-info="/datawiki/view" view="view.xhtml"/>
     <page path-info="/datawiki/edit" view="edit.xhtml"/>
     <page path-info="/datawiki/schema" view="schema.xhtml"/>
+    <page path-info="/datawiki/history" view="history.xhtml"/>
+    <page path-info="/datawiki/revisions" view="revisions.xhtml"/>
 
     <epilogue url="oxf:/config/epilogue.xpl"/>
 

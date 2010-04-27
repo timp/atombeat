@@ -95,7 +95,10 @@
 						</th>	    						
 						<th fr:sortable="true" fr:resizeable="true">
 							Updated
-						</th>	    						
+						</th>	 
+						<th>
+							Actions
+						</th>   						
    					</tr>
    				</thead>
    				
@@ -112,7 +115,14 @@
 							</td>	    						
 							<td>
 								<xforms:output ref="atom:updated" xxforms:format="format-dateTime(., '[D01]/[M01]/[Y] - [h01]:[m01]:[s01]')"/>
-							</td>	    						
+							</td>	 
+							<td>
+								<a href="view?entry={atom:link[@rel='edit']/@href}">View</a> |
+								<a href="edit?entry={atom:link[@rel='edit']/@href}">Edit</a> | 
+								<a href="schema?entry={atom:link[@rel='edit']/@href}">Schema</a> | 
+								<a href="history?entry={atom:link[@rel='edit']/@href}">History</a> |
+								<a href="revisions?entry={atom:link[@rel='edit']/@href}">Revisions</a>
+							</td>   						
    						</tr>
    					</xforms:repeat>
    				</tbody>

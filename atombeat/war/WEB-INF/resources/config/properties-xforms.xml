@@ -138,6 +138,6 @@
     <property as="xs:boolean" name="oxf.epilogue.xforms.widgets"                            value="true"/>
     <property as="xs:anyURI"  name="oxf.epilogue.xforms.widgets.uri"                        value="oxf:/config/xforms-widgets.xsl"/>
     <property as="xs:boolean" name="oxf.epilogue.xforms.widgets.auto-include-fr-widgets"    value="true"/>
-    <property as="xs:boolean" name="oxf.epilogue.xforms.inspector"                          value="false"/>
+    <property as="xs:boolean" name="oxf.epilogue.xforms.inspector"                          value="true"/>
 
 </properties>

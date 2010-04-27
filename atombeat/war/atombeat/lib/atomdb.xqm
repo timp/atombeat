@@ -117,7 +117,7 @@ declare function atomdb:media-link-available(
         else
             let $entry-doc := atomdb:retrieve-entry( $request-path-info )
             let $log := util:log( "debug" , $entry-doc )
-            let $edit-media-link := $entry-doc/atom:entry/atom:link[@rel="edit-media"]
+            let $edit-media-link := $entry-doc/*/atom:link[@rel="edit-media"]
             let $log := util:log( "debug" , $edit-media-link )
             let $available := exists( $edit-media-link )
             let $log := util:log( "debug" , $available )
@@ -253,7 +253,7 @@ declare function atomdb:update-collection(
 		 
 		let $feed-doc-db-path := atomdb:feed-doc-db-path( $collection-db-path )
 
-		let $feed := atomdb:update-feed( doc( $feed-doc-db-path )/atom:feed , $request-data )
+		let $feed := atomdb:update-feed( doc( $feed-doc-db-path )/* , $request-data )
 		
 		return xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 			
@@ -731,7 +731,7 @@ declare function atomdb:retrieve-feed(
 		let $feed-doc-db-path := atomdb:feed-doc-db-path( $db-collection-path )
 		let $log := util:log( "debug" , $feed-doc-db-path )
 
-        let $feed := doc( $feed-doc-db-path )/atom:feed
+        let $feed := doc( $feed-doc-db-path )/*
         let $log := util:log( "debug" , $feed )
 		
 		let $complete-feed :=
@@ -742,7 +742,7 @@ declare function atomdb:retrieve-feed(
 				for $c in $feed/child::* return $c ,
 				for $child in xmldb:get-child-resources( $db-collection-path )
 				let $is-entry-doc := ( not( ends-with( $child, ".media" ) ) and not( ends-with( $child , ".feed" ) ) )
-				let $entry := if ( $is-entry-doc ) then doc( concat( $db-collection-path , "/" , $child ) )/atom:entry else ()
+				let $entry := if ( $is-entry-doc ) then doc( concat( $db-collection-path , "/" , $child ) )/* else ()
 				order by $entry/atom:updated descending
 				return $entry
 			}
@@ -833,6 +833,6 @@ declare function atomdb:get-media-link(
 	
 	let $media-doc-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
 	let $media-link-doc-db-path := replace( $media-doc-db-path , "^(.*)\.media$" , "$1.atom" )
-	return doc( $media-link-doc-db-path )/atom:entry
+	return doc( $media-link-doc-db-path )/*
 
 };
