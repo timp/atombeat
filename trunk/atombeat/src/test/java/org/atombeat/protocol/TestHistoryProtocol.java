@@ -4,6 +4,7 @@ package org.atombeat.protocol;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.apache.commons.httpclient.methods.PutMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -22,7 +23,22 @@ public class TestHistoryProtocol extends TestCase {
 
 	private String collectionUri = null;
 	
-	
+
+	public TestHistoryProtocol() {
+
+		// need to run install once to ensure default global acl is stored
+		
+		String installUrl = BASE_URI + "admin/install-example.xql";
+		
+		GetMethod method = new GetMethod(installUrl);
+		
+		int result = executeMethod(method, "adam", "test");
+		
+		if (result != 200) {
+			throw new RuntimeException("installation failed: "+result);
+		}
+
+	}
 	
 	public void setUp() {
 		
@@ -300,6 +316,67 @@ public class TestHistoryProtocol extends TestCase {
 			assertEquals("no", revision.getAttribute("initial"));
 		}
 	}
+	
+	
+	
+	
+	/**
+	 * Test the standard atom operation to update a member of a collection by
+	 * a PUT request with an atom entry document as the request entity.
+	 */
+	public void testPutAndGetEntry() {
+
+		// setup test
+		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
+
+		// now put an updated entry document using a PUT request
+		PutMethod method = new PutMethod(location);
+		String content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Updated</atom:title>" +
+				"<atom:summary>This is a summary, updated.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method, USER, PASS);
+
+		// expect the status code is 200 OK - we just did an update, no creation
+		assertEquals(200, result);
+
+		// now get
+		GetMethod get = new GetMethod(location);
+		int getResult = executeMethod(get, USER, PASS);
+		assertEquals(200, getResult);
+		Document doc = AtomTestUtils.getResponseBodyAsDocument(get);
+		Element title = (Element) doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
+		assertEquals("Test Member - Updated", title.getTextContent());
+		
+		// now put an updated entry document using a PUT request
+		PutMethod method2 = new PutMethod(location);
+		String content2 = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Updated Again</atom:title>" +
+				"<atom:summary>This is a summary, updated again.</atom:summary>" +
+			"</atom:entry>";
+		
+		setAtomRequestEntity(method2, content2);
+		int result2 = executeMethod(method2, USER, PASS);
+
+		// expect the status code is 200 OK - we just did an update, no creation
+		assertEquals(200, result2);
+
+		// now get again
+		GetMethod get2 = new GetMethod(location);
+		int getResult2 = executeMethod(get2, USER, PASS);
+		assertEquals(200, getResult2);
+		Document doc2 = AtomTestUtils.getResponseBodyAsDocument(get2);
+		Element title2 = (Element) doc2.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
+		assertEquals("Test Member - Updated Again", title2.getTextContent());
+
+	}
+	
+	
+	
+
 
 
 	
