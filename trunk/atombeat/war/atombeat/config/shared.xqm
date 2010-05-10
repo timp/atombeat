@@ -12,17 +12,17 @@ import module namespace xutil = "http://atombeat.org/xquery/xutil" at "../lib/xu
  : The base URL for the Atom service. This URL will be prepended to all edit
  : and self link href values.
  :)
-declare variable $config:service-url as xs:string := "http://localhost:8081/atombeat/atombeat/content" ;
+declare variable $config:service-url as xs:string := "http://localhost:8080/atombeat/atombeat/content" ;
 
 
 (:
  : The base URL for the History service. This URL will be prepended to all 
  : history link href values.
  :)
-declare variable $config:history-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/history" ;
+declare variable $config:history-service-url as xs:string := "http://localhost:8080/atombeat/atombeat/history" ;
  
 
-declare variable $config:acl-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/acl" ;
+declare variable $config:acl-service-url as xs:string := "http://localhost:8080/atombeat/atombeat/acl" ;
 
 
 (:
