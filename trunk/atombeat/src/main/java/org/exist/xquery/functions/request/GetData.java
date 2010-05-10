@@ -58,6 +58,8 @@ import org.xml.sax.XMLReader;
 
 
 /**
+ * The difference between this and the original are noted with <atombeat> tags. 
+ *
  * @author Wolfgang Meier (wolfgang@exist-db.org)
  */
 public class GetData extends BasicFunction {
@@ -150,7 +152,7 @@ public class GetData extends BasicFunction {
 						contentType = contentType.substring(0, contentType.indexOf(";"));
 					
 					MimeType mimeType = MimeTable.getInstance().getContentType(contentType);
-					
+//<atombeat>
 					// this code will only encode the request data if the mimeType
 					// is present in the mime table, and the mimeType is stated
 					// as binary...
@@ -172,7 +174,7 @@ public class GetData extends BasicFunction {
 					if (mimeType == null || !mimeType.isXMLType()) {
 						return new Base64Binary(bufRequestData);
 					}
-					
+//</atombeat>					
 				}
 				
 				//try and parse as an XML documemnt, otherwise fallback to returning the data as a string
