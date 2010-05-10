@@ -59,6 +59,9 @@ import org.xmldb.api.base.XMLDBException;
 import org.xmldb.api.modules.XMLResource;
 
 /**
+ * Modified to handle missing mime types slightly differently to exist. 
+ * where the code differs is marked with <atombeat>.
+ * 
  * @author wolf
  */
 public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
@@ -134,19 +137,23 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 		else if(docName != null)
 			docName = new AnyURIValue(docName).toXmldbURI().toString();
 		
+		Item item = args[2].itemAt(0);
         String mimeType = MimeType.XML_TYPE.getName();
-
+//<atombeat>
         // this code assumes that if the type of the resource (xml/binary) cannot be 
         // determined from either the provided mimeType argument, or from the 
         // resource name extension, via lookups in the mime table, then the 
         // resource is an XML document...
+        
 //		boolean binary = false;
+        // The above has been changed in trunk to 
+//		boolean binary = !Type.subTypeOf(item.getType(), Type.NODE);
 
         // this code takes a more conservative position and assumes that if neither
         // the media type argument nor the resource name extension can be found
         // in the mime table, then the resource is binary...
 		boolean binary = true;
-		
+//</atombeat>		
 		if(getSignature().getArgumentCount() == 4) {
 		    mimeType = args[3].getStringValue();
 		    MimeType mime = MimeTable.getInstance().getContentType(mimeType);
@@ -161,8 +168,6 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
             }
         }
 		
-		Item item =
-			args[2].itemAt(0);
 		Resource resource;
 		try {
 			if(Type.subTypeOf(item.getType(), Type.JAVA_OBJECT)) {
@@ -186,8 +191,9 @@ public class XMLDBStore extends XMLDBAbstractCollectionManipulator {
 			} else {
 				if(binary) {
 					resource = collection.createResource(docName, "BinaryResource");
-                } else
+                } else {
 					resource = collection.createResource(docName, "XMLResource");
+                }
 
 				if(Type.subTypeOf(item.getType(), Type.STRING)) {
 					resource.setContent(item.getStringValue());
