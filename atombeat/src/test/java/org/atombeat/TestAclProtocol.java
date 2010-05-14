@@ -209,6 +209,19 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
+	public void testAclLinkPresentInResponseToCreateEntry() {
+		
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		Document d = createTestEntryAndReturnDocument(collectionUri, "audrey", "test");
+
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
+		assertNotNull(aclLocation);
+		
+	}
+	
+	
+	
 	public void testGetMemberAclDenied() {
 
 		// set up test by creating a collection
