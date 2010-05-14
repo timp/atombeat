@@ -1,4 +1,4 @@
-package org.atombeat.protocol;
+package org.atombeat;
 
 import junit.framework.Test;
 import junit.framework.TestSuite;

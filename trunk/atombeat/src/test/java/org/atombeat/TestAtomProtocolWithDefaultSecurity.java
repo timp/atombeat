@@ -1,4 +1,4 @@
-package org.atombeat.protocol;
+package org.atombeat;
 
 import java.io.File;
 import java.io.InputStream;
@@ -13,7 +13,7 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
-import static org.atombeat.protocol.AtomTestUtils.*;
+import static org.atombeat.AtomTestUtils.*;
 
 import junit.framework.TestCase;
 

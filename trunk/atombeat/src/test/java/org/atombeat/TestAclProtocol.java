@@ -1,8 +1,8 @@
-package org.atombeat.protocol;
+package org.atombeat;
 
 
 
-import static org.atombeat.protocol.AtomTestUtils.*;
+import static org.atombeat.AtomTestUtils.*;
 
 import java.util.List;
 
