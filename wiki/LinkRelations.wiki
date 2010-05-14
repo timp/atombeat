@@ -2,18 +2,18 @@
 
 <wiki:toc/>
 
-= Versioning Link Relations =
+= Versioning =
 
 See http://tools.ietf.org/id/draft-snell-atompub-revision-00.txt
 
-  * history
-  * initial-revision
-  * current-revision
-  * this-revision
-  * prior-revision
-  * next-revision
+  * 'history'
+  * 'initial-revision'
+  * 'current-revision'
+  * 'this-revision'
+  * 'prior-revision'
+  * 'next-revision'
 
-E.g., an Atom entry with a history link...
+E.g., an Atom entry with a 'history' link...
 
 {{{
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
@@ -28,7 +28,7 @@ E.g., an Atom entry with a history link...
 </atom:entry>
 }}}
 
-E.g., an Atom entry revision with various related revision links
+E.g., an Atom entry revision with various revision links...
 
 {{{
 <atom:entry>
@@ -46,3 +46,9 @@ E.g., an Atom entry revision with various related revision links
     <atom:summary>This is a summary, updated (third draft).</atom:summary>
 </atom:entry>
 }}}
+
+= Access Control =
+
+  * 'edit-acl'
+
+Atom entry elements MAY contain an atom:link element with a rel attribute value of 'edit-acl' whose href attribute identifies a resource that is an access control list for the entry.
