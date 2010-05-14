@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace ah = "http://atombeat.org/xquery/history-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://atombeat.org/xmlns" ;
 
 (: see http://tools.ietf.org/html/draft-snell-atompub-revision-00 :)
 declare namespace ar = "http://purl.org/atompub/revision/1.0" ;
@@ -132,13 +133,13 @@ declare function ah:do-get-entry-history(
     
     return 
 
-		<atom:feed>
+		<atom:feed atombeat:exclude-entry-content="true">
 			<atom:title>History</atom:title>
 			{
 
-				$vhist , 
+(:				$vhist , :)
 				
-				$vvers , 
+(:				$vvers , :)
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
 				return ah:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions )
@@ -243,7 +244,9 @@ declare function ah:construct-entry-base-revision(
         
     let $log := util:log( "debug" , exists( $base-revision-doc ) )
     
-	let $revision := $base-revision-doc/atom:entry
+    (: N.B. need to copy because, for some reason, xpath queries on base revision don't work :)
+    
+	let $revision := xutil:copy( $base-revision-doc/* )
     
     let $when := $revision/atom:updated
 
@@ -276,7 +279,11 @@ declare function ah:construct-entry-base-revision(
 			if ( $next-revision-href ) then
 			<atom:link rel="next-revision" type="application/atom+xml" href="{$next-revision-href}"/> 
 			else () ,
-			$revision/*
+			for $ec in $revision/* 
+			return 
+				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+				then <atom:content>{$ec/attribute::*}</atom:content>
+				else $ec
 		}
 		</atom:entry>
     
@@ -340,7 +347,11 @@ declare function ah:construct-entry-specified-revision(
 			if ( $previous-revision-href ) then
 			<atom:link rel="previous-revision" type="application/atom+xml" href="{$previous-revision-href}"/> 
 			else () ,
-			$revision/*
+			for $ec in $revision/child::* 
+			return 
+				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+				then <atom:content>{$ec/attribute::*}</atom:content>
+				else $ec
 		}
 		</atom:entry>
 };
