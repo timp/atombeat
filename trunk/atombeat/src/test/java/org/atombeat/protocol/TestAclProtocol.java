@@ -10,6 +10,7 @@ import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
+import org.atombeat.AtomBeat;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
@@ -99,9 +100,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// make a second get request for the acl
@@ -126,9 +127,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "rebecca", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNull(aclLocation);
 		
 	}
@@ -145,9 +146,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// make a second get request for the acl
@@ -170,9 +171,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "audrey", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// make a get request for the acl
@@ -199,9 +200,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "rebecca", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNull(aclLocation);
 		
 	}
@@ -219,9 +220,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "audrey", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// make a get request for the acl
@@ -239,8 +240,8 @@ public class TestAclProtocol extends TestCase {
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
-		// look for "edit-acl" link
-		String aclLocation = getLinkHref(d, "edit-media-acl");
+		// look for ACL link
+		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
 		assertNotNull(aclLocation);
 		
 		// make a get request for the acl
@@ -262,8 +263,8 @@ public class TestAclProtocol extends TestCase {
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
-		// look for "edit-acl" link
-		String aclLocation = getLinkHref(d, "edit-media-acl");
+		// look for ACL link
+		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
 		assertNotNull(aclLocation);
 		
 		// make a get request for the acl
@@ -288,7 +289,7 @@ public class TestAclProtocol extends TestCase {
 		int s = executeMethod(g, "rebecca", "test");
 		assertEquals(200, s);
 		Document e = getResponseBodyAsDocument(g);
-		String mediaAclLocation = getLinkHref(e, "edit-media-acl");
+		String mediaAclLocation = getLinkHref(e, AtomBeat.REL_MEDIA_ACL);
 		assertNull(mediaAclLocation);
 		
 	}
@@ -364,7 +365,7 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// update the acl
@@ -401,7 +402,7 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// try to update the acl
@@ -430,7 +431,7 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// try to update the acl with bad content - missing rules
@@ -461,9 +462,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "audrey", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// try to update the acl
@@ -499,9 +500,9 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "audrey", "test");
 		assertEquals(200, r);
 		
-		// look for "edit-acl" link
+		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, "edit-acl");
+		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
 		assertNotNull(aclLocation);
 		
 		// try to update the acl
@@ -537,8 +538,8 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "audrey", "test");
 		assertEquals(200, r);
 
-		// look for "edit-acl" link
-		String aclLocation = getLinkHref(d, "edit-media-acl");
+		// look for ACL link
+		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
 		assertNotNull(aclLocation);
 		
 		// try to update the acl
@@ -575,8 +576,8 @@ public class TestAclProtocol extends TestCase {
 		int r = executeMethod(g, "audrey", "test");
 		assertEquals(200, r);
 
-		// look for "edit-acl" link
-		String aclLocation = getLinkHref(d, "edit-media-acl");
+		// look for ACL link
+		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
 		assertNotNull(aclLocation);
 		
 		// try to update the acl
@@ -617,7 +618,7 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(201, result);
 		
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, "edit-acl");
+		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
 		assertEquals(1, links.size());
 
 	}
@@ -642,7 +643,7 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, result);
 		
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, "edit-acl");
+		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
 		assertEquals(1, links.size());
 
 	}
@@ -669,7 +670,7 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(201, result);
 
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, "edit-acl");
+		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
 		assertEquals(1, links.size());
 	}
 	
@@ -695,7 +696,7 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, result);
 
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, "edit-acl");
+		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
 		assertEquals(1, links.size());
 	}
 	

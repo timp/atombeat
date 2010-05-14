@@ -99,7 +99,7 @@ declare function sp:strip-acl-links(
                 not(
                     $ln = $CONSTANT:ATOM-LINK
                     and $ns = $CONSTANT:ATOM-NSURI 
-                    and ( $rel = "edit-acl" or $rel = "edit-media-acl" )
+                    and ( $rel = "http://atombeat.org/rel/acl" or $rel = "http://atombeat.org/rel/media-acl" )
                 )
             )
             return $child
@@ -181,7 +181,7 @@ declare function sp:after-create-member(
 	let $resource-acl-installed := sp:install-resource-acl( $request-path-info , $entry-doc-db-path )
 	let $log := local:debug( concat( "$resource-acl-installed: " , $resource-acl-installed ) )
 	
-    let $response-data := sp:append-edit-acl-links( $request-path-info , $response-data )
+    let $response-data := sp:append-acl-links( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -196,7 +196,7 @@ declare function sp:after-update-member(
 ) as item()*
 {
 
-    let $response-data := sp:append-edit-acl-links( $request-path-info , $response-data )
+    let $response-data := sp:append-acl-links( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -241,7 +241,7 @@ declare function sp:after-create-media(
 	(: need to workaround html response for create media with multipart request :)
     let $response-data := 
         if ( starts-with( $response-content-type , $CONSTANT:MEDIA-TYPE-ATOM ) )
-        then sp:append-edit-acl-links( $entry-path-info , $response-data )
+        then sp:append-acl-links( $entry-path-info , $response-data )
         else $response-data
 
 	return ( $response-data , $response-content-type )
@@ -261,7 +261,7 @@ declare function sp:after-create-collection(
 	(: if security is enabled, install default collection ACL :)
 	let $collection-acl-installed := sp:install-collection-acl( $request-path-info )
 	
-	(: no filtering necessary because no members yet, but adds edit-acl link :)
+	(: no filtering necessary because no members yet, but adds acl link :)
 	let $response-data := sp:filter-feed-by-acls( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
@@ -312,7 +312,7 @@ declare function sp:after-retrieve-member(
 
 	let $log := local:debug("== sp:after-retrieve-member ==" )
 
-    let $response-data := sp:append-edit-acl-links( $request-path-info , $response-data )
+    let $response-data := sp:append-acl-links( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -321,7 +321,7 @@ declare function sp:after-retrieve-member(
 
 
 
-declare function sp:append-edit-acl-links(
+declare function sp:append-acl-links(
     $request-path-info as xs:string ,
     $response-data as element(atom:entry)
 ) as element(atom:entry)
@@ -332,14 +332,14 @@ declare function sp:append-edit-acl-links(
     let $entry-path-info := substring-after( $response-data/atom:link[@rel="self"]/@href , $config:service-url )
     let $can-update-member-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
     
-    let $edit-acl-link :=     
+    let $acl-link :=     
         if ( $can-update-member-acl )
-        then <atom:link rel="edit-acl" href="{concat( $config:acl-service-url , $entry-path-info )}" type="application/atom+xml"/>
+        then <atom:link rel="http://atombeat.org/rel/acl" href="{concat( $config:acl-service-url , $entry-path-info )}" type="application/atom+xml"/>
         else ()
         
-    let $log := local:debug( concat( "$edit-acl-link: " , $edit-acl-link ) )
+    let $log := local:debug( concat( "$acl-link: " , $acl-link ) )
     
-    let $edit-media-acl-link :=
+    let $media-acl-link :=
         if ( atomdb:media-link-available( $request-path-info ) )
         then
             let $media-path-info := substring-after( $response-data/atom:link[@rel="edit-media"]/@href , $config:service-url )
@@ -347,20 +347,20 @@ declare function sp:append-edit-acl-links(
             return 
                 if ( $can-update-media-acl )
                 then 
-                    let $edit-media-acl-href := concat( $config:acl-service-url , $media-path-info )
-                    return <atom:link rel="edit-media-acl" href="{$edit-media-acl-href}" type="application/atom+xml"/>
+                    let $media-acl-href := concat( $config:acl-service-url , $media-path-info )
+                    return <atom:link rel="http://atombeat.org/rel/media-acl" href="{$media-acl-href}" type="application/atom+xml"/>
                 else ()                
         else ()
         
     let $response-data := 
-        if ( empty( $edit-acl-link ) and empty( $edit-media-acl-link ) ) then $response-data
+        if ( empty( $acl-link ) and empty( $media-acl-link ) ) then $response-data
         else
             <atom:entry>
             {
                 $response-data/attribute::* ,
                 $response-data/child::* ,
-                $edit-acl-link ,
-                $edit-media-acl-link
+                $acl-link ,
+                $media-acl-link
             }
             </atom:entry>
             
@@ -411,16 +411,16 @@ declare function sp:filter-feed-by-acls(
     then $feed
     else
         let $can-update-collection-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () ) )
-        let $edit-acl-link :=     
+        let $acl-link :=     
             if ( $can-update-collection-acl )
-            then <atom:link rel="edit-acl" href="{concat( $config:acl-service-url , $request-path-info )}" type="application/atom+xml"/>
+            then <atom:link rel="http://atombeat.org/rel/acl" href="{concat( $config:acl-service-url , $request-path-info )}" type="application/atom+xml"/>
             else ()
         let $filtered-feed :=
             <atom:feed>
                 {
                     $feed/attribute::* ,
                     $feed/child::*[ not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI ) ] ,
-                    $edit-acl-link ,
+                    $acl-link ,
                     for $entry in $feed/atom:entry
                     let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:service-url )
                     let $log := local:debug( concat( "checking permission to retrieve member for entry-path-info: " , $entry-path-info ) )
@@ -430,7 +430,7 @@ declare function sp:filter-feed-by-acls(
                         then 
                             let $can-update-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
                             return
-                                if ( $can-update-acl ) then sp:append-edit-acl-links( $entry-path-info , $entry ) 
+                                if ( $can-update-acl ) then sp:append-acl-links( $entry-path-info , $entry ) 
                                 else $entry
                         else ()
                 }
