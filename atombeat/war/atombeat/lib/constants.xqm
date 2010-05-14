@@ -42,6 +42,7 @@ declare variable $CONSTANT:ATOM-REL as xs:string 			:= "rel" ;
 declare variable $CONSTANT:ATOM-HREF as xs:string 			:= "href" ;
 declare variable $CONSTANT:ATOM-EDIT as xs:string 			:= "edit" ;
 declare variable $CONSTANT:ATOM-EDIT-MEDIA as xs:string 	:= "edit-media" ;
+declare variable $CONSTANT:ATOM-CONTENT as xs:string 		:= "content" ;
 
 declare variable $CONSTANT:OP-CREATE-COLLECTION as xs:string     := "create-collection" ;
 declare variable $CONSTANT:OP-UPDATE-COLLECTION as xs:string     := "update-collection" ;

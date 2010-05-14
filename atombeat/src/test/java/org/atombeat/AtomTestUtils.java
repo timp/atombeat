@@ -333,6 +333,17 @@ public class AtomTestUtils {
 	
 	
 	
+	public static Element getContent(Document doc) {
+		
+		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
+		Element e = (Element) nodes.item(0);
+		return e;
+		
+	}
+	
+	
+	
+	
 	public static FilePart createFilePart(File file, String fileName, String contentType, String filePartName) {
 		
 		FilePart fp = null;

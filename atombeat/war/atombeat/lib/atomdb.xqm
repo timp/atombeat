@@ -594,7 +594,7 @@ declare function atomdb:create-media-link-entry(
     	
     let $summary :=
     	if ( $media-link-summary ) then $media-link-summary
-    	else concat( "media resource (" , $media-type , ")" )
+    	else "media resource"
     	
 	let $media-size :=
 		xmldb:size( atomdb:request-path-info-to-db-path( $request-path-info ) , concat( $member-id , ".media" ) )
@@ -714,9 +714,9 @@ declare function atomdb:update-media-resource(
 				    if ( local-name( $child ) = $CONSTANT:ATOM-UPDATED and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI )
 				    then <atom:updated>{current-dateTime()}</atom:updated>
 				    else if ( local-name( $child ) = $CONSTANT:ATOM-LINK and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI and $child/@rel='edit-media' )
-					then 
-						let $log := local:debug( "updating length attribute" )
-						return <atom:link rel='edit-media' type='{$child/@type}' href='{$child/@href}' length='{$media-size}'/>
+					then <atom:link rel='edit-media' type='{$media-type}' href='{$child/@href}' length='{$media-size}'/>
+				    else if ( local-name( $child ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI )
+					then <atom:content type='{$media-type}' src='{$child/@src}'/>
 					else $child
 				
 			}
