@@ -49,13 +49,17 @@ E.g., an Atom entry revision with various revision links...
 
 = Access Control =
 
-  * 'edit-acl'
+  * 'http://atombeat.org/rel/acl'
 
-Atom feed elements MAY contain an atom:link element with a rel attribute value of 'edit-acl' whose href attribute identifies a resource that is an access control list for the collection.
+Atom feed elements MAY contain an atom:link element with a rel attribute value of 'http://atombeat.org/rel/acl' whose href attribute identifies a resource that is an access control list for the collection.
 
-Atom entry elements MAY contain an atom:link element with a rel attribute value of 'edit-acl' whose href attribute identifies a resource that is an access control list for the entry.
+Atom entry elements MAY contain an atom:link element with a rel attribute value of 'http://atombeat.org/rel/acl' whose href attribute identifies a resource that is an access control list for the entry.
 
-E.g., an Atom feed with an 'edit-acl' link...
+  * 'http://atombeat.org/rel/media-acl'
+
+TODO definition
+
+E.g., an Atom feed with a 'http://atombeat.org/rel/acl' link...
 
 {{{
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
@@ -64,11 +68,11 @@ E.g., an Atom feed with an 'edit-acl' link...
     <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.7944490448575703"/>
     <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.7944490448575703"/>
     <atom:title>Test Collection</atom:title>
-    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.7944490448575703" type="application/atom+xml"/>
+    <atom:link rel="http://atombeat.org/rel/acl" href="http://localhost:8081/atombeat/atombeat/acl/0.7944490448575703" type="application/atom+xml"/>
 </atom:feed>
 }}}
 
-E.g., an Atom entry with an 'edit-acl' link...
+E.g., an Atom entry with an 'http://atombeat.org/rel/acl' link...
 
 {{{
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
@@ -79,6 +83,6 @@ E.g., an Atom entry with an 'edit-acl' link...
     <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom"/>
     <atom:title>Test Entry</atom:title>
     <atom:summary>this is a test</atom:summary>
-    <atom:link rel="edit-acl" href="http://localhost:8081/atombeat/atombeat/acl/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom" type="application/atom+xml"/>
+    <atom:link rel="http://atombeat.org/rel/acl" href="http://localhost:8081/atombeat/atombeat/acl/0.9255307573775159/322fedb1-d46c-4d7b-8982-732d967e8360.atom" type="application/atom+xml"/>
 </atom:entry>
 }}}
