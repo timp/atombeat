@@ -528,6 +528,26 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
+	public void testPutMediaContentToAtomEntry() {
+
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
+
+		// put media
+		PutMethod put = new PutMethod(location);
+		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
+		String contentType = "application/vnd.ms-excel";
+		setInputStreamRequestEntity(put, content, contentType);
+		int putResult = executeMethod(put);
+		
+		// check result
+		assertEquals(415, putResult);
+
+	}
+	
+	
+	
 	public void testPostMediaResourceWithUnexpectedMediaType() {
 		
 		// setup test

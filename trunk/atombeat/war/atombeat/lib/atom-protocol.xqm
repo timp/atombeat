@@ -704,29 +704,38 @@ declare function ap:do-put-media(
 ) as item()*
 {
 
-	(: 
-	 : First we need to know whether a media resource exists at the 
-	 : request path.
-	 :)
-	 
-	let $found := atomdb:media-resource-available( $request-path-info )
 	
-	return 
-	
-		if ( not( $found ) ) 
+ 	 if ( atomdb:collection-available( $request-path-info ) )
+ 	 then ap:do-bad-request( $request-path-info , "You cannot PUT media content to a collection URI." )
+ 	 
+ 	 else if ( atomdb:member-available( $request-path-info ) )
+ 	 then ap:do-unsupported-media-type( $request-path-info )
+ 	 
+ 	 else
 
-		then ap:do-not-found( $request-path-info )
+		(: 
+		 : First we need to know whether a media resource exists at the 
+		 : request path.
+		 :)
+		 
+		let $found := atomdb:media-resource-available( $request-path-info )
 		
-		else
+		return 
 		
-			(: here we bottom out at the "update-media" operation :)
+			if ( not( $found ) ) 
+	
+			then ap:do-not-found( $request-path-info )
 			
-			let $request-data := request:get-data()
+			else
 			
-			let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
-			
-			return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , $request-data , $request-content-type )
-			
+				(: here we bottom out at the "update-media" operation :)
+				
+				let $request-data := request:get-data()
+				
+				let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
+				
+				return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , $request-data , $request-content-type )
+				
 };
 
 
@@ -1128,6 +1137,20 @@ declare function ap:do-forbidden(
     let $message := "The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated."
 
     return ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN , $message , $request-path-info )
+
+};
+
+
+
+
+declare function ap:do-unsupported-media-type(
+	$request-path-info as xs:string
+) as item()?
+{
+
+    let $message := "The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method."
+
+    return ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE , $message , $request-path-info )
 
 };
 
