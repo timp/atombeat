@@ -1,4 +1,5 @@
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://atombeat.org/xmlns" ;
 
 import module namespace response = "http://exist-db.org/xquery/response" ;
 
@@ -16,12 +17,14 @@ declare variable $collection-spec :=
         <collection>
             <title>Foo</title>
             <path-info>/foo</path-info>
-            <enable-history>true</enable-history>
+            <enable-history>false</enable-history>
+            <exclude-entry-content>false</exclude-entry-content>
         </collection>   
         <collection>
             <title>DataWiki</title>
             <path-info>/datawiki</path-info>
             <enable-history>true</enable-history>
+            <exclude-entry-content>true</exclude-entry-content>
         </collection>   
     </spec>
 ;
@@ -76,6 +79,7 @@ declare function local:content() as item()*
                         <th>Title</th>
                         <th>Path</th>
                         <th>Enable History</th>
+                        <th>Exclude Entry Content in Feed</th>
                         <th>Available</th>
                     </tr>
                     {
@@ -83,12 +87,14 @@ declare function local:content() as item()*
                         let $title := $collection/title/text()
                         let $path-info := $collection/path-info/text()
                         let $enable-history := $collection/enable-history/text()
+                        let $exclude-entry-content := $collection/exclude-entry-content/text()
                         let $available := atomdb:collection-available($path-info)
                         return
                             <tr>
                                 <td>{$title}</td>
                                 <td><a href="../content{$path-info}">{$path-info}</a></td>
                                 <td>{$enable-history}</td>
+                                <td>{$exclude-entry-content}</td>
                                 <td><strong>{$available}</strong></td>
                             </tr>
                     }
@@ -125,7 +131,7 @@ declare function local:do-post() as item()*
             
                 (: CREATE THE COLLECTION :)
                 let $feed-doc := 
-                    <atom:feed>
+                    <atom:feed atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}">
                         <atom:title>{$title}</atom:title>
                     </atom:feed>
                 let $collection-created := atomdb:create-collection( $path-info , $feed-doc )

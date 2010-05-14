@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace atomdb = "http://atombeat.org/xquery/atomdb";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://atombeat.org/xmlns" ;
 
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
@@ -493,6 +494,9 @@ declare function atomdb:create-feed(
     return
     
         <atom:feed>
+        	{
+        		$request-data/attribute::*
+        	}
             <atom:id>{$id}</atom:id>
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" type="application/atom+xml" href="{$self-uri}"/>
@@ -768,13 +772,26 @@ declare function atomdb:retrieve-feed(
 		
 			<atom:feed>	
 			{
-				for $a in $feed/attribute::* return $a ,
-				for $c in $feed/child::* return $c ,
+				$feed/attribute::* ,
+				$feed/child::* ,
 				for $child in xmldb:get-child-resources( $db-collection-path )
 				let $is-entry-doc := ( not( ends-with( $child, ".media" ) ) and not( ends-with( $child , ".feed" ) ) )
 				let $entry := if ( $is-entry-doc ) then doc( concat( $db-collection-path , "/" , $child ) )/atom:entry else ()
 				order by $entry/atom:updated descending
-				return $entry
+				return 
+					if ( exists( $entry ) and xs:boolean( $feed/@atombeat:exclude-entry-content ) )
+					then
+						<atom:entry>
+						{
+							$entry/attribute::* ,
+							for $ec in $entry/child::* 
+							return 
+								if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+								then <atom:content>{$ec/attribute::*}</atom:content>
+								else $ec
+						}	
+						</atom:entry>
+					else $entry
 			}
 			</atom:feed>
 
