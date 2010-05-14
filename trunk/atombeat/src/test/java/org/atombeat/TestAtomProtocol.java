@@ -587,14 +587,59 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
-	public void testMediaLinkEntryHasContentLength() {
+	public void testMediaLinkEntryHasLengthAttributeOnEditMediaLink() {
 
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
 		assertNotNull(mediaLinkDoc);
 
+		Element editMediaLink = getLinks(mediaLinkDoc, "edit-media").get(0);
+		assertTrue(editMediaLink.hasAttribute("length"));
 		
+	}
+	
+	
+	
+	public void testPutMediaResourceCausesUpdatesToMediaLink() {
+
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		assertNotNull(mediaLinkDoc);
+		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+		
+		// store updated date for comparison
+		String updatedBefore = getUpdated(mediaLinkDoc);
+
+		// store length before for comparison later
+		Element editMediaLink = getLinks(mediaLinkDoc, "edit-media").get(0);
+		assertTrue(editMediaLink.hasAttribute("length"));
+		String lengthBefore = editMediaLink.getAttribute("length");
+
+		// now make PUT request to update media resource
+		PutMethod put = new PutMethod(mediaLocation);
+		String media = "This is a test - updated.";
+		setTextPlainRequestEntity(put, media);
+		int putResult = executeMethod(put, USER, PASS);
+		assertEquals(200, putResult);
+		
+		// now retrieve media link entry
+		GetMethod get = new GetMethod(mediaLinkLocation);
+		int getResult = executeMethod(get, USER, PASS);
+		assertEquals(200, getResult);
+		mediaLinkDoc = getResponseBodyAsDocument(get);
+
+		// compared updated
+		String updatedAfter = getUpdated(mediaLinkDoc);
+		assertFalse(updatedBefore.equals(updatedAfter));
+		
+		// compare length after with length before
+		editMediaLink = getLinks(mediaLinkDoc, "edit-media").get(0);
+		assertTrue(editMediaLink.hasAttribute("length"));
+		String lengthAfter = editMediaLink.getAttribute("length");
+		assertFalse(lengthBefore.equals(lengthAfter));
 		
 	}
 	

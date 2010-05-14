@@ -122,7 +122,7 @@
     </category>
     
     <category name="org.exist.xquery">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.exist.http">
@@ -142,15 +142,15 @@
     </category>
     
     <category name="org.orbeon">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.atombeat.http">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.atombeat.xquery.lib">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.atombeat.xquery.lib.atomdb">
@@ -158,16 +158,16 @@
     </category>
     
     <category name="org.atombeat.xquery.lib.atom-protocol">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.atombeat.xquery.plugin">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <!-- You decide here which one of the loggers listed above you want to use. -->
     <root>
-        <priority value="debug"/>
+        <priority value="warn"/>
         <appender-ref ref="ConsoleAppender"/>
         <!--<appender-ref ref="ChainsawAppender"/>-->
         <!--<appender-ref ref="SingleFileAppender"/>-->

@@ -595,6 +595,9 @@ declare function atomdb:create-media-link-entry(
     let $summary :=
     	if ( $media-link-summary ) then $media-link-summary
     	else concat( "media resource (" , $media-type , ")" )
+    	
+	let $media-size :=
+		xmldb:size( atomdb:request-path-info-to-db-path( $request-path-info ) , concat( $member-id , ".media" ) )
     	    
 	return
 	
@@ -604,7 +607,7 @@ declare function atomdb:create-media-link-entry(
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" type="application/atom+xml" href="{$self-uri}"/>
             <atom:link rel="edit" type="application/atom+xml" href="{$edit-uri}"/>
-            <atom:link rel="edit-media" type="{$media-type}" href="{$media-uri}"/>
+            <atom:link rel="edit-media" type="{$media-type}" href="{$media-uri}" length="{$media-size}"/>
             <atom:content src="{$media-uri}" type="{$media-type}"/>
             <atom:title type="text">{$title}</atom:title>
             <atom:summary type="text">{$summary}</atom:summary>
@@ -688,13 +691,40 @@ declare function atomdb:update-media-resource(
 
 		let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
 	
-		let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
+		let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)\.media$" )
 		
 		let $collection-db-path := atomdb:request-path-info-to-db-path( $groups[2] )
-		
-		let $media-doc-name := $groups[3]
+		let $id := $groups[3]
+		let $media-doc-name := concat( $id , ".media" )
+		let $media-link-doc-name := concat( $id , ".atom" )
 
 		let $media-doc-db-path := xmldb:store( $collection-db-path , $media-doc-name , $request-data , $media-type )
+		
+		let $media-link-doc-db-path := concat( $collection-db-path , "/" , $media-link-doc-name )
+		
+		let $media-size := xmldb:size( $collection-db-path , $media-doc-name )
+			
+		let $log := local:debug( concat( "size: " , $media-size ) )
+
+		let $media-link := 
+			<atom:entry>
+			{
+				for $child in doc($media-link-doc-db-path)/atom:entry/*
+				return
+				    if ( local-name( $child ) = $CONSTANT:ATOM-UPDATED and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI )
+				    then <atom:updated>{current-dateTime()}</atom:updated>
+				    else if ( local-name( $child ) = $CONSTANT:ATOM-LINK and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI and $child/@rel='edit-media' )
+					then 
+						let $log := local:debug( "updating length attribute" )
+						return <atom:link rel='edit-media' type='{$child/@type}' href='{$child/@href}' length='{$media-size}'/>
+					else $child
+				
+			}
+			</atom:entry>
+			
+		let $log := local:debug( $media-link )
+			
+		let $media-link-updated := xmldb:store( $collection-db-path , $media-link-doc-name , $media-link )
 	
 		return $media-doc-db-path
 };

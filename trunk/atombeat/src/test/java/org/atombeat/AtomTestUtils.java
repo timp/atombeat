@@ -322,6 +322,16 @@ public class AtomTestUtils {
 	}
 	
 	
+	public static String getUpdated(Document doc) {
+		
+		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+		
+	}
+	
+	
+	
 	
 	public static FilePart createFilePart(File file, String fileName, String contentType, String filePartName) {
 		
