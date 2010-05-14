@@ -1,4 +1,4 @@
-package org.atombeat.protocol;
+package org.atombeat;
 
 
 
@@ -9,7 +9,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
-import static org.atombeat.protocol.AtomTestUtils.*;
+import static org.atombeat.AtomTestUtils.*;
 
 import junit.framework.TestCase;
 

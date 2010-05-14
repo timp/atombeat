@@ -1,4 +1,4 @@
-package org.atombeat.protocol;
+package org.atombeat;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;

@@ -1,4 +1,4 @@
-package org.atombeat.protocol;
+package org.atombeat;
 
 import java.io.File;
 import java.io.InputStream;
@@ -14,7 +14,7 @@ import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import static org.atombeat.protocol.AtomTestUtils.*;
+import static org.atombeat.AtomTestUtils.*;
 
 import junit.framework.TestCase;
 
@@ -583,6 +583,19 @@ public class TestAtomProtocol extends TestCase {
 		assertNotNull(responseContentType);
 		assertTrue(responseContentType.trim().startsWith("text/plain"));
 
+	}
+	
+	
+	
+	public void testMediaLinkEntryHasContentLength() {
+
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		assertNotNull(mediaLinkDoc);
+
+		
+		
 	}
 	
 	
