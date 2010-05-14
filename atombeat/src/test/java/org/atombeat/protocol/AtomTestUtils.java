@@ -39,9 +39,7 @@ import static junit.framework.TestCase.fail;
 
 public class AtomTestUtils {
 
-   public static String port ="8080";
-	
-	
+	public static final String port ="8081";
 	public static final String BASE_URI = "http://localhost:" + port + "/atombeat/atombeat/";
 	public static final String CONTENT_URI = BASE_URI + "content/";
 	public static final String ACL_URI = BASE_URI + "acl/";
