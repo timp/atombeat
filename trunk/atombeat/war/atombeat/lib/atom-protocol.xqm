@@ -640,7 +640,7 @@ declare function ap:do-put-atom-entry(
  	 then ap:do-bad-request( $request-path-info , "You cannot PUT and atom:entry to a collection URI." )
  	 
  	 else if ( atomdb:media-resource-available( $request-path-info ) )
- 	 then ap:do-bad-request( $request-path-info , "You cannot overwrite a media resource with an atom:entry." )
+ 	 then ap:do-unsupported-media-type( $request-path-info )
  	 
  	 else
  	  
@@ -706,7 +706,7 @@ declare function ap:do-put-media(
 
 	
  	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then ap:do-bad-request( $request-path-info , "You cannot PUT media content to a collection URI." )
+ 	 then ap:do-unsupported-media-type( $request-path-info )
  	 
  	 else if ( atomdb:member-available( $request-path-info ) )
  	 then ap:do-unsupported-media-type( $request-path-info )
