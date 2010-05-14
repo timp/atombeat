@@ -211,6 +211,25 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
+	public void testPutAtomEntryToCollectionUriIsBadRequest() {
+		
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+
+		PutMethod method = new PutMethod(collectionUri);
+		String content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member</atom:title>" +
+				"<atom:summary>This is a summary.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method);
+		
+		// expect the status code is 400 bad request
+		assertEquals(400, result);
+	}
+	
+	
 	
 	/**
 	 * Test the standard atom protocol operation to create a new member of a

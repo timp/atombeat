@@ -533,6 +533,8 @@ declare function ap:do-put-atom-feed(
 ) as item()*
 {
 
+	(: TODO what if $request-path-info points to a member or media resource? :)
+	
 	(: 
 	 : We need to know whether an atom collection already exists at the 
 	 : request path, in which case the request will update the feed metadata,
@@ -630,26 +632,38 @@ declare function ap:do-put-atom-entry(
 ) as item()*
 {
 
-	(: 
-	 : First we need to know whether an atom entry exists at the 
-	 : request path.
+	(:
+	 : Check for bad request.
 	 :)
 	 
-	let $member-available := atomdb:member-available( $request-path-info )
-	
-	return 
-	
-		if ( not( $member-available ) ) 
-
-		then ap:do-not-found( $request-path-info )
+ 	 if ( atomdb:collection-available( $request-path-info ) )
+ 	 then ap:do-bad-request( $request-path-info , "You cannot PUT and atom:entry to a collection URI." )
+ 	 
+ 	 else if ( atomdb:media-resource-available( $request-path-info ) )
+ 	 then ap:do-bad-request( $request-path-info , "You cannot overwrite a media resource with an atom:entry." )
+ 	 
+ 	 else
+ 	  
+		(: 
+		 : First we need to know whether an atom entry exists at the 
+		 : request path.
+		 :)
+		 
+		let $member-available := atomdb:member-available( $request-path-info )
 		
-		else
+		return 
 		
-		    (: 
-		     : Here we bottom out at the "update-member" operation.
-		     :)
-            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
-            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
+			if ( not( $member-available ) ) 
+	
+			then ap:do-not-found( $request-path-info )
+			
+			else
+			
+			    (: 
+			     : Here we bottom out at the "update-member" operation.
+			     :)
+	            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+	            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
         
 };
 
