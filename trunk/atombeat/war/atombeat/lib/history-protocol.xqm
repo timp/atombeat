@@ -243,13 +243,7 @@ declare function ah:construct-entry-base-revision(
         
     let $log := util:log( "debug" , exists( $base-revision-doc ) )
     
-    (: 
-     : N.B. we need to copy the root element, perhaps because
-     : documents in the /db/system/versions collection are not
-     : indexed by qname?
-     :)
-     
-    let $revision := xutil:copy( $base-revision-doc/* )
+	let $revision := $base-revision-doc/atom:entry
     
     let $when := $revision/atom:updated
 
