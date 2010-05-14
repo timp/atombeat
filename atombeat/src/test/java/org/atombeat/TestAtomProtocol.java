@@ -548,6 +548,29 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
+	public void testPutAtomEntryToMediaResource() {
+
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+		
+		// now try PUT atom entry to media location
+		PutMethod method = new PutMethod(mediaLocation);
+		String content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Updated</atom:title>" +
+				"<atom:summary>This is a summary, updated.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method);
+
+		assertEquals(415, result);
+
+	}
+	
+	
+	
 	public void testPostMediaResourceWithUnexpectedMediaType() {
 		
 		// setup test
