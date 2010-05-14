@@ -164,7 +164,10 @@ declare function ap:do-post-atom-feed(
 	
 		if ( $create ) 
 
-		then ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $ap:op-create-collection , $request-path-info , $request-data )
+		then 
+			
+			let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
+			return ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
 		
 		else ap:do-bad-request( $request-path-info , "A collection already exists at the given location." )
         	
@@ -185,7 +188,7 @@ declare function ap:op-create-collection(
 
 	let $feed-doc-db-path := atomdb:create-collection( $request-path-info , $request-data )
 
-	let $feed := doc( $feed-doc-db-path )/*
+	let $feed := doc( $feed-doc-db-path )/atom:feed
             
 	let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
 	
@@ -197,12 +200,6 @@ declare function ap:op-create-collection(
 
 };
 
-
-
-
-declare variable $ap:op-create-collection as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
-;
 
 
 
@@ -235,11 +232,11 @@ declare function ap:do-post-atom-entry(
              : Here we bottom out at the "create-member" operation.
              :)
              
-            ap:apply-op( $CONSTANT:OP-CREATE-MEMBER , $ap:op-create-member , $request-path-info , $request-data )
+			let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
+			
+            return ap:apply-op( $CONSTANT:OP-CREATE-MEMBER , $op , $request-path-info , $request-data )
         
 };
-
-
 
 
 
@@ -265,20 +262,9 @@ declare function ap:op-create-member(
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 	
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/* , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 };
-
-
-
-
-(:
- : TODO doc me
- :)
-declare variable $ap:op-create-member as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
-;
-
 
 
 
@@ -312,8 +298,9 @@ declare function ap:do-post-media(
              :)
              
         	let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
+        	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
 	
-            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $ap:op-create-media , $request-path-info , request:get-data() , $media-type )
+            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , request:get-data() , $media-type )
                         			
 };
 
@@ -346,16 +333,9 @@ declare function ap:op-create-media(
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 			    
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/* , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
-
-
-
-
-declare variable $ap:op-create-media as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
-;
 
 
 
@@ -406,7 +386,8 @@ declare function ap:do-post-multipart(
              : Here we bottom out at the "create-media" operation.
              :)
              
-            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $ap:op-create-media-from-multipart-form-data , $request-path-info , $request-data , $media-type )
+            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 ) 
+            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , $request-data , $media-type )
 
 };
 
@@ -456,7 +437,7 @@ declare function ap:op-create-media-from-multipart-form-data (
 		 
 		if ( $accept = "application/atom+xml" )
 		
-		then $media-link-doc/*
+		then $media-link-doc/atom:entry
 	
 		else 
 		
@@ -487,11 +468,6 @@ declare function ap:op-create-media-from-multipart-form-data (
 };
 
 
-
-
-declare variable $ap:op-create-media-from-multipart-form-data as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 )
-;
 
 
 
@@ -591,7 +567,9 @@ declare function ap:do-put-atom-feed-to-create-collection(
      : Here we bottom out at the "create-collection" operation.
      :)
      
-    ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $ap:op-create-collection , $request-path-info , $request-data )
+	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
+	
+    return ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
         		
 };
 
@@ -611,8 +589,10 @@ declare function ap:do-put-atom-feed-to-update-collection(
      : Here we bottom out at the "update-collection" operation, so we need to 
      : apply a security decision.
      :)
-     
-    ap:apply-op( $CONSTANT:OP-UPDATE-COLLECTION , $ap:op-update-collection , $request-path-info , $request-data )
+
+	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
+	
+    return ap:apply-op( $CONSTANT:OP-UPDATE-COLLECTION , $op , $request-path-info , $request-data )
 
 };
 
@@ -631,18 +611,11 @@ declare function ap:op-update-collection(
 
 	let $feed-doc-db-path := atomdb:update-collection( $request-path-info , $request-data )
 		
-	let $feed := doc( $feed-doc-db-path )/*
+	let $feed := doc( $feed-doc-db-path )/atom:feed
             
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
-
-
-
-
-declare variable $ap:op-update-collection as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
-;
 
 
 
@@ -675,8 +648,8 @@ declare function ap:do-put-atom-entry(
 		    (: 
 		     : Here we bottom out at the "update-member" operation.
 		     :)
-            
-            ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $ap:op-update-member , $request-path-info , $request-data ) 
+            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
         
 };
 
@@ -708,12 +681,6 @@ declare function ap:op-update-member(
 
 
 
-declare variable $ap:op-update-member as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
-;
-
-
-
 (: 
  : TODO doc me
  :)
@@ -742,7 +709,9 @@ declare function ap:do-put-media(
 			
 			let $request-data := request:get-data()
 			
-			return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $ap:op-update-media , $request-path-info , $request-data , $request-content-type )
+			let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
+			
+			return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , $request-data , $request-content-type )
 			
 };
 
@@ -792,15 +761,6 @@ declare function ap:op-update-media(
 
 
 
-declare variable $ap:op-update-media as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
-;
-
-
-
-
-
-
 
 (: 
  : TODO doc me 
@@ -841,7 +801,9 @@ declare function ap:do-get-entry(
      : Here we bottom out at the "retrieve-member" operation.
      :)
 
-    ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $ap:op-retrieve-member , $request-path-info , () )
+	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+	
+    return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
 
 };
 
@@ -865,16 +827,10 @@ declare function ap:op-retrieve-member(
     (: The form below causes problems because updates are not seen, something to do with indexes? :)
 	(: return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM ) :)
 	
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/* , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
-
-
-
-declare variable $ap:op-retrieve-member as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
-;
 
 
 
@@ -887,7 +843,9 @@ declare function ap:do-get-media(
 )
 {
 
-    ap:apply-op( $CONSTANT:OP-RETRIEVE-MEDIA , $ap:op-retrieve-media , $request-path-info , () )
+	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
+	
+    return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEDIA , $op , $request-path-info , () )
 
 };
 
@@ -930,12 +888,6 @@ declare function ap:op-retrieve-media(
 
 
 
-declare variable $ap:op-retrieve-media as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
-;
-
-
-
 
 declare function ap:do-get-feed(
 	$request-path-info
@@ -946,7 +898,9 @@ declare function ap:do-get-feed(
      : Here we bottom out at the "list-collection" operation.
      :)
 
-    ap:apply-op( $CONSTANT:OP-LIST-COLLECTION , $ap:op-list-collection , $request-path-info , () )
+	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
+	
+    return ap:apply-op( $CONSTANT:OP-LIST-COLLECTION , $op , $request-path-info , () )
     
 };
 
@@ -970,18 +924,10 @@ declare function ap:op-list-collection(
 
 
 
-declare variable $ap:op-list-collection as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
-;
-
-
-
-
 declare function ap:do-delete(
 	$request-path-info as xs:string
 ) as item()*
 {
-	(: TODO :)
 	
 	(: 
 	 : We first need to know whether we are deleting a collection, a collection
@@ -990,10 +936,13 @@ declare function ap:do-delete(
 	 
 	if ( atomdb:collection-available( $request-path-info ) )
 	then ap:do-delete-collection( $request-path-info )
+	
 	else if ( atomdb:member-available( $request-path-info ) )
 	then ap:do-delete-member( $request-path-info )
+	
 	else if ( atomdb:media-resource-available( $request-path-info ) )
 	then ap:do-delete-media( $request-path-info )
+	
 	else ap:do-not-found( $request-path-info )
 	
 };
@@ -1031,8 +980,14 @@ declare function ap:do-delete-member(
      :)
      
     if ( atomdb:media-link-available( $request-path-info ) )
-    then ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $ap:op-delete-media, $request-path-info, () )
-    else ap:apply-op( $CONSTANT:OP-DELETE-MEMBER , $ap:op-delete-member , $request-path-info , () )
+    
+    then 
+    	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
+    	return ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op, $request-path-info, () )
+    
+    else 
+    	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
+    	return ap:apply-op( $CONSTANT:OP-DELETE-MEMBER , $op , $request-path-info , () )
 			
 };
 
@@ -1058,13 +1013,6 @@ declare function ap:op-delete-member(
 
 
 
-declare variable $ap:op-delete-member as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
-;
-
-
-
-
 
 declare function ap:do-delete-media(
 	$request-path-info as xs:string
@@ -1072,7 +1020,10 @@ declare function ap:do-delete-media(
 {
 
     (: here we bottom out at the "delete-media" operation :)
-	ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $ap:op-delete-media , $request-path-info , () )
+    
+	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
+	
+	return ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op , $request-path-info , () )
 
 };
 
@@ -1094,13 +1045,6 @@ declare function ap:op-delete-media(
 
 };
  
-
-
-declare variable $ap:op-delete-media as function :=
-	util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
-;
-
-
 
 
 
@@ -1307,9 +1251,9 @@ declare function ap:apply-op(
 ) as item()*
 {
 
-	let $log := local:debug( "EXPERIMENTAL: call plugin functions before main operation" )
+	let $log := local:debug( "call plugin functions before main operation" )
 	
-	let $before-advice := ap:apply-before( $plugin:before , $op-name , $request-path-info , $request-data , $request-media-type )
+	let $before-advice := ap:apply-before( plugin:before() , $op-name , $request-path-info , $request-data , $request-media-type )
 	let $log := local:debug( count( $before-advice ) )
 	
 	let $status-code as xs:integer := $before-advice[1]
@@ -1344,9 +1288,9 @@ declare function ap:apply-op(
 			let $log := local:debug( $response-data )
 			let $log := local:debug( $response-content-type )
 
-			let $log := local:debug( "EXPERIMENTAL: call plugin functions after main operation" ) 
+			let $log := local:debug( "call plugin functions after main operation" ) 
 			 
-			let $after-advice := ap:apply-after( $plugin:after , $op-name , $request-path-info , $response-data , $response-content-type )
+			let $after-advice := ap:apply-after( plugin:after() , $op-name , $request-path-info , $response-data , $response-content-type )
 			
 			let $response-data := $after-advice[1]
 			let $response-content-type := $after-advice[2]

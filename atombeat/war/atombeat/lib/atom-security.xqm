@@ -316,19 +316,6 @@ declare function atomsec:match-rules(
     
         for $rule in $acl/rules/* 
 
-        (: 
-         : N.B. below is a workaround here compensating for the fact that
-         : for some reason, the xpath $acl/rules/* doesn't match anything
-         : after an update to the global acl document where there is no <rules> 
-         : element. The issue can be avoided if the acl doc is always provided
-         : with a <rules> element, even if empty.
-         : 
-         : Possibly an indexing issue. N.B. after a recompile of this script the 
-         : expected matching behaviour is restored.
-         :)
-         
-(:        for $rule in $acl/*[local-name(.) = "rules"]/* :)
-        
         let $log := local:debug( $rule )
         
         return

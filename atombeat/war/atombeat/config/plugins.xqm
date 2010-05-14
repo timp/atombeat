@@ -9,15 +9,21 @@ import module namespace history-plugin = "http://atombeat.org/xquery/history-plu
 
 
 
-declare variable $plugin:before as function* := (
-	util:function( QName( "http://atombeat.org/xquery/logger-plugin" , "logger-plugin:before" ) , 4 ) ,
-	util:function( QName( "http://atombeat.org/xquery/security-plugin" , "security-plugin:before" ) , 4 ) ,
-	util:function( QName( "http://atombeat.org/xquery/history-plugin" , "history-plugin:before" ) , 4 ) 
-);
+declare function plugin:before() as function* {
+	(
+		util:function( QName( "http://atombeat.org/xquery/logger-plugin" , "logger-plugin:before" ) , 4 ) ,
+		util:function( QName( "http://atombeat.org/xquery/security-plugin" , "security-plugin:before" ) , 4 ) ,
+		util:function( QName( "http://atombeat.org/xquery/history-plugin" , "history-plugin:before" ) , 4 )   
+	)
+};
 
 
-declare variable $plugin:after as function* := (
-	util:function( QName( "http://atombeat.org/xquery/history-plugin" , "history-plugin:after" ) , 4 ) ,
-	util:function( QName( "http://atombeat.org/xquery/security-plugin" , "security-plugin:after" ) , 4 ) ,
-	util:function( QName( "http://atombeat.org/xquery/logger-plugin" , "logger-plugin:after" ) , 4 )
-);
+
+
+declare function plugin:after() as function* {
+	(
+		util:function( QName( "http://atombeat.org/xquery/history-plugin" , "history-plugin:after" ) , 4 ) ,
+		util:function( QName( "http://atombeat.org/xquery/security-plugin" , "security-plugin:after" ) , 4 ) ,
+		util:function( QName( "http://atombeat.org/xquery/logger-plugin" , "logger-plugin:after" ) , 4 )
+	)
+};
