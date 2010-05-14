@@ -252,6 +252,22 @@ public class AtomTestUtils {
 	
 	
 	
+	public static Document createTestEntryAndReturnDocument(String collectionUri, String user, String pass) {
+
+		PostMethod method = new PostMethod(collectionUri);
+		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method, user, pass);
+
+		if (result != 201)
+			return null;
+		
+		return getResponseBodyAsDocument(method);
+
+	}
+	
+	
+	
 	public static Document createTestMediaResourceAndReturnMediaLinkEntry(String collectionUri, String user, String pass) {
 		
 		PostMethod method = new PostMethod(collectionUri);
