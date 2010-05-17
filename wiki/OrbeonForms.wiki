@@ -1,6 +1,6 @@
 #summary notes on integrating orbeon and exist
 
-*N.B. the current version of this process misses out the lucene jars from the exist patching process. This needs to be fixed*
+*N.B. since writing this page nixj14 has contributed a single script for executing the entire patch and build process, see the comments at the bottom of the page.*
 
 = Introduction =
 
@@ -105,4 +105,3 @@ ant clean
 ant orbeon-dist-war 
 # deploy to tomcat and test
 }}}
-
