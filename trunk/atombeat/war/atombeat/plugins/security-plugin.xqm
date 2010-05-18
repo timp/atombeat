@@ -379,7 +379,7 @@ declare function sp:install-resource-acl(
     if ( $config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
-        let $acl := config:default-resource-acl( $request-path-info , $user )
+        let $acl := config:default-resource-security-descriptor( $request-path-info , $user )
         let $entry-path-info := atomdb:db-path-to-request-path-info( $entry-doc-db-path )
         let $acl-db-path := atomsec:store-resource-acl( $entry-path-info , $acl )
     	return $acl-db-path
@@ -394,7 +394,7 @@ declare function sp:install-collection-acl( $request-path-info as xs:string ) as
     if ( $config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
-        let $acl := config:default-collection-acl( $request-path-info , $user )
+        let $acl := config:default-collection-security-descriptor( $request-path-info , $user )
         return atomsec:store-collection-acl( $request-path-info , $acl )
     else ()
 };

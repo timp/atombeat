@@ -1,6 +1,7 @@
 module namespace atomsec = "http://atombeat.org/xquery/atom-security";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://atombeat.org/xmlns" ;
 
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
@@ -12,8 +13,9 @@ import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "atomdb.
 
 import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
 
-declare variable $atomsec:decision-deny as xs:string            := "deny" ;
-declare variable $atomsec:decision-allow as xs:string           := "allow" ;
+declare variable $atomsec:decision-deny as xs:string            := "DENY" ;
+declare variable $atomsec:decision-allow as xs:string           := "ALLOW" ;
+declare variable $atomsec:descriptor-suffix as xs:string        := ".descriptor" ;
 
 
 
@@ -42,28 +44,28 @@ declare function local:info(
 
 
 
-declare function atomsec:store-global-acl(
-    $acl as element(acl)
+declare function atomsec:store-workspace-descriptor(
+    $descriptor as element(atombeat:security-descriptor)
 ) as item()*
 {
     
-    let $log := local:debug(  "== atomsec:store-global-acl ==" )
-    let $log := local:debug(  $acl )
+    let $log := local:debug(  "== atomsec:store-workspace-descriptor ==" )
+    let $log := local:debug(  $descriptor )
     
-    let $base-acl-collection-db-path := xutil:get-or-create-collection( $config:base-acl-collection-path )
+    let $base-security-collection-db-path := xutil:get-or-create-collection( $config:base-security-collection-path )
     
-    let $global-acl-doc-db-path := xmldb:store( $base-acl-collection-db-path , ".acl" , $acl , $CONSTANT:MEDIA-TYPE-XML )
+    let $workspace-descriptor-doc-db-path := xmldb:store( $base-security-collection-db-path , $atomsec:descriptor-suffix , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
     
-    return $global-acl-doc-db-path
+    return $workspace-descriptor-doc-db-path
     
 };
 
 
 
 
-declare function atomsec:store-collection-acl(
+declare function atomsec:store-collection-descriptor(
     $request-path-info as xs:string ,
-    $acl as element(acl)
+    $descriptor as element(atombeat:security-descriptor)
 ) as xs:string?
 {
 
@@ -71,13 +73,13 @@ declare function atomsec:store-collection-acl(
     
     then 
 
-        let $acl-collection-db-path := concat( $config:base-acl-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
+        let $descriptor-collection-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
         
-        let $acl-collection-db-path := xutil:get-or-create-collection( $acl-collection-db-path )
+        let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
         
-        let $acl-doc-db-path := xmldb:store( $acl-collection-db-path , ".acl" , $acl , $CONSTANT:MEDIA-TYPE-XML )
+        let $descriptor-doc-db-path := xmldb:store( $descriptor-collection-db-path , $atomsec:descriptor-suffix , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
         
-        return $acl-doc-db-path
+        return $descriptor-doc-db-path
 
     else ()
 };
@@ -85,9 +87,9 @@ declare function atomsec:store-collection-acl(
 
 
 
-declare function atomsec:store-resource-acl(
+declare function atomsec:store-resource-descriptor(
     $request-path-info as xs:string ,
-    $acl as element(acl)
+    $descriptor as element(atombeat:security-descriptor)
 ) as xs:string?
 {
 
@@ -99,17 +101,17 @@ declare function atomsec:store-resource-acl(
     	
     	let $collection-db-path := atomdb:request-path-info-to-db-path( $groups[2] )
     	
-    	let $acl-collection-db-path := concat( $config:base-acl-collection-path , $collection-db-path )
+    	let $descriptor-collection-db-path := concat( $config:base-security-collection-path , $collection-db-path )
     	
-        let $acl-collection-db-path := xutil:get-or-create-collection( $acl-collection-db-path )
+        let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
         
     	let $resource-name := $groups[3]
     	
-    	let $acl-doc-name := concat( $resource-name , ".acl" )
+    	let $descriptor-doc-name := concat( $resource-name , $atomsec:descriptor-suffix )
     	
-    	let $acl-doc-db-path := xmldb:store( $acl-collection-db-path , $acl-doc-name , $acl , $CONSTANT:MEDIA-TYPE-XML )
+    	let $descriptor-doc-db-path := xmldb:store( $descriptor-collection-db-path , $descriptor-doc-name , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
     	
-    	return $acl-doc-db-path
+    	return $descriptor-doc-db-path
         
     else ()
 
@@ -118,23 +120,23 @@ declare function atomsec:store-resource-acl(
 
 
 
-declare function atomsec:retrieve-global-acl() as element(acl)?
+declare function atomsec:retrieve-workspace-descriptor() as element(atombeat:security-descriptor)?
 {
 
-    let $acl-doc-db-path := concat( $config:base-acl-collection-path , "/.acl" )
+    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , "/.descriptor" )
 
-    let $acl-doc := doc( $acl-doc-db-path )
+    let $descriptor-doc := doc( $descriptor-doc-db-path )
     
-    return $acl-doc/acl
+    return $descriptor-doc/atombeat:security-descriptor
         
 };
 
 
 
 
-declare function atomsec:retrieve-collection-acl(
+declare function atomsec:retrieve-collection-descriptor(
     $request-path-info as xs:string
-) as element(acl)?
+) as element(atombeat:security-descriptor)?
 {
 
     if ( atomdb:collection-available( $request-path-info ) )
@@ -143,11 +145,11 @@ declare function atomsec:retrieve-collection-acl(
 
         (: TODO what if collection path is given with trailing slash? :)
         
-        let $acl-doc-db-path := concat( $config:base-acl-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , "/.acl" )
+        let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , "/.descriptor" )
     
-        let $acl-doc := doc( $acl-doc-db-path )
+        let $descriptor-doc := doc( $descriptor-doc-db-path )
         
-        return $acl-doc/acl
+        return $descriptor-doc/atombeat:security-descriptor
 
     else if ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) )
     
@@ -155,7 +157,7 @@ declare function atomsec:retrieve-collection-acl(
     
         let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
     	
-    	return atomsec:retrieve-collection-acl( $groups[2] )
+    	return atomsec:retrieve-collection-descriptor( $groups[2] )
     
     else
     
@@ -166,20 +168,20 @@ declare function atomsec:retrieve-collection-acl(
 
 
 
-declare function atomsec:retrieve-resource-acl(
+declare function atomsec:retrieve-resource-descriptor(
     $request-path-info as xs:string
-) as element(acl)?
+) as element(atombeat:security-descriptor)?
 {
 
     if ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) )
     
     then
 
-        let $acl-doc-db-path := concat( $config:base-acl-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , ".acl" )
+        let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , $atomsec:descriptor-suffix )
     
-        let $acl-doc := doc( $acl-doc-db-path )
+        let $descriptor-doc := doc( $descriptor-doc-db-path )
         
-        return $acl-doc/acl
+        return $descriptor-doc/atombeat:security-descriptor
         
     else
     
@@ -219,55 +221,46 @@ declare function atomsec:decide(
     (: if the request path identifies a atom collection member or media resource
      : then we need to find the resource ACL first :)
      
-    let $resource-acl := atomsec:retrieve-resource-acl( $request-path-info )
-    let $log := local:debug( $resource-acl )
+    let $resource-descriptor := atomsec:retrieve-resource-descriptor( $request-path-info )
+    let $log := local:debug( $resource-descriptor )
     
     (: we also need the collection ACL :)
     
-    let $collection-acl := atomsec:retrieve-collection-acl( $request-path-info )
-    let $log := local:debug( $collection-acl )
+    let $collection-descriptor := atomsec:retrieve-collection-descriptor( $request-path-info )
+    let $log := local:debug( $collection-descriptor )
     
-    (: we also need the global ACL :)
+    (: we also need the workspace ACL :)
     
-    let $global-acl := atomsec:retrieve-global-acl()
-    let $log := local:debug( $global-acl )
+    let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
+    let $log := local:debug( $workspace-descriptor )
     
-    (: start from default decision :)
+    (: process ACLs :)
     
-    let $decision := $config:default-decision
+    let $resource-decision := atomsec:apply-acl( $resource-descriptor , $operation , $media-type , $user , $roles )
     
-    (: now process ACLs in order, starting from resource ACL, then collection ACL,
-     : then global ACL. :)
+    let $collection-decision := atomsec:apply-acl( $collection-descriptor , $operation , $media-type , $user , $roles )   
+
+    let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $operation , $media-type , $user , $roles )  
     
-    let $resource-decision := atomsec:apply-rules( $resource-acl , $operation , $media-type , $user , $roles )
     let $log := local:debug( concat( "$resource-decision: " , $resource-decision ) )
-    
-    (: any resource decision overrides default decision :)
-    
-    let $decision := 
-        if ( exists( $resource-decision ) ) 
-        then $resource-decision
-        else $decision
-        
-    let $collection-decision := atomsec:apply-rules( $collection-acl , $operation , $media-type , $user , $roles )   
     let $log := local:debug( concat( "$collection-decision: " , $collection-decision ) )
+    let $log := local:debug( concat( "$workspace-decision: " , $workspace-decision ) )
 
-    (: any collection decision overrides resource decision :)
+    (: order decision :)
     
-    let $decision := 
-        if ( exists( $collection-decision ) ) 
-        then $collection-decision
-        else $decision
-        
-    let $global-decision := atomsec:apply-rules( $global-acl , $operation , $media-type , $user , $roles )  
-    let $log := local:debug( concat( "$global-decision: " , $global-decision ) )
+    let $decisions :=
+        for $level in $config:security-priority
+        return
+            if ($level = "WORKSPACE") then $workspace-decision
+            else if ($level = "COLLECTION") then $collection-decision
+            else if ($level = "RESOURCE") then $resource-decision
+            else ()
+            
+    (: take first decision, or default if no decision :)
     
-    (: any global decision overrides resource decision :)
-
-    let $decision := 
-        if ( exists( $global-decision ) ) 
-        then $global-decision
-        else $decision
+    let $decision :=
+        if (empty($decisions)) then $config:default-security-decision
+        else $decisions[1]
     
     let $message := ( "security decision (" , $decision , ") for user (" , $user , "), roles (" , string-join( $roles , " " ) , "), request-path-info (" , $request-path-info , "), operation(" , $operation , "), media-type (" , $media-type , ")" )
     let $log := local:info( $message )  
@@ -279,8 +272,8 @@ declare function atomsec:decide(
 
 
 
-declare function atomsec:apply-rules( 
-    $acl as element(acl)? ,
+declare function atomsec:apply-acl( 
+    $descriptor as element(atombeat:security-descriptor)? ,
     $operation as xs:string ,
     $media-type as xs:string? ,
     $user as xs:string? ,
@@ -288,10 +281,10 @@ declare function atomsec:apply-rules(
 ) as xs:string?
 {
 
-    let $matching-rules := atomsec:match-rules($acl, $operation, $media-type, $user, $roles)
+    let $matching-aces := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles)
     
     let $decision := 
-        if ( exists( $matching-rules ) ) then local-name( $matching-rules[last()] )
+        if ( exists( $matching-aces ) ) then $matching-aces[1]/atombeat:type 
         else ()
     
     return $decision
@@ -300,47 +293,47 @@ declare function atomsec:apply-rules(
 
 
 
-declare function atomsec:match-rules( 
-    $acl as element(acl)? ,
+declare function atomsec:match-acl( 
+    $descriptor as element(atombeat:security-descriptor)? ,
     $operation as xs:string ,
     $media-type as xs:string? ,
     $user as xs:string? ,
     $roles as xs:string*
-) as element()*
+) as element(atombeat:ace)*
 {
 
-    let $log := local:debug( "== atomsec:match-rules ==" )
-    let $log := local:debug( $acl )
+    let $log := local:debug( "== atomsec:match-acl ==" )
+    let $log := local:debug( $descriptor )
     
-    let $matching-rules :=
+    let $matching-aces :=
     
-        for $rule in $acl/rules/* 
+        for $ace in $descriptor/atombeat:acl/* 
 
-        let $log := local:debug( $rule )
+        let $log := local:debug( $ace )
         
         return
         
             if (
             
-                atomsec:match-operation($rule , $operation)
+                atomsec:match-operation($ace , $operation)
             
                 and ( 
-                    atomsec:match-user( $rule , $user ) or    
-                    atomsec:match-role( $rule , $roles ) or
-                    atomsec:match-group( $rule , $user , $acl )
+                    atomsec:match-user( $ace , $user ) or    
+                    atomsec:match-role( $ace , $roles ) or
+                    atomsec:match-group( $ace , $user , $descriptor )
                 ) 
                 
-                and atomsec:match-media-type( $rule , $media-type )
+                and atomsec:match-media-type( $ace , $media-type )
                 
             ) 
             
-            then $rule
+            then $ace
             
             else ()
             
-    let $log := local:debug( $matching-rules )
+    let $log := local:debug( $matching-aces )
     
-    return $matching-rules
+    return $matching-aces
     
 };
 
@@ -348,51 +341,51 @@ declare function atomsec:match-rules(
 
 
 declare function atomsec:match-operation(
-    $rule as element() ,
+    $ace as element(atombeat:ace) ,
     $operation as xs:string
 ) as xs:boolean
 {
-    ( xs:string( $rule/operation ) = "*" ) or ( xs:string( $rule/operation ) = $operation  ) 
+    ( xs:string( $ace/atombeat:permission ) = "*" ) or ( xs:string( $ace/atombeat:permission ) = $operation  ) 
 };
 
 
 
 
 declare function atomsec:match-user(
-    $rule as element() ,
+    $ace as element(atombeat:ace) ,
     $user as xs:string?
 ) as xs:boolean
 {
-    ( xs:string( $rule/user ) = "*" ) or ( xs:string( $rule/user ) = $user  ) 
+    ( xs:string( $ace/atombeat:recipient[@type="user"] ) = "*" ) or ( xs:string( $ace/atombeat:recipient[@type="user"] ) = $user  ) 
 };
 
 
 
 
 declare function atomsec:match-role(
-    $rule as element() ,
+    $ace as element(atombeat:ace) ,
     $roles as xs:string*
 ) as xs:boolean
 {
-    ( xs:string( $rule/role ) = "*" ) or 
-    ( exists( $rule/role) and exists( index-of( $roles , xs:string( $rule/role ) ) ) )
+    ( xs:string( $ace/atombeat:recipient[@type="role"] ) = "*" ) or 
+    ( exists( $ace/atombeat:recipient[@type="role"]) and exists( index-of( $roles , xs:string( $ace/atombeat:recipient[@type="role"] ) ) ) )
 };
 
 
 
 
 declare function atomsec:match-group(
-    $rule as element() ,
+    $ace as element(atombeat:ace) ,
     $user as xs:string? ,
-    $acl as element(acl)
+    $descriptor as element(atombeat:security-descriptor)
 ) as xs:boolean
 {
 
     let $log := local:debug( "== atomsec:match-group() ==" )
-    let $log := local:debug( $rule )
+    let $log := local:debug( $ace )
     
-    let $group := $rule/group
-    let $log := local:debug( concat( "found group in rule: " , $group ) ) 
+    let $group := $ace/atombeat:recipient[@type="group"]
+    let $log := local:debug( concat( "found group in ace: " , $group ) ) 
     
     return 
     
@@ -404,14 +397,14 @@ declare function atomsec:match-group(
     
             let $groups :=
             
-                for $group in $acl/groups/group
+                for $group in $descriptor/atombeat:groups/atombeat:group
                 let $src := $group/@src
-                let $name := $group/@name
+                let $id := $group/@id
                 return
-                    if ( exists( $src) ) then atomsec:dereference-group( $name , $src )
+                    if ( exists( $src) ) then atomsec:dereference-group( $id , $src )
                     else $group
         
-            let $groups-for-user := $groups[user=$user]/@name
+            let $groups-for-user := $groups[atombeat:member=$user]/@id
             
             let $group-has-user := exists( index-of( $groups-for-user , xs:string( $group ) ) )
             let $log := local:debug( concat( "$group-has-user: " , $group-has-user ) )
@@ -424,19 +417,21 @@ declare function atomsec:match-group(
 
 
 declare function atomsec:dereference-group(
-    $name as xs:string ,
+    $id as xs:string ,
     $src as xs:string
 ) as element(group)?
 {
     
-    let $acl :=
+    let $src := substring-after( $src , $config:service-url )
+    
+    let $descriptor :=
         if ( $src = "/" )
-        then atomsec:retrieve-global-acl()
+        then atomsec:retrieve-workspace-descriptor()
         else if ( atomdb:collection-available( $src ) )
-        then atomsec:retrieve-collection-acl( $src )
-        else atomsec:retrieve-resource-acl( $src )
+        then atomsec:retrieve-collection-descriptor( $src )
+        else atomsec:retrieve-resource-descriptor( $src )
         
-    return $acl/groups/group[@name=$name]  
+    return $descriptor/atombeat:groups/atombeat:group[@id=$id]  
     
 };
 
@@ -444,18 +439,18 @@ declare function atomsec:dereference-group(
 
 
 declare function atomsec:match-media-type(
-    $rule as element() ,
+    $ace as element(atombeat:ace) ,
     $media-type as xs:string*
 ) as xs:boolean
 {
 
-    let $operation := $rule/operation
-    let $expected-range := $rule/media-range
+    let $operation := $ace/atombeat:permission
+    let $expected-range := $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]
     
     return
     
         (: if operation is not on media, do not attempt to match media type :)
-        if ( not( ends-with( $operation , "-media" ) ) ) then true()
+        if ( not( ends-with( $operation , "MEDIA" ) ) ) then true()
          
         (: if no expectation defined, match any media type :)
         else if ( empty( $expected-range ) ) then true()

@@ -161,6 +161,10 @@
         <priority value="warn"/>
     </category>
     
+    <category name="org.atombeat.xquery.lib.atom-security">
+        <priority value="debug"/>
+    </category>
+    
     <category name="org.atombeat.xquery.plugin">
         <priority value="warn"/>
     </category>
