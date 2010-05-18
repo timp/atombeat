@@ -1,6 +1,7 @@
 xquery version "1.0";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://atombeat.org/xmlns" ;
 
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
@@ -18,7 +19,11 @@ import module namespace config = "http://atombeat.org/xquery/config" at "../conf
 
 
 declare variable $test-collection-path as xs:string := "/test-security" ;
-declare variable $test-member-path as xs:string := concat( $test-collection-path , "/test-member.atom" ) ;
+declare variable $test-member-name as xs:string := "test-member.atom" ;
+declare variable $test-member-path as xs:string := concat( $test-collection-path , "/" , $test-member-name ) ;
+declare variable $workspace-uri := concat( $config:service-url , "/" ) ;
+declare variable $test-collection-uri := concat( $config:service-url , $test-collection-path ) ; 
+declare variable $test-member-uri := concat( $config:service-url , $test-member-path ) ;
 
 
 
@@ -40,7 +45,7 @@ declare function local:setup() as empty()
             <atom:title>TEST ENTRY</atom:title>
         </atom:entry>
         
-    let $member-db-path := atomdb:store-member( $test-collection-path , "test-member.atom" , $entry )    
+    let $member-db-path := atomdb:store-member( $test-collection-path , $test-member-name , $entry )    
     
     return ()
 
@@ -49,76 +54,78 @@ declare function local:setup() as empty()
 
 
 
-declare function local:test-global-acl() as item()*
+declare function local:test-workspace-descriptor() as item()*
 {
 
-    let $output := ( "test-global-acl..." )
+    let $output := ( "test-workspace-descriptor..." )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>alice</user>
-                    <operation>create-collection</operation>
-                </allow>
-                <allow>
-                    <role>administrator</role>
-                    <operation>create-collection</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
     (: test allow by user name :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-collection"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "alice should be allowed to create collections" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create collections" ) )
     
     (: test deny by user name :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-collection"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
     let $media-type := ()
     let $user := "bob"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "bob should not be allowed to create collections" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "bob should not be allowed to create collections" ) )
     
     (: test deny by operation :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "alice should not be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "alice should not be allowed to create collection members" ) )
     
     (: test allow by role :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-collection"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
     let $media-type := ()
     let $user := ()
     let $roles := ( "administrator" , "user" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "administrators should be allowed to create collections" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "administrators should be allowed to create collections" ) )
     
     (: test deny by role :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-collection"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
     let $media-type := ()
     let $user := ()
     let $roles := ( "user" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "users should not be allowed to create collections" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "users should not be allowed to create collections" ) )
     
     return $output
     
@@ -127,98 +134,134 @@ declare function local:test-global-acl() as item()*
 
 
 
-declare function local:test-collection-acl() as item()*
+declare function local:test-collection-descriptor() as item()*
 {
 
-    let $output := ( "test-collection-acl..." )
+    let $output := ( "test-collection-descriptor..." )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <role>administrator</role>
-                    <operation>create-member</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="user">bob</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
 
-    let $collection-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>alice</user>
-                    <operation>create-member</operation>
-                </allow>
-                <allow>
-                    <role>author</role>
-                    <operation>create-member</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+            
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">author</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                
+                <!-- this should be overridden by workspace ACL -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">bob</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                
+                <!-- this should be overridden by workspace ACL -->
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                
+            </atombeat:acl>
+            
+        </atombeat:security-descriptor>
         
-    let $collection-acl-doc-db-path := atomsec:store-collection-acl( $test-collection-path , $collection-acl )
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
     
     (: test allow by user name from collection acl :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "alice should be allowed to create members of the /test-security collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create members of the /test-security collection" ) )
   
-    (: test deny by user name :)
+    (: test implicit deny by user name :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
-    let $user := "bob"
+    let $user := "fred"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "bob should not be allowed to create members of the /test-security collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "fred should not be allowed to create members of the /test-security collection (implicit deny)" ) )
   
     (: test deny by path :)
     
     let $request-path-info := "/another"
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "alice should not be allowed to create members of the /another collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "alice should not be allowed to create members of the /another collection" ) )
   
     (: test allow by role from collection acl :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "author" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "authors should be allowed to create members of the /test-security collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "authors should be allowed to create members of the /test-security collection" ) )
   
-    (: test deny by role :)
+    (: test implicit deny by role :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "user" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "users should not be allowed to create members of the /test-security collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "users should not be allowed to create members of the /test-security collection" ) )
   
-    (: test allow by role from global acl :)
+    (: test allow by role from workspace acl :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "administrator" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "administrators should be allowed to create members of any collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "administrators should be allowed to create members of any collection" ) )
+  
+    (: test workspace acl overrides collection acl :)
+  
+    let $request-path-info := $test-collection-path
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
+    let $media-type := ()
+    let $user := "bob"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "bob should not be allowed to create members of the /test-security collection (explicit deny)" ) )
   
     return $output
     
@@ -227,127 +270,196 @@ declare function local:test-collection-acl() as item()*
 
 
 
-declare function local:test-resource-acl()
+declare function local:test-resource-descriptor()
 {
 
-    let $output := ( "test-resource-acl..." )
+    let $output := ( "test-resource-descriptor..." )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <role>administrator</role>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
-        
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
 
-    let $collection-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <role>editor</role>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
-        
-    let $collection-acl-doc-db-path := atomsec:store-collection-acl( $test-collection-path , $collection-acl )
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
 
-    let $resource-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>alice</user>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="role">troublemaker</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $resource-acl-doc-db-path := atomsec:store-resource-acl( $test-member-path , $resource-acl )  
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">editor</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="user">bob</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+                <!-- this should be overridden by workspace ACL -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">troublemaker</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+                <!-- this should be overridden by workspace ACL -->
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+        
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
+
+    let $resource-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+                <!-- this should be overridden by collection ACL -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">bob</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+                <!-- this should be overridden by collection ACL -->
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="role">editor</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+        
+    let $resource-descriptor-doc-db-path := atomsec:store-resource-descriptor( $test-member-path , $resource-descriptor )  
     
     (: test allow by user name from resource acl :)
-    
+  
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "alice should be allowed to update the resource" ) )
-    
-    (: test deny by user name :)
-    
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to update the resource" ) )
+ 
+    (: test implicit deny by user name :)
+   
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
-    let $user := "bob"
+    let $user := "fred"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "bob should not be allowed to update the resource" ) )
-    
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "fred should not be allowed to update the resource" ) )
+  
     (: test deny by operation :)
-    
+   
     let $request-path-info := $test-member-path
-    let $operation := "delete-member"
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "alice should not be allowed to delete the resource" ) )
-    
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "alice should not be allowed to delete the resource" ) )
+   
     (: test allow by role from collection acl :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "editor" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "editors should be allowed to update any member of the collection" ) )
-    
-    (: test allow by role from global acl :)
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update any member of the collection" ) )
+   
+    (: test allow by role from workspace acl :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "administrator" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "administrators should be allowed to update any member of any collection" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "administrators should be allowed to update any member of any collection" ) )
     
     (: test deny by role :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "user" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "users should not be allowed to update the resource" ) )
-    
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "users should not be allowed to update the resource" ) )
+   
     (: test deny by operation :)
     
     let $request-path-info := $test-member-path
-    let $operation := "delete-member"
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "editor" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "editors should not be allowed to delete the resource" ) )
-    
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to delete the resource" ) )
+   
     (: test deny by operation :)
-    
+
     let $request-path-info := $test-member-path
-    let $operation := "delete-member"
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "administrator" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "administrators should not be allowed to delete the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "administrators should not be allowed to delete the resource" ) )
+ 
+    (: test collection acl overrides resource acl :)
+  
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "bob"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "bob should not be allowed to update members of the /test-security collection (explicit deny)" ) )
+  
+    (: test workspace acl overrides collection acl :)
     
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := ()
+    let $roles := ( "troublemaker" )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "troublemakers should not be allowed to update any member of the collection" ) )
+  
     return $output
 };
 
@@ -359,41 +471,43 @@ declare function local:test-wildcards() as item()*
 
     let $output := ( "test-wildcards..." )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>*</user>
-                    <operation>create-collection</operation>
-                </allow>
-                <allow>
-                    <role>administrator</role>
-                    <operation>*</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">*</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>*</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
     (: test allow by wildcard user name :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-collection"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "any user should be allowed to create collections" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "any user should be allowed to create collections" ) )
     
     (: test allow by wildcard operation :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := ()
     let $roles := ( "administrator" )
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "administrators should be allowed any operation" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "administrators should be allowed any operation" ) )
     
     return $output
 
@@ -407,112 +521,125 @@ declare function local:test-media-ranges() as item()*
 
     let $output := ( "test-media-ranges..." )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>alice</user>
-                    <operation>create-media</operation>
-                    <media-range>*/*</media-range>
-                </allow>
-                <allow>
-                    <user>bob</user>
-                    <operation>create-media</operation>
-                    <media-range>text/*</media-range>
-                </allow>
-                <allow>
-                    <user>jane</user>
-                    <operation>create-media</operation>
-                    <media-range>application/xml</media-range>
-                </allow>
-                <allow>
-                    <user>alice</user>
-                    <operation>create-member</operation>
-                    <media-range>foo/bar</media-range> <!-- should be ignored -->
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+                    <atombeat:conditions>
+                        <atombeat:condition type="mediarange">*/*</atombeat:condition>
+                    </atombeat:conditions>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">bob</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+                    <atombeat:conditions>
+                        <atombeat:condition type="mediarange">text/*</atombeat:condition>
+                    </atombeat:conditions>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">jane</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+                    <atombeat:conditions>
+                        <atombeat:condition type="mediarange">application/xml</atombeat:condition>
+                    </atombeat:conditions>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                    <atombeat:conditions>
+                        <!-- should be ignored -->
+                        <atombeat:condition type="mediarange">foo/bar</atombeat:condition>
+                    </atombeat:conditions> 
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
 
     (: test allow by any media type/subtype :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := $CONSTANT:MEDIA-TYPE-XML
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "alice should be allowed to create media with any media type/subtype" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create media with any media type/subtype" ) )
     
     (: test allow by any media subtype :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := "text/plain"
     let $user := "bob"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "bob should be allowed to create media type text with any media subtype" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "bob should be allowed to create media type text with any media subtype" ) )
     
     (: test deny by media type :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := $CONSTANT:MEDIA-TYPE-XML
     let $user := "bob"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "bob should only be allowed to create media type text" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "bob should only be allowed to create media type text" ) )
     
     (: test allow by media type/subtype :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := $CONSTANT:MEDIA-TYPE-XML
     let $user := "jane"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "jane should be allowed to create media type application/xml" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "jane should be allowed to create media type application/xml" ) )
     
     (: test deny by media type/subtype :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := "application/foo"
     let $user := "jane"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "jane should only be allowed to create media type application/xml" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "jane should only be allowed to create media type application/xml" ) )
     
     (: test deny by media type/subtype :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := "foo/xml"
     let $user := "jane"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "jane should only be allowed to create media type application/xml" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "jane should only be allowed to create media type application/xml" ) )
     
     (: test deny by media type/subtype :)
     
     let $request-path-info := "/foo"
-    let $operation := "create-media"
+    let $permission := $CONSTANT:OP-CREATE-MEDIA
     let $media-type := "foo/bar"
     let $user := "jane"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "jane should only be allowed to create media type application/xml" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "jane should only be allowed to create media type application/xml" ) )
     
     (: test media range is ignored if operation does not involve media :)
     let $request-path-info := "/foo"
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "media range should be ignored for operations not on media" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "media range should be ignored for operations not on media" ) )
     
     return $output
     
@@ -524,236 +651,244 @@ declare function local:test-media-ranges() as item()*
 declare function local:test-inline-groups() as item()*
 {
 
+    (: TODO update for new ACL syntax :)
+
     let $output := ( "test-inline-groups..." )
     
-    let $global-acl :=
-        <acl>
-            <groups>
-                <group name="readers">
-                    <user>richard</user>
-                    <user>rebecca</user>
-                </group>
-                <group name="authors">
-                    <user>alice</user>
-                    <user>austin</user>
-                </group>
-                <group name="editors">
-                    <user>emma</user>
-                    <user>edward</user>
-                </group>
-            </groups>
-            <rules>
-                <allow>
-                    <group>readers</group>
-                    <operation>retrieve-member</operation>
-                </allow>
-                <allow>
-                    <group>authors</group>
-                    <operation>create-member</operation>
-                </allow>
-                <allow>
-                    <group>editors</group>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers">
+                    <atombeat:member>richard</atombeat:member>
+                    <atombeat:member>rebecca</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="authors">
+                    <atombeat:member>alice</atombeat:member>
+                    <atombeat:member>austin</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="editors">
+                    <atombeat:member>emma</atombeat:member>
+                    <atombeat:member>edward</atombeat:member>
+                </atombeat:group>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">authors</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
 
     (: test readers :)
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "richard"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "richard"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "readers should not be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to create collection members" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "readers should not be allowed to update collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update collection members" ) )
     
     (: test authors :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "authors should be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "authors should be allowed to create collection members" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "austin"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "authors should not be allowed to update collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "authors should not be allowed to update collection members" ) )
     
     (: test editors :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "emma"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "editors should be allowed to update collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update collection members" ) )
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "edward"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "editors should not be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to create collection members" ) )
     
     return $output
 };
 
 
 
-declare function local:test-reference-global-groups() as item()*
+declare function local:test-reference-workspace-groups() as item()*
 {
 
-    let $output := ( "test-reference-global-groups..." )
+    let $output := ( "test-reference-workspace-groups..." )
     
-    let $global-acl :=
-        <acl>
-            <groups>
-                <group name="readers">
-                    <user>richard</user>
-                    <user>rebecca</user>
-                </group>
-                <group name="authors">
-                    <user>alice</user>
-                    <user>austin</user>
-                </group>
-                <group name="editors">
-                    <user>emma</user>
-                    <user>edward</user>
-                </group>
-            </groups>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers">
+                    <atombeat:member>richard</atombeat:member>
+                    <atombeat:member>rebecca</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="authors">
+                    <atombeat:member>alice</atombeat:member>
+                    <atombeat:member>austin</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="editors">
+                    <atombeat:member>emma</atombeat:member>
+                    <atombeat:member>edward</atombeat:member>
+                </atombeat:group>
+            </atombeat:groups>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
-    let $collection-acl :=
-        <acl>
-            <groups>
-                <group name="readers" src="/"/>
-                <group name="authors" src="/"/>
-                <group name="editors" src="/"/>
-            </groups>
-            <rules>
-                <allow>
-                    <group>readers</group>
-                    <operation>retrieve-member</operation>
-                </allow>
-                <allow>
-                    <group>authors</group>
-                    <operation>create-member</operation>
-                </allow>
-                <allow>
-                    <group>editors</group>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers" src="{$workspace-uri}"/>
+                <atombeat:group id="authors" src="{$workspace-uri}"/>
+                <atombeat:group id="editors" src="{$workspace-uri}"/>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">authors</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
     
-    let $collection-acl-doc-db-path := atomsec:store-collection-acl( $test-collection-path , $collection-acl )
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
     
     (: test readers :)
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "richard"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "richard"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "readers should not be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to create collection members" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "readers should not be allowed to update collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update collection members" ) )
     
     (: test authors :)
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "alice"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "authors should be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "authors should be allowed to create collection members" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "austin"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "authors should not be allowed to update collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "authors should not be allowed to update collection members" ) )
     
     (: test editors :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "emma"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "editors should be allowed to update collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update collection members" ) )
     
     let $request-path-info := $test-collection-path
-    let $operation := "create-member"
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
     let $media-type := ()
     let $user := "edward"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "editors should not be allowed to create collection members" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to create collection members" ) )
     
     return $output
 };
@@ -763,93 +898,97 @@ declare function local:test-reference-global-groups() as item()*
 declare function local:test-reference-collection-groups() as item()*
 {
 
+    (: TODO update for new ACL syntax :)
+
     let $output := ( "test-reference-collection-groups..." )
     
-    let $global-acl :=
-        <acl>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
-    let $collection-acl :=
-        <acl>
-            <groups>
-                <group name="readers">
-                    <user>richard</user>
-                    <user>rebecca</user>
-                </group>
-                <group name="editors">
-                    <user>emma</user>
-                    <user>edward</user>
-                </group>
-            </groups>
-        </acl>
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers">
+                    <atombeat:member>richard</atombeat:member>
+                    <atombeat:member>rebecca</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="editors">
+                    <atombeat:member>emma</atombeat:member>
+                    <atombeat:member>edward</atombeat:member>
+                </atombeat:group>
+            </atombeat:groups>
+        </atombeat:security-descriptor>
         
-    let $collection-acl-doc-db-path := atomsec:store-collection-acl( $test-collection-path , $collection-acl )
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
     
-    let $resource-acl :=
-        <acl>
-            <groups>
-                <group name="readers" src="/test-security"/>
-                <group name="editors" src="/test-security"/>
-            </groups>
-            <rules>
-                <allow>
-                    <group>readers</group>
-                    <operation>retrieve-member</operation>
-                </allow>
-                <allow>
-                    <group>editors</group>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $resource-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers" src="{$test-collection-uri}"/>
+                <atombeat:group id="editors" src="{$test-collection-uri}"/>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
 
-    let $resource-acl-doc-db-path := atomsec:store-resource-acl( $test-member-path , $resource-acl )  
+    let $resource-descriptor-doc-db-path := atomsec:store-resource-descriptor( $test-member-path , $resource-descriptor )  
     
     (: test readers :)
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "richard"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "readers should not be allowed to update the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update the resource" ) )
     
     (: test editors :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "emma"
     let $roles := ()
-    let $decision := atomsec:decide($user , $roles , $request-path-info , $operation , $media-type)
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "editors should be allowed to update the resource" ) )
+    let $decision := atomsec:decide($user , $roles , $request-path-info , $permission , $media-type)
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update the resource" ) )
     
     let $request-path-info := $test-collection-path
-    let $operation := "delete-member"
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
     let $media-type := ()
     let $user := "edward"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "editors should not be allowed to delete the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to delete the resource" ) )
     
     return $output
 };
@@ -861,91 +1000,91 @@ declare function local:test-reference-resource-groups() as item()*
 
     let $output := ( "test-reference-resource-groups..." )
     
-    let $global-acl :=
-        <acl>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
-    let $collection-acl :=
-        <acl>
-            <groups>
-                <group name="readers" src="/test-security/test-member.atom"/>
-                <group name="editors" src="/test-security/test-member.atom"/>
-            </groups>
-            <rules>
-                <allow>
-                    <group>readers</group>
-                    <operation>retrieve-member</operation>
-                </allow>
-                <allow>
-                    <group>editors</group>
-                    <operation>update-member</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers" src="{$test-member-uri}"/>
+                <atombeat:group id="editors" src="{$test-member-uri}"/>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace><atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace><atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $collection-acl-doc-db-path := atomsec:store-collection-acl( $test-collection-path , $collection-acl )
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
     
-    let $resource-acl :=
-        <acl>
-            <groups>
-                <group name="readers">
-                    <user>richard</user>
-                    <user>rebecca</user>
-                </group>
-                <group name="editors">
-                    <user>emma</user>
-                    <user>edward</user>
-                </group>
-            </groups>
-        </acl>
+    let $resource-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers">
+                    <atombeat:member>richard</atombeat:member>
+                    <atombeat:member>rebecca</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="editors">
+                    <atombeat:member>emma</atombeat:member>
+                    <atombeat:member>edward</atombeat:member>
+                </atombeat:group>
+            </atombeat:groups>
+        </atombeat:security-descriptor>
 
-    let $resource-acl-doc-db-path := atomsec:store-resource-acl( $test-member-path , $resource-acl )  
+    let $resource-descriptor-doc-db-path := atomsec:store-resource-descriptor( $test-member-path , $resource-descriptor )  
     
     (: test readers :)
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "richard"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "retrieve-member"
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "readers should be allowed to retrieve the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "rebecca"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "readers should not be allowed to update the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update the resource" ) )
     
     (: test editors :)
     
     let $request-path-info := $test-member-path
-    let $operation := "update-member"
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
     let $media-type := ()
     let $user := "emma"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "allow" , $decision , "editors should be allowed to update the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update the resource" ) )
     
     let $request-path-info := $test-collection-path
-    let $operation := "delete-member"
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
     let $media-type := ()
     let $user := "edward"
     let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type )
-    let $output := ( $output , test:assert-equals( "deny" , $decision , "editors should not be allowed to delete the resource" ) )
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to delete the resource" ) )
     
     return $output
 };
@@ -953,59 +1092,102 @@ declare function local:test-reference-resource-groups() as item()*
 
 
 
-declare function local:test-update-global-acl() as item()*
+declare function local:test-update-workspace-descriptor() as item()*
 {
-    let $output := ( "test-update-global-acl..." )
+
+    let $output := ( "test-update-workspace-descriptor..." )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>alice</user>
-                    <operation>create-collection</operation>
-                </allow>
-                <allow>
-                    <role>administrator</role>
-                    <operation>create-collection</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">administrator</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
-    let $acl := atomsec:retrieve-global-acl()
+    let $acl := atomsec:retrieve-workspace-descriptor()
     
-    let $output := ( $output , test:assert-equals( 2 , count($acl/rules/*) , "expect 2 rules" ) )
+    let $output := ( $output , test:assert-equals( 2 , count($acl/atombeat:acl/*) , "expect 2 ACEs" ) )
     
-    let $global-acl :=
-        <acl/>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor/>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
-    let $acl := atomsec:retrieve-global-acl()
+    let $acl := atomsec:retrieve-workspace-descriptor()
     
-    let $output := ( $output , test:assert-equals( 0 , count($acl/rules/*) , "expect 0 rules" ) )
+    let $output := ( $output , test:assert-equals( 0 , count($acl/atombeat:acl/*) , "expect 0 ACEs" ) )
     
-    let $global-acl :=
-        <acl>
-            <rules>
-                <allow>
-                    <user>alice</user>
-                    <operation>create-collection</operation>
-                </allow>
-            </rules>
-        </acl>
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
         
-    let $global-acl-doc-db-path := atomsec:store-global-acl($global-acl)
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
-    let $acl := atomsec:retrieve-global-acl()
+    let $acl := atomsec:retrieve-workspace-descriptor()
     
-    let $output := ( $output , test:assert-equals( 1 , count($acl/rules/*) , "expect 1 rule" ) )
+    let $output := ( $output , test:assert-equals( 1 , count($acl/atombeat:acl/*) , "expect 1 ACE" ) )
     
     return $output
     
 };
 
+
+
+
+declare function local:test-processing-order() as item()*
+{
+
+    let $output := ( "test-processing-order..." )
+    
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>DENY</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+
+    (: first matching ACE should be chosen :)
+    
+    let $request-path-info := "/foo"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "alice"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create collections" ) )
+    
+    return $output
+
+};
 
 
 
@@ -1014,16 +1196,17 @@ declare function local:main() as item()*
 
     let $setup := local:setup()
     let $output := (
-        local:test-global-acl() ,
-        local:test-collection-acl() ,
-        local:test-resource-acl() ,
+        local:test-workspace-descriptor() ,
+        local:test-collection-descriptor(),
+        local:test-resource-descriptor() ,
         local:test-wildcards() ,
         local:test-media-ranges() ,
         local:test-inline-groups() ,
-        local:test-reference-global-groups() ,
+        local:test-reference-workspace-groups() ,
         local:test-reference-collection-groups() ,
         local:test-reference-resource-groups() ,
-        local:test-update-global-acl()
+        local:test-update-workspace-descriptor() ,
+        local:test-processing-order()
     )
     let $response-type := response:set-header( "Content-Type" , "text/plain" )
     return $output

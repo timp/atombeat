@@ -19,7 +19,7 @@ import junit.framework.TestCase;
 
 
 
-
+// TODO update to new acl format
 public class TestAclProtocol extends TestCase {
 
 

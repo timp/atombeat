@@ -116,8 +116,8 @@ declare function local:content() as item()*
 declare function local:do-post() as item()*
 {
 
-    (: INSTALL THE GLOBAL ACL :)
-    let $global-acl-installed := atomsec:store-global-acl( $config:default-global-acl )
+    (: INSTALL THE workspace ACL :)
+    let $workspace-acl-installed := atomsec:store-workspace-acl( $config:default-workspace-security-descriptor )
     
     (: INSTALL THE COLLECTIONS :)
     let $collections-installed :=
@@ -138,7 +138,7 @@ declare function local:do-post() as item()*
                 let $collection-db-path := atomdb:request-path-info-to-db-path( $path-info )
                 
                 (: INSTALL ACL :)
-                let $acl := config:default-collection-acl( $path-info , () )
+                let $acl := config:default-collection-security-descriptor( $path-info , () )
                 let $acl-stored := atomsec:store-collection-acl( $path-info , $acl )
                 
                 (: ENABLE HISTORY :)

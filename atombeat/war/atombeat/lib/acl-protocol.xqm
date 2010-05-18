@@ -59,7 +59,7 @@ declare function acl-protocol:do-get(
     
     if ( $request-path-info = "/" )
     
-    then acl-protocol:do-get-global-acl()
+    then acl-protocol:do-get-workspace-acl()
     
     else if ( atomdb:collection-available( $request-path-info ) )
     
@@ -80,11 +80,11 @@ declare function acl-protocol:do-get(
 
 
 
-declare function acl-protocol:do-get-global-acl() as item()*
+declare function acl-protocol:do-get-workspace-acl() as item()*
 {
     (: 
-     : We will only allow retrieval of global ACL if user is allowed
-     : to update the global ACL.
+     : We will only allow retrieval of workspace ACL if user is allowed
+     : to update the workspace ACL.
      :)
      
     let $allowed := acl-protocol:is-update-acl-allowed( "/" )
@@ -97,7 +97,7 @@ declare function acl-protocol:do-get-global-acl() as item()*
         
         else
         
-            let $acl := atomsec:retrieve-global-acl()
+            let $acl := atomsec:retrieve-workspace-acl()
             return acl-protocol:send-acl( $acl )
 
 };
@@ -197,7 +197,7 @@ declare function acl-protocol:do-put(
     
     if ( $request-path-info = "/" )
     
-    then acl-protocol:do-put-global-acl()
+    then acl-protocol:do-put-workspace-acl()
     
     else if ( atomdb:collection-available( $request-path-info ) )
     
@@ -220,7 +220,7 @@ declare function acl-protocol:do-put(
 
 
 
-declare function acl-protocol:do-put-global-acl() as item()*
+declare function acl-protocol:do-put-workspace-acl() as item()*
 {
     
     let $allowed := acl-protocol:is-update-acl-allowed( "/" )
@@ -242,8 +242,8 @@ declare function acl-protocol:do-put-global-acl() as item()*
                 
                 else
 
-                    let $acl-updated := atomsec:store-global-acl( $acl )
-                    let $acl := atomsec:retrieve-global-acl()
+                    let $acl-updated := atomsec:store-workspace-acl( $acl )
+                    let $acl := atomsec:retrieve-workspace-acl()
                     return acl-protocol:send-acl( $acl )
 
 };

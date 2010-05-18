@@ -7,7 +7,7 @@ import module namespace atomsec = "http://atombeat.org/xquery/atom-security" at 
 
 let $login := xmldb:login( "/" , "admin" , "" )
 
-let $global-acl-installed := atomsec:store-global-acl( $config:default-global-acl )
+let $workspace-acl-installed := atomsec:store-workspace-acl( $config:default-workspace-security-descriptor )
 
 let $status-set := response:set-status-code( 200 )
 
