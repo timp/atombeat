@@ -331,19 +331,29 @@ declare function sp:append-descriptor-links(
     (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
     let $entry-path-info := substring-after( $response-data/atom:link[@rel="self"]/@href , $config:service-url )
+    let $media-path-info := substring-after( $response-data/atom:link[@rel="edit-media"]/@href , $config:service-url )
+
+    let $can-retrieve-member := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () ) )
+    let $can-update-member := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-MEMBER , $entry-path-info , () ) )
+    let $can-delete-member := not( sp:is-operation-forbidden( $CONSTANT:OP-DELETE-MEMBER , $entry-path-info , () ) )
+    let $can-retrieve-media := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () ) )
+    let $can-update-media := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-MEDIA , $media-path-info , () ) )
+    let $can-delete-media := not( sp:is-operation-forbidden( $CONSTANT:OP-DELETE-MEDIA , $media-path-info , () ) )
+    let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
     let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
     let $can-update-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+    
     let $allow := string-join((
         if ( $can-retrieve-member-descriptor ) then "GET" else () ,
         if ( $can-update-member-descriptor ) then "PUT" else ()
     ) , " " )
     
-    let $acl-link :=     
+    let $descriptor-link :=     
         if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
         then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml" atombeat:allow="{$allow}"/>
         else ()
         
-    let $log := local:debug( concat( "$acl-link: " , $acl-link ) )
+    let $log := local:debug( concat( "$descriptor-link: " , $descriptor-link ) )
     
     let $media-descriptor-link :=
         if ( atomdb:media-link-available( $request-path-info ) )
@@ -364,16 +374,33 @@ declare function sp:append-descriptor-links(
         else ()
         
     let $response-data := 
-        if ( empty( $acl-link ) and empty( $media-descriptor-link ) ) then $response-data
-        else
-            <atom:entry>
-            {
-                $response-data/attribute::* ,
-                $response-data/child::* ,
-                $acl-link ,
-                $media-descriptor-link
-            }
-            </atom:entry>
+        <atom:entry>
+        {
+            $response-data/attribute::* ,
+            for $child in $response-data/child::* 
+            let $child :=
+                if ( local-name($child) = $CONSTANT:ATOM-LINK and namespace-uri($child) = $CONSTANT:ATOM-NSURI and $child/@rel='edit' )
+                then 
+                    let $allow := string-join( (
+                        if ( $can-retrieve-member ) then "GET" else () ,
+                        if ( $can-update-member ) then "PUT" else () ,
+                        if ( $can-delete-member ) then "DELETE" else ()
+                    ) , " " )
+                    return <atom:link atombeat:allow="{$allow}">{$child/attribute::*}</atom:link>
+                else if ( local-name($child) = $CONSTANT:ATOM-LINK and namespace-uri($child) = $CONSTANT:ATOM-NSURI and $child/@rel='edit-media' )
+                then 
+                    let $allow := string-join( (
+                        if ( $can-retrieve-media ) then "GET" else () ,
+                        if ( $can-update-media ) then "PUT" else () ,
+                        if ( $can-delete-media ) then "DELETE" else ()
+                    ) , " " )
+                    return <atom:link atombeat:allow="{$allow}">{$child/attribute::*}</atom:link>
+                else $child
+            return $child ,
+            $descriptor-link ,
+            $media-descriptor-link
+        }
+        </atom:entry>
             
     return $response-data
     
@@ -422,7 +449,7 @@ declare function sp:filter-feed-by-permissions(
     then $feed
     else
         let $can-update-collection-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () ) )
-        let $acl-link :=     
+        let $descriptor-link :=     
             if ( $can-update-collection-descriptor )
             then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml"/>
             else ()
@@ -431,7 +458,7 @@ declare function sp:filter-feed-by-permissions(
                 {
                     $feed/attribute::* ,
                     $feed/child::*[ not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI ) ] ,
-                    $acl-link ,
+                    $descriptor-link ,
                     for $entry in $feed/atom:entry
                     let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:service-url )
                     let $log := local:debug( concat( "checking permission to retrieve member for entry-path-info: " , $entry-path-info ) )
