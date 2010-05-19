@@ -25,7 +25,8 @@ declare variable $CONSTANT:STATUS-SERVER-ERROR-NOT-IMPLEMENTED as xs:integer    
 
 declare variable $CONSTANT:HEADER-ALLOW as xs:string 					:= "Allow" ;
 declare variable $CONSTANT:HEADER-ACCEPT as xs:string 					:= "Accept" ;
-declare variable $CONSTANT:HEADER-CONTENT-TYPE as xs:string 			:= "Content-Type" ;
+declare variable $CONSTANT:HEADER-CONTENT-TYPE as xs:string             := "Content-Type" ;
+declare variable $CONSTANT:HEADER-CONTENT-LOCATION as xs:string         := "Content-Location" ;
 declare variable $CONSTANT:HEADER-CONTENT-DISPOSITION as xs:string 		:= "Content-Disposition" ;
 declare variable $CONSTANT:HEADER-LOCATION as xs:string 				:= "Location" ;
 declare variable $CONSTANT:HEADER-SLUG as xs:string		 				:= "Slug" ;
