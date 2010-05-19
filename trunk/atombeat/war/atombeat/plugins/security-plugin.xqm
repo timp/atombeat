@@ -42,40 +42,49 @@ declare function sp:before(
 ) as item()*
 {
 	
-	let $message := ( "security plugin, before: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := local:debug( $message )
+	if ( $config:enable-security )
+	
+	then
 
-	let $forbidden := sp:is-operation-forbidden( $operation , $request-path-info , $request-media-type )
-	
-	return 
-	
-		if ( $forbidden )
-		
-		then 
-		
-			let $status-code := $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN (: override request processing :)
-		    let $response-data := "The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated."
-			let $response-content-type := "text/plain"
-			
-			return ( $status-code , $response-data , $response-content-type )
-			
-        else if ( 
-            $operation = $CONSTANT:OP-CREATE-MEMBER 
-            or $operation = $CONSTANT:OP-UPDATE-MEMBER 
-            or $operation = $CONSTANT:OP-CREATE-COLLECTION 
-            or $operation = $CONSTANT:OP-UPDATE-COLLECTION
-        )
-        
-        then 
-        
-            let $request-data := sp:strip-descriptor-links( $request-data )
-			let $status-code := 0 (: we don't want to interrupt request processing :)
-			return ( $status-code , $request-data )
-			
-		else
-		
-			let $status-code := 0 (: we don't want to interrupt request processing :)
-			return ( $status-code , $request-data )
+    	let $message := ( "security plugin, before: " , $operation , ", request-path-info: " , $request-path-info ) 
+    	let $log := local:debug( $message )
+    
+    	let $forbidden := sp:is-operation-forbidden( $operation , $request-path-info , $request-media-type )
+    	
+    	return 
+    	
+    		if ( $forbidden )
+    		
+    		then 
+    		
+    			let $status-code := $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN (: override request processing :)
+    		    let $response-data := "The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated."
+    			let $response-content-type := "text/plain"
+    			
+    			return ( $status-code , $response-data , $response-content-type )
+    			
+            else if ( 
+                $operation = $CONSTANT:OP-CREATE-MEMBER 
+                or $operation = $CONSTANT:OP-UPDATE-MEMBER 
+                or $operation = $CONSTANT:OP-CREATE-COLLECTION 
+                or $operation = $CONSTANT:OP-UPDATE-COLLECTION
+            )
+            
+            then 
+            
+                let $request-data := sp:strip-descriptor-links( $request-data )
+    			let $status-code := 0 (: we don't want to interrupt request processing :)
+    			return ( $status-code , $request-data )
+    			
+    		else
+    		
+    			let $status-code := 0 (: we don't want to interrupt request processing :)
+    			return ( $status-code , $request-data )
+
+    else
+    
+        let $status-code := 0 (: we don't want to interrupt request processing :)
+        return ( $status-code , $request-data )
 
 };
 
@@ -120,43 +129,53 @@ declare function sp:after(
 ) as item()*
 {
 
-	let $message := ( "security plugin, after: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := local:debug( $message )
+    if ( $config:enable-security )
 
-	return
-		
-		if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
-		
-		then sp:after-create-member( $request-path-info , $response-data , $response-content-type )
+    then
+            
+    	let $message := ( "security plugin, after: " , $operation , ", request-path-info: " , $request-path-info ) 
+    	let $log := local:debug( $message )
+    
+    	return
+    		
+    		if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
+    		
+    		then sp:after-create-member( $request-path-info , $response-data , $response-content-type )
+    
+    		else if ( $operation = $CONSTANT:OP-CREATE-MEDIA )
+    		
+    		then sp:after-create-media( $request-path-info , $response-data , $response-content-type )
+    
+    		else if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
+    		
+    		then sp:after-create-collection( $request-path-info , $response-data , $response-content-type )
+    
+    		else if ( $operation = $CONSTANT:OP-UPDATE-COLLECTION )
+    		
+    		then sp:after-update-collection( $request-path-info , $response-data , $response-content-type )
+    
+    		else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
+    		
+    		then sp:after-list-collection( $request-path-info , $response-data , $response-content-type )
+    		
+    		else if ( $operation = $CONSTANT:OP-RETRIEVE-MEMBER )
+    		
+    		then sp:after-retrieve-member( $request-path-info , $response-data , $response-content-type )
+    
+    		else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
+    		
+    		then sp:after-update-member( $request-path-info , $response-data , $response-content-type )
+    
+            else 
+    
+                (: pass response data and content type through, we don't want to modify response :)
+                ( $response-data , $response-content-type )
 
-		else if ( $operation = $CONSTANT:OP-CREATE-MEDIA )
-		
-		then sp:after-create-media( $request-path-info , $response-data , $response-content-type )
+    else 
 
-		else if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
-		
-		then sp:after-create-collection( $request-path-info , $response-data , $response-content-type )
+        (: pass response data and content type through, we don't want to modify response :)
+        ( $response-data , $response-content-type )
 
-		else if ( $operation = $CONSTANT:OP-UPDATE-COLLECTION )
-		
-		then sp:after-update-collection( $request-path-info , $response-data , $response-content-type )
-
-		else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
-		
-		then sp:after-list-collection( $request-path-info , $response-data , $response-content-type )
-		
-		else if ( $operation = $CONSTANT:OP-RETRIEVE-MEMBER )
-		
-		then sp:after-retrieve-member( $request-path-info , $response-data , $response-content-type )
-
-		else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
-		
-		then sp:after-update-member( $request-path-info , $response-data , $response-content-type )
-
-		else 
-
-			(: pass response data and content type through, we don't want to modify response :)
-			( $response-data , $response-content-type )
 }; 
 
 
