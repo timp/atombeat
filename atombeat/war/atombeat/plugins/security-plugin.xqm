@@ -365,7 +365,7 @@ declare function sp:append-descriptor-links(
     let $allow := string-join((
         if ( $can-retrieve-member-descriptor ) then "GET" else () ,
         if ( $can-update-member-descriptor ) then "PUT" else ()
-    ) , " " )
+    ) , ", " )
     
     let $descriptor-link :=     
         if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
@@ -383,7 +383,7 @@ declare function sp:append-descriptor-links(
             let $allow := string-join((
                 if ( $can-retrieve-media-descriptor ) then "GET" else () ,
                 if ( $can-update-media-descriptor ) then "PUT" else ()
-            ) , " " )
+            ) , ", " )
             return 
                 if ( $can-update-media-descriptor or $can-retrieve-media-descriptor )
                 then 
@@ -404,7 +404,7 @@ declare function sp:append-descriptor-links(
                         if ( $can-retrieve-member ) then "GET" else () ,
                         if ( $can-update-member ) then "PUT" else () ,
                         if ( $can-delete-member ) then "DELETE" else ()
-                    ) , " " )
+                    ) , ", " )
                     return <atom:link atombeat:allow="{$allow}">{$child/attribute::*}</atom:link>
                 else if ( local-name($child) = $CONSTANT:ATOM-LINK and namespace-uri($child) = $CONSTANT:ATOM-NSURI and $child/@rel='edit-media' )
                 then 
@@ -412,7 +412,7 @@ declare function sp:append-descriptor-links(
                         if ( $can-retrieve-media ) then "GET" else () ,
                         if ( $can-update-media ) then "PUT" else () ,
                         if ( $can-delete-media ) then "DELETE" else ()
-                    ) , " " )
+                    ) , ", " )
                     return <atom:link atombeat:allow="{$allow}">{$child/attribute::*}</atom:link>
                 else $child
             return $child ,

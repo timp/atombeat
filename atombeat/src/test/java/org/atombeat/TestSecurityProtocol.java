@@ -180,7 +180,7 @@ public class TestSecurityProtocol extends TestCase {
 		assertNotNull(link); 
 		String allow = link.getAttributeNS("http://atombeat.org/xmlns", "allow");
 		assertNotNull(allow);
-		assertEquals("GET PUT", allow);
+		assertEquals("GET, PUT", allow);
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
