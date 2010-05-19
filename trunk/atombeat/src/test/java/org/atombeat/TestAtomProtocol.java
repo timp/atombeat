@@ -267,6 +267,10 @@ public class TestAtomProtocol extends TestCase {
 		assertNotNull(responseContentType);
 		assertTrue(responseContentType.trim().startsWith("application/atom+xml"));
 		
+		// expect Content-Location header 
+		String responseContentLocation = method.getResponseHeader("Content-Location").getValue();
+		assertNotNull(responseContentLocation);
+
 	}
 
 
@@ -633,6 +637,10 @@ public class TestAtomProtocol extends TestCase {
 		String responseContentType = method.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
 		assertTrue(responseContentType.trim().startsWith("application/atom+xml"));
+
+		// expect Content-Location header 
+		String responseContentLocation = method.getResponseHeader("Content-Location").getValue();
+		assertNotNull(responseContentLocation);
 
 	}
 

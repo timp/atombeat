@@ -261,6 +261,7 @@ declare function ap:op-create-member(
     let $location := $entry-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
+    let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 	
 	let $entry-path-info := atomdb:db-path-to-request-path-info( $entry-doc-db-path )
 
@@ -341,6 +342,7 @@ declare function ap:op-create-media(
     let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
+    let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
         
@@ -468,6 +470,11 @@ declare function ap:op-create-media-from-multipart-form-data (
 		then $CONSTANT:MEDIA-TYPE-ATOM 
 	
 		else "text/html"
+
+    let $header-content-location := 
+        if ( $accept = "application/atom+xml" )
+        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link-doc/atom:entry/atom:link[@rel='self']/@href )
+        else ()
 
     (:
      : Although the semantics of 201 Created would be more appropriate 
@@ -827,7 +834,7 @@ declare function ap:op-update-media(
     
     let $media-link-entry := atomdb:get-media-link( $request-path-info )
     
-    let $content-location-header-set := response:set-header( "Content-Location" , $media-link-entry/atom:link[@rel='edit']/@href )
+    let $content-location-header-set := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link-entry/atom:link[@rel='edit']/@href )
 
     return ( $CONSTANT:STATUS-SUCCESS-OK , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
