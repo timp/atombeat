@@ -821,6 +821,17 @@ public class TestSecurityProtocol extends TestCase {
 		Element a = (Element) n.item(0);
 		assertNotNull(a);
 		
+		Element id = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "id").item(0);
+		assertNotNull(id);
+		Element title = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
+		assertNotNull(title);
+		Element updated = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated").item(0);
+		assertNotNull(updated);
+		String selfLocation = AtomTestUtils.getLinkHref(d, "self");
+		assertNotNull(selfLocation);
+		String editLocation = AtomTestUtils.getLinkHref(d, "edit");
+		assertNotNull(editLocation);
+		
 		return a;
 		
 	}
