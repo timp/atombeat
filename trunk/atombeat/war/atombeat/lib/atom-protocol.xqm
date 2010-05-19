@@ -262,6 +262,13 @@ declare function ap:op-create-member(
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 	
+	let $entry-path-info := atomdb:db-path-to-request-path-info( $entry-doc-db-path )
+
+    let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
+    
+    let $etag-header-set := 
+        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
+	
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 };
@@ -659,15 +666,68 @@ declare function ap:do-put-atom-entry(
 			
 			else
 			
-			    (: 
-			     : Here we bottom out at the "update-member" operation.
-			     :)
-	            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
-	            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
+			    let $header-if-match := request:get-header( "If-Match" )
+			    
+			    return 
+			    
+			         if ( exists( $header-if-match ) )
+			         
+			         then ap:do-conditional-put-atom-entry( $request-path-info , $request-data )
+			         
+			         else
+        			     
+        			    (: 
+        			     : Here we bottom out at the "update-member" operation.
+        			     :)
+        	            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+        	            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
         
 };
 
 
+
+
+(:
+ : TODO doc me
+ :)
+declare function ap:do-conditional-put-atom-entry(
+    $request-path-info as xs:string ,
+    $request-data as element(atom:entry)
+) as item()*
+{
+
+    let $header-if-match := request:get-header( "If-Match" )
+    
+    let $match-etags := tokenize( $header-if-match , "\s*,\s*" )
+    
+    let $etag := atomdb:generate-etag( $request-path-info ) 
+    
+    let $matches :=
+        for $match-etag in $match-etags
+        where (
+            $match-etag = "*"
+            or ( 
+                starts-with( $match-etag , '"' ) 
+                and ends-with( $match-etag , '"' )
+                and $etag = substring( $match-etag , 2 , string-length( $match-etag ) - 2 )
+            )  
+        )
+        return $match-etag
+        
+    return
+    
+        if ( exists( $matches ) )
+        then
+
+            (: 
+             : Here we bottom out at the "update-member" operation.
+             :)
+            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
+        
+        else ap:do-precondition-failed( $request-path-info , "The entity tag does not match." )
+        
+};
 
 
 (:
@@ -682,6 +742,11 @@ declare function ap:op-update-member(
     
 	let $entry := atomdb:update-member( $request-path-info , $request-data )
 
+    let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
+    
+    let $etag-header-set := 
+        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
+    
 	(: 
 	 : N.B. we return the entry here, rather than trying to retrieve the updated
 	 : entry from the database, because of a weird interaction with the versioning
@@ -817,19 +882,78 @@ declare function ap:do-get(
  :)
 declare function ap:do-get-entry(
 	$request-path-info
-)
+) as item()*
 {
     
-    (: 
-     : Here we bottom out at the "retrieve-member" operation.
-     :)
+    let $header-if-none-match := request:get-header( "If-None-Match" )
+    
+    return 
+    
+        if ( exists( $header-if-none-match ) )
+        
+        then ap:do-conditional-get-entry( $request-path-info )
+        
+        else
 
-	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
-	
-    return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
+            (: 
+             : Here we bottom out at the "retrieve-member" operation.
+             :)
+        
+        	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+        	
+            return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
 
 };
 
+
+
+(:
+ : TODO doc me
+ :)
+declare function ap:do-conditional-get-entry(
+    $request-path-info
+) as item()*
+{
+    
+    (: TODO is this a security risk? i.e., could someone probe for changes to a 
+     : resource even if they don't have permission to retrieve it? If so, should
+     : the conditional processing be pushed into the main operation? :)
+     
+    let $header-if-none-match := request:get-header( "If-None-Match" )
+    
+    let $match-etags := tokenize( $header-if-none-match , "\s*,\s*" )
+    
+    let $etag := atomdb:generate-etag( $request-path-info ) 
+    
+    let $matches :=
+        for $match-etag in $match-etags
+        where (
+            $match-etag = "*"
+            or ( 
+                starts-with( $match-etag , '"' ) 
+                and ends-with( $match-etag , '"' )
+                and $etag = substring( $match-etag , 2 , string-length( $match-etag ) - 2 )
+            )  
+        )
+        return $match-etag
+        
+    return
+    
+        if ( exists( $matches ) )
+        
+        then ap:do-not-modified( $request-path-info )
+        
+        else
+        
+            (: 
+             : Here we bottom out at the "retrieve-member" operation.
+             :)
+        
+            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+            
+            return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
+
+};
 
 
 
@@ -847,9 +971,11 @@ declare function ap:op-retrieve-member(
 	
 	let $log := local:debug( $entry-doc )
 
-    (: The form below causes problems because updates are not seen, something to do with indexes? :)
-	(: return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM ) :)
-	
+    let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
+    
+    let $etag-header-set := 
+        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
+    
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
@@ -1070,15 +1196,39 @@ declare function ap:op-delete-media(
  
 
 
+declare function ap:do-not-modified(
+    $request-path-info
+) as item()?
+{
+
+    let $status-code-set := response:set-status-code( $CONSTANT:STATUS-REDIRECT-NOT-MODIFIED )
+    
+    return ()
+    
+};
+
+
 
 declare function ap:do-not-found(
-	$request-path-info
+    $request-path-info
 ) as item()?
 {
 
     let $message := "The server has not found anything matching the Request-URI."
     
     return ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND , $message , $request-path-info )
+
+};
+
+
+
+declare function ap:do-precondition-failed(
+    $request-path-info ,
+    $message
+) as item()?
+{
+
+    ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED , concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." ) , $request-path-info )
 
 };
 

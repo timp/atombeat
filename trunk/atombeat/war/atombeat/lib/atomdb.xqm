@@ -883,3 +883,21 @@ declare function atomdb:get-media-link(
 	return doc( $media-link-doc-db-path )/atom:entry
 
 };
+
+
+
+declare function atomdb:generate-etag(
+    $request-path-info as xs:string
+) as xs:string
+{
+    
+    (: TODO consider alternative means of generating etag, e.g., hash
+     : of timestamp and file size? :)
+     
+    if ( atomdb:member-available( $request-path-info ) )
+    then
+        let $entry := atomdb:retrieve-entry( $request-path-info )
+        return util:hash( $entry , "md5" )
+        
+    else ()
+};

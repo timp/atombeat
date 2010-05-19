@@ -11,10 +11,13 @@ declare variable $CONSTANT:STATUS-SUCCESS-OK as xs:integer 						:= 200 ;
 declare variable $CONSTANT:STATUS-SUCCESS-CREATED as xs:integer 				:= 201 ;
 declare variable $CONSTANT:STATUS-SUCCESS-NO-CONTENT as xs:integer 				:= 204 ;
 
+declare variable $CONSTANT:STATUS-REDIRECT-NOT-MODIFIED as xs:integer           := 304 ;
+
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-BAD-REQUEST as xs:integer 			:= 400 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN as xs:integer 				:= 403 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND as xs:integer 				:= 404 ;
-declare variable $CONSTANT:STATUS-CLIENT-ERROR-METHOD-NOT-ALLOWED as xs:integer 	:= 405 ;
+declare variable $CONSTANT:STATUS-CLIENT-ERROR-METHOD-NOT-ALLOWED as xs:integer     := 405 ;
+declare variable $CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED as xs:integer    := 412 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE as xs:integer := 415 ;
 
 declare variable $CONSTANT:STATUS-SERVER-ERROR-INTERNAL-SERVER-ERROR as xs:integer     := 500 ;
