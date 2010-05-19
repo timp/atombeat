@@ -142,9 +142,13 @@ declare function sp:after(
     		
     		then sp:after-create-member( $request-path-info , $response-data , $response-content-type )
     
-    		else if ( $operation = $CONSTANT:OP-CREATE-MEDIA )
-    		
-    		then sp:after-create-media( $request-path-info , $response-data , $response-content-type )
+            else if ( $operation = $CONSTANT:OP-CREATE-MEDIA )
+            
+            then sp:after-create-media( $request-path-info , $response-data , $response-content-type )
+    
+            else if ( $operation = $CONSTANT:OP-UPDATE-MEDIA )
+            
+            then sp:after-update-media( $request-path-info , $response-data , $response-content-type )
     
     		else if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
     		
@@ -226,45 +230,63 @@ declare function sp:after-update-member(
 
 
 declare function sp:after-create-media(
-	$request-path-info as xs:string ,
-	$response-data as item()* ,
-	$response-content-type as xs:string?
+    $request-path-info as xs:string ,
+    $response-data as item()* ,
+    $response-content-type as xs:string?
 ) as item()*
 {
 
-	let $entry-uri := $response-data/atom:link[@rel="edit"]/@href
-	let $log := local:debug( concat( "$entry-uri: " , $entry-uri ) )
-	
-	let $entry-path-info := substring-after( $entry-uri , $config:service-url )
-	let $log := local:debug( concat( "$entry-path-info: " , $entry-path-info ) )
+    let $entry-uri := $response-data/atom:link[@rel="edit"]/@href
+    let $log := local:debug( concat( "$entry-uri: " , $entry-uri ) )
+    
+    let $entry-path-info := substring-after( $entry-uri , $config:service-url )
+    let $log := local:debug( concat( "$entry-path-info: " , $entry-path-info ) )
 
-	let $entry-doc-db-path := atomdb:request-path-info-to-db-path( $entry-path-info )
-	let $log := local:debug( concat( "$entry-doc-db-path: " , $entry-doc-db-path ) )
-	
-	(: if security is enabled, install default resource ACL :)
-	let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $entry-doc-db-path )
-	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
+    let $entry-doc-db-path := atomdb:request-path-info-to-db-path( $entry-path-info )
+    let $log := local:debug( concat( "$entry-doc-db-path: " , $entry-doc-db-path ) )
+    
+    (: if security is enabled, install default resource ACL :)
+    let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $entry-doc-db-path )
+    let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
 
-	let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
-	let $log := local:debug( concat( "$media-uri: " , $media-uri ) )
-	
-	let $media-path-info := substring-after( $media-uri , $config:service-url )
-	let $log := local:debug( concat( "$media-path-info: " , $media-path-info ) )
+    let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
+    let $log := local:debug( concat( "$media-uri: " , $media-uri ) )
+    
+    let $media-path-info := substring-after( $media-uri , $config:service-url )
+    let $log := local:debug( concat( "$media-path-info: " , $media-path-info ) )
 
-	let $media-resource-db-path := atomdb:request-path-info-to-db-path( $media-path-info )
-	let $log := local:debug( concat( "$media-resource-db-path: " , $media-resource-db-path ) )
-	
-	(: if security is enabled, install default resource ACL :)
-	let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $media-resource-db-path )
-	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
-	
-	(: need to workaround html response for create media with multipart request :)
+    let $media-resource-db-path := atomdb:request-path-info-to-db-path( $media-path-info )
+    let $log := local:debug( concat( "$media-resource-db-path: " , $media-resource-db-path ) )
+    
+    (: if security is enabled, install default resource ACL :)
+    let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $media-resource-db-path )
+    let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
+    
+    (: need to workaround html response for create media with multipart request :)
     let $response-data := 
         if ( starts-with( $response-content-type , $CONSTANT:MEDIA-TYPE-ATOM ) )
         then sp:append-descriptor-links( $entry-path-info , $response-data )
         else $response-data
 
-	return ( $response-data , $response-content-type )
+    return ( $response-data , $response-content-type )
+
+};
+
+
+
+declare function sp:after-update-media(
+    $request-path-info as xs:string ,
+    $response-data as item()* ,
+    $response-content-type as xs:string?
+) as item()*
+{
+
+    let $response-data := 
+        if ( starts-with( $response-content-type , $CONSTANT:MEDIA-TYPE-ATOM ) )
+        then sp:append-descriptor-links( $request-path-info , $response-data )
+        else $response-data
+
+    return ( $response-data , $response-content-type )
 
 };
 
@@ -375,9 +397,8 @@ declare function sp:append-descriptor-links(
     let $log := local:debug( concat( "$descriptor-link: " , $descriptor-link ) )
     
     let $media-descriptor-link :=
-        if ( atomdb:media-link-available( $request-path-info ) )
+        if ( exists( $media-path-info ) )
         then
-            let $media-path-info := substring-after( $response-data/atom:link[@rel="edit-media"]/@href , $config:service-url )
             let $can-retrieve-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () ) )
             let $can-update-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
             let $allow := string-join((

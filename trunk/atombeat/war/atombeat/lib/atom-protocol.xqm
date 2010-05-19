@@ -823,19 +823,19 @@ declare function ap:op-update-media(
     
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
+    (: return the media-link entry :)
+    
+    let $media-link-entry := atomdb:get-media-link( $request-path-info )
+    
+    let $content-location-header-set := response:set-header( "Content-Location" , $media-link-entry/atom:link[@rel='edit']/@href )
+
+    return ( $CONSTANT:STATUS-SUCCESS-OK , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )
+
+(:
+    
     let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
     
-    (:
-     : TODO review whether we really want to echo the file back to client
-     : or rather return media-link entry (with content-location header), or 
-     : rather return nothing.
-     :)
-     
-    (: media type :)
-    
     let $mime-type := atomdb:get-mime-type( $request-path-info )
-    
-    (: title as filename :)
     
     let $media-link := atomdb:get-media-link( $request-path-info )
     let $title := $media-link/atom:title
@@ -843,14 +843,11 @@ declare function ap:op-update-media(
     	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
     	else ()
     
-    (: decoding from base 64 binary :)
-    
     let $response-stream := response:stream-binary( atomdb:retrieve-media( $request-path-info ) , $mime-type )
-
-	(: don't return status code, because already set :)
-	(: don't return response data, because streaming binary :)
 	
 	return ( () , () , () )
+
+:)
 
 };
 
