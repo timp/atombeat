@@ -262,6 +262,37 @@ declare function atomdb:update-collection(
 
 
 
+declare function atomdb:touch-collection(
+    $request-path-info as xs:string
+) as xs:dateTime
+{
+
+    let $updated := current-dateTime()
+    
+    let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+    let $feed-doc-db-path := atomdb:feed-doc-db-path( $collection-db-path )
+    let $feed := doc( $feed-doc-db-path )/atom:feed
+    
+    let $feed-updated :=
+        <atom:feed>
+        {
+            $feed/attribute::* ,
+            for $child in $feed/child::*
+            return
+                if ( local-name( $child ) = $CONSTANT:ATOM-UPDATED and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI ) 
+                then <atom:updated>{$updated}</atom:updated>
+                else $child
+        }
+        </atom:feed>
+
+    let $feed-stored := xmldb:store( $collection-db-path , $config:feed-doc-name , $feed-updated , $CONSTANT:MEDIA-TYPE-ATOM )
+    
+    return $updated
+    
+};
+
+
+
 declare function atomdb:generate-member-identifier(
     $collection-path-info as xs:string
 ) as xs:string

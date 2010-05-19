@@ -709,6 +709,74 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
+	public void testFeedUpdatedDateIsModifiedAfterPostOrPutEntry() {
+
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+
+		// now try GET to collection URI
+		GetMethod get1 = new GetMethod(collectionUri);
+		int get1Result = executeMethod(get1);
+		assertEquals(200, get1Result);
+
+		// check content
+		Document d = getResponseBodyAsDocument(get1);
+		Element updatedElement = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated").item(0);
+		String updated1 = updatedElement.getTextContent();
+		
+		// now post an entry
+		PostMethod post = new PostMethod(collectionUri);
+		String content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member</atom:title>" +
+				"<atom:summary>This is a summary.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(post, content);
+		int postResult = executeMethod(post);
+		String location = post.getResponseHeader("Location").getValue();
+		assertEquals(201, postResult);
+		
+		// now try GET to collection URI again
+		GetMethod get2 = new GetMethod(collectionUri);
+		int get2Result = executeMethod(get2);
+		assertEquals(200, get2Result);
+
+		// check content
+		d = getResponseBodyAsDocument(get2);
+		updatedElement = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated").item(0);
+		String updated2 = updatedElement.getTextContent();
+		
+		assertFalse(updated1.equals(updated2));
+		
+		// now put an updated entry document using a PUT request
+		PutMethod put = new PutMethod(location);
+		content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Updated</atom:title>" +
+				"<atom:summary>This is a summary, updated.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(put, content);
+		int putResult = executeMethod(put);
+		assertEquals(200, putResult);
+
+		// now try GET to collection URI again
+		GetMethod get3 = new GetMethod(collectionUri);
+		int get3Result = executeMethod(get3);
+		assertEquals(200, get3Result);
+
+		// check content
+		d = getResponseBodyAsDocument(get3);
+		updatedElement = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated").item(0);
+		String updated3 = updatedElement.getTextContent();
+		
+		assertFalse(updated1.equals(updated3));
+		assertFalse(updated2.equals(updated3));
+
+	}
+	
+	
+	
+	
 	public void testGetEntry() {
 
 		// setup test
