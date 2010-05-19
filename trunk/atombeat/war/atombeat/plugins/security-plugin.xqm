@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace sp = "http://atombeat.org/xquery/security-plugin";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://atombeat.org/xmlns" ;
 
 
 import module namespace request = "http://exist-db.org/xquery/request" ;
@@ -67,7 +68,7 @@ declare function sp:before(
         
         then 
         
-            let $request-data := sp:strip-acl-links( $request-data )
+            let $request-data := sp:strip-descriptor-links( $request-data )
 			let $status-code := 0 (: we don't want to interrupt request processing :)
 			return ( $status-code , $request-data )
 			
@@ -81,11 +82,11 @@ declare function sp:before(
 
 
 
-declare function sp:strip-acl-links(
+declare function sp:strip-descriptor-links(
     $request-data as element()
 ) as element()
 {
-    let $log := local:debug( "== sp:strip-acl-links ==" )
+    let $log := local:debug( "== sp:strip-descriptor-links ==" )
     let $log := local:debug( $request-data )
     let $request-data :=
         element { node-name( $request-data ) }
@@ -99,7 +100,7 @@ declare function sp:strip-acl-links(
                 not(
                     $ln = $CONSTANT:ATOM-LINK
                     and $ns = $CONSTANT:ATOM-NSURI 
-                    and ( $rel = "http://atombeat.org/rel/acl" or $rel = "http://atombeat.org/rel/media-acl" )
+                    and ( $rel = "http://atombeat.org/rel/security-descriptor" or $rel = "http://atombeat.org/rel/media-security-descriptor" )
                 )
             )
             return $child
@@ -178,10 +179,10 @@ declare function sp:after-create-member(
 	let $log := local:debug( concat( "$entry-doc-db-path: " , $entry-doc-db-path ) )
 	
 	(: if security is enabled, install default resource ACL :)
-	let $resource-acl-installed := sp:install-resource-acl( $request-path-info , $entry-doc-db-path )
-	let $log := local:debug( concat( "$resource-acl-installed: " , $resource-acl-installed ) )
+	let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $entry-doc-db-path )
+	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
 	
-    let $response-data := sp:append-acl-links( $request-path-info , $response-data )
+    let $response-data := sp:append-descriptor-links( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -196,7 +197,7 @@ declare function sp:after-update-member(
 ) as item()*
 {
 
-    let $response-data := sp:append-acl-links( $request-path-info , $response-data )
+    let $response-data := sp:append-descriptor-links( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -222,8 +223,8 @@ declare function sp:after-create-media(
 	let $log := local:debug( concat( "$entry-doc-db-path: " , $entry-doc-db-path ) )
 	
 	(: if security is enabled, install default resource ACL :)
-	let $resource-acl-installed := sp:install-resource-acl( $request-path-info , $entry-doc-db-path )
-	let $log := local:debug( concat( "$resource-acl-installed: " , $resource-acl-installed ) )
+	let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $entry-doc-db-path )
+	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
 
 	let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
 	let $log := local:debug( concat( "$media-uri: " , $media-uri ) )
@@ -235,13 +236,13 @@ declare function sp:after-create-media(
 	let $log := local:debug( concat( "$media-resource-db-path: " , $media-resource-db-path ) )
 	
 	(: if security is enabled, install default resource ACL :)
-	let $resource-acl-installed := sp:install-resource-acl( $request-path-info , $media-resource-db-path )
-	let $log := local:debug( concat( "$resource-acl-installed: " , $resource-acl-installed ) )
+	let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $media-resource-db-path )
+	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
 	
 	(: need to workaround html response for create media with multipart request :)
     let $response-data := 
         if ( starts-with( $response-content-type , $CONSTANT:MEDIA-TYPE-ATOM ) )
-        then sp:append-acl-links( $entry-path-info , $response-data )
+        then sp:append-descriptor-links( $entry-path-info , $response-data )
         else $response-data
 
 	return ( $response-data , $response-content-type )
@@ -259,10 +260,10 @@ declare function sp:after-create-collection(
 {
 
 	(: if security is enabled, install default collection ACL :)
-	let $collection-acl-installed := sp:install-collection-acl( $request-path-info )
+	let $collection-descriptor-installed := sp:install-collection-descriptor( $request-path-info )
 	
 	(: no filtering necessary because no members yet, but adds acl link :)
-	let $response-data := sp:filter-feed-by-acls( $request-path-info , $response-data )
+	let $response-data := sp:filter-feed-by-permissions( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -278,7 +279,7 @@ declare function sp:after-update-collection(
 ) as item()*
 {
 
-	let $response-data := sp:filter-feed-by-acls( $request-path-info , $response-data )
+	let $response-data := sp:filter-feed-by-permissions( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -294,7 +295,7 @@ declare function sp:after-list-collection(
 ) as item()*
 {
 
-	let $response-data := sp:filter-feed-by-acls( $request-path-info , $response-data )
+	let $response-data := sp:filter-feed-by-permissions( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -312,7 +313,7 @@ declare function sp:after-retrieve-member(
 
 	let $log := local:debug("== sp:after-retrieve-member ==" )
 
-    let $response-data := sp:append-acl-links( $request-path-info , $response-data )
+    let $response-data := sp:append-descriptor-links( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -321,46 +322,46 @@ declare function sp:after-retrieve-member(
 
 
 
-declare function sp:append-acl-links(
+declare function sp:append-descriptor-links(
     $request-path-info as xs:string ,
     $response-data as element(atom:entry)
 ) as element(atom:entry)
 {
 
-    (: N.B. cannot use request-path-info to check if update-acl allowed, because request-path-info might be a collection URI if the operation was create-member :)
+    (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
     let $entry-path-info := substring-after( $response-data/atom:link[@rel="self"]/@href , $config:service-url )
-    let $can-update-member-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+    let $can-update-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
     
     let $acl-link :=     
-        if ( $can-update-member-acl )
-        then <atom:link rel="http://atombeat.org/rel/acl" href="{concat( $config:acl-service-url , $entry-path-info )}" type="application/atom+xml"/>
+        if ( $can-update-member-descriptor )
+        then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml"/>
         else ()
         
     let $log := local:debug( concat( "$acl-link: " , $acl-link ) )
     
-    let $media-acl-link :=
+    let $media-descriptor-link :=
         if ( atomdb:media-link-available( $request-path-info ) )
         then
             let $media-path-info := substring-after( $response-data/atom:link[@rel="edit-media"]/@href , $config:service-url )
-            let $can-update-media-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
+            let $can-update-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
             return 
-                if ( $can-update-media-acl )
+                if ( $can-update-media-descriptor )
                 then 
-                    let $media-acl-href := concat( $config:acl-service-url , $media-path-info )
-                    return <atom:link rel="http://atombeat.org/rel/media-acl" href="{$media-acl-href}" type="application/atom+xml"/>
+                    let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
+                    return <atom:link rel="http://atombeat.org/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml"/>
                 else ()                
         else ()
         
     let $response-data := 
-        if ( empty( $acl-link ) and empty( $media-acl-link ) ) then $response-data
+        if ( empty( $acl-link ) and empty( $media-descriptor-link ) ) then $response-data
         else
             <atom:entry>
             {
                 $response-data/attribute::* ,
                 $response-data/child::* ,
                 $acl-link ,
-                $media-acl-link
+                $media-descriptor-link
             }
             </atom:entry>
             
@@ -371,7 +372,7 @@ declare function sp:append-acl-links(
 
 
 
-declare function sp:install-resource-acl(
+declare function sp:install-resource-descriptor(
     $request-path-info as xs:string,
     $entry-doc-db-path as xs:string
 ) as xs:string?
@@ -381,7 +382,7 @@ declare function sp:install-resource-acl(
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := config:default-resource-security-descriptor( $request-path-info , $user )
         let $entry-path-info := atomdb:db-path-to-request-path-info( $entry-doc-db-path )
-        let $acl-db-path := atomsec:store-resource-acl( $entry-path-info , $acl )
+        let $acl-db-path := atomsec:store-resource-descriptor( $entry-path-info , $acl )
     	return $acl-db-path
     else ()
 };
@@ -389,20 +390,20 @@ declare function sp:install-resource-acl(
 
 
 
-declare function sp:install-collection-acl( $request-path-info as xs:string ) as xs:string?
+declare function sp:install-collection-descriptor( $request-path-info as xs:string ) as xs:string?
 {
     if ( $config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := config:default-collection-security-descriptor( $request-path-info , $user )
-        return atomsec:store-collection-acl( $request-path-info , $acl )
+        return atomsec:store-collection-descriptor( $request-path-info , $acl )
     else ()
 };
 
 
 
 
-declare function sp:filter-feed-by-acls(
+declare function sp:filter-feed-by-permissions(
     $request-path-info as xs:string ,
     $feed as element(atom:feed)
 ) as element(atom:feed)
@@ -410,10 +411,10 @@ declare function sp:filter-feed-by-acls(
     if ( not( $config:enable-security ) )
     then $feed
     else
-        let $can-update-collection-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () ) )
+        let $can-update-collection-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () ) )
         let $acl-link :=     
-            if ( $can-update-collection-acl )
-            then <atom:link rel="http://atombeat.org/rel/acl" href="{concat( $config:acl-service-url , $request-path-info )}" type="application/atom+xml"/>
+            if ( $can-update-collection-descriptor )
+            then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml"/>
             else ()
         let $filtered-feed :=
             <atom:feed>
@@ -428,9 +429,9 @@ declare function sp:filter-feed-by-acls(
                     return 
                         if ( not( $forbidden ) ) 
                         then 
-                            let $can-update-acl := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+                            let $can-update-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
                             return
-                                if ( $can-update-acl ) then sp:append-acl-links( $entry-path-info , $entry ) 
+                                if ( $can-update-descriptor ) then sp:append-descriptor-links( $entry-path-info , $entry ) 
                                 else $entry
                         else ()
                 }

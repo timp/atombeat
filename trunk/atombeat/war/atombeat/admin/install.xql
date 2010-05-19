@@ -117,7 +117,7 @@ declare function local:do-post() as item()*
 {
 
     (: INSTALL THE workspace ACL :)
-    let $workspace-acl-installed := atomsec:store-workspace-acl( $config:default-workspace-security-descriptor )
+    let $workspace-descriptor-installed := atomsec:store-workspace-descriptor( $config:default-workspace-security-descriptor )
     
     (: INSTALL THE COLLECTIONS :)
     let $collections-installed :=
@@ -139,7 +139,7 @@ declare function local:do-post() as item()*
                 
                 (: INSTALL ACL :)
                 let $acl := config:default-collection-security-descriptor( $path-info , () )
-                let $acl-stored := atomsec:store-collection-acl( $path-info , $acl )
+                let $acl-stored := atomsec:store-collection-descriptor( $path-info , $acl )
                 
                 (: ENABLE HISTORY :)
                 let $history-enabled :=

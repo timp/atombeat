@@ -42,7 +42,7 @@ public class AtomTestUtils {
 	public static final String port ="8081";
 	public static final String BASE_URI = "http://localhost:" + port + "/atombeat/atombeat/";
 	public static final String CONTENT_URI = BASE_URI + "content/";
-	public static final String ACL_URI = BASE_URI + "acl/";
+	public static final String SECURITY_URI = BASE_URI + "security/";
 
 
 	

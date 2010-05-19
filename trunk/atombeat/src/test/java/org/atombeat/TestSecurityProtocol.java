@@ -19,8 +19,7 @@ import junit.framework.TestCase;
 
 
 
-// TODO update to new acl format
-public class TestAclProtocol extends TestCase {
+public class TestSecurityProtocol extends TestCase {
 
 
 	
@@ -29,7 +28,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 
-	public TestAclProtocol() {
+	public TestSecurityProtocol() {
 	
 	
 	}
@@ -40,7 +39,7 @@ public class TestAclProtocol extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		// need to run install before each test to ensure default global acl is restored
+		// need to run install before each test to ensure default workspace descriptor is restored
 		
 		String installUrl = BASE_URI + "admin/install-example.xql";
 		
@@ -63,9 +62,9 @@ public class TestAclProtocol extends TestCase {
 
 	
 
-	public void testGetGlobalAcl() {
+	public void testGetWorkspaceDescriptor() {
 		
-		GetMethod g = new GetMethod(ACL_URI);
+		GetMethod g = new GetMethod(SECURITY_URI);
 		int r = executeMethod(g, "adam", "test");
 
 		assertEquals(200, r);
@@ -73,15 +72,15 @@ public class TestAclProtocol extends TestCase {
 		verifyAtomResponse(g);
 		
 		Document d = getResponseBodyAsDocument(g);
-		verifyDocIsAtomEntryWithAclContent(d);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(d);
 		
 	}
 	
 	
 	
-	public void testGetGlobalAclDenied() {
+	public void testGetWorkspaceDescriptorDenied() {
 
-		GetMethod g = new GetMethod(ACL_URI);
+		GetMethod g = new GetMethod(SECURITY_URI);
 		int r = executeMethod(g, "rebecca", "test");
 
 		assertEquals(403, r);
@@ -90,7 +89,7 @@ public class TestAclProtocol extends TestCase {
 	
 
 	
-	public void testGetCollectionAcl() {
+	public void testGetCollectionDescriptor() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -102,22 +101,22 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// make a second get request for the acl
-		GetMethod h = new GetMethod(aclLocation);
+		// make a second get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "adam", "test");
 		assertEquals(200, s);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
-		verifyDocIsAtomEntryWithAclContent(e);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 
 	}
 	
 	
 	
-	public void testGetCollectionNoEditAclLink() {
+	public void testGetCollectionNoDescriptorLink() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -129,14 +128,14 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNull(descriptorLocation);
 		
 	}
 	
 	
 	
-	public void testGetCollectionAclDenied() {
+	public void testGetCollectionDescriptorDenied() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -148,11 +147,11 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// make a second get request for the acl
-		GetMethod h = new GetMethod(aclLocation);
+		// make a second get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "rebecca", "test");
 		assertEquals(403, s);
 
@@ -160,7 +159,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testGetMemberAcl() {
+	public void testGetMemberDescriptor() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -173,23 +172,23 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// make a get request for the acl
-		GetMethod h = new GetMethod(aclLocation);
+		// make a get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "adam", "test");
 		assertEquals(200, s);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
-		verifyDocIsAtomEntryWithAclContent(e);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 
 	}
 	
 	
 	
 
-	public void testGetMemberNoEditAclLink() {
+	public void testGetMemberNoDescriptorLink() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -202,27 +201,27 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNull(descriptorLocation);
 		
 	}
 	
 	
 	
-	public void testAclLinkPresentInResponseToCreateEntry() {
+	public void testDescriptorLinkPresentInResponseToCreateEntry() {
 		
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestEntryAndReturnDocument(collectionUri, "audrey", "test");
 
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
 	}
 	
 	
 	
-	public void testGetMemberAclDenied() {
+	public void testGetMemberDescriptorDenied() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -235,11 +234,11 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// make a get request for the acl
-		GetMethod h = new GetMethod(aclLocation);
+		// make a get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "rebecca", "test");
 		assertEquals(403, s);
 
@@ -247,41 +246,41 @@ public class TestAclProtocol extends TestCase {
 
 	
 	
-	public void testGetMediaAcl() {
+	public void testGetMediaDescriptor() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		// look for ACL link
-		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// make a get request for the acl
-		GetMethod h = new GetMethod(aclLocation);
+		// make a get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "audrey", "test");
 		assertEquals(200, s);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
-		verifyDocIsAtomEntryWithAclContent(e);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 
 	}
 	
 	
 	
 
-	public void testGetMediaAclDenied() {
+	public void testGetMediaDescriptorDenied() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		// look for ACL link
-		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// make a get request for the acl
-		GetMethod h = new GetMethod(aclLocation);
+		// make a get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "rebecca", "test");
 		assertEquals(403, s);
 
@@ -290,7 +289,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 
-	public void testGetMediaAclNoEditMediaAclLink() {
+	public void testGetMediaDescriptorNoDescriptorLink() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -302,8 +301,8 @@ public class TestAclProtocol extends TestCase {
 		int s = executeMethod(g, "rebecca", "test");
 		assertEquals(200, s);
 		Document e = getResponseBodyAsDocument(g);
-		String mediaAclLocation = getLinkHref(e, AtomBeat.REL_MEDIA_ACL);
-		assertNull(mediaAclLocation);
+		String mediaDescriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNull(mediaDescriptorLocation);
 		
 	}
 	
@@ -313,27 +312,27 @@ public class TestAclProtocol extends TestCase {
 
 	
 	
-	public void testUpdateGlobalAcl() {
+	public void testUpdateWorkspaceDescriptor() {
 		
 		// make sure adam can create collections
 		String u = createTestCollection(CONTENT_URI, "adam", "test");
 		assertNotNull(u);
 
-		// strip global acls
+		// strip workspace descriptor
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		
-		PutMethod p = new PutMethod(ACL_URI);
+		PutMethod p = new PutMethod(SECURITY_URI);
 		setAtomRequestEntity(p, content);
 		int r = executeMethod(p, "adam", "test");
 		assertEquals(200, r);
 		verifyAtomResponse(p);
 		Document e = getResponseBodyAsDocument(p);
-		verifyDocIsAtomEntryWithAclContent(e);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 		
 		// now try to create a collection
 		String v = createTestCollection(CONTENT_URI, "adam", "test");
@@ -343,17 +342,17 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateGlobalAclDenied() {
+	public void testUpdateWorkspaceDescriptorDenied() {
 		
-		// try to update global acls
+		// try to update workspace descriptor
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		
-		PutMethod p = new PutMethod(ACL_URI);
+		PutMethod p = new PutMethod(SECURITY_URI);
 		setAtomRequestEntity(p, content);
 		int r = executeMethod(p, "rebecca", "test");
 		assertEquals(403, r);
@@ -362,7 +361,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateCollectionAcl() {
+	public void testUpdateCollectionDescriptor() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -373,20 +372,20 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, q);
 		
 
-		// retrieve collection feed as adam (administrator) to get edit-acl link
+		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// update the acl
-		PutMethod p = new PutMethod(aclLocation);
+		// update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -394,7 +393,7 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, s);
 		verifyAtomResponse(p);
 		Document e = getResponseBodyAsDocument(p);
-		verifyDocIsAtomEntryWithAclContent(e);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 
 		// try to retrieve collection feed again as rebecca to check forbidden
 		GetMethod h = new GetMethod(collectionUri);
@@ -405,25 +404,25 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateCollectionAclDenied() {
+	public void testUpdateCollectionDescriptorDenied() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
  
-		// retrieve collection feed as adam (administrator) to get edit-acl link
+		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// try to update the acl
-		PutMethod p = new PutMethod(aclLocation);
+		// try to update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -434,25 +433,25 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testBadAclRequest() {
+	public void testBadRequest() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
  
-		// retrieve collection feed as adam (administrator) to get edit-acl link
+		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
 		int r = executeMethod(g, "adam", "test");
 		assertEquals(200, r);
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// try to update the acl with bad content - missing rules
-		PutMethod p = new PutMethod(aclLocation);
+		// try to update the descriptor with bad content - missing acl
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -464,7 +463,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateMemberAcl() {
+	public void testUpdateMemberDescriptor() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -477,15 +476,15 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// try to update the acl
-		PutMethod p = new PutMethod(aclLocation);
+		// try to update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -502,7 +501,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 
-	public void testUpdateMemberAclDenied() {
+	public void testUpdateMemberDescriptorDenied() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -515,15 +514,15 @@ public class TestAclProtocol extends TestCase {
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
-		String aclLocation = getLinkHref(d, AtomBeat.REL_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// try to update the acl
-		PutMethod p = new PutMethod(aclLocation);
+		// try to update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -539,7 +538,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateMediaAcl() {
+	public void testUpdateMediaDescriptor() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -552,15 +551,15 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, r);
 
 		// look for ACL link
-		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// try to update the acl
-		PutMethod p = new PutMethod(aclLocation);
+		// try to update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -577,7 +576,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 
-	public void testUpdateMediaAclDenied() {
+	public void testUpdateMediaDescriptorDenied() {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -590,15 +589,15 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, r);
 
 		// look for ACL link
-		String aclLocation = getLinkHref(d, AtomBeat.REL_MEDIA_ACL);
-		assertNotNull(aclLocation);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
 		
-		// try to update the acl
-		PutMethod p = new PutMethod(aclLocation);
+		// try to update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<acl xmlns=\"\"><rules/></acl>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -615,14 +614,14 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	public void testCannotOverrideAclLinksOnCreateCollection() {
+	public void testCannotOverrideDescriptorLinksOnCreateCollection() {
 		
 		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		PutMethod method = new PutMethod(collectionUri);
 		String content = 
 			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Collection</atom:title>" +
-				"<atom:link rel=\"edit-acl\" href=\"http://foo.bar/spong\"/>" +
+				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:feed>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method, "adam", "test");
@@ -631,13 +630,14 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(201, result);
 		
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
+		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertEquals(1, links.size());
+		assertFalse(links.get(0).getAttribute("href").equals("http://foo.bar/spong"));
 
 	}
 	
 	
-	public void testCannotOverrideAclLinksOnUpdateCollection() {
+	public void testCannotOverrideDescriptorLinksOnUpdateCollection() {
 		
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -647,7 +647,7 @@ public class TestAclProtocol extends TestCase {
 		String content = 
 			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Collection</atom:title>" +
-				"<atom:link rel=\"edit-acl\" href=\"http://foo.bar/spong\"/>" +
+				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:feed>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method, "adam", "test");
@@ -656,13 +656,14 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, result);
 		
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
+		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertEquals(1, links.size());
+		assertFalse(links.get(0).getAttribute("href").equals("http://foo.bar/spong"));
 
 	}
 	
 	
-	public void testCannotOverrideAclLinksOnCreateMember() {
+	public void testCannotOverrideDescriptorLinksOnCreateMember() {
 
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -674,7 +675,7 @@ public class TestAclProtocol extends TestCase {
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Member</atom:title>" +
 				"<atom:summary>This is a summary.</atom:summary>" +
-				"<atom:link rel=\"edit-acl\" href=\"http://foo.bar/spong\"/>" +
+				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method, "adam", "test");
@@ -683,12 +684,13 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(201, result);
 
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
+		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertEquals(1, links.size());
+		assertFalse(links.get(0).getAttribute("href").equals("http://foo.bar/spong"));
 	}
 	
 	
-	public void testCannotOverrideAclLinksOnUpdateMember() {
+	public void testCannotOverrideDescriptorLinksOnUpdateMember() {
 		
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -700,7 +702,7 @@ public class TestAclProtocol extends TestCase {
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Member - Updated</atom:title>" +
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
-				"<atom:link rel=\"edit-acl\" href=\"http://foo.bar/spong\"/>" +
+				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method, "adam", "test");
@@ -709,8 +711,9 @@ public class TestAclProtocol extends TestCase {
 		assertEquals(200, result);
 
 		Document d = getResponseBodyAsDocument(method);
-		List<Element> links = getLinks(d, AtomBeat.REL_ACL);
+		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertEquals(1, links.size());
+		assertFalse(links.get(0).getAttribute("href").equals("http://foo.bar/spong"));
 	}
 	
 	private static String verifyAtomResponse(HttpMethod m) {
@@ -725,7 +728,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	private static Element verifyDocIsAtomEntryWithAclContent(Document d) {
+	private static Element verifyDocIsAtomEntryWithSecurityDescriptorContent(Document d) {
 
 		// verify root element is atom entry
 		Element e = d.getDocumentElement();
@@ -736,8 +739,8 @@ public class TestAclProtocol extends TestCase {
 		Element c = (Element) e.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content").item(0);
 		assertNotNull(c);
 		
-		// verify acl content
-		NodeList n = c.getElementsByTagNameNS("", "acl");
+		// verify content
+		NodeList n = c.getElementsByTagNameNS("http://atombeat.org/xmlns", "security-descriptor");
 		Element a = (Element) n.item(0);
 		assertNotNull(a);
 		
@@ -748,7 +751,7 @@ public class TestAclProtocol extends TestCase {
 	
 	
 	
-	// TODO test that edit-acl and edit-media acl links are provided after
+	// TODO test that security links are provided after
 	// retrieve, create and update operations, as appropriate
 	
 }
