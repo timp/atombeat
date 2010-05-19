@@ -370,7 +370,7 @@ declare function hp:append-history-link (
 			$response-entry/attribute::* ,
 			$response-entry/child::*
 		}
-			<atom:link rel="history" href="{$history-uri}"/>			
+			<atom:link rel="history" href="{$history-uri}" type="application/atom+xml"/>			
 		</atom:entry>
 
 	let $log := util:log( "debug" , $response-entry )
