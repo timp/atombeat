@@ -661,10 +661,14 @@ public class TestAtomProtocol extends TestCase {
 		Header locationHeader = method.getResponseHeader("Location");
 		assertNull(locationHeader);
 		
-		// expect Content-Type header 
+		// expect Content-Type header for media-link
 		String responseContentType = method.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
-		assertTrue(responseContentType.trim().startsWith("text/plain"));
+		assertTrue(responseContentType.trim().startsWith("application/atom+xml"));
+		
+		// expect Content-Location header
+		Header contentLocationHeader = method.getResponseHeader("Content-Location");
+		assertNotNull(contentLocationHeader);
 
 	}
 	
