@@ -174,6 +174,11 @@ declare variable $config:default-workspace-security-descriptor :=
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
+            </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
                 <atombeat:permission>UPDATE_ACL</atombeat:permission>
             </atombeat:ace>
             <!-- you could also use a wildcard -->
@@ -247,6 +252,11 @@ declare function config:default-collection-security-descriptor(
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
                 <atombeat:permission>DELETE_MEMBER</atombeat:permission>
+            </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
+                <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
             </atombeat:ace>
 
             <!-- Media editors -->
@@ -368,6 +378,11 @@ declare function config:default-resource-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
+                <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
+            </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="user">{$user}</atombeat:recipient>
                 <atombeat:permission>UPDATE_ACL</atombeat:permission>
             </atombeat:ace>
             
@@ -398,6 +413,11 @@ declare function config:default-resource-security-descriptor(
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="group">owners</atombeat:recipient>
                 <atombeat:permission>DELETE_MEMBER</atombeat:permission>
+            </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="group">owners</atombeat:recipient>
+                <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>

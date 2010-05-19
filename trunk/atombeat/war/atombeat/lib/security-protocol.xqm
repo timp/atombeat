@@ -88,7 +88,7 @@ declare function security-protocol:do-get-workspace-descriptor() as item()*
      : to update the workspace ACL.
      :)
      
-    let $allowed := security-protocol:is-update-acl-allowed( "/" )
+    let $allowed := security-protocol:is-retrieve-acl-allowed( "/" )
     
     return
     
@@ -111,12 +111,8 @@ declare function security-protocol:do-get-collection-descriptor(
     $request-path-info as xs:string
 ) as item()*
 {
-    (: 
-     : We will only allow retrieval of collection ACL if user is allowed
-     : to update the collection ACL.
-     :)
-     
-    let $allowed := security-protocol:is-update-acl-allowed( $request-path-info )
+
+    let $allowed := security-protocol:is-retrieve-acl-allowed( $request-path-info )
     
     return
     
@@ -138,12 +134,8 @@ declare function security-protocol:do-get-member-descriptor(
     $request-path-info as xs:string
 ) as item()*
 {
-    (: 
-     : We will only allow retrieval of member ACL if user is allowed
-     : to update the member ACL.
-     :)
-     
-    let $allowed := security-protocol:is-update-acl-allowed( $request-path-info )
+
+    let $allowed := security-protocol:is-retrieve-acl-allowed( $request-path-info )
     
     return
     
@@ -165,12 +157,8 @@ declare function security-protocol:do-get-media-descriptor(
     $request-path-info as xs:string
 ) as item()*
 {
-    (: 
-     : We will only allow retrieval of media ACL if user is allowed
-     : to update the media resource ACL.
-     :)
      
-    let $allowed := security-protocol:is-update-acl-allowed( $request-path-info )
+    let $allowed := security-protocol:is-retrieve-acl-allowed( $request-path-info )
     
     return
     
@@ -371,6 +359,22 @@ declare function security-protocol:is-update-acl-allowed(
     let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
     let $allowed as xs:boolean :=
         ( atomsec:decide( $user , $roles , $request-path-info , $CONSTANT:OP-UPDATE-ACL ) = $atomsec:decision-allow )
+    return $allowed
+
+};
+
+
+
+
+declare function security-protocol:is-retrieve-acl-allowed(
+    $request-path-info as xs:string
+) as xs:boolean 
+{
+
+    let $user := request:get-attribute( $config:user-name-request-attribute-key )
+    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
+    let $allowed as xs:boolean :=
+        ( atomsec:decide( $user , $roles , $request-path-info , $CONSTANT:OP-RETRIEVE-ACL ) = $atomsec:decision-allow )
     return $allowed
 
 };

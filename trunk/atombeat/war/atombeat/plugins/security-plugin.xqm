@@ -331,11 +331,16 @@ declare function sp:append-descriptor-links(
     (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
     let $entry-path-info := substring-after( $response-data/atom:link[@rel="self"]/@href , $config:service-url )
+    let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
     let $can-update-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+    let $allow := string-join((
+        if ( $can-retrieve-member-descriptor ) then "GET" else () ,
+        if ( $can-update-member-descriptor ) then "PUT" else ()
+    ) , " " )
     
     let $acl-link :=     
-        if ( $can-update-member-descriptor )
-        then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml"/>
+        if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
+        then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml" atombeat:allow="{$allow}"/>
         else ()
         
     let $log := local:debug( concat( "$acl-link: " , $acl-link ) )
@@ -344,12 +349,17 @@ declare function sp:append-descriptor-links(
         if ( atomdb:media-link-available( $request-path-info ) )
         then
             let $media-path-info := substring-after( $response-data/atom:link[@rel="edit-media"]/@href , $config:service-url )
+            let $can-retrieve-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () ) )
             let $can-update-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
+            let $allow := string-join((
+                if ( $can-retrieve-media-descriptor ) then "GET" else () ,
+                if ( $can-update-media-descriptor ) then "PUT" else ()
+            ) , " " )
             return 
-                if ( $can-update-media-descriptor )
+                if ( $can-update-media-descriptor or $can-retrieve-media-descriptor )
                 then 
                     let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
-                    return <atom:link rel="http://atombeat.org/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml"/>
+                    return <atom:link rel="http://atombeat.org/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml" atombeat:allow="{$allow}"/>
                 else ()                
         else ()
         
