@@ -86,6 +86,44 @@ declare function atomsec:store-collection-descriptor(
 
 
 
+declare function atomsec:descriptor-updated(
+    $request-path-info as xs:string
+) as xs:dateTime?
+{
+
+    if ( $request-path-info = "/" )
+    
+    then 
+    
+        let $collection-db-path := $config:base-security-collection-path
+        let $descriptor-doc-name := $atomsec:descriptor-suffix
+        return xmldb:last-modified( $collection-db-path , $descriptor-doc-name )
+    
+    else if ( atomdb:collection-available( $request-path-info ) )
+    
+    then 
+    
+        let $collection-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
+        let $descriptor-doc-name := $atomsec:descriptor-suffix
+        return xmldb:last-modified( $collection-db-path , $descriptor-doc-name )
+    
+    else if ( atomdb:member-available( $request-path-info ) or atomdb:media-resource-available( $request-path-info ) )
+    
+    then 
+    
+        let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
+        let $collection-db-path := atomdb:request-path-info-to-db-path( $groups[2] )
+        let $descriptor-collection-db-path := concat( $config:base-security-collection-path , $collection-db-path )
+        let $resource-name := $groups[3]
+        let $descriptor-doc-name := concat( $resource-name , $atomsec:descriptor-suffix )
+        return xmldb:last-modified( $collection-db-path , $descriptor-doc-name )
+        
+    else ()
+    
+};
+
+
+
 
 declare function atomsec:store-resource-descriptor(
     $request-path-info as xs:string ,
@@ -123,7 +161,7 @@ declare function atomsec:store-resource-descriptor(
 declare function atomsec:retrieve-workspace-descriptor() as element(atombeat:security-descriptor)?
 {
 
-    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , "/.descriptor" )
+    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , "/" , $atomsec:descriptor-suffix )
 
     let $descriptor-doc := doc( $descriptor-doc-db-path )
     
@@ -145,7 +183,7 @@ declare function atomsec:retrieve-collection-descriptor(
 
         (: TODO what if collection path is given with trailing slash? :)
         
-        let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , "/.descriptor" )
+        let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , "/" , $atomsec:descriptor-suffix )
     
         let $descriptor-doc := doc( $descriptor-doc-db-path )
         

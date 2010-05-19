@@ -99,7 +99,7 @@ declare function security-protocol:do-get-workspace-descriptor() as item()*
         else
         
             let $descriptor := atomsec:retrieve-workspace-descriptor()
-            return security-protocol:send-descriptor( $descriptor )
+            return security-protocol:send-descriptor( "/" , $descriptor )
 
 };
 
@@ -123,7 +123,7 @@ declare function security-protocol:do-get-collection-descriptor(
         else
         
             let $descriptor := atomsec:retrieve-collection-descriptor( $request-path-info )
-            return security-protocol:send-descriptor( $descriptor )
+            return security-protocol:send-descriptor( $request-path-info , $descriptor )
 
 };
 
@@ -146,7 +146,7 @@ declare function security-protocol:do-get-member-descriptor(
         else
         
             let $descriptor := atomsec:retrieve-resource-descriptor( $request-path-info )
-            return security-protocol:send-descriptor( $descriptor )
+            return security-protocol:send-descriptor( $request-path-info , $descriptor )
 
 };
 
@@ -169,7 +169,7 @@ declare function security-protocol:do-get-media-descriptor(
         else
         
             let $descriptor := atomsec:retrieve-resource-descriptor( $request-path-info )
-            return security-protocol:send-descriptor( $descriptor )
+            return security-protocol:send-descriptor( $request-path-info , $descriptor )
 
 };
 
@@ -233,7 +233,7 @@ declare function security-protocol:do-put-workspace-descriptor() as item()*
 
                     let $descriptor-updated := atomsec:store-workspace-descriptor( $descriptor )
                     let $descriptor := atomsec:retrieve-workspace-descriptor()
-                    return security-protocol:send-descriptor( $descriptor )
+                    return security-protocol:send-descriptor( "/" , $descriptor )
 
 };
 
@@ -271,7 +271,7 @@ declare function security-protocol:do-put-collection-descriptor(
 
                     let $descriptor-updated := atomsec:store-collection-descriptor( $request-path-info , $descriptor )
                     let $descriptor := atomsec:retrieve-collection-descriptor( $request-path-info )
-                    return security-protocol:send-descriptor( $descriptor )
+                    return security-protocol:send-descriptor( $request-path-info , $descriptor )
 
 };
 
@@ -308,7 +308,7 @@ declare function security-protocol:do-put-member-descriptor(
 
                     let $descriptor-updated := atomsec:store-resource-descriptor( $request-path-info , $descriptor )
                     let $descriptor := atomsec:retrieve-resource-descriptor( $request-path-info )
-                    return security-protocol:send-descriptor( $descriptor )
+                    return security-protocol:send-descriptor( $request-path-info , $descriptor )
 
 };
 
@@ -344,7 +344,7 @@ declare function security-protocol:do-put-media-descriptor(
 
                     let $descriptor-updated := atomsec:store-resource-descriptor( $request-path-info , $descriptor )
                     let $descriptor := atomsec:retrieve-resource-descriptor( $request-path-info )
-                    return security-protocol:send-descriptor( $descriptor )
+                    return security-protocol:send-descriptor( $request-path-info , $descriptor )
 
 };
 
@@ -394,20 +394,26 @@ declare function security-protocol:get-descriptor-from-request-data(
 
 
 declare function security-protocol:send-descriptor(
+    $request-path-info as xs:string ,
     $descriptor as element(atombeat:security-descriptor)
 ) as item()*
 {
-    let $response-header-set := response:set-header( "Content-Type" , "application/atom+xml" )
+    let $id := concat( $config:security-service-url , $request-path-info )
+    let $self-uri := $id
+    let $updated := atomsec:descriptor-updated( $request-path-info )
+    let $response-header-set := response:set-header( "Content-Type" , $CONSTANT:MEDIA-TYPE-ATOM )
     return
         <atom:entry>
+            <atom:id>{$id}</atom:id>
+            <atom:title type="text">Security Descriptor</atom:title>
+            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:updated>{$updated}</atom:updated>
             <atom:content type="application/vnd.atombeat+xml">
                 { $descriptor }
             </atom:content>
         </atom:entry>
 
-    (: TODO add updated date :)   
-    (: TODO add edit link :)
-    (: TODO add self link :)
 };
 
 
