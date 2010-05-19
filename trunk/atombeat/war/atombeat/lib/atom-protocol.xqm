@@ -268,7 +268,9 @@ declare function ap:op-create-member(
     
     let $etag-header-set := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
-	
+        
+    let $feed-date-updated := atomdb:touch-collection( $request-path-info )
+    	
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 };
@@ -339,7 +341,9 @@ declare function ap:op-create-media(
     let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-			    
+
+    let $feed-date-updated := atomdb:touch-collection( $request-path-info )
+        
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
@@ -429,7 +433,9 @@ declare function ap:op-create-media-from-multipart-form-data (
     let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-			    
+
+    let $feed-date-updated := atomdb:touch-collection( $request-path-info )
+        
 	let $accept := request:get-header( $CONSTANT:HEADER-ACCEPT )
 	
 	let $response-data :=
@@ -746,13 +752,11 @@ declare function ap:op-update-member(
     
     let $etag-header-set := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
+
+    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
     
-	(: 
-	 : N.B. we return the entry here, rather than trying to retrieve the updated
-	 : entry from the database, because of a weird interaction with the versioning
-	 : module, not seeing updates within the same query.
-	 :)
-	 
+    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
+    
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
@@ -815,6 +819,10 @@ declare function ap:op-update-media(
 	
 	let $media-doc-db-path := atomdb:update-media-resource( $request-path-info , $request-data , $request-content-type )
 	
+    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
+    
+    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
+    
     let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
     
     (:
@@ -1155,6 +1163,11 @@ declare function ap:op-delete-member(
 {
 
     let $member-deleted := atomdb:delete-member( $request-path-info ) 
+
+    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
+    
+    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
+    
 	return ( $CONSTANT:STATUS-SUCCESS-NO-CONTENT , () , () )
 
 };
@@ -1190,6 +1203,11 @@ declare function ap:op-delete-media(
 {
 
     let $media-deleted := atomdb:delete-media( $request-path-info ) 
+
+    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
+    
+    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
+    
 	return ( $CONSTANT:STATUS-SUCCESS-NO-CONTENT , () , () )
 
 };
