@@ -175,6 +175,13 @@ public class TestSecurityProtocol extends TestCase {
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertNotNull(descriptorLocation);
 		
+		// check atombeat:allow extension attribute
+		Element link = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
+		assertNotNull(link); 
+		String allow = link.getAttributeNS("http://atombeat.org/xmlns", "allow");
+		assertNotNull(allow);
+		assertEquals("GET PUT", allow);
+		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
 		int s = executeMethod(h, "adam", "test");
@@ -182,6 +189,56 @@ public class TestSecurityProtocol extends TestCase {
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
+
+	}
+	
+	
+	
+
+	public void testGetMemberDescriptor2() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+
+		// edwina is an editor, and should be able to retrieve acl but not update
+		
+		// retrieve member entry
+		GetMethod g = new GetMethod(memberUri);
+		int r = executeMethod(g, "edwina", "test");
+		assertEquals(200, r);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
+		
+		// check atombeat:allow extension attribute
+		Element link = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
+		assertNotNull(link); 
+		String allow = link.getAttributeNS("http://atombeat.org/xmlns", "allow");
+		assertNotNull(allow);
+		assertEquals("GET", allow);
+		
+		// make a get request for the descriptor as editor
+		GetMethod h = new GetMethod(descriptorLocation);
+		int s = executeMethod(h, "edwina", "test");
+		assertEquals(200, s);
+		verifyAtomResponse(h);
+		Document e = getResponseBodyAsDocument(h);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
+
+		// try to update the descriptor
+		PutMethod p = new PutMethod(descriptorLocation);
+		String content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+			"<atom:content type=\"application/vnd.atombeat+xml\">" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"</atom:content>" +
+			"</atom:entry>";
+		setAtomRequestEntity(p, content);
+		int t = executeMethod(p, "edwina", "test");
+		assertEquals(403, t);
 
 	}
 	
@@ -242,6 +299,26 @@ public class TestSecurityProtocol extends TestCase {
 		int s = executeMethod(h, "rebecca", "test");
 		assertEquals(403, s);
 
+	}
+
+	
+	
+	public void testGetMemberDescriptorLinkExcluded() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+
+		// retrieve member entry
+		GetMethod g = new GetMethod(memberUri);
+		int r = executeMethod(g, "rebecca", "test");
+		assertEquals(200, r);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNull(descriptorLocation);
+		
 	}
 
 	
