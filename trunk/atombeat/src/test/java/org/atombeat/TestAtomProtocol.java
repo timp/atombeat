@@ -450,6 +450,34 @@ public class TestAtomProtocol extends TestCase {
 
 
 
+	public void testPostMediaWithSpaceInSlug() {
+		
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+
+		// now create a new media resource by POSTing media to the collection URI
+		PostMethod method = new PostMethod(collectionUri);
+		String media = "This is a test.";
+		setTextPlainRequestEntity(method, media);
+		method.setRequestHeader("Slug", "foo bar");
+		executeMethod(method);
+		
+		Document mediaLinkDoc = getResponseBodyAsDocument(method);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+		
+		GetMethod get = new GetMethod(mediaLocation);
+		executeMethod(get);
+		
+		String contentDisposition = get.getResponseHeader("Content-Disposition").getValue();
+		assertNotNull(contentDisposition);
+		
+		assertEquals("attachment; filename=\"foo bar\"", contentDisposition);
+		
+	}
+
+
+
+
 	public void testPostSpreadsheetToCreateMediaResource() {
 		
 		// setup test

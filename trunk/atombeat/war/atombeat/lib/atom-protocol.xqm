@@ -832,7 +832,7 @@ declare function ap:op-update-media(
     let $media-link := atomdb:get-media-link( $request-path-info )
     let $title := $media-link/atom:title
     let $content-disposition :=
-    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( "attachment; filename=" , $title ) )
+    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
     	else ()
     
     (: decoding from base 64 binary :)
@@ -1021,7 +1021,7 @@ declare function ap:op-retrieve-media(
     let $media-link := atomdb:get-media-link( $request-path-info )
     let $title := $media-link/atom:title
     let $content-disposition :=
-    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( "attachment; filename=" , $title ) )
+        if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
     	else ()
     
     (: decoding from base 64 binary :)
