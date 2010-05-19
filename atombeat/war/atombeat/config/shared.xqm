@@ -24,7 +24,7 @@ declare variable $config:service-url as xs:string := "http://localhost:8081/atom
 declare variable $config:history-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/history" ;
  
 
-declare variable $config:acl-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/acl" ;
+declare variable $config:security-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/security" ;
 
 
 (:
@@ -119,62 +119,62 @@ declare variable $config:default-workspace-security-descriptor :=
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>create-collection</atombeat:permission>
+                <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>update-collection</atombeat:permission>
+                <atombeat:permission>UPDATE_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>list-collection</atombeat:permission>
+                <atombeat:permission>LIST_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>create-member</atombeat:permission>
+                <atombeat:permission>CREATE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>retrieve-member</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>update-member</atombeat:permission>
+                <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>delete-member</atombeat:permission>
+                <atombeat:permission>DELETE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>create-media</atombeat:permission>
+                <atombeat:permission>CREATE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>retrieve-media</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>update-media</atombeat:permission>
+                <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>delete-media</atombeat:permission>
+                <atombeat:permission>DELETE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
-                <atombeat:permission>update-acl</atombeat:permission>
+                <atombeat:permission>UPDATE_ACL</atombeat:permission>
             </atombeat:ace>
             <!-- you could also use a wildcard -->
             <!--
@@ -198,7 +198,7 @@ declare variable $config:default-workspace-security-descriptor :=
 declare function config:default-collection-security-descriptor(
     $request-path-info as xs:string ,
     $user as xs:string?
-) as element(acl)
+) as element(atombeat:security-descriptor)
 { 
     <atombeat:security-descriptor>
         <atombeat:acl>
@@ -211,17 +211,17 @@ declare function config:default-collection-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
-                <atombeat:permission>create-member</atombeat:permission>
+                <atombeat:permission>CREATE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
-                <atombeat:permission>create-media</atombeat:permission>
+                <atombeat:permission>CREATE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
-                <atombeat:permission>list-collection</atombeat:permission>
+                <atombeat:permission>LIST_COLLECTION</atombeat:permission>
             </atombeat:ace>
             
             <!--
@@ -231,22 +231,22 @@ declare function config:default-collection-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
-                <atombeat:permission>list-collection</atombeat:permission>
+                <atombeat:permission>LIST_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
-                <atombeat:permission>retrieve-member</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
-                <atombeat:permission>update-member</atombeat:permission>
+                <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
-                <atombeat:permission>delete-member</atombeat:permission>
+                <atombeat:permission>DELETE_MEMBER</atombeat:permission>
             </atombeat:ace>
 
             <!-- Media editors -->
@@ -254,27 +254,27 @@ declare function config:default-collection-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
-                <atombeat:permission>list-collection</atombeat:permission>
+                <atombeat:permission>LIST_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
-                <atombeat:permission>retrieve-member</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
-                <atombeat:permission>retrieve-media</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
-                <atombeat:permission>update-media</atombeat:permission>
+                <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
-                <atombeat:permission>delete-media</atombeat:permission>
+                <atombeat:permission>DELETE_MEDIA</atombeat:permission>
             </atombeat:ace>
             
             <!--
@@ -284,17 +284,17 @@ declare function config:default-collection-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_READER</atombeat:recipient>
-                <atombeat:permission>list-collection</atombeat:permission>
+                <atombeat:permission>LIST_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_READER</atombeat:recipient>
-                <atombeat:permission>retrieve-member</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_READER</atombeat:recipient>
-                <atombeat:permission>retrieve-media</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
             </atombeat:ace>
             
             <!--
@@ -305,7 +305,7 @@ declare function config:default-collection-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_DATA_AUTHOR</atombeat:recipient>
-                <atombeat:permission>create-media</atombeat:permission>
+                <atombeat:permission>CREATE_MEDIA</atombeat:permission>
                 <atombeat:conditions>
                     <atombeat:condition type="mediarange">application/vnd.ms-excel</atombeat:condition>
                 </atombeat:conditions>
@@ -325,7 +325,7 @@ declare function config:default-collection-security-descriptor(
 declare function config:default-resource-security-descriptor(
     $request-path-info as xs:string ,
     $user as xs:string
-) as element(acl)
+) as element(atombeat:security-descriptor)
 {
 
     <atombeat:security-descriptor>
@@ -338,37 +338,37 @@ declare function config:default-resource-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>retrieve-member</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>update-member</atombeat:permission>
+                <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>delete-member</atombeat:permission>
+                <atombeat:permission>DELETE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>retrieve-media</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>update-media</atombeat:permission>
+                <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>delete-media</atombeat:permission>
+                <atombeat:permission>DELETE_MEDIA</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="user">{$user}</atombeat:recipient>
-                <atombeat:permission>update-acl</atombeat:permission>
+                <atombeat:permission>UPDATE_ACL</atombeat:permission>
             </atombeat:ace>
             
         </atombeat:acl>
@@ -387,22 +387,22 @@ declare function config:default-resource-security-descriptor(
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="group">owners</atombeat:recipient>
-                <atombeat:permission>retrieve-member</atombeat:permission>
+                <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="group">owners</atombeat:recipient>
-                <atombeat:permission>update-member</atombeat:permission>
+                <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="group">owners</atombeat:recipient>
-                <atombeat:permission>delete-member</atombeat:permission>
+                <atombeat:permission>DELETE_MEMBER</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="group">owners</atombeat:recipient>
-                <atombeat:permission>update-acl</atombeat:permission>
+                <atombeat:permission>UPDATE_ACL</atombeat:permission>
             </atombeat:ace>
 		</atombeat:acl>
 	</atombeat:security-descriptor>
