@@ -6,6 +6,7 @@ module namespace xutil = "http://atombeat.org/xquery/xutil";
 declare namespace math="java:java.lang.Math";
 declare namespace long="java:java.lang.Long";
 declare namespace double="java:java.lang.Double";
+declare namespace collection-config = "http://exist-db.org/collection-config/1.0" ;
 
 
 
@@ -68,24 +69,48 @@ declare function xutil:enable-versioning(
 
     let $collection-config :=
 
-		<collection xmlns="http://exist-db.org/collection-config/1.0">
-		    <triggers>
-		        <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
-		            <parameter name="overwrite" value="yes"/>
-		        </trigger>
-		    </triggers>
-		</collection>
-		
-	let $config-collection-path := concat( "/db/system/config" , $collection-db-path )
-	let $log := util:log( "debug" , concat( "$config-collection-path: " , $config-collection-path ) )
-	
-	let $config-collection-path := xutil:get-or-create-collection( $config-collection-path )
-	let $log := util:log( "debug" , concat( "$config-collection-path: " , $config-collection-path ) )
-	
-	let $config-resource-path := xmldb:store( $config-collection-path , "collection.xconf" , $collection-config , "application/xml" )
-	let $log := util:log( "debug" , concat( "$config-resource-path: " , $config-resource-path ) )
-	
-	return $config-resource-path
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <triggers>
+                <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
+                    <parameter name="overwrite" value="yes"/>
+                </trigger>
+            </triggers>
+        </collection>
+        
+    let $config-collection-path := concat( "/db/system/config" , $collection-db-path )
+    let $log := util:log( "debug" , concat( "$config-collection-path: " , $config-collection-path ) )
+    
+    let $config-collection-path := xutil:get-or-create-collection( $config-collection-path )
+    let $log := util:log( "debug" , concat( "$config-collection-path: " , $config-collection-path ) )
+    
+    let $config-resource-path := xmldb:store( $config-collection-path , "collection.xconf" , $collection-config , "application/xml" )
+    let $log := util:log( "debug" , concat( "$config-resource-path: " , $config-resource-path ) )
+    
+    return $config-resource-path
+    
+};
+
+
+
+declare function xutil:is-versioning-enabled(
+    $collection-db-path as xs:string 
+) as xs:boolean 
+{
+
+    let $collection-config :=
+
+        <collection xmlns="http://exist-db.org/collection-config/1.0">
+            <triggers>
+                <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
+                    <parameter name="overwrite" value="yes"/>
+                </trigger>
+            </triggers>
+        </collection>
+        
+    let $config-resource-db-path := concat( "/db/system/config" , $collection-db-path , "/collection.xconf" )
+    let $config := doc( $config-resource-db-path )
+    
+    return exists( $config//collection-config:trigger[@event="store,remove,update" and @class="org.exist.versioning.VersioningTrigger" and exists(collection-config:parameter[@name="overwrite" and @value="yes"])] )
     
 };
 

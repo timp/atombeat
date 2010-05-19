@@ -22,6 +22,7 @@ public class TestHistoryProtocol extends TestCase {
 	
 
 	private String collectionUri = null;
+	private String noHistoryCollectionUri = null;
 	
 
 	public TestHistoryProtocol() {
@@ -48,9 +49,31 @@ public class TestHistoryProtocol extends TestCase {
 		
 		collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers);
 	
+		Header[] headers2 = {};
+		
+		noHistoryCollectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers2);
+	
 	}
 	
 	
+	
+	public void testNoHistoryLinkIfHistoryNotEnabled() {
+		
+		// the request body - an atom entry document
+		String entryDoc = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Will Not Be Revised</atom:title>" +
+				"<atom:summary>This is a summary, will not be revised.</atom:summary>" +
+			"</atom:entry>";
+
+		Header[] headers = {};
+		
+		Document doc = postEntry(noHistoryCollectionUri, entryDoc, headers, USER, PASS);
+		
+		String historyLocation = getHistoryLocation(doc);
+		assertNull(historyLocation);
+		
+	}
 	
 
 	public void testEntryWithNoRevisions() {
