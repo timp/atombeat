@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace xutil = "http://atombeat.org/xquery/xutil";
+module namespace xutil = "http://purl.org/atombeat/xquery/xutil";
 
 
 declare namespace math="java:java.lang.Math";

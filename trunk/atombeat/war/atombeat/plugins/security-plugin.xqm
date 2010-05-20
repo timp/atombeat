@@ -1,9 +1,9 @@
 xquery version "1.0";
 
-module namespace sp = "http://atombeat.org/xquery/security-plugin";
+module namespace sp = "http://purl.org/atombeat/xquery/security-plugin";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
-declare namespace atombeat = "http://atombeat.org/xmlns" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 
 import module namespace request = "http://exist-db.org/xquery/request" ;
@@ -11,14 +11,14 @@ import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
-import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "../lib/constants.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 
-import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
-import module namespace xutil = "http://atombeat.org/xquery/xutil" at "../lib/xutil.xqm" ;
-import module namespace mime = "http://atombeat.org/xquery/mime" at "../lib/mime.xqm" ;
-import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "../lib/atomdb.xqm" ;
-import module namespace atomsec = "http://atombeat.org/xquery/atom-security" at "../lib/atom-security.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
+import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
+import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
 
 
 
@@ -109,7 +109,7 @@ declare function sp:strip-descriptor-links(
                 not(
                     $ln = $CONSTANT:ATOM-LINK
                     and $ns = $CONSTANT:ATOM-NSURI 
-                    and ( $rel = "http://atombeat.org/rel/security-descriptor" or $rel = "http://atombeat.org/rel/media-security-descriptor" )
+                    and ( $rel = "http://purl.org/atombeat/rel/security-descriptor" or $rel = "http://purl.org/atombeat/rel/media-security-descriptor" )
                 )
             )
             return $child
@@ -391,7 +391,7 @@ declare function sp:append-descriptor-links(
     
     let $descriptor-link :=     
         if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
-        then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml" atombeat:allow="{$allow}"/>
+        then <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml" atombeat:allow="{$allow}"/>
         else ()
         
     let $log := local:debug( concat( "$descriptor-link: " , $descriptor-link ) )
@@ -409,7 +409,7 @@ declare function sp:append-descriptor-links(
                 if ( $can-update-media-descriptor or $can-retrieve-media-descriptor )
                 then 
                     let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
-                    return <atom:link rel="http://atombeat.org/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml" atombeat:allow="{$allow}"/>
+                    return <atom:link rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml" atombeat:allow="{$allow}"/>
                 else ()                
         else ()
         
@@ -491,7 +491,7 @@ declare function sp:filter-feed-by-permissions(
         let $can-update-collection-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () ) )
         let $descriptor-link :=     
             if ( $can-update-collection-descriptor )
-            then <atom:link rel="http://atombeat.org/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml"/>
+            then <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml"/>
             else ()
         let $filtered-feed :=
             <atom:feed>

@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace test = "http://atombeat.org/xquery/test";
+module namespace test = "http://purl.org/atombeat/xquery/test";
 
 
 

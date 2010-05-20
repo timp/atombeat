@@ -1,14 +1,14 @@
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
-declare namespace atombeat = "http://atombeat.org/xmlns" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 import module namespace response = "http://exist-db.org/xquery/response" ;
 
-import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
-import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "../lib/constants.xqm" ;
-import module namespace xutil = "http://atombeat.org/xquery/xutil" at "../lib/xutil.xqm" ;
-import module namespace atomsec = "http://atombeat.org/xquery/atom-security" at "../lib/atom-security.xqm" ;
-import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "../lib/atomdb.xqm" ;
-import module namespace ap = "http://atombeat.org/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
+import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
+import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
 
 
 

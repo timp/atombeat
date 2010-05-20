@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace CONSTANT = "http://atombeat.org/xquery/constants";
+module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants";
 
 declare variable $CONSTANT:METHOD-GET as xs:string 						:= "GET" ;
 declare variable $CONSTANT:METHOD-POST as xs:string 					:= "POST" ;

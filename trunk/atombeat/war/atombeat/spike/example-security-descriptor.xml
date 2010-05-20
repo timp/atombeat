@@ -1,4 +1,4 @@
-<atombeat:security-descriptor xmlns:atombeat="http://atombeat.org/xmlns">
+<atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
 
 	<atombeat:groups>
 	

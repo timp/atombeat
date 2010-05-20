@@ -1,13 +1,13 @@
 xquery version "1.0";
 
-module namespace config = "http://atombeat.org/xquery/config";
+module namespace config = "http://purl.org/atombeat/xquery/config";
 
-declare namespace atombeat = "http://atombeat.org/xmlns" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
-import module namespace xutil = "http://atombeat.org/xquery/xutil" at "../lib/xutil.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 
 
 (:
