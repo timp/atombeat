@@ -53,13 +53,17 @@ E.g., an Atom entry revision with various revision links...
 
 = Access Control =
 
-  * '`http://atombeat.org/rel/acl`'
+== security-descriptor ==
+
+*URI: '`http://purl.org/atombeat/rel/security-descriptor`'*
 
 Atom feed elements MAY contain an atom:link element with a rel attribute value of '`http://atombeat.org/rel/acl`' whose href attribute identifies a resource that is an access control list for the collection.
 
 Atom entry elements MAY contain an atom:link element with a rel attribute value of '`http://atombeat.org/rel/acl`' whose href attribute identifies a resource that is an access control list for the entry.
 
-  * '`http://atombeat.org/rel/media-acl`'
+== media-security-descriptor ==
+
+*URI: '`http://purl.org/atombeat/rel/media-security-descriptor`'*
 
 Atom entry elements MAY contain an atom:link element with a rel attribute value of '`http://atombeat.org/rel/media-acl`' whose href attribute identifies a resource that is an access control list for the media resource for which the entry is the media-link entry.
 
