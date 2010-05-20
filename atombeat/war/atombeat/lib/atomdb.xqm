@@ -1,18 +1,18 @@
 xquery version "1.0";
 
-module namespace atomdb = "http://atombeat.org/xquery/atomdb";
+module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
-declare namespace atombeat = "http://atombeat.org/xmlns" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
-import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "constants.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 
-import module namespace xutil = "http://atombeat.org/xquery/xutil" at "xutil.xqm" ;
-import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
 
 

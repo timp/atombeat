@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace ap = "http://atombeat.org/xquery/atom-protocol";
+module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 
@@ -9,12 +9,12 @@ import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
  
-import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "constants.xqm" ;
-import module namespace mime = "http://atombeat.org/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
  
-import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
-import module namespace plugin = "http://atombeat.org/xquery/plugin" at "../config/plugins.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
 
 declare variable $ap:param-request-path-info := "request-path-info" ;
 
@@ -166,7 +166,7 @@ declare function ap:do-post-atom-feed(
 
 		then 
 			
-			let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
+			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
 			return ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
 		
 		else ap:do-bad-request( $request-path-info , "A collection already exists at the given location." )
@@ -232,7 +232,7 @@ declare function ap:do-post-atom-entry(
              : Here we bottom out at the "create-member" operation.
              :)
              
-			let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
+			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
 			
             return ap:apply-op( $CONSTANT:OP-CREATE-MEMBER , $op , $request-path-info , $request-data )
         
@@ -308,7 +308,7 @@ declare function ap:do-post-media(
              :)
              
         	let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
-        	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
+        	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
 	
             return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , request:get-data() , $media-type )
                         			
@@ -399,7 +399,7 @@ declare function ap:do-post-multipart(
              : Here we bottom out at the "create-media" operation.
              :)
              
-            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 ) 
+            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 ) 
             return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , $request-data , $media-type )
 
 };
@@ -589,7 +589,7 @@ declare function ap:do-put-atom-feed-to-create-collection(
      : Here we bottom out at the "create-collection" operation.
      :)
      
-	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
+	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
 	
     return ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
         		
@@ -612,7 +612,7 @@ declare function ap:do-put-atom-feed-to-update-collection(
      : apply a security decision.
      :)
 
-	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
+	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
 	
     return ap:apply-op( $CONSTANT:OP-UPDATE-COLLECTION , $op , $request-path-info , $request-data )
 
@@ -692,7 +692,7 @@ declare function ap:do-put-atom-entry(
         			    (: 
         			     : Here we bottom out at the "update-member" operation.
         			     :)
-        	            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+        	            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
         	            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
         
 };
@@ -735,7 +735,7 @@ declare function ap:do-conditional-put-atom-entry(
             (: 
              : Here we bottom out at the "update-member" operation.
              :)
-            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
             return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
         
         else ap:do-precondition-failed( $request-path-info , "The entity tag does not match." )
@@ -808,7 +808,7 @@ declare function ap:do-put-media(
 				
 				let $request-data := request:get-data()
 				
-				let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
+				let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
 				
 				return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , $request-data , $request-content-type )
 				
@@ -911,7 +911,7 @@ declare function ap:do-get-entry(
              : Here we bottom out at the "retrieve-member" operation.
              :)
         
-        	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+        	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
         	
             return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
 
@@ -961,7 +961,7 @@ declare function ap:do-conditional-get-entry(
              : Here we bottom out at the "retrieve-member" operation.
              :)
         
-            let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
             
             return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
 
@@ -1004,7 +1004,7 @@ declare function ap:do-get-media(
 )
 {
 
-	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
+	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
 	
     return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEDIA , $op , $request-path-info , () )
 
@@ -1059,7 +1059,7 @@ declare function ap:do-get-feed(
      : Here we bottom out at the "list-collection" operation.
      :)
 
-	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
+	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
 	
     return ap:apply-op( $CONSTANT:OP-LIST-COLLECTION , $op , $request-path-info , () )
     
@@ -1143,11 +1143,11 @@ declare function ap:do-delete-member(
     if ( atomdb:media-link-available( $request-path-info ) )
     
     then 
-    	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
+    	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
     	return ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op, $request-path-info, () )
     
     else 
-    	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
+    	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
     	return ap:apply-op( $CONSTANT:OP-DELETE-MEMBER , $op , $request-path-info , () )
 			
 };
@@ -1187,7 +1187,7 @@ declare function ap:do-delete-media(
 
     (: here we bottom out at the "delete-media" operation :)
     
-	let $op := util:function( QName( "http://atombeat.org/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
+	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
 	
 	return ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op , $request-path-info , () )
 

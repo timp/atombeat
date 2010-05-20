@@ -1,9 +1,9 @@
 xquery version "1.0";
 
-module namespace ah = "http://atombeat.org/xquery/history-protocol";
+module namespace ah = "http://purl.org/atombeat/xquery/history-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
-declare namespace atombeat = "http://atombeat.org/xmlns" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 (: see http://tools.ietf.org/html/draft-snell-atompub-revision-00 :)
 declare namespace ar = "http://purl.org/atompub/revision/1.0" ;
@@ -14,14 +14,14 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace v="http://exist-db.org/versioning" ;
 
-import module namespace CONSTANT = "http://atombeat.org/xquery/constants" at "constants.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 
-import module namespace xutil = "http://atombeat.org/xquery/xutil" at "xutil.xqm" ;
-import module namespace mime = "http://atombeat.org/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://atombeat.org/xquery/atomdb" at "atomdb.xqm" ;
-import module namespace ap = "http://atombeat.org/xquery/atom-protocol" at "atom-protocol.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
+import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "atom-protocol.xqm" ;
 
-import module namespace config = "http://atombeat.org/xquery/config" at "../config/shared.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
 declare variable $ah:param-name-revision-index as xs:string := "revision" ;
 

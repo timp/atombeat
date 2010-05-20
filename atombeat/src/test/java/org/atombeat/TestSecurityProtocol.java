@@ -178,7 +178,7 @@ public class TestSecurityProtocol extends TestCase {
 		// check atombeat:allow extension attribute
 		Element link = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
 		assertNotNull(link); 
-		String allow = link.getAttributeNS("http://atombeat.org/xmlns", "allow");
+		String allow = link.getAttributeNS("http://purl.org/atombeat/xmlns", "allow");
 		assertNotNull(allow);
 		assertEquals("GET, PUT", allow);
 		
@@ -216,7 +216,7 @@ public class TestSecurityProtocol extends TestCase {
 		// check atombeat:allow extension attribute
 		Element link = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
 		assertNotNull(link); 
-		String allow = link.getAttributeNS("http://atombeat.org/xmlns", "allow");
+		String allow = link.getAttributeNS("http://purl.org/atombeat/xmlns", "allow");
 		assertNotNull(allow);
 		assertEquals("GET", allow);
 		
@@ -233,7 +233,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -399,7 +399,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		
@@ -425,7 +425,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		
@@ -462,7 +462,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -499,7 +499,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -528,7 +528,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -561,7 +561,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -599,7 +599,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -636,7 +636,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -674,7 +674,7 @@ public class TestSecurityProtocol extends TestCase {
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 			"<atom:content type=\"application/vnd.atombeat+xml\">" +
-			"<atombeat:security-descriptor xmlns:atombeat=\"http://atombeat.org/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
+			"<atombeat:security-descriptor xmlns:atombeat=\"http://purl.org/atombeat/xmlns\"><atombeat:acl/></atombeat:security-descriptor>" +
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
@@ -817,7 +817,7 @@ public class TestSecurityProtocol extends TestCase {
 		assertNotNull(c);
 		
 		// verify content
-		NodeList n = c.getElementsByTagNameNS("http://atombeat.org/xmlns", "security-descriptor");
+		NodeList n = c.getElementsByTagNameNS("http://purl.org/atombeat/xmlns", "security-descriptor");
 		Element a = (Element) n.item(0);
 		assertNotNull(a);
 		

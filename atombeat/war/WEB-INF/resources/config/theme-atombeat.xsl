@@ -77,7 +77,7 @@
                 	</xhtml:div>
 
                 	<xhtml:div id="ft">
-                		<xhtml:p><a href="http://atombeat.org">AtomBeat</a></xhtml:p>
+                		<xhtml:p><a href="http://purl.org/atombeat">AtomBeat</a></xhtml:p>
                 	</xhtml:div>
 
                 </xhtml:div>
