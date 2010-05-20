@@ -322,7 +322,7 @@ declare function atomsec:apply-acl(
     let $matching-aces := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles)
     
     let $decision := 
-        if ( exists( $matching-aces ) ) then $matching-aces[1]/atombeat:type 
+        if ( exists( $matching-aces ) ) then normalize-space( $matching-aces[1]/atombeat:type/text() ) 
         else ()
     
     return $decision
@@ -383,7 +383,8 @@ declare function atomsec:match-operation(
     $operation as xs:string
 ) as xs:boolean
 {
-    ( xs:string( $ace/atombeat:permission ) = "*" ) or ( xs:string( $ace/atombeat:permission ) = $operation  ) 
+    let $permission := normalize-space( $ace/atombeat:permission/text() )
+    return ( ( $permission = "*" ) or ( $permission = $operation  ) )
 };
 
 
@@ -394,7 +395,8 @@ declare function atomsec:match-user(
     $user as xs:string?
 ) as xs:boolean
 {
-    ( xs:string( $ace/atombeat:recipient[@type="user"] ) = "*" ) or ( xs:string( $ace/atombeat:recipient[@type="user"] ) = $user  ) 
+    let $ace-user := normalize-space( $ace/atombeat:recipient[@type="user"]/text() )
+    return ( ( xs:string( $ace-user ) = "*" ) or ( $ace-user = $user  ) )
 };
 
 
@@ -405,8 +407,12 @@ declare function atomsec:match-role(
     $roles as xs:string*
 ) as xs:boolean
 {
-    ( xs:string( $ace/atombeat:recipient[@type="role"] ) = "*" ) or 
-    ( exists( $ace/atombeat:recipient[@type="role"]) and exists( index-of( $roles , xs:string( $ace/atombeat:recipient[@type="role"] ) ) ) )
+    let $ace-role := normalize-space( $ace/atombeat:recipient[@type="role"]/text() )
+    return 
+    (
+        ( $ace-role = "*" ) or 
+        ( exists( $ace-role ) and exists( index-of( $roles , $ace-role ) ) ) 
+    )
 };
 
 
@@ -422,7 +428,7 @@ declare function atomsec:match-group(
     let $log := local:debug( "== atomsec:match-group() ==" )
     let $log := local:debug( $ace )
     
-    let $group := $ace/atombeat:recipient[@type="group"]
+    let $group := normalize-space( $ace/atombeat:recipient[@type="group"]/text() )
     let $log := local:debug( concat( "found group in ace: " , $group ) ) 
     
     return 
@@ -442,7 +448,7 @@ declare function atomsec:match-group(
                     if ( exists( $src) ) then atomsec:dereference-group( $id , $src )
                     else $group
         
-            let $groups-for-user := $groups[atombeat:member=$user]/@id
+            let $groups-for-user := $groups[ atombeat:member/normalize-space( text() ) = $user ]/@id
             
             let $group-has-user := exists( index-of( $groups-for-user , xs:string( $group ) ) )
             let $log := local:debug( concat( "$group-has-user: " , $group-has-user ) )
@@ -482,8 +488,8 @@ declare function atomsec:match-media-type(
 ) as xs:boolean
 {
 
-    let $operation := $ace/atombeat:permission
-    let $expected-range := $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]
+    let $operation := normalize-space( $ace/atombeat:permission/text() )
+    let $expected-range := normalize-space( $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]/text() )
     
     return
     
