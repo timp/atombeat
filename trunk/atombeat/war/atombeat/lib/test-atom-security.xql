@@ -1013,11 +1013,13 @@ declare function local:test-reference-resource-groups() as item()*
                 <atombeat:group id="editors" src="{$test-member-uri}"/>
             </atombeat:groups>
             <atombeat:acl>
-                <atombeat:ace><atombeat:type>ALLOW</atombeat:type>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
                     <atombeat:recipient type="group">readers</atombeat:recipient>
                     <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
                 </atombeat:ace>
-                <atombeat:ace><atombeat:type>ALLOW</atombeat:type>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
                     <atombeat:recipient type="group">editors</atombeat:recipient>
                     <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
                 </atombeat:ace>
@@ -1191,6 +1193,44 @@ declare function local:test-processing-order() as item()*
 
 
 
+declare function local:test-whitespace() as item()*
+{
+
+    let $output := ( "test-whitespace..." )
+    
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type> 
+                            ALLOW       
+                    </atombeat:type>
+                    <atombeat:recipient type="user">
+                         alice      
+                    </atombeat:recipient>
+                    <atombeat:permission>
+                             CREATE_COLLECTION      
+                    </atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+
+    let $request-path-info := "/foo"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "alice"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create collections" ) )
+    
+    return $output
+
+};
+
+
+
 declare function local:main() as item()*
 {
 
@@ -1206,7 +1246,8 @@ declare function local:main() as item()*
         local:test-reference-collection-groups() ,
         local:test-reference-resource-groups() ,
         local:test-update-workspace-descriptor() ,
-        local:test-processing-order()
+        local:test-processing-order() ,
+        local:test-whitespace()
     )
     let $response-type := response:set-header( "Content-Type" , "text/plain" )
     return $output
