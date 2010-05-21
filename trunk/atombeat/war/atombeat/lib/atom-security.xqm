@@ -69,19 +69,24 @@ declare function atomsec:store-collection-descriptor(
 ) as xs:string?
 {
 
-    if ( atomdb:collection-available( $request-path-info ) )
+    let $log := local:debug(  "== atomsec:store-collection-descriptor ==" )
+    let $log := local:debug(  $descriptor )
+
+    return
+
+        if ( atomdb:collection-available( $request-path-info ) )
+        
+        then 
     
-    then 
-
-        let $descriptor-collection-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
-        
-        let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
-        
-        let $descriptor-doc-db-path := xmldb:store( $descriptor-collection-db-path , $atomsec:descriptor-suffix , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
-        
-        return $descriptor-doc-db-path
-
-    else ()
+            let $descriptor-collection-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
+            
+            let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
+            
+            let $descriptor-doc-db-path := xmldb:store( $descriptor-collection-db-path , $atomsec:descriptor-suffix , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
+            
+            return $descriptor-doc-db-path
+    
+        else ()
 };
 
 
@@ -95,17 +100,20 @@ declare function atomsec:descriptor-updated(
     
     then 
     
-        let $collection-db-path := $config:base-security-collection-path
+        let $descriptor-collection-db-path := $config:base-security-collection-path
         let $descriptor-doc-name := $atomsec:descriptor-suffix
-        return xmldb:last-modified( $collection-db-path , $descriptor-doc-name )
+        return xmldb:last-modified( $descriptor-collection-db-path , $descriptor-doc-name )
     
     else if ( atomdb:collection-available( $request-path-info ) )
     
     then 
     
-        let $collection-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
+        let $descriptor-collection-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) )
         let $descriptor-doc-name := $atomsec:descriptor-suffix
-        return xmldb:last-modified( $collection-db-path , $descriptor-doc-name )
+        return 
+            if ( xmldb:collection-available( $descriptor-collection-db-path ) )
+            then xmldb:last-modified( $descriptor-collection-db-path , $descriptor-doc-name )
+            else ()
     
     else if ( atomdb:member-available( $request-path-info ) or atomdb:media-resource-available( $request-path-info ) )
     
@@ -116,7 +124,10 @@ declare function atomsec:descriptor-updated(
         let $descriptor-collection-db-path := concat( $config:base-security-collection-path , $collection-db-path )
         let $resource-name := $groups[3]
         let $descriptor-doc-name := concat( $resource-name , $atomsec:descriptor-suffix )
-        return xmldb:last-modified( $collection-db-path , $descriptor-doc-name )
+        return 
+            if ( xmldb:collection-available( $descriptor-collection-db-path ) )
+            then xmldb:last-modified( $descriptor-collection-db-path , $descriptor-doc-name )
+            else ()
         
     else ()
     
@@ -131,27 +142,32 @@ declare function atomsec:store-resource-descriptor(
 ) as xs:string?
 {
 
-    if ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) )
-    
-    then
+    let $log := local:debug(  "== atomsec:store-resource-descriptor ==" )
+    let $log := local:debug(  $descriptor )
 
-    	let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
-    	
-    	let $collection-db-path := atomdb:request-path-info-to-db-path( $groups[2] )
-    	
-    	let $descriptor-collection-db-path := concat( $config:base-security-collection-path , $collection-db-path )
-    	
-        let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
+    return
+    
+        if ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) )
         
-    	let $resource-name := $groups[3]
-    	
-    	let $descriptor-doc-name := concat( $resource-name , $atomsec:descriptor-suffix )
-    	
-    	let $descriptor-doc-db-path := xmldb:store( $descriptor-collection-db-path , $descriptor-doc-name , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
-    	
-    	return $descriptor-doc-db-path
-        
-    else ()
+        then
+    
+        	let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
+        	
+        	let $collection-db-path := atomdb:request-path-info-to-db-path( $groups[2] )
+        	
+        	let $descriptor-collection-db-path := concat( $config:base-security-collection-path , $collection-db-path )
+        	
+            let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
+            
+        	let $resource-name := $groups[3]
+        	
+        	let $descriptor-doc-name := concat( $resource-name , $atomsec:descriptor-suffix )
+        	
+        	let $descriptor-doc-db-path := xmldb:store( $descriptor-collection-db-path , $descriptor-doc-name , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
+        	
+        	return $descriptor-doc-db-path
+            
+        else ()
 
 };
 

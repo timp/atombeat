@@ -395,7 +395,7 @@ declare function security-protocol:get-descriptor-from-request-data(
 
 declare function security-protocol:send-descriptor(
     $request-path-info as xs:string ,
-    $descriptor as element(atombeat:security-descriptor)
+    $descriptor as element(atombeat:security-descriptor)?
 ) as item()*
 {
     let $id := concat( $config:security-service-url , $request-path-info )
