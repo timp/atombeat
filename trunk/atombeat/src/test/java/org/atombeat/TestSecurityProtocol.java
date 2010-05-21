@@ -201,6 +201,44 @@ public class TestSecurityProtocol extends TestCase {
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
+		// retrieve collection
+		GetMethod g = new GetMethod(collectionUri);
+		int r = executeMethod(g, "audrey", "test");
+		assertEquals(200, r);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		Element e = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry").item(0);
+		
+		String descriptorLocation = getLinkHref(e, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
+		
+		// check atombeat:allow extension attribute
+		Element link = getLinks(e, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
+		assertNotNull(link); 
+		String allow = link.getAttributeNS("http://purl.org/atombeat/xmlns", "allow");
+		assertNotNull(allow);
+		assertEquals("GET, PUT", allow);
+		
+		// make a get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
+		int s = executeMethod(h, "adam", "test");
+		assertEquals(200, s);
+		verifyAtomResponse(h);
+		Document f = getResponseBodyAsDocument(h);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(f);
+
+	}
+	
+	
+	
+
+	public void testGetMemberDescriptor3() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+
 		// edwina is an editor, and should be able to retrieve acl but not update
 		
 		// retrieve member entry
@@ -360,6 +398,34 @@ public class TestSecurityProtocol extends TestCase {
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
+
+	}
+	
+	
+	
+
+	public void testGetMediaDescriptor2() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
+
+		GetMethod get = new GetMethod(collectionUri);
+		executeMethod(get, "audrey", "test");
+		Document d = getResponseBodyAsDocument(get);
+		Element e = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry").item(0);
+		
+		// look for ACL link
+		String descriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNotNull(descriptorLocation);
+		
+		// make a get request for the descriptor
+		GetMethod h = new GetMethod(descriptorLocation);
+		int s = executeMethod(h, "audrey", "test");
+		assertEquals(200, s);
+		verifyAtomResponse(h);
+		Document f = getResponseBodyAsDocument(h);
+		verifyDocIsAtomEntryWithSecurityDescriptorContent(f);
 
 	}
 	
