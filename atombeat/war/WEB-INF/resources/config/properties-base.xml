@@ -37,7 +37,7 @@
     <!--<property as="xs:string"  name="oxf.http.proxy.ntlm.domain"                      value=""/>-->
 
     <!-- Epilogue configuration -->
-    <property as="xs:anyURI"  name="oxf.epilogue.theme"                              value="oxf:/config/theme-atombeat.xsl"/>
+    <property as="xs:anyURI"  name="oxf.epilogue.theme"                              value="oxf:/config/theme-examples.xsl"/>
     <property as="xs:boolean" name="oxf.epilogue.use-theme"                          value="true"/>
     <property as="xs:anyURI"  name="oxf.epilogue.theme.error"                        value="oxf:/config/theme-error.xsl"/>
     <property as="xs:anyURI"  name="oxf.epilogue.theme.embeddable"                   value="oxf:/config/theme-embeddable-examples.xsl"/>

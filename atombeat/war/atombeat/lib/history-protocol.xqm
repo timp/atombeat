@@ -1,9 +1,8 @@
 xquery version "1.0";
 
-module namespace ah = "http://purl.org/atombeat/xquery/history-protocol";
+module namespace ah = "http://www.cggh.org/2010/atombeat/xquery/history-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
-declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 (: see http://tools.ietf.org/html/draft-snell-atompub-revision-00 :)
 declare namespace ar = "http://purl.org/atompub/revision/1.0" ;
@@ -14,14 +13,14 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace v="http://exist-db.org/versioning" ;
 
-import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "constants.xqm" ;
 
-import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
-import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
-import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "atom-protocol.xqm" ;
+import module namespace xutil = "http://www.cggh.org/2010/atombeat/xquery/xutil" at "xutil.xqm" ;
+import module namespace mime = "http://www.cggh.org/2010/atombeat/xquery/mime" at "mime.xqm" ;
+import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace ap = "http://www.cggh.org/2010/xquery/atom-protocol" at "atom-protocol.xqm" ;
 
-import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
 
 declare variable $ah:param-name-revision-index as xs:string := "revision" ;
 
@@ -133,13 +132,13 @@ declare function ah:do-get-entry-history(
     
     return 
 
-		<atom:feed atombeat:exclude-entry-content="true">
+		<atom:feed>
 			<atom:title>History</atom:title>
 			{
 
-(:				$vhist , :)
+				$vhist , 
 				
-(:				$vvers , :)
+				$vvers , 
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
 				return ah:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions )
@@ -244,9 +243,13 @@ declare function ah:construct-entry-base-revision(
         
     let $log := util:log( "debug" , exists( $base-revision-doc ) )
     
-    (: N.B. need to copy because, for some reason, xpath queries on base revision don't work :)
-    
-	let $revision := xutil:copy( $base-revision-doc/* )
+    (: 
+     : N.B. we need to copy the root element, perhaps because
+     : documents in the /db/system/versions collection are not
+     : indexed by qname?
+     :)
+     
+    let $revision := xutil:copy( $base-revision-doc/* )
     
     let $when := $revision/atom:updated
 
@@ -279,11 +282,7 @@ declare function ah:construct-entry-base-revision(
 			if ( $next-revision-href ) then
 			<atom:link rel="next-revision" type="application/atom+xml" href="{$next-revision-href}"/> 
 			else () ,
-			for $ec in $revision/* 
-			return 
-				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
-				then <atom:content>{$ec/attribute::*}</atom:content>
-				else $ec
+			$revision/*
 		}
 		</atom:entry>
     
@@ -347,11 +346,7 @@ declare function ah:construct-entry-specified-revision(
 			if ( $previous-revision-href ) then
 			<atom:link rel="previous-revision" type="application/atom+xml" href="{$previous-revision-href}"/> 
 			else () ,
-			for $ec in $revision/child::* 
-			return 
-				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
-				then <atom:content>{$ec/attribute::*}</atom:content>
-				else $ec
+			$revision/*
 		}
 		</atom:entry>
 };

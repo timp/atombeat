@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol";
+module namespace ap = "http://www.cggh.org/2010/xquery/atom-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 
@@ -8,41 +8,17 @@ import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
+
+import module namespace CONSTANT = "http://www.cggh.org/2010/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace mime = "http://www.cggh.org/2010/atombeat/xquery/mime" at "mime.xqm" ;
+import module namespace atomdb = "http://www.cggh.org/2010/atombeat/xquery/atomdb" at "atomdb.xqm" ;
  
-import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
-import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace config = "http://www.cggh.org/2010/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace plugin = "http://www.cggh.org/2010/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
+
+declare variable $ap:param-request-path-info := "request-path-info" ; 
+
  
-import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
-import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
-
-declare variable $ap:param-request-path-info := "request-path-info" ;
-
-
-
-declare variable $ap:logger-name := "org.atombeat.xquery.lib.atom-protocol" ;
-
-
-
-declare function local:debug(
-    $message as item()*
-) as empty()
-{
-    util:log-app( "debug" , $ap:logger-name , $message )
-};
-
-
-
-
-declare function local:info(
-    $message as item()*
-) as empty()
-{
-    util:log-app( "info" , $ap:logger-name , $message )
-};
-
-
-
 
 
 (:
@@ -164,10 +140,7 @@ declare function ap:do-post-atom-feed(
 	
 		if ( $create ) 
 
-		then 
-			
-			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
-			return ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
+		then ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $ap:op-create-collection , $request-path-info , $request-data )
 		
 		else ap:do-bad-request( $request-path-info , "A collection already exists at the given location." )
         	
@@ -203,6 +176,12 @@ declare function ap:op-create-collection(
 
 
 
+declare variable $ap:op-create-collection as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
+;
+
+
+
 
 (:
  : TODO doc me
@@ -232,11 +211,11 @@ declare function ap:do-post-atom-entry(
              : Here we bottom out at the "create-member" operation.
              :)
              
-			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
-			
-            return ap:apply-op( $CONSTANT:OP-CREATE-MEMBER , $op , $request-path-info , $request-data )
+            ap:apply-op( $CONSTANT:OP-CREATE-MEMBER , $ap:op-create-member , $request-path-info , $request-data )
         
 };
+
+
 
 
 
@@ -251,8 +230,8 @@ declare function ap:op-create-member(
 ) as item()*
 {
 
-	let $log := local:debug( "op-create-member" )
-	let $log := local:debug( $request-data )
+	let $log := util:log( "debug" , "op-create-member" )
+	let $log := util:log( "debug" , $request-data )
 	
 	let $entry-doc-db-path := atomdb:create-member( $request-path-info , $request-data )
 
@@ -261,20 +240,21 @@ declare function ap:op-create-member(
     let $location := $entry-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-    let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 	
-	let $entry-path-info := atomdb:db-path-to-request-path-info( $entry-doc-db-path )
-
-    let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
-    
-    let $etag-header-set := 
-        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
-        
-    let $feed-date-updated := atomdb:touch-collection( $request-path-info )
-    	
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 };
+
+
+
+
+(:
+ : TODO doc me
+ :)
+declare variable $ap:op-create-member as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-member" ) , 3 )
+;
+
 
 
 
@@ -308,9 +288,8 @@ declare function ap:do-post-media(
              :)
              
         	let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
-        	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
 	
-            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , request:get-data() , $media-type )
+            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $ap:op-create-media , $request-path-info , request:get-data() , $media-type )
                         			
 };
 
@@ -331,7 +310,7 @@ declare function ap:op-create-media(
 	
 	let $slug := request:get-header( $CONSTANT:HEADER-SLUG )
 	
-	(: check for summary :) 
+	(: check for summary :)
 	
 	let $summary := request:get-header( "X-Atom-Summary" )
 	
@@ -342,13 +321,17 @@ declare function ap:op-create-media(
     let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-    let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
-
-    let $feed-date-updated := atomdb:touch-collection( $request-path-info )
-        
+			    
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
+
+
+
+
+declare variable $ap:op-create-media as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-media" ) , 3 )
+;
 
 
 
@@ -399,8 +382,7 @@ declare function ap:do-post-multipart(
              : Here we bottom out at the "create-media" operation.
              :)
              
-            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 ) 
-            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , $request-data , $media-type )
+            return ap:apply-op( $CONSTANT:OP-CREATE-MEDIA , $ap:op-create-media-from-multipart-form-data , $request-path-info , $request-data , $media-type )
 
 };
 
@@ -435,9 +417,7 @@ declare function ap:op-create-media-from-multipart-form-data (
     let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-
-    let $feed-date-updated := atomdb:touch-collection( $request-path-info )
-        
+			    
 	let $accept := request:get-header( $CONSTANT:HEADER-ACCEPT )
 	
 	let $response-data :=
@@ -471,11 +451,6 @@ declare function ap:op-create-media-from-multipart-form-data (
 	
 		else "text/html"
 
-    let $header-content-location := 
-        if ( $accept = "application/atom+xml" )
-        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link-doc/atom:entry/atom:link[@rel='self']/@href )
-        else ()
-
     (:
      : Although the semantics of 201 Created would be more appropriate 
      : to the operation performed, we'll respond with 200 OK because the
@@ -488,6 +463,11 @@ declare function ap:op-create-media-from-multipart-form-data (
 };
 
 
+
+
+declare variable $ap:op-create-media-from-multipart-form-data as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-create-media-from-multipart-form-data" ) , 3 )
+;
 
 
 
@@ -553,8 +533,6 @@ declare function ap:do-put-atom-feed(
 ) as item()*
 {
 
-	(: TODO what if $request-path-info points to a member or media resource? :)
-	
 	(: 
 	 : We need to know whether an atom collection already exists at the 
 	 : request path, in which case the request will update the feed metadata,
@@ -589,9 +567,7 @@ declare function ap:do-put-atom-feed-to-create-collection(
      : Here we bottom out at the "create-collection" operation.
      :)
      
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-create-collection" ) , 3 )
-	
-    return ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
+    ap:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $ap:op-create-collection , $request-path-info , $request-data )
         		
 };
 
@@ -611,10 +587,8 @@ declare function ap:do-put-atom-feed-to-update-collection(
      : Here we bottom out at the "update-collection" operation, so we need to 
      : apply a security decision.
      :)
-
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
-	
-    return ap:apply-op( $CONSTANT:OP-UPDATE-COLLECTION , $op , $request-path-info , $request-data )
+     
+    ap:apply-op( $CONSTANT:OP-UPDATE-COLLECTION , $ap:op-update-collection , $request-path-info , $request-data )
 
 };
 
@@ -642,6 +616,13 @@ declare function ap:op-update-collection(
 
 
 
+declare variable $ap:op-update-collection as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-update-collection" ) , 3 )
+;
+
+
+
+
 
 (:
  : TODO doc me
@@ -652,95 +633,30 @@ declare function ap:do-put-atom-entry(
 ) as item()*
 {
 
-	(:
-	 : Check for bad request.
+	(: 
+	 : First we need to know whether an atom entry exists at the 
+	 : request path.
 	 :)
 	 
- 	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then ap:do-bad-request( $request-path-info , "You cannot PUT and atom:entry to a collection URI." )
- 	 
- 	 else if ( atomdb:media-resource-available( $request-path-info ) )
- 	 then ap:do-unsupported-media-type( $request-path-info )
- 	 
- 	 else
- 	  
-		(: 
-		 : First we need to know whether an atom entry exists at the 
-		 : request path.
-		 :)
-		 
-		let $member-available := atomdb:member-available( $request-path-info )
-		
-		return 
-		
-			if ( not( $member-available ) ) 
+	let $member-available := atomdb:member-available( $request-path-info )
 	
-			then ap:do-not-found( $request-path-info )
-			
-			else
-			
-			    let $header-if-match := request:get-header( "If-Match" )
-			    
-			    return 
-			    
-			         if ( exists( $header-if-match ) )
-			         
-			         then ap:do-conditional-put-atom-entry( $request-path-info , $request-data )
-			         
-			         else
-        			     
-        			    (: 
-        			     : Here we bottom out at the "update-member" operation.
-        			     :)
-        	            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
-        	            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
+	return 
+	
+		if ( not( $member-available ) ) 
+
+		then ap:do-not-found( $request-path-info )
+		
+		else
+		
+		    (: 
+		     : Here we bottom out at the "update-member" operation.
+		     :)
+            
+            ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $ap:op-update-member , $request-path-info , $request-data ) 
         
 };
 
 
-
-
-(:
- : TODO doc me
- :)
-declare function ap:do-conditional-put-atom-entry(
-    $request-path-info as xs:string ,
-    $request-data as element(atom:entry)
-) as item()*
-{
-
-    let $header-if-match := request:get-header( "If-Match" )
-    
-    let $match-etags := tokenize( $header-if-match , "\s*,\s*" )
-    
-    let $etag := atomdb:generate-etag( $request-path-info ) 
-    
-    let $matches :=
-        for $match-etag in $match-etags
-        where (
-            $match-etag = "*"
-            or ( 
-                starts-with( $match-etag , '"' ) 
-                and ends-with( $match-etag , '"' )
-                and $etag = substring( $match-etag , 2 , string-length( $match-etag ) - 2 )
-            )  
-        )
-        return $match-etag
-        
-    return
-    
-        if ( exists( $matches ) )
-        then
-
-            (: 
-             : Here we bottom out at the "update-member" operation.
-             :)
-            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
-            return ap:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
-        
-        else ap:do-precondition-failed( $request-path-info , "The entity tag does not match." )
-        
-};
 
 
 (:
@@ -755,19 +671,22 @@ declare function ap:op-update-member(
     
 	let $entry := atomdb:update-member( $request-path-info , $request-data )
 
-    let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
-    
-    let $etag-header-set := 
-        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
-
-    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
-    
-    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
-    
+	(: 
+	 : N.B. we return the entry here, rather than trying to retrieve the updated
+	 : entry from the database, because of a weird interaction with the versioning
+	 : module, not seeing updates within the same query.
+	 :)
+	 
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
+
+
+
+declare variable $ap:op-update-member as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-update-member" ) , 3 )
+;
 
 
 
@@ -780,38 +699,27 @@ declare function ap:do-put-media(
 ) as item()*
 {
 
+	(: 
+	 : First we need to know whether a media resource exists at the 
+	 : request path.
+	 :)
+	 
+	let $found := atomdb:media-resource-available( $request-path-info )
 	
- 	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then ap:do-unsupported-media-type( $request-path-info )
- 	 
- 	 else if ( atomdb:member-available( $request-path-info ) )
- 	 then ap:do-unsupported-media-type( $request-path-info )
- 	 
- 	 else
+	return 
+	
+		if ( not( $found ) ) 
 
-		(: 
-		 : First we need to know whether a media resource exists at the 
-		 : request path.
-		 :)
-		 
-		let $found := atomdb:media-resource-available( $request-path-info )
+		then ap:do-not-found( $request-path-info )
 		
-		return 
+		else
 		
-			if ( not( $found ) ) 
-	
-			then ap:do-not-found( $request-path-info )
+			(: here we bottom out at the "update-media" operation :)
 			
-			else
+			let $request-data := request:get-data()
 			
-				(: here we bottom out at the "update-media" operation :)
-				
-				let $request-data := request:get-data()
-				
-				let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
-				
-				return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , $request-data , $request-content-type )
-				
+			return ap:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $ap:op-update-media , $request-path-info , $request-data , $request-content-type )
+			
 };
 
 
@@ -826,37 +734,45 @@ declare function ap:op-update-media(
 	
 	let $media-doc-db-path := atomdb:update-media-resource( $request-path-info , $request-data , $request-content-type )
 	
-    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
-    
-    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
-    
-    (: return the media-link entry :)
-    
-    let $media-link-entry := atomdb:get-media-link( $request-path-info )
-    
-    let $content-location-header-set := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link-entry/atom:link[@rel='edit']/@href )
-
-    return ( $CONSTANT:STATUS-SUCCESS-OK , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )
-
-(:
-    
     let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
     
+    (:
+     : TODO review whether we really want to echo the file back to client
+     : or rather return media-link entry (with content-location header), or 
+     : rather return nothing.
+     :)
+     
+    (: media type :)
+    
     let $mime-type := atomdb:get-mime-type( $request-path-info )
+    
+    (: title as filename :)
     
     let $media-link := atomdb:get-media-link( $request-path-info )
     let $title := $media-link/atom:title
     let $content-disposition :=
-    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
+    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( "attachment; filename=" , $title ) )
     	else ()
     
+    (: decoding from base 64 binary :)
+    
     let $response-stream := response:stream-binary( atomdb:retrieve-media( $request-path-info ) , $mime-type )
+
+	(: don't return status code, because already set :)
+	(: don't return response data, because streaming binary :)
 	
 	return ( () , () , () )
 
-:)
-
 };
+
+
+
+
+declare variable $ap:op-update-media as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-update-media" ) , 3 )
+;
+
+
 
 
 
@@ -894,78 +810,17 @@ declare function ap:do-get(
  :)
 declare function ap:do-get-entry(
 	$request-path-info
-) as item()*
+)
 {
     
-    let $header-if-none-match := request:get-header( "If-None-Match" )
-    
-    return 
-    
-        if ( exists( $header-if-none-match ) )
-        
-        then ap:do-conditional-get-entry( $request-path-info )
-        
-        else
+    (: 
+     : Here we bottom out at the "retrieve-member" operation.
+     :)
 
-            (: 
-             : Here we bottom out at the "retrieve-member" operation.
-             :)
-        
-        	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
-        	
-            return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
+    ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $ap:op-retrieve-member , $request-path-info , () )
 
 };
 
-
-
-(:
- : TODO doc me
- :)
-declare function ap:do-conditional-get-entry(
-    $request-path-info
-) as item()*
-{
-    
-    (: TODO is this a security risk? i.e., could someone probe for changes to a 
-     : resource even if they don't have permission to retrieve it? If so, should
-     : the conditional processing be pushed into the main operation? :)
-     
-    let $header-if-none-match := request:get-header( "If-None-Match" )
-    
-    let $match-etags := tokenize( $header-if-none-match , "\s*,\s*" )
-    
-    let $etag := atomdb:generate-etag( $request-path-info ) 
-    
-    let $matches :=
-        for $match-etag in $match-etags
-        where (
-            $match-etag = "*"
-            or ( 
-                starts-with( $match-etag , '"' ) 
-                and ends-with( $match-etag , '"' )
-                and $etag = substring( $match-etag , 2 , string-length( $match-etag ) - 2 )
-            )  
-        )
-        return $match-etag
-        
-    return
-    
-        if ( exists( $matches ) )
-        
-        then ap:do-not-modified( $request-path-info )
-        
-        else
-        
-            (: 
-             : Here we bottom out at the "retrieve-member" operation.
-             :)
-        
-            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
-            
-            return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request-path-info , () )
-
-};
 
 
 
@@ -980,18 +835,17 @@ declare function ap:op-retrieve-member(
 {
 
 	let $entry-doc := atomdb:retrieve-entry( $request-path-info )
-	
-	let $log := local:debug( $entry-doc )
 
-    let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
-    
-    let $etag-header-set := 
-        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
-    
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
+
+
+
+declare variable $ap:op-retrieve-member as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-retrieve-member" ) , 3 )
+;
 
 
 
@@ -1004,9 +858,7 @@ declare function ap:do-get-media(
 )
 {
 
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
-	
-    return ap:apply-op( $CONSTANT:OP-RETRIEVE-MEDIA , $op , $request-path-info , () )
+    ap:apply-op( $CONSTANT:OP-RETRIEVE-MEDIA , $ap:op-retrieve-media , $request-path-info , () )
 
 };
 
@@ -1033,7 +885,7 @@ declare function ap:op-retrieve-media(
     let $media-link := atomdb:get-media-link( $request-path-info )
     let $title := $media-link/atom:title
     let $content-disposition :=
-        if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
+    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( "attachment; filename=" , $title ) )
     	else ()
     
     (: decoding from base 64 binary :)
@@ -1049,6 +901,12 @@ declare function ap:op-retrieve-media(
 
 
 
+declare variable $ap:op-retrieve-media as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-retrieve-media" ) , 3 )
+;
+
+
+
 
 declare function ap:do-get-feed(
 	$request-path-info
@@ -1059,9 +917,7 @@ declare function ap:do-get-feed(
      : Here we bottom out at the "list-collection" operation.
      :)
 
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
-	
-    return ap:apply-op( $CONSTANT:OP-LIST-COLLECTION , $op , $request-path-info , () )
+    ap:apply-op( $CONSTANT:OP-LIST-COLLECTION , $ap:op-list-collection , $request-path-info , () )
     
 };
 
@@ -1085,10 +941,18 @@ declare function ap:op-list-collection(
 
 
 
+declare variable $ap:op-list-collection as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-list-collection" ) , 3 )
+;
+
+
+
+
 declare function ap:do-delete(
 	$request-path-info as xs:string
 ) as item()*
 {
+	(: TODO :)
 	
 	(: 
 	 : We first need to know whether we are deleting a collection, a collection
@@ -1097,13 +961,10 @@ declare function ap:do-delete(
 	 
 	if ( atomdb:collection-available( $request-path-info ) )
 	then ap:do-delete-collection( $request-path-info )
-	
 	else if ( atomdb:member-available( $request-path-info ) )
 	then ap:do-delete-member( $request-path-info )
-	
 	else if ( atomdb:media-resource-available( $request-path-info ) )
 	then ap:do-delete-media( $request-path-info )
-	
 	else ap:do-not-found( $request-path-info )
 	
 };
@@ -1141,14 +1002,8 @@ declare function ap:do-delete-member(
      :)
      
     if ( atomdb:media-link-available( $request-path-info ) )
-    
-    then 
-    	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
-    	return ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op, $request-path-info, () )
-    
-    else 
-    	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
-    	return ap:apply-op( $CONSTANT:OP-DELETE-MEMBER , $op , $request-path-info , () )
+    then ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $ap:op-delete-media, $request-path-info, () )
+    else ap:apply-op( $CONSTANT:OP-DELETE-MEMBER , $ap:op-delete-member , $request-path-info , () )
 			
 };
 
@@ -1167,14 +1022,16 @@ declare function ap:op-delete-member(
 {
 
     let $member-deleted := atomdb:delete-member( $request-path-info ) 
-
-    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
-    
-    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
-    
 	return ( $CONSTANT:STATUS-SUCCESS-NO-CONTENT , () , () )
 
 };
+
+
+
+
+declare variable $ap:op-delete-member as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-delete-member" ) , 3 )
+;
 
 
 
@@ -1186,10 +1043,7 @@ declare function ap:do-delete-media(
 {
 
     (: here we bottom out at the "delete-media" operation :)
-    
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
-	
-	return ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op , $request-path-info , () )
+	ap:apply-op( $CONSTANT:OP-DELETE-MEDIA , $ap:op-delete-media , $request-path-info , () )
 
 };
 
@@ -1207,50 +1061,28 @@ declare function ap:op-delete-media(
 {
 
     let $media-deleted := atomdb:delete-media( $request-path-info ) 
-
-    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
-    
-    let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
-    
 	return ( $CONSTANT:STATUS-SUCCESS-NO-CONTENT , () , () )
 
 };
  
 
 
-declare function ap:do-not-modified(
-    $request-path-info
-) as item()?
-{
+declare variable $ap:op-delete-media as function :=
+	util:function( QName( "http://www.cggh.org/2010/xquery/atom-protocol" , "ap:op-delete-media" ) , 3 )
+;
 
-    let $status-code-set := response:set-status-code( $CONSTANT:STATUS-REDIRECT-NOT-MODIFIED )
-    
-    return ()
-    
-};
+
 
 
 
 declare function ap:do-not-found(
-    $request-path-info
+	$request-path-info
 ) as item()?
 {
 
     let $message := "The server has not found anything matching the Request-URI."
     
     return ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND , $message , $request-path-info )
-
-};
-
-
-
-declare function ap:do-precondition-failed(
-    $request-path-info ,
-    $message
-) as item()?
-{
-
-    ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED , concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." ) , $request-path-info )
 
 };
 
@@ -1309,20 +1141,6 @@ declare function ap:do-forbidden(
     let $message := "The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated."
 
     return ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN , $message , $request-path-info )
-
-};
-
-
-
-
-declare function ap:do-unsupported-media-type(
-	$request-path-info as xs:string
-) as item()?
-{
-
-    let $message := "The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method."
-
-    return ap:send-error( $CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE , $message , $request-path-info )
 
 };
 
@@ -1460,10 +1278,10 @@ declare function ap:apply-op(
 ) as item()*
 {
 
-	let $log := local:debug( "call plugin functions before main operation" )
+	let $log := util:log( "debug" , "EXPERIMENTAL: call plugin functions before main operation" )
 	
-	let $before-advice := ap:apply-before( plugin:before() , $op-name , $request-path-info , $request-data , $request-media-type )
-	let $log := local:debug( count( $before-advice ) )
+	let $before-advice := ap:apply-before( $plugin:before , $op-name , $request-path-info , $request-data , $request-media-type )
+	let $log := util:log( "debug" , count( $before-advice ) )
 	
 	let $status-code as xs:integer := $before-advice[1]
 	
@@ -1473,18 +1291,18 @@ declare function ap:apply-op(
 		
 		then 
 		
-			let $log := local:info( ( "bail out - plugin has overridden default behaviour, status: " , $status-code ) )
+			let $log := util:log( "debug" , "bail out - plugin has overridden default behaviour" )
 		
 			let $response-data := $before-advice[2]
 			let $response-content-type := $before-advice[3]
-			let $log := local:debug( concat( "$status-code: " , $status-code ) )
-			let $log := local:debug( concat( "$response-data: " , $response-data ) )
-			let $log := local:debug( concat( "$response-content-type: " , $response-content-type ) )
+			let $log := util:log( "debug" , concat( "$status-code: " , $status-code ) )
+			let $log := util:log( "debug" , concat( "$response-data: " , $response-data ) )
+			let $log := util:log( "debug" , concat( "$response-content-type: " , $response-content-type ) )
 			return ap:send-response( $status-code , $response-data , $response-content-type ) 
 		  
 		else
 		
-			let $log := local:debug( "carry on as normal - execute main operation" )
+			let $log := util:log( "debug" , "carry on as normal - execute main operation" )
 			
 			let $request-data := $before-advice[2] (: request data may have been modified by plugins :)
 
@@ -1492,14 +1310,10 @@ declare function ap:apply-op(
 			let $response-status := $result[1]
 			let $response-data := $result[2]
 			let $response-content-type := $result[3]
-			
-			let $log := local:debug( $response-status )
-			let $log := local:debug( $response-data )
-			let $log := local:debug( $response-content-type )
 
-			let $log := local:debug( "call plugin functions after main operation" ) 
+			let $log := util:log( "debug" , "EXPERIMENTAL: call plugin functions after main operation" ) 
 			 
-			let $after-advice := ap:apply-after( plugin:after() , $op-name , $request-path-info , $response-data , $response-content-type )
+			let $after-advice := ap:apply-after( $plugin:after , $op-name , $request-path-info , $response-data , $response-content-type )
 			
 			let $response-data := $after-advice[1]
 			let $response-content-type := $after-advice[2]

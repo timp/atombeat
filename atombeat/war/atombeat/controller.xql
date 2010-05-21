@@ -26,10 +26,18 @@ return
 		    </forward>
 		</dispatch>
 
-	else if ( $module = "security" ) then
+	else if ( $module = "acl" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atombeat/security.xql">
+		    <forward url="/atombeat/acl.xql">
+		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
+		    </forward>
+		</dispatch>
+
+	else if ( $module = "expansion" ) then
+
+		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+		    <forward url="/atombeat/expansion.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>

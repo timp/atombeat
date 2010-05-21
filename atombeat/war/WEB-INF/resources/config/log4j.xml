@@ -17,7 +17,7 @@
     <appender name="ConsoleAppender" class="org.apache.log4j.ConsoleAppender">
         <param name="Target" value="System.out"/>
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c %x - %m%n"/>
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c{1} %x - %m%n"/>
         </layout>
         <filter class="org.apache.log4j.varia.LevelRangeFilter">
             <param name="LevelMin" value="debug"/>
@@ -38,7 +38,7 @@
         <param name="File" value="../logs/orbeon.log"/>
         <param name="Append" value="false" />
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c %x - %m%n"/>
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c{1} %x - %m%n"/>
         </layout>
     </appender>
 
@@ -50,7 +50,7 @@
         <param name="MaxFileSize" value="5MB"/>
         <param name="Append" value="false" />
         <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c %x - %m%n"/>
+            <param name="ConversionPattern" value="%d{ISO8601} %-5p %c{1} %x - %m%n"/>
         </layout>
     </appender>
 
@@ -113,65 +113,22 @@
     </category>
     -->
 
-    <category name="org.exist.storage">
+    <!-- Prevent extra display of eXist paging activity -->
+    <category name="org.exist.storage.btree.Paged">
         <priority value="warn"/>
     </category>
-    
-    <category name="org.exist.indexing">
+
+    <category name="org.exist.storage.DBBroker">
         <priority value="warn"/>
     </category>
-    
-    <category name="org.exist.xquery">
+
+    <category name="org.exist.storage.BrokerPool">
         <priority value="warn"/>
     </category>
-    
-    <category name="org.exist.http">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.exist.util">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.quartz">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.springframework">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.orbeon">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.atombeat.http">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.atombeat.xquery.lib">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.atombeat.xquery.lib.atomdb">
-        <priority value="debug"/>
-    </category>
-    
-    <category name="org.atombeat.xquery.lib.atom-protocol">
-        <priority value="warn"/>
-    </category>
-    
-    <category name="org.atombeat.xquery.lib.atom-security">
-        <priority value="debug"/>
-    </category>
-    
-    <category name="org.atombeat.xquery.plugin">
-        <priority value="warn"/>
-    </category>
-    
+
     <!-- You decide here which one of the loggers listed above you want to use. -->
     <root>
-        <priority value="warn"/>
+        <priority value="debug"/>
         <appender-ref ref="ConsoleAppender"/>
         <!--<appender-ref ref="ChainsawAppender"/>-->
         <!--<appender-ref ref="SingleFileAppender"/>-->
