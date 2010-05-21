@@ -319,9 +319,43 @@ public class AtomTestUtils {
 	
 	
 	
+	public static String getLinkHref(Element e, String rel) {
+		
+		String href = null;
+		
+		List<Element> links = getLinks(e, rel);
+		if (links.size() > 0) {
+			href = links.get(0).getAttribute("href");
+		}
+		
+		return href;
+		
+	}
+	
+	
+	
 	public static List<Element> getLinks(Document doc, String rel) {
 		
 		NodeList links = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "link");
+		
+		List<Element> els = new ArrayList<Element>();
+		
+		for (int i=0; i<links.getLength(); i++) {
+			Element e = (Element) links.item(i);
+			String relValue = e.getAttribute("rel");
+			if (relValue.equals(rel)) {
+				els.add(e);
+			}
+		}
+		
+		return els;
+		
+	}
+	
+	
+	public static List<Element> getLinks(Element elm, String rel) {
+		
+		NodeList links = elm.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "link");
 		
 		List<Element> els = new ArrayList<Element>();
 		
