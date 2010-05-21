@@ -265,6 +265,26 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
+	public void testGetMemberNoMediaDescriptorLink() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String memberUri = createTestEntryAndReturnLocation(collectionUri, "adam", "test");
+
+		// retrieve member entry
+		GetMethod g = new GetMethod(memberUri);
+		int r = executeMethod(g, "adam", "test");
+		assertEquals(200, r);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		String mediaDescriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNull(mediaDescriptorLocation);
+		
+	}
+	
+	
+	
 	public void testDescriptorLinkPresentInResponseToCreateEntry() {
 		
 		// set up test by creating a collection
