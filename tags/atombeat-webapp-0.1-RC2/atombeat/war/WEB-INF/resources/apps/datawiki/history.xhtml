@@ -1,0 +1,180 @@
+<!--
+    Copyright (C) 2010 University of Oxford
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+      xmlns:atom="http://www.w3.org/2005/Atom"
+      xmlns:ar="http://purl.org/atompub/revision/1.0">
+      
+    <head>
+        <title>AtomBeat DataWiki - <xforms:output ref="instance('ins-entry')/atom:title"/></title>
+        
+        <xforms:model id="mod-main">
+
+			<xforms:submission 
+				id="sub-get-entry"
+				resource="{xxforms:get-request-parameter('entry')}"
+				method="get"
+				replace="instance"
+				instance="ins-entry">
+				<xforms:send ev:event="xforms-submit-done" submission="sub-get-history-feed"/>
+			</xforms:submission>        
+
+			<xforms:send ev:event="xforms-model-construct-done" submission="sub-get-entry"/>
+			
+            <xforms:instance id="ins-entry">
+            	<atom:entry/>
+            </xforms:instance>
+            
+            <xforms:submission
+            	id="sub-get-history-feed"
+            	resource="{instance('ins-entry')/atom:link[@rel='history']/@href}"
+            	method="get"
+            	replace="instance"
+            	instance="ins-history-feed">
+           	</xforms:submission>
+           	
+           	<xforms:instance id="ins-history-feed">
+           		<atom:feed/>
+           	</xforms:instance>
+           	
+           	<xforms:bind nodeset="instance('ins-history-feed')">
+  				<xforms:bind nodeset="atom:entry">
+  					<xforms:bind nodeset="ar:revision">
+  						<xforms:bind nodeset="@number" type="xs:integer"/>
+  						<xforms:bind nodeset="@when" type="xs:date"/>
+  					</xforms:bind>
+  				</xforms:bind>         	
+           	</xforms:bind>
+            
+        </xforms:model>
+        
+        <link rel="stylesheet" type="text/css" href="/ops/yui/tabview/assets/skins/sam/tabview.css"></link>
+        <style type="text/css">
+.yui-skin-sam tr.yui-dt-selected td, .yui-skin-sam tr.yui-dt-selected td.yui-dt-asc, .yui-skin-sam tr.yui-dt-selected td.yui-dt-desc {
+	background-color:inherit;
+	color:inherit;
+}
+
+.yui-skin-sam .yui-dt-scrollable .yui-dt-hd {
+	border-top: none;
+	border-bottom: none;
+	border-left: none;
+	border-right: none;
+}
+
+.yui-skin-sam .yui-dt-scrollable table {
+	border: 1px solid #7F7F7F;
+}
+        </style>
+
+    </head>
+    
+    <body>
+    
+    	<xforms:group ref="instance('ins-entry')">
+	
+			<p><a href="./">DataWiki</a></p>
+			
+			<h1><xforms:output ref="atom:title"/></h1>  
+			
+			<p></p>  	
+    	
+    		<div class="yui-navset yui-navset-top">
+    			<ul class="yui-nav">
+    				<li>
+    					<a href="view?entry={atom:link[@rel='edit']/@href}">
+	    					<em>View</em>
+    					</a>
+    				</li>
+    				<li>
+    					<a href="edit?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Edit</em>
+    					</a>
+   					</li>
+    				<li>
+    					<a href="schema?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Schema</em>
+    					</a>
+   					</li>
+    				<li class="selected">
+    					<a href="history?entry={atom:link[@rel='edit']/@href}">
+	    					<em>History</em>
+    					</a>
+   					</li>
+    				<li>
+    					<a href="revisions?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Revisions</em>
+    					</a>
+   					</li>
+    			</ul>
+    			
+    			<div class="yui-content">
+    			
+  					
+  					<xforms:group ref="instance('ins-history-feed')">
+  					
+			   			<fr:datatable 
+			   				paginated="true" 
+			   				sortAndPaginationMode="internal" 
+			   				rowsPerPage="10"
+			   				maxNbPagesToDisplay="9"
+			   				scrollable="both">
+			   			
+			   				<thead>
+			   					<tr>
+									<th fr:sortable="true" fr:resizeable="true">
+										Rev
+									</th>	    						
+									<th fr:sortable="true" fr:resizeable="true">
+										By
+									</th>	    						
+									<th fr:sortable="true" fr:resizeable="true">
+										Date
+									</th>	    						
+			   					</tr>
+			   				</thead>
+			   				
+			   				<tbody>
+			   					<xforms:repeat nodeset="atom:entry">
+			   						<tr>
+										<td>
+											<a href="revisions?entry={atom:link[@rel='edit']/@href}&amp;rev={ar:revision/@number}"><xforms:output value="ar:revision/@number"/></a>
+										</td>	    						
+										<td>
+											<xforms:output value="concat( ar:comment/atom:author/atom:name , ' ' , ar:comment/atom:author/atom:email )"/>
+										</td>	    						
+										<td>
+											<xforms:output ref="ar:revision/@when" xxforms:format="format-dateTime(., '[D01]/[M01]/[Y] - [h01]:[m01]:[s01]')"/>
+										</td>	    						
+			   						</tr>
+			   					</xforms:repeat>
+			   				</tbody>
+			   				
+			   			</fr:datatable>
+
+  					</xforms:group>
+				
+    			</div>
+    			
+   			</div>
+    			
+    	</xforms:group>
+ 			
+    	
+    </body>
+</html>

@@ -1,0 +1,578 @@
+<!--
+    Copyright (C) 2010 University of Oxford
+
+    This program is free software; you can redistribute it and/or modify it under the terms of the
+    GNU Lesser General Public License as published by the Free Software Foundation; either version
+    2.1 of the License, or (at your option) any later version.
+
+    This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+    without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+    See the GNU Lesser General Public License for more details.
+
+    The full text of the license is available at http://www.gnu.org/copyleft/lesser.html
+-->
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:xforms="http://www.w3.org/2002/xforms"
+      xmlns:xs="http://www.w3.org/2001/XMLSchema"
+      xmlns:ev="http://www.w3.org/2001/xml-events"
+      xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+      xmlns:fr="http://orbeon.org/oxf/xml/form-runner"
+      xmlns:atom="http://www.w3.org/2005/Atom">
+      
+    <head>
+        <title>AtomBeat DataWiki</title>
+        
+        <xforms:model id="mod-main">
+        
+			<xforms:submission 
+				id="sub-get-entry"
+				resource="{xxforms:get-request-parameter('entry')}"
+				method="get"
+				replace="instance"
+				instance="ins-entry">
+			</xforms:submission>        
+
+			<xforms:submission 
+				id="sub-refresh-entry"
+				resource="{instance('ins-entry')/atom:link[@rel='edit']/@href}"
+				method="get"
+				replace="instance"
+				instance="ins-entry"
+				validate="false">
+                <xforms:message ev:event="xforms-submit-error" level="modal">An error occurred (<xforms:output value="event('error-type')"/>) while reloading data.</xforms:message>
+		        <xforms:message ev:event="xforms-submit-done" level="modal">The data have been restored to the last saved version.</xforms:message>
+			</xforms:submission>        
+
+			<xforms:send ev:event="xforms-model-construct-done" submission="sub-get-entry"/>
+			
+            <xforms:instance id="ins-entry">
+            	<atom:entry/>
+            </xforms:instance>
+            
+            <xforms:bind nodeset="instance('ins-entry')/atom:content/table/tbody/tr">
+            
+            	<xforms:bind nodeset="td">
+					
+					<!--+
+						| N.B. These bindings assume that any changes to the schema will not happen dynamically. 
+						| If changes to the schema were made dynamically, the bindings would required a model 
+						| rebuild before being correct. 
+						+-->
+
+					<!-- required binding -->
+					
+    	       		<xforms:bind 
+    	       			id="bin-required"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/required = 'true']" 
+    	       			required="true()"/>
+
+					<!-- type bindings - N.B. use xforms:* types rather than xs:* types because xforms:* allow empty values, which permits typed but not required fields -->
+					
+    	       		<xforms:bind 
+    	       			id="bin-type-integer"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'integer']" 
+    	       			type="xforms:integer"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-boolean"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'boolean']" 
+    	       			type="xforms:boolean"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-date"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'date']" 
+    	       			type="xforms:date"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-time"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'time']" 
+    	       			type="xforms:time"/>
+    	       			
+    	       		<xforms:bind 
+    	       			id="bin-type-decimal"
+    	       			nodeset="for $p in (position()) return .[instance('ins-entry')/atom:content/table/thead/tr/th[$p]/datatype = 'decimal']" 
+    	       			type="xforms:decimal"/>
+
+					<!-- range bindings -->
+					
+					<!--+
+						| N.B. We cannot, unfortunately, use the index-of function
+						| to get the position of a node in the context of its
+						| siblings (which is needed to look up the corresponding th) 
+						| because index-of uses equality rather than
+						| identity to compare nodes, and two nodes are equal
+						| if they have the same name and content.
+						+-->
+
+					<xforms:bind id="bin-max-integer"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'integer'
+											and exists( $th/max/text() )
+											and $th/max castable as xs:integer
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:integer ) then 
+												if ( $th/max/@bound='inclusive' ) then ( xs:integer( $td ) le xs:integer( $th/max ) )
+												else ( xs:integer( $td ) lt xs:integer( $th/max ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-max-decimal"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'decimal'
+											and exists( $th/max/text() )
+											and $th/max castable as xs:decimal
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:decimal ) then 
+												if ( $th/max/@bound='inclusive' ) then ( xs:decimal( $td ) le xs:decimal( $th/max ) )
+												else ( xs:decimal( $td ) lt xs:decimal( $th/max ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-min-integer"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'integer'
+											and exists( $th/min/text() )
+											and $th/min castable as xs:integer
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:integer ) then 
+												if ( $th/min/@bound='inclusive' ) then ( xs:integer( $td ) ge xs:integer( $th/min ) )
+												else ( xs:integer( $td ) gt xs:integer( $th/min ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-min-decimal"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[
+											$th/datatype = 'decimal'
+											and exists( $th/min/text() )
+											and $th/min castable as xs:decimal
+										]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											if ( $td castable as xs:decimal ) then 
+												if ( $th/min/@bound='inclusive' ) then ( xs:decimal( $td ) ge xs:decimal( $th/min ) )
+												else ( xs:decimal( $td ) gt xs:decimal( $th/min ) )
+											else true() 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-pattern"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[exists( $th/pattern/text() )]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											matches( $td/text() , $th/pattern/text() ) 
+									else ()
+						"
+					/>
+					
+					<xforms:bind id="bin-enumeration"
+						nodeset="
+							for $p in (position()) return
+								for $td in (.) return
+									for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+										$td[exists( $th/enumeration/item )]
+						"
+						constraint="
+							for $p in ../td/position() return
+								for $td in ../td[$p] return
+									if ( . is $td ) then 
+										for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+											( $td = $th/enumeration/item ) 
+									else ()
+						"
+					/>
+					
+					
+	           	</xforms:bind>
+ 
+            </xforms:bind>
+            
+            <xforms:submission
+            	id="sub-put-entry"
+            	resource="{instance('ins-entry')/atom:link[@rel='edit']/@href}"
+            	ref="instance('ins-entry')"
+            	method="put"
+            	mediatype="application/atom+xml"
+            	replace="instance"
+            	instance="ins-entry"
+            	validate="false">
+                <xforms:message ev:event="xforms-submit-error" level="modal">An error occurred (<xforms:output value="event('error-type')"/>) while saving changes.</xforms:message>
+		        <xforms:message ev:event="xforms-submit-done" level="modal">
+		        	Your changes have been saved. Thank you.
+	        	</xforms:message>
+           	</xforms:submission>
+           	
+           	<xforms:instance id="ins-row-template">
+           		<tr xmlns=""/>
+           	</xforms:instance>
+           	
+           	<xforms:instance id="ins-cell-template">
+           		<td xmlns=""/>
+           	</xforms:instance>
+           	
+           	<xforms:instance id="ins-page">
+           		<page xmlns="">
+           			<offset>1</offset>
+           			<items>9</items>
+           			<from/>
+           			<to/>
+           			<previous/>
+           			<next/>
+           		</page>
+           	</xforms:instance>
+           	
+           	<xforms:bind nodeset="instance('ins-page')">
+           		<xforms:bind nodeset="offset" type="xs:integer"/>
+           		<xforms:bind nodeset="items" type="xs:integer"/>
+           		<xforms:bind nodeset="from" calculate="../offset" type="xs:integer"/>
+           		<xforms:bind nodeset="to" calculate="min( ( ( ../offset + ../items ) , count(instance('ins-entry')/atom:content/table/tbody/tr) ) )" type="xs:integer"/>
+           		<xforms:bind nodeset="previous" readonly="../offset=1"/>
+           		<xforms:bind nodeset="next" readonly="../offset >= ( count(instance('ins-entry')/atom:content/table/tbody/tr) - ../items)"/>
+           	</xforms:bind>
+           	
+           	<!-- initialise row template depending on number of headers -->
+           	<xforms:action ev:event="xforms-model-construct-done" xxforms:iterate="instance('ins-entry')/atom:content/table/thead/tr/th">
+           		<xforms:insert context="instance('ins-row-template')" nodeset="td" origin="instance('ins-cell-template')"/> 
+           	</xforms:action>
+
+        </xforms:model>
+        
+        <link rel="stylesheet" type="text/css" href="/ops/yui/tabview/assets/skins/sam/tabview.css"></link>
+        <link rel="stylesheet" type="text/css" href="/ops/yui/datatable/assets/skins/sam/datatable.css"></link>
+
+        <style type="text/css">
+            .data-table { background-color: #fce5b6 }
+            .data-table .add-td {  }
+            .data-table .form-td { background: transparent; padding: 0 }
+            .data-table thead .xforms-repeat-selected-item-1 { background: transparent }
+        
+        </style>
+
+    </head>
+    
+    <body>
+
+    	<xforms:group ref="instance('ins-entry')">
+	
+			<p><a href="./">DataWiki</a></p>
+			
+			<h1><xforms:output ref="atom:title"/></h1>  
+			
+			<p></p>  	
+    	
+    		<div class="yui-navset yui-navset-top">
+    			<ul class="yui-nav">
+    				<li>
+    					<a href="view?entry={atom:link[@rel='edit']/@href}">
+	    					<em>View</em>
+    					</a>
+    				</li>
+    				<li class="selected">
+    					<a href="edit?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Edit</em>
+    					</a>
+   					</li>
+    				<li>
+    					<a href="schema?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Schema</em>
+    					</a>
+   					</li>
+    				<li>
+    					<a href="history?entry={atom:link[@rel='edit']/@href}">
+	    					<em>History</em>
+    					</a>
+   					</li>
+    				<li>
+    					<a href="revisions?entry={atom:link[@rel='edit']/@href}">
+	    					<em>Revisions</em>
+    					</a>
+   					</li>
+    			</ul>
+    			
+    			<div class="yui-content">
+    				
+    				<p>
+    					<xforms:submit submission="sub-put-entry">
+    						<xforms:label><img src="/apps/fr/style/save.gif"/> Save Changes</xforms:label>
+   						</xforms:submit>
+    					<xforms:submit submission="sub-refresh-entry">
+    						<xforms:label><img src="/apps/fr/style/trash.gif"/> Discard Changes</xforms:label>
+   						</xforms:submit>
+    				</p>
+    			
+    				<hr/>
+    				
+					<xforms:group ref="atom:content/table">
+
+						<p>
+							Showing rows <xforms:output value="instance('ins-page')/from"/> to <xforms:output value="instance('ins-page')/to"/> of <xforms:output value="count(instance('ins-entry')/atom:content/table/tbody/tr)"/>.
+							<xforms:select1 ref="instance('ins-page')/items">
+								<xforms:label>Rows per page: </xforms:label>
+								<xforms:item>
+									<xforms:label>10</xforms:label>
+									<xforms:value>9</xforms:value>
+								</xforms:item>
+								<xforms:item>
+									<xforms:label>20</xforms:label>
+									<xforms:value>19</xforms:value>
+								</xforms:item>
+								<xforms:item>
+									<xforms:label>50</xforms:label>
+									<xforms:value>49</xforms:value>
+								</xforms:item>
+								<xforms:item>
+									<xforms:label>100</xforms:label>
+									<xforms:value>99</xforms:value>
+								</xforms:item>
+							</xforms:select1>
+						</p>				
+						<p>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
+								<xforms:label>&lt;&lt; first</xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
+								<xforms:label>&lt; prev</xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="max( ( 1, instance('ins-page')/offset - instance('ins-page')/items - 1 ) )"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
+								<xforms:label>next ></xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="instance('ins-page')/offset + instance('ins-page')/items + 1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
+								<xforms:label>last >></xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="( ( count(instance('ins-entry')/atom:content/table/tbody/tr) div ( instance('ins-page')/items + 1 ) ) cast as xs:integer ) * ( instance('ins-page')/items + 1 ) + 1"/>
+								</xforms:action>
+							</xforms:trigger>
+						</p>
+					
+						<div class="yui-dt">
+							<div class="yui-dt-hd">
+								<table class="yui-dt-table">
+									<thead>
+										<tr>
+											<th>
+												<div class="yui-dt-liner">
+												</div>
+											</th>
+											<th>
+												<div class="yui-dt-liner">
+								                    <xforms:trigger appearance="minimal">
+								                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+								                        <xforms:insert 
+								                            ev:event="DOMActivate" 
+								                            context="tbody" 
+								                            nodeset="tr" 
+								                            at="1" 
+								                            position="before" 
+								                            origin="instance('ins-row-template')"/>
+								                    </xforms:trigger>
+												
+												</div>
+											</th>
+											<xforms:repeat nodeset="thead/tr/th">
+												<th>
+													<div class="yui-dt-liner">
+														<xforms:output value="label/text()"/>
+													</div>
+												</th>
+											</xforms:repeat>
+										</tr>
+									</thead>
+									<tbody class="yui-dt-data">
+										<xforms:repeat 
+											nodeset="for $i in instance('ins-page')/from to instance('ins-page')/to return tbody/tr[$i]" 
+											id="rep-row">
+											<tr class="
+												{if ( position() = 1 ) then 'yui-dt-first' else '' }
+												{if ( position() mod 2 = 0 ) then 'yui-dt-even' else 'yui-dt-odd' }">
+												<td>
+													<div class="yui-dt-liner">
+														<xforms:output value="instance('ins-page')/from - 1 + position()"/>
+													</div>
+												</td>
+												<td>
+													<div class="yui-dt-liner">
+									                    <xforms:trigger appearance="minimal">
+									                        <xforms:label><img src="/apps/fr/style/add.gif"/></xforms:label>
+									                        <xforms:insert 
+									                            ev:event="DOMActivate" 
+									                            context="." 
+									                            nodeset="." 
+									                            at="position()" 
+									                            position="after" 
+									                            origin="instance('ins-row-template')"/>
+									                    </xforms:trigger><xforms:trigger appearance="minimal">
+								                            <xforms:delete 
+								                                ev:event="DOMActivate" 
+								                                context="." 
+								                                nodeset="." 
+								                                at="index('rep-row')"/>
+								                            <xforms:label><img src="/apps/fr/style/delete.gif"/></xforms:label>
+								                        </xforms:trigger><xforms:trigger appearance="minimal" ref=".[preceding-sibling::*]">
+								                            <xforms:label><img src="/apps/fr/style/up.gif"/></xforms:label>
+								                            <xforms:action ev:event="DOMActivate">
+								                                <xforms:insert origin="context()" nodeset="preceding-sibling::*[1]" position="before"/>
+								                                <xforms:delete nodeset="."/>
+								                            </xforms:action>
+								                        </xforms:trigger><xforms:trigger appearance="minimal" ref=".[following-sibling::*]">
+								                            <xforms:label><img src="/apps/fr/style/down.gif"/></xforms:label>
+								                            <xforms:action ev:event="DOMActivate">
+								                                <xforms:insert origin="context()" nodeset="following-sibling::*[1]"/>
+								                                <xforms:delete nodeset="."/>
+								                            </xforms:action>
+								                        </xforms:trigger>
+													</div>
+												
+												</td>
+												<xforms:repeat 
+													nodeset="context()/td"
+													id="rep-cell">
+													<td class="form-td">
+														<div class="yui-dt-liner">
+														
+															<xforms:input ref="
+																for $p in (position()) return
+																	context()[empty(instance('ins-entry')/atom:content/table/thead/tr/th[$p]/enumeration/item)]">
+																<xforms:label/>
+																<xforms:alert>The data are not valid.</xforms:alert>
+															</xforms:input>
+															
+															<xforms:select1 ref="
+																for $p in (position()) return
+																	context()[exists(instance('ins-entry')/atom:content/table/thead/tr/th[$p]/enumeration/item)]">
+																<xforms:label/>
+																<xforms:item>
+																	<xforms:label>select...</xforms:label>
+																	<xforms:value/>
+																</xforms:item>
+																<xforms:itemset nodeset="
+																	for $p in ../td/position() return
+																		for $td in ../td[$p] return
+																			if ( . is $td ) then 
+																				for $th in instance('ins-entry')/atom:content/table/thead/tr/th[$p] return
+																					$th/enumeration/item
+																			else ()">
+																	<xforms:label ref="."/>
+																	<xforms:value ref="."/>
+																</xforms:itemset>
+																<xforms:alert>The data are not valid.</xforms:alert>
+															</xforms:select1>
+
+														</div>
+													</td>
+												</xforms:repeat>
+											</tr>
+										</xforms:repeat>
+									</tbody>
+								</table>
+							</div>
+						</div>
+
+						<p>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
+								<xforms:label>&lt;&lt; first</xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/previous">
+								<xforms:label>&lt; prev</xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="max( ( 1, instance('ins-page')/offset - instance('ins-page')/items - 1 ) )"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
+								<xforms:label>next ></xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="instance('ins-page')/offset + instance('ins-page')/items + 1"/>
+								</xforms:action>
+							</xforms:trigger>
+							<xforms:trigger appearance="minimal" ref="instance('ins-page')/next">
+								<xforms:label>last >></xforms:label>
+								<xforms:action ev:event="DOMActivate">
+									<xforms:setvalue ref="instance('ins-page')/offset" value="( ( count(instance('ins-entry')/atom:content/table/tbody/tr) div ( instance('ins-page')/items + 1 ) ) cast as xs:integer ) * ( instance('ins-page')/items + 1 ) + 1"/>
+								</xforms:action>
+							</xforms:trigger>
+						</p>
+					
+					</xforms:group>
+	
+					<hr/>
+					
+    				<p>
+    					<xforms:submit submission="sub-put-entry">
+    						<xforms:label><img src="/apps/fr/style/save.gif"/> Save Changes</xforms:label>
+   						</xforms:submit>
+    					<xforms:submit submission="sub-refresh-entry">
+    						<xforms:label><img src="/apps/fr/style/trash.gif"/> Discard Changes</xforms:label>
+   						</xforms:submit>
+    				</p>
+    			
+    			</div>
+    			
+   			</div>
+    			
+    	</xforms:group>
+    	
+    </body>
+</html>
