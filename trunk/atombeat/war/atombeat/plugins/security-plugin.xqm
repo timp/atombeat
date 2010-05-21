@@ -371,18 +371,22 @@ declare function sp:append-descriptor-links(
 
     (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
-    let $entry-path-info := substring-after( $response-data/atom:link[@rel="self"]/@href , $config:service-url )
-    let $media-path-info := substring-after( $response-data/atom:link[@rel="edit-media"]/@href , $config:service-url )
+    let $entry-uri := $response-data/atom:link[@rel="self"]/@href
+    let $entry-path-info := substring-after( $entry-uri , $config:service-url )
+    let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
+    let $media-path-info := substring-after( $media-uri , $config:service-url )
 
     let $can-retrieve-member := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () ) )
     let $can-update-member := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-MEMBER , $entry-path-info , () ) )
     let $can-delete-member := not( sp:is-operation-forbidden( $CONSTANT:OP-DELETE-MEMBER , $entry-path-info , () ) )
+    let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
+    let $can-update-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+    
     let $can-retrieve-media := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () ) )
     let $can-update-media := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-MEDIA , $media-path-info , () ) )
     let $can-delete-media := not( sp:is-operation-forbidden( $CONSTANT:OP-DELETE-MEDIA , $media-path-info , () ) )
-    let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
-    let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
-    let $can-update-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+    let $can-retrieve-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () ) )
+    let $can-update-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
     
     let $allow := string-join((
         if ( $can-retrieve-member-descriptor ) then "GET" else () ,
@@ -397,10 +401,8 @@ declare function sp:append-descriptor-links(
     let $log := local:debug( concat( "$descriptor-link: " , $descriptor-link ) )
     
     let $media-descriptor-link :=
-        if ( exists( $media-path-info ) )
+        if ( exists( $media-uri ) )
         then
-            let $can-retrieve-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () ) )
-            let $can-update-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
             let $allow := string-join((
                 if ( $can-retrieve-media-descriptor ) then "GET" else () ,
                 if ( $can-update-media-descriptor ) then "PUT" else ()

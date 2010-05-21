@@ -14,6 +14,7 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
 
 import static org.atombeat.AtomTestUtils.*;
 
@@ -715,6 +716,43 @@ public class TestAtomProtocol extends TestCase {
 		assertNotNull(editLocation);
 		String selfLocation = AtomTestUtils.getLinkHref(d, "self");
 		assertNotNull(selfLocation);
+
+	}
+	
+	
+	
+	
+	public void testGetFeedWithEntries() {
+
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+
+		// now create a new member by POSTing and atom entry document to the
+		// collection URI
+		PostMethod post = new PostMethod(collectionUri);
+		String content = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member</atom:title>" +
+				"<atom:summary>This is a summary.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(post, content);
+		int postResult = executeMethod(post);
+		
+		// expect the status code is 201 Created
+		assertEquals(201, postResult);
+		
+		// now try GET to collection URI
+		GetMethod get = new GetMethod(collectionUri);
+		int result = executeMethod(get);
+		
+		// expect the status code is 200 OK
+		assertEquals(200, result);
+
+
+		// check content
+		Document d = getResponseBodyAsDocument(get);
+		NodeList entries = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries.getLength());
 
 	}
 	

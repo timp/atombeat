@@ -497,7 +497,7 @@ declare function atomsec:match-media-type(
         if ( not( ends-with( $operation , "MEDIA" ) ) ) then true()
          
         (: if no expectation defined, match any media type :)
-        else if ( empty( $expected-range ) ) then true()
+        else if ( empty( $expected-range ) or $expected-range = "" ) then true()
 
         else
 
