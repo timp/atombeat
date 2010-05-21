@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace mime = "http://purl.org/atombeat/xquery/mime";
+module namespace mime = "http://www.cggh.org/2010/atombeat/xquery/mime";
 
 declare variable $mime:mappings := 
 	<mappings>

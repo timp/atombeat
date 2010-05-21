@@ -1,538 +1,377 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app 
-    version="2.4" 
-    xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" 
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee">
+
+<!--+
+    | Configuration file for the web application. 
+    |
+    | Provides XMLRPC + SOAP access to eXist and configures Cocoon2. If you don't need
+    | XMLRPC or SOAP or Cocoon, remove the corresponding servlets and servlet-mappings.
+    |
+    | $Id: web.xml 10400 2009-11-08 16:59:08Z wolfgang_m $
+    +-->
+
+<web-app xmlns="http://java.sun.com/xml/ns/j2ee"
+     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+     xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" version="2.4">
     
-    
-    
-    <display-name>AtomBeat Server</display-name>
-    
-    <description>An Atom Protocol server and web application based on eXist and Orbeon.</description>
-    
-    
-    
-    <!--+
-        |
-        | HTTP Method Override Filter
-        | ***************************
-        |
-        | (N.B. put this before spring security, so security is applied to value of
-        | method override if given)
-        |
-        +-->
-    
-    
-    <filter>
-        <filter-name>HttpMethodOverrideFilter</filter-name>
-        <filter-class>org.atombeat.http.HttpMethodOverrideFilter</filter-class>
-        <init-param>
-            <param-name>allowedOverrides</param-name>
-            <param-value>PUT DELETE</param-value>
-        </init-param>
-    </filter>
-    
-    
-    <filter-mapping>
-        <filter-name>HttpMethodOverrideFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
-    
-    <!--+
-        | Spring Security Configuration
-        | *****************************
-        | 
-        +-->
-    
-    <context-param>
-        <param-name>contextConfigLocation</param-name>
-        <param-value>
-            WEB-INF/security-example.xml
-        </param-value>
-    </context-param>
-    
-    
-    <filter>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
-    </filter>
-    
-    
-    <filter-mapping>
-        <filter-name>springSecurityFilterChain</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
-    
-    <listener>
-        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
-    </listener>
-    
-    
-    <!-- store username in request attribute so it can be accessed easily in xqueries -->
-    
-    <filter>
-        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
-        <filter-class>org.atombeat.http.SpringSecuritySetUserRequestAttributesFilter</filter-class>
-    </filter>
-    
-    
-    <filter-mapping>
-        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
-        <url-pattern>/*</url-pattern>
-    </filter-mapping>
-    
-    
-    
-    <!--+
-        | Orbeon Forms Configuration
-        | *****************************
-        | 
-        +-->
-    
-    <!--Initialize main resource manager-->
-    <context-param>
-        <param-name>oxf.resources.factory</param-name>
-        <param-value>org.orbeon.oxf.resources.PriorityResourceManagerFactory</param-value>
-    </context-param>
-    
-    <!-- Uncomment this for the filesystem resource manager -->
-    <!--
-    <context-param>
-        <param-name>oxf.resources.priority.1</param-name>
-        <param-value>org.orbeon.oxf.resources.FilesystemResourceManagerFactory</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.1.oxf.resources.filesystem.sandbox-directory</param-name>
-        <param-value>/home/aliman/Desktop/orbeon-work/orbeon-src-20100324/src/resources</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.2</param-name>
-        <param-value>org.orbeon.oxf.resources.WebAppResourceManagerFactory</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.2.oxf.resources.webapp.rootdir</param-name>
-        <param-value>/WEB-INF/resources</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.3</param-name>
-        <param-value>org.orbeon.oxf.resources.FilesystemResourceManagerFactory</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.3.oxf.resources.filesystem.sandbox-directory</param-name>
-        <param-value>/home/aliman/Desktop/orbeon-work/orbeon-src-20100324/src/resources-packaged</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.4</param-name>
-        <param-value>org.orbeon.oxf.resources.ClassLoaderResourceManagerFactory</param-value>
-    </context-param>-->
-    <!-- End filesystem resource manager -->
-    
-    <!-- Uncomment this for the webapp resource manager -->
-    <context-param>
-        <param-name>oxf.resources.priority.1</param-name>
-        <param-value>org.orbeon.oxf.resources.WebAppResourceManagerFactory</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.1.oxf.resources.webapp.rootdir</param-name>
-        <param-value>/WEB-INF/resources</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.resources.priority.2</param-name>
-        <param-value>org.orbeon.oxf.resources.ClassLoaderResourceManagerFactory</param-value>
-    </context-param>
-    <!-- End webapp resource manager -->
-    
-    <!--Orbeon Class Loader-->
-    <context-param>
-        <param-name>oxf.classloader.enable</param-name>
-        <param-value>false</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.classloader.ignore-packages</param-name>
-        <param-value>java. javax. org.apache.log4j. org.xml. org.w3c.</param-value>
-    </context-param>
-    
-    <!--Set location of properties.xml (read by resource manager)-->
-    <context-param>
-        <param-name>oxf.properties</param-name>
-        <param-value>oxf:/config/properties.xml</param-value>
-    </context-param>
-    
-    <!--Determine whether logging initialization must take place-->
-    <context-param>
-        <param-name>oxf.initialize-logging</param-name>
-        <param-value>true</param-value>
-    </context-param>
-    
-    <!--Set context listener processors-->
-    
-    <!-- Uncomment this for the context listener processors -->
-    <!--
-    <context-param>
-        <param-name>oxf.context-initialized-processor.name</param-name>
-        <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.context-initialized-processor.input.config</param-name>
-        <param-value>oxf:/apps/context/context-initialized.xpl</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.context-destroyed-processor.name</param-name>
-        <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.context-destroyed-processor.input.config</param-name>
-        <param-value>oxf:/apps/context/context-destroyed.xpl</param-value>
-    </context-param>-->
-    <!-- End context listener processors -->
-    
-    <!--Set session listener processors-->
-    
-    <!-- Uncomment this for the session listener processors -->
-    <!--
-    <context-param>
-        <param-name>oxf.session-created-processor.name</param-name>
-        <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.session-created-processor.input.config</param-name>
-        <param-value>oxf:/apps/context/session-created.xpl</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.session-destroyed-processor.name</param-name>
-        <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-    </context-param>
-    <context-param>
-        <param-name>oxf.session-destroyed-processor.input.config</param-name>
-        <param-value>oxf:/apps/context/session-destroyed.xpl</param-value>
-    </context-param>-->
-    <!-- End session listener processors -->
-    
-    <!--All JSP files under /xforms-jsp go through the XForms filter-->
-    <filter>
-        <filter-name>orbeon-xforms-filter</filter-name>
-        <filter-class>org.orbeon.oxf.servlet.OrbeonXFormsFilter</filter-class>
-        <!-- Uncomment this for the separate WAR deployment -->
-        <!--
+    <description>eXist Open Source Native XML Database</description>
+    <display-name>eXist XML Database</display-name>
+
+
+
+  <!--+
+      |
+      | HTTP Method Override Filter
+      | ***************************
+      |
+      | (N.B. put this before spring security, so security is applied to value of
+      | method override if given)
+      |
+      +-->
+  
+
+  <filter>
+    <filter-name>HttpMethodOverrideFilter</filter-name>
+    <filter-class>org.atombeat.http.HttpMethodOverrideFilter</filter-class>
     <init-param>
-        <param-name>oxf.xforms.renderer.context</param-name>
-        <param-value>/orbeon</param-value>
-    </init-param>-->
-        <!-- End separate WAR deployment -->
-    </filter>
-    <filter-mapping>
-        <filter-name>orbeon-xforms-filter</filter-name>
-        <url-pattern>/xforms-jsp/*</url-pattern>
-        <!--Servlet 2.4 configuration allowing the filter to run upon forward in addition to request-->
-        <dispatcher>REQUEST</dispatcher>
-        <dispatcher>FORWARD</dispatcher>
-    </filter-mapping>
-    
-    <!--Set context listener-->
-    <listener>
-        <listener-class>org.orbeon.oxf.webapp.OrbeonServletContextListenerDelegate</listener-class>
-    </listener>
-    
-    <!--Set session listener-->
-    <listener>
-        <listener-class>org.orbeon.oxf.webapp.OrbeonSessionListenerDelegate</listener-class>
-    </listener>
-    
-    <!--This is the main Orbeon Forms servlet-->
+      <param-name>allowedOverrides</param-name>
+      <param-value>PUT DELETE</param-value>
+    </init-param>
+  </filter>
+
+
+  <filter-mapping>
+    <filter-name>HttpMethodOverrideFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+
+  <!--+
+      | Spring Security Configuration
+      | *****************************
+      | 
+      +-->
+  
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>
+      WEB-INF/security-example.xml
+    </param-value>
+  </context-param>
+  
+  
+  <filter>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+  </filter>
+
+  
+  <filter-mapping>
+    <filter-name>springSecurityFilterChain</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+  
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
+  
+  
+  <!-- store username in request attribute so it can be accessed easily in xqueries -->
+  
+  <filter>
+    <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+    <filter-class>org.atombeat.http.SpringSecuritySetUserRequestAttributesFilter</filter-class>
+  </filter>
+  
+  
+  <filter-mapping>
+    <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+    <url-pattern>/*</url-pattern>
+  </filter-mapping>
+  
+
+
+    <!-- 
+        Initialize Log4j using a servlet.
+        Only needed when eXist is deployed as a .war file in e.g. Tomcat.
+    -->
     <servlet>
-        <servlet-name>orbeon-main-servlet</servlet-name>
-        <servlet-class>org.orbeon.oxf.servlet.OrbeonServletDelegate</servlet-class>
-        <!--Set main processor-->
+        <servlet-name>log4j-init</servlet-name>
+        <servlet-class>org.exist.http.servlets.Log4jInit</servlet-class>
+
         <init-param>
-            <param-name>oxf.main-processor.name</param-name>
-            <param-value>{http://www.orbeon.com/oxf/processors}page-flow</param-value>
+            <param-name>log4j-init-file</param-name>
+            <param-value>WEB-INF/log4j.xml</param-value>
         </init-param>
+        
         <init-param>
-            <param-name>oxf.main-processor.input.controller</param-name>
-            <param-value>oxf:/page-flow.xml</param-value>
+            <param-name>log4j-log-dir</param-name>
+            <param-value>WEB-INF/logs</param-value>
         </init-param>
-        <!--Set error processor-->
-        <init-param>
-            <param-name>oxf.error-processor.name</param-name>
-            <param-value>{http://www.orbeon.com/oxf/processors}page-flow</param-value>
-        </init-param>
-        <init-param>
-            <param-name>oxf.error-processor.input.controller</param-name>
-            <param-value>oxf:/config/error-page-flow.xml</param-value>
-        </init-param>
-        <!--Set supported methods-->
-        <init-param>
-            <param-name>oxf.http.accept-methods</param-name>
-            <param-value>get,post,head,put,delete</param-value>
-        </init-param>
-        <!--Set servlet initialization and destruction listeners-->
-        <!-- Uncomment this for the servlet listener processors -->
-        <!--
-    <init-param>
-        <param-name>oxf.servlet-initialized-processor.name</param-name>
-        <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-    </init-param>
-    <init-param>
-        <param-name>oxf.servlet-initialized-processor.input.config</param-name>
-        <param-value>oxf:/apps/context/servlet-initialized.xpl</param-value>
-    </init-param>
-    <init-param>
-        <param-name>oxf.servlet-destroyed-processor.name</param-name>
-        <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-    </init-param>
-    <init-param>
-        <param-name>oxf.servlet-destroyed-processor.input.config</param-name>
-        <param-value>oxf:/apps/context/servlet-destroyed.xpl</param-value>
-    </init-param>-->
-        <!-- End servlet listener processors -->
+
         <load-on-startup>1</load-on-startup>
     </servlet>
-    
-    <!--This is the XForms Server servlet-->
+
+
+    <!--
+        RpcServlet provides XML-RPC access to eXist
+    -->
     <servlet>
-        <servlet-name>orbeon-xforms-server-servlet</servlet-name>
-        <servlet-class>org.orbeon.oxf.servlet.OrbeonServletDelegate</servlet-class>
-        <!--Set main processor-->
-        <init-param>
-            <param-name>oxf.main-processor.name</param-name>
-            <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-        </init-param>
-        <init-param>
-            <param-name>oxf.main-processor.input.config</param-name>
-            <param-value>oxf:/ops/xforms/xforms-server.xpl</param-value>
-        </init-param>
-        <!--Set error processor-->
-        <init-param>
-            <param-name>oxf.error-processor.name</param-name>
-            <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-        </init-param>
-        <init-param>
-            <param-name>oxf.error-processor.input.config</param-name>
-            <param-value>oxf:/ops/xforms/xforms-server-error.xpl</param-value>
-        </init-param>
-        <load-on-startup>1</load-on-startup>
-    </servlet>
-    
-    <!--This is the XForms Renderer servlet, used to deploy Orbeon Forms as a separate WAR-->
-    <servlet>
-        <servlet-name>orbeon-renderer-servlet</servlet-name>
-        <servlet-class>org.orbeon.oxf.servlet.OrbeonServletDelegate</servlet-class>
-        <!--Set main processor-->
-        <init-param>
-            <param-name>oxf.main-processor.name</param-name>
-            <param-value>{http://www.orbeon.com/oxf/processors}page-flow</param-value>
-        </init-param>
-        <init-param>
-            <param-name>oxf.main-processor.input.controller</param-name>
-            <param-value>oxf:/ops/xforms/xforms-renderer-page-flow.xml</param-value>
-        </init-param>
-        <!--Set error processor-->
-        <init-param>
-            <param-name>oxf.error-processor.name</param-name>
-            <param-value>{http://www.orbeon.com/oxf/processors}pipeline</param-value>
-        </init-param>
-        <init-param>
-            <param-name>oxf.error-processor.input.config</param-name>
-            <param-value>oxf:/config/error.xpl</param-value>
-        </init-param>
-    </servlet>
-    
-    <servlet>
-        <servlet-name>display-chart-servlet</servlet-name>
-        <servlet-class>org.jfree.chart.servlet.DisplayChart</servlet-class>
-        <load-on-startup>2</load-on-startup>
-    </servlet>
-    
-    <servlet>
-        <servlet-name>exist-xmlrpc-servlet</servlet-name>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
         <servlet-class>org.exist.xmlrpc.RpcServlet</servlet-class>
+        <init-param>
+          <param-name>enabledForExtensions</param-name>
+          <param-value>true</param-value>
+        </init-param>
     </servlet>
-    
+
+    <!-- 
+        DatabaseAdminServlet: this servlet can be used to ensure that
+        eXist is running in the background. Just set the start-parameter 
+        to true and load-on-startup to 1 
+    -->
     <servlet>
-        <servlet-name>exist-rest-servlet</servlet-name>
+        <servlet-name>EXistServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.EXistServlet</servlet-class>
+    
+        <!--
+            where to find eXist's configuration file relative to the basedir 
+            of the web-application.
+        -->
+        <init-param>
+            <param-name>configuration</param-name>
+            <param-value>conf.xml</param-value>
+        </init-param>
+
+        <!-- 
+            eXist's home directory. All file names in the configuration file 
+            will be relative to this directory.
+        -->
         <init-param>
             <param-name>basedir</param-name>
             <param-value>WEB-INF/</param-value>
         </init-param>
-        <init-param>
-            <param-name>configuration</param-name>
-            <param-value>exist-conf.xml</param-value>
-        </init-param>
+
         <init-param>
             <param-name>start</param-name>
             <param-value>true</param-value>
         </init-param>
+
+        <init-param>
+            <param-name>use-default-user</param-name>
+            <param-value>true</param-value>
+        </init-param>
+        <init-param>
+            <param-name>user</param-name>
+            <param-value>admin</param-value>
+        </init-param>
+        <init-param>
+            <param-name>password</param-name>
+            <param-value></param-value>
+        </init-param>
+        
         <load-on-startup>2</load-on-startup>
     </servlet>
-    
+
+    <!-- 
+        Servlet that enables webDAV 
+    -->
     <servlet>
-        <servlet-name>exist-webdav-servlet</servlet-name>
+        <servlet-name>WebDAVServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.WebDAVServlet</servlet-class>
+
         <init-param>
             <param-name>authentication</param-name>
             <param-value>basic</param-value>
         </init-param>
     </servlet>
-    
-    <servlet>
-        <servlet-name>exist-atom-servlet</servlet-name>
-        <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
-        <init-param>
-            <param-name>authentication</param-name>
-            <param-value>basic</param-value>
-        </init-param>
-    </servlet>
-    
-    <!-- Uncomment this for the SQL examples -->
-    <!--
-    <servlet>
-        <servlet-name>hsqldb-servlet</servlet-name>
-        <servlet-class>org.hsqldb.Servlet</servlet-class>
-        <init-param>
-            <param-name>hsqldb.server.database</param-name>
-            <param-value>orbeondb</param-value>
-        </init-param>
-        <load-on-startup>4</load-on-startup>
-    </servlet>-->
-    <!-- End SQL examples -->
-    
-    <servlet-mapping>
-        <servlet-name>orbeon-main-servlet</servlet-name>
-        <url-pattern>/</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>orbeon-xforms-server-servlet</servlet-name>
-        <url-pattern>/xforms-server/*</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>orbeon-renderer-servlet</servlet-name>
-        <url-pattern>/xforms-renderer</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>exist-xmlrpc-servlet</servlet-name>
-        <url-pattern>/exist/xmlrpc</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>exist-rest-servlet</servlet-name>
-        <url-pattern>/exist/rest/*</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>exist-webdav-servlet</servlet-name>
-        <url-pattern>/exist/webdav/*</url-pattern>
-    </servlet-mapping>
-    
-    <servlet-mapping>
-        <servlet-name>exist-atom-servlet</servlet-name>
-        <url-pattern>/exist/atom/*</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Uncomment this for the SQL examples -->
-    <!--
-    <servlet-mapping>
-        <servlet-name>hsqldb-servlet</servlet-name>
-        <url-pattern>/db</url-pattern>
-    </servlet-mapping>-->
-    <!-- End SQL examples -->
-    
-    <servlet-mapping>
-        <servlet-name>display-chart-servlet</servlet-name>
-        <url-pattern>/chartDisplay</url-pattern>
-    </servlet-mapping>
-    
-    <!-- Uncomment this for the SQL examples -->
-    <!--
-    <resource-ref>
-        <description>DataSource</description>
-        <res-ref-name>jdbc/db</res-ref-name>
-        <res-type>javax.sql.DataSource</res-type>
-        <res-auth>Container</res-auth>
-    </resource-ref>-->
-    <!-- End SQL examples -->
-    
-    <!-- Uncomment this for the authentication example -->
-    <!--
-    <security-constraint>
-        <web-resource-collection>
-            <web-resource-name>Authentication example</web-resource-name>
-            <url-pattern>/java-authentication/</url-pattern>
-        </web-resource-collection>
-        <auth-constraint>
-            <role-name>orbeon-admin</role-name>
-        </auth-constraint>
-    </security-constraint>
-    <login-config>
-        <auth-method>FORM</auth-method>
-        <form-login-config>
-            <form-login-page>/java-authentication/login</form-login-page>
-            <form-error-page>/java-authentication/login-error</form-error-page>
-        </form-login-config>
-    </login-config>
-    <security-role>
-        <role-name>orbeon-admin</role-name>
-    </security-role>-->
-    <!-- End authentication example -->
-    
-    <session-config>
-        <session-timeout>720</session-timeout>
-    </session-config>
-    
+
+    <!-- 
+        XQueryServlet generates HTML from an XQuery file. 
+    -->
     <servlet>
         <servlet-name>XQueryServlet</servlet-name>
         <servlet-class>org.exist.http.servlets.XQueryServlet</servlet-class>
-        
+
         <init-param>
             <param-name>uri</param-name>
             <param-value>xmldb:exist:///db</param-value>
         </init-param>
-        
+
         <init-param>
             <param-name>form-encoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
-        
+
         <init-param>
             <param-name>container-encoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
-        
+
         <init-param>
             <param-name>encoding</param-name>
             <param-value>UTF-8</param-value>
         </init-param>
         
     </servlet>
-    
-    
+	
     <filter>
         <filter-name>XQueryURLRewrite</filter-name>
         <filter-class>org.exist.http.urlrewrite.XQueryURLRewrite</filter-class>
-        
+
         <!-- Defines the location of the controller-config.xml file, which defines
-            the root mappings. -->
+             the root mappings. -->
         <init-param>
             <param-name>config</param-name>
             <param-value>WEB-INF/controller-config.xml</param-value>
         </init-param>
         
         <!-- This could also be stored inside the db: -->
-        <!--init-param>
-            <param-name>config</param-name>
-            <param-value>xmldb:exist:///db/controller-config.xml</param-value>
-            </init-param-->
+		<!--init-param>
+			<param-name>config</param-name>
+			<param-value>xmldb:exist:///db/controller-config.xml</param-value>
+		</init-param-->
     </filter>
     
+    <servlet>
+        <servlet-name>XSLTServlet</servlet-name>
+        <servlet-class>org.exist.http.servlets.XSLTServlet</servlet-class>
+    </servlet>
+
+	<!--
+        Configure the Axis servlets. 
+        Axis provides eXist's web-services via SOAP.
+    -->
+    <servlet>
+        <servlet-name>AxisServlet</servlet-name>
+        <servlet-class>org.apache.axis.transport.http.AxisServlet</servlet-class>
+    </servlet>
+
+    <servlet>
+        <servlet-name>AdminServlet</servlet-name>
+        <servlet-class>org.apache.axis.transport.http.AdminServlet</servlet-class>
+        <load-on-startup>100</load-on-startup>
+    </servlet>
+
+    <!-- Atom Atom Publishing Protocol -->
+    <servlet>
+        <servlet-name>AtomServlet</servlet-name>
+        <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
+    </servlet>
+    
+    <!--
+        Register Webstart servlet
+    -->
+    <servlet>
+        <servlet-name>jnlp</servlet-name>
+        <servlet-class>org.exist.webstart.JnlpServlet</servlet-class>
+    </servlet>
+    
+    
+    <!-- ====================== URL space mappings ======================= -->
+    
+    <!-- IMPORTANT: the XQueryURLRewrite servlet filter does now serve as a single
+         entry point into the web application. All eXist-related URL
+         mappings are handled by XQueryURLRewrite (see controller-config.xml). 
+         The servlet mappings below are thus commented out. We keep them here 
+         for documentation purposes. If you need to switch to the old setup, 
+         you can re-enable the mappings below and disable them in 
+         controller-config.xml. However, please note that some features of the
+         website will only work if XQueryURLRewrite controls the /rest servlet
+         (EXistServlet). -->
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
-        <url-pattern>/atombeat/*</url-pattern>
+        <url-pattern>/*</url-pattern>
     </filter-mapping>
     
+    <!-- XMLRPC -->
+    <!--servlet-mapping>
+        <servlet-name>org.exist.xmlrpc.RpcServlet</servlet-name>
+        <url-pattern>/xmlrpc</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- REST new mapping-->
+    <!--servlet-mapping>
+        <servlet-name>EXistServlet</servlet-name>
+        <url-pattern>/rest/*</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- webDAV -->
+    <!--servlet-mapping>
+        <servlet-name>WebDAVServlet</servlet-name>
+        <url-pattern>/webdav/*</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- XQuery (not for database stored queries) -->
+    <!--servlet-mapping>
+        <servlet-name>XQueryServlet</servlet-name>
+        <url-pattern>*.xql</url-pattern>
+    </servlet-mapping-->
+    
+    <!-- SOAP (Apache Axis) -->
+    <!--servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/axis-servlet/AxisServlet</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>*.jws</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>AxisServlet</servlet-name>
+        <url-pattern>/services/*</url-pattern>
+    </servlet-mapping>
+    
+    <servlet-mapping>
+        <servlet-name>AdminServlet</servlet-name>
+        <url-pattern>/axis-servlet/AdminServlet</url-pattern>
+    </servlet-mapping-->
+    
+    
+    <!-- ==================== various MIME type mappings ================== -->
+
+    <mime-mapping>
+        <extension>css</extension>
+        <mime-type>text/css</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xml</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xsl</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xconf</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>xmap</extension>
+        <mime-type>text/xml</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>ent</extension>
+        <mime-type>text/plain</mime-type>
+    </mime-mapping>
+
+    <mime-mapping>
+        <extension>grm</extension>
+        <mime-type>text/plain</mime-type>
+    </mime-mapping>
+
+    <jsp-config>
+        <taglib>
+            <taglib-uri>http://exist-db.org/exist</taglib-uri>
+            <taglib-location>/WEB-INF/exist.tld</taglib-location>
+        </taglib>
+    </jsp-config>
     
 </web-app>
