@@ -1,8 +1,9 @@
 xquery version "1.0";
-
+ 
 module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace response = "http://exist-db.org/xquery/response" ;

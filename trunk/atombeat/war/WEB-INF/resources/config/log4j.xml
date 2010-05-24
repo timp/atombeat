@@ -154,7 +154,7 @@
     </category>
     
     <category name="org.atombeat.xquery.lib.atomdb">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.atombeat.xquery.lib.atom-protocol">
@@ -162,7 +162,7 @@
     </category>
     
     <category name="org.atombeat.xquery.lib.atom-security">
-        <priority value="debug"/>
+        <priority value="warn"/>
     </category>
     
     <category name="org.atombeat.xquery.plugin">

@@ -317,7 +317,7 @@ declare function atomsec:decide(
         else $decisions[1]
     
     let $message := ( "security decision (" , $decision , ") for user (" , $user , "), roles (" , string-join( $roles , " " ) , "), request-path-info (" , $request-path-info , "), operation(" , $operation , "), media-type (" , $media-type , ")" )
-    let $log := local:info( $message )  
+    let $log := local:debug( $message )  
     
     return $decision
     
@@ -535,5 +535,51 @@ declare function atomsec:match-media-type(
                 or ( ( $expected-type = $actual-type )  and ( $expected-subtype = $actual-subtype ) )
                     
 };
+
+
+
+
+
+declare function atomsec:is-denied(
+    $operation as xs:string ,
+    $request-path-info as xs:string ,
+    $request-media-type as xs:string?
+) as xs:boolean
+{
+
+    let $user := request:get-attribute( $config:user-name-request-attribute-key )
+    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
+    
+    let $denied := 
+        if ( not( $config:enable-security ) ) then false()
+        else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-deny )
+        
+    return $denied 
+    
+};
+
+
+
+
+declare function atomsec:is-allowed(
+    $operation as xs:string ,
+    $request-path-info as xs:string ,
+    $request-media-type as xs:string?
+) as xs:boolean
+{
+
+    let $user := request:get-attribute( $config:user-name-request-attribute-key )
+    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
+    
+    let $allowed := 
+        if ( not( $config:enable-security ) ) then false()
+        else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-allow )
+        
+    return $allowed 
+    
+};
+
+
+
 
 
