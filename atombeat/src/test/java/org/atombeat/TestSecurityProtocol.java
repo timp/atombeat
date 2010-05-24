@@ -199,7 +199,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve collection
 		GetMethod g = new GetMethod(collectionUri);
