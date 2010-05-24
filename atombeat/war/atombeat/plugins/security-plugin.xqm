@@ -49,7 +49,7 @@ declare function sp:before(
     	let $message := ( "security plugin, before: " , $operation , ", request-path-info: " , $request-path-info ) 
     	let $log := local:debug( $message )
     
-    	let $forbidden := sp:is-operation-forbidden( $operation , $request-path-info , $request-media-type )
+    	let $forbidden := atomsec:is-denied( $operation , $request-path-info , $request-media-type )
     	
     	return 
     	
@@ -376,17 +376,17 @@ declare function sp:append-descriptor-links(
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     let $media-path-info := substring-after( $media-uri , $config:service-url )
 
-    let $can-retrieve-member := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () ) )
-    let $can-update-member := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-MEMBER , $entry-path-info , () ) )
-    let $can-delete-member := not( sp:is-operation-forbidden( $CONSTANT:OP-DELETE-MEMBER , $entry-path-info , () ) )
-    let $can-retrieve-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , () ) )
-    let $can-update-member-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+    let $can-retrieve-member := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
+    let $can-update-member := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER , $entry-path-info , () )
+    let $can-delete-member := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEMBER , $entry-path-info , () )
+    let $can-retrieve-member-descriptor := atomsec:is-allowed(  $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , ()  )
+    let $can-update-member-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () )
     
-    let $can-retrieve-media := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () ) )
-    let $can-update-media := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-MEDIA , $media-path-info , () ) )
-    let $can-delete-media := not( sp:is-operation-forbidden( $CONSTANT:OP-DELETE-MEDIA , $media-path-info , () ) )
-    let $can-retrieve-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () ) )
-    let $can-update-media-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () ) )
+    let $can-retrieve-media := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () )
+    let $can-update-media := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA , $media-path-info , () )
+    let $can-delete-media := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEDIA , $media-path-info , () )
+    let $can-retrieve-media-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () )
+    let $can-update-media-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () )
     
     let $allow := string-join((
         if ( $can-retrieve-member-descriptor ) then "GET" else () ,
@@ -490,7 +490,7 @@ declare function sp:filter-feed-by-permissions(
     if ( not( $config:enable-security ) )
     then $feed
     else
-        let $can-update-collection-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () ) )
+        let $can-update-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () )
         let $descriptor-link :=     
             if ( $can-update-collection-descriptor )
             then <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml"/>
@@ -504,11 +504,11 @@ declare function sp:filter-feed-by-permissions(
                     for $entry in $feed/atom:entry
                     let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:service-url )
                     let $log := local:debug( concat( "checking permission to retrieve member for entry-path-info: " , $entry-path-info ) )
-                    let $forbidden := sp:is-operation-forbidden( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
+                    let $forbidden := atomsec:is-denied( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
                     return 
                         if ( not( $forbidden ) ) 
                         then 
-                            let $can-update-descriptor := not( sp:is-operation-forbidden( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () ) )
+                            let $can-update-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () )
                             return
                                 if ( $can-update-descriptor ) then sp:append-descriptor-links( $entry-path-info , $entry ) 
                                 else $entry
@@ -519,29 +519,6 @@ declare function sp:filter-feed-by-permissions(
         return $filtered-feed
 };
 
-
-
-
-
-
-
-declare function sp:is-operation-forbidden(
-    $operation as xs:string ,
-    $request-path-info as xs:string ,
-    $request-media-type as xs:string?
-) as xs:boolean
-{
-
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    
-    let $forbidden := 
-        if ( not( $config:enable-security ) ) then false()
-        else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-deny )
-        
-    return $forbidden 
-    
-};
 
 
 

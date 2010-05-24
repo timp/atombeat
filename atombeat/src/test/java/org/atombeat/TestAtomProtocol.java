@@ -1335,8 +1335,145 @@ public class TestAtomProtocol extends TestCase {
 	
 	
 	
-	// TODO test conditional PUT
+	public void testRecursiveCollection() {
 
+		String col1 = CONTENT_URI + Double.toString(Math.random());
+		PutMethod put1 = new PutMethod(col1);
+		String content1 = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:recursive=\"true\">" +
+				"<atom:title>Test Collection (Recursive)</atom:title>" +
+			"</atom:feed>";
+		setAtomRequestEntity(put1, content1);
+		int result1 = executeMethod(put1);
+		assertEquals(201, result1);
+
+		createTestEntryAndReturnLocation(col1, USER, PASS);
+
+		String col2 = col1 + "/" + Double.toString(Math.random());
+		PutMethod put2 = new PutMethod(col2);
+		String content2 = 
+			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Sub-Collection</atom:title>" +
+			"</atom:feed>";
+		setAtomRequestEntity(put2, content2);
+		int result2 = executeMethod(put2);
+		assertEquals(201, result2);
+
+		createTestEntryAndReturnLocation(col2, USER, PASS);
+
+		GetMethod get3 = new GetMethod(col1);
+		int result3 = executeMethod(get3);
+		assertEquals(200, result3);
+		Document d3 = getResponseBodyAsDocument(get3);
+		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, entries3.getLength()); // should be 2 because 1 is included via recursion into sub-collection
+		
+		GetMethod get4 = new GetMethod(col2);
+		int result4 = executeMethod(get4);
+		assertEquals(200, result4);
+		Document d4 = getResponseBodyAsDocument(get4);
+		NodeList entries4 = d4.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries4.getLength());
+		
+	}
+	
+
+
+
+	public void testExplicitlyNotRecursiveCollection() {
+
+		String col1 = CONTENT_URI + Double.toString(Math.random());
+		PutMethod put1 = new PutMethod(col1);
+		String content1 = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:recursive=\"false\">" +
+				"<atom:title>Test Collection (Recursive)</atom:title>" +
+			"</atom:feed>";
+		setAtomRequestEntity(put1, content1);
+		int result1 = executeMethod(put1);
+		assertEquals(201, result1);
+
+		createTestEntryAndReturnLocation(col1, USER, PASS);
+
+		String col2 = col1 + "/" + Double.toString(Math.random());
+		PutMethod put2 = new PutMethod(col2);
+		String content2 = 
+			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Sub-Collection</atom:title>" +
+			"</atom:feed>";
+		setAtomRequestEntity(put2, content2);
+		int result2 = executeMethod(put2);
+		assertEquals(201, result2);
+
+		createTestEntryAndReturnLocation(col2, USER, PASS);
+
+		GetMethod get3 = new GetMethod(col1);
+		int result3 = executeMethod(get3);
+		assertEquals(200, result3);
+		Document d3 = getResponseBodyAsDocument(get3);
+		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries3.getLength()); // should be 1 because not recursive
+		
+		GetMethod get4 = new GetMethod(col2);
+		int result4 = executeMethod(get4);
+		assertEquals(200, result4);
+		Document d4 = getResponseBodyAsDocument(get4);
+		NodeList entries4 = d4.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries4.getLength());
+		
+	}
+	
+
+
+
+	public void testImplicitlyNotRecursiveCollection() {
+
+		String col1 = CONTENT_URI + Double.toString(Math.random());
+		PutMethod put1 = new PutMethod(col1);
+		String content1 = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\">" +
+				"<atom:title>Test Collection (Recursive)</atom:title>" +
+			"</atom:feed>";
+		setAtomRequestEntity(put1, content1);
+		int result1 = executeMethod(put1);
+		assertEquals(201, result1);
+
+		createTestEntryAndReturnLocation(col1, USER, PASS);
+
+		String col2 = col1 + "/" + Double.toString(Math.random());
+		PutMethod put2 = new PutMethod(col2);
+		String content2 = 
+			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Sub-Collection</atom:title>" +
+			"</atom:feed>";
+		setAtomRequestEntity(put2, content2);
+		int result2 = executeMethod(put2);
+		assertEquals(201, result2);
+
+		createTestEntryAndReturnLocation(col2, USER, PASS);
+
+		GetMethod get3 = new GetMethod(col1);
+		int result3 = executeMethod(get3);
+		assertEquals(200, result3);
+		Document d3 = getResponseBodyAsDocument(get3);
+		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries3.getLength()); // should be 1 because not recursive by default
+		
+		GetMethod get4 = new GetMethod(col2);
+		int result4 = executeMethod(get4);
+		assertEquals(200, result4);
+		Document d4 = getResponseBodyAsDocument(get4);
+		NodeList entries4 = d4.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries4.getLength());
+		
+	}
 	
 }
 

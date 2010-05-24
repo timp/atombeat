@@ -805,24 +805,15 @@ declare function atomdb:retrieve-feed(
 			{
 				$feed/attribute::* ,
 				$feed/child::* ,
-				for $child in xmldb:get-child-resources( $db-collection-path )
-				let $is-entry-doc := ( not( ends-with( $child, ".media" ) ) and not( ends-with( $child , ".feed" ) ) )
-				let $entry := if ( $is-entry-doc ) then doc( concat( $db-collection-path , "/" , $child ) )/atom:entry else ()
-				order by $entry/atom:updated descending
-				return 
-					if ( exists( $entry ) and xs:boolean( $feed/@atombeat:exclude-entry-content ) )
-					then
-						<atom:entry>
-						{
-							$entry/attribute::* ,
-							for $ec in $entry/child::* 
-							return 
-								if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
-								then <atom:content>{$ec/attribute::*}</atom:content>
-								else $ec
-						}	
-						</atom:entry>
-					else $entry
+				let $recursive := xs:boolean( $feed/@atombeat:recursive )
+				let $entries := atomdb:get-entries( $db-collection-path , $recursive )
+				return
+				    for $entry in $entries
+    				order by $entry/atom:updated descending
+    				return 
+    					if ( exists( $entry ) and xs:boolean( $feed/@atombeat:exclude-entry-content ) )
+    					then atomdb:exclude-entry-content( $entry )
+    					else $entry
 			}
 			</atom:feed>
 
@@ -832,6 +823,38 @@ declare function atomdb:retrieve-feed(
 
 };
 
+
+
+
+declare function atomdb:get-entries(
+    $db-collection-path as xs:string ,
+    $recursive as xs:boolean?
+) as element(atom:entry)*
+{
+
+    if ( $recursive )
+    then collection( $db-collection-path )/atom:entry (: recursive :)
+    else xmldb:xcollection( $db-collection-path )/atom:entry (: not recursive :)
+
+};
+
+
+
+declare function atomdb:exclude-entry-content(
+    $entry as element(atom:entry)
+) as element(atom:entry)
+{
+    <atom:entry>
+    {
+        $entry/attribute::* ,
+        for $ec in $entry/child::* 
+        return 
+            if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+            then <atom:content>{$ec/attribute::*}</atom:content>
+            else $ec
+    }   
+    </atom:entry>
+};
 
 
 
