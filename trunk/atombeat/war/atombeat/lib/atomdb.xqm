@@ -530,8 +530,8 @@ declare function atomdb:create-feed(
         	}
             <atom:id>{$id}</atom:id>
             <atom:updated>{$updated}</atom:updated>
-            <atom:link rel="self" type="application/atom+xml" href="{$self-uri}"/>
-            <atom:link rel="edit" type="application/atom+xml" href="{$edit-uri}"/>
+            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:link rel="edit" href="{$edit-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
             {
                 atomdb:mutable-feed-children($request-data)
             }

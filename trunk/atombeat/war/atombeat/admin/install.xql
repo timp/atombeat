@@ -9,25 +9,9 @@ import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../l
 import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
+import module namespace config-collections = "http://purl.org/atombeat/xquery/config-collections" at "collections.xqm" ;
 
 
-
-declare variable $collection-spec :=
-    <spec>
-        <collection>
-            <title>Foo</title>
-            <path-info>/foo</path-info>
-            <enable-history>false</enable-history>
-            <exclude-entry-content>false</exclude-entry-content>
-        </collection>   
-        <collection>
-            <title>DataWiki</title>
-            <path-info>/datawiki</path-info>
-            <enable-history>true</enable-history>
-            <exclude-entry-content>true</exclude-entry-content>
-        </collection>   
-    </spec>
-;
 
 
 
@@ -80,14 +64,16 @@ declare function local:content() as item()*
                         <th>Path</th>
                         <th>Enable History</th>
                         <th>Exclude Entry Content in Feed</th>
+                        <th>Recursive</th>
                         <th>Available</th>
                     </tr>
                     {
-                        for $collection in $collection-spec/collection
+                        for $collection in $config-collections:collection-spec/collection
                         let $title := $collection/title/text()
                         let $path-info := $collection/path-info/text()
                         let $enable-history := $collection/enable-history/text()
                         let $exclude-entry-content := $collection/exclude-entry-content/text()
+                        let $recursive := $collection/recursive/text()
                         let $available := atomdb:collection-available($path-info)
                         return
                             <tr>
@@ -95,6 +81,7 @@ declare function local:content() as item()*
                                 <td><a href="../content{$path-info}">{$path-info}</a></td>
                                 <td>{$enable-history}</td>
                                 <td>{$exclude-entry-content}</td>
+                                <td>{$recursive}</td>
                                 <td><strong>{$available}</strong></td>
                             </tr>
                     }
@@ -121,17 +108,18 @@ declare function local:do-post() as item()*
     
     (: INSTALL THE COLLECTIONS :)
     let $collections-installed :=
-        for $collection in $collection-spec/collection
+        for $collection in $config-collections:collection-spec/collection
         let $title := $collection/title/text()
         let $path-info := $collection/path-info/text()
-        let $enable-history := xs:boolean($collection/enable-history/text())
         return 
             if ( not( atomdb:collection-available( $path-info ) ) )
             then 
             
                 (: CREATE THE COLLECTION :)
                 let $feed-doc := 
-                    <atom:feed atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}">
+                    <atom:feed 
+                        atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}"
+                        atombeat:recursive="{$collection/recursive/text()}">
                         <atom:title>{$title}</atom:title>
                     </atom:feed>
                 let $collection-created := atomdb:create-collection( $path-info , $feed-doc )
@@ -143,7 +131,7 @@ declare function local:do-post() as item()*
                 
                 (: ENABLE HISTORY :)
                 let $history-enabled :=
-                    if ( $enable-history )
+                    if ( xs:boolean( $collection/enable-history/text() ) )
                     then xutil:enable-versioning( $collection-db-path )
                     else false()
                     

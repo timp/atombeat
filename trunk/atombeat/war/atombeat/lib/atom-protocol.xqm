@@ -1,5 +1,5 @@
 xquery version "1.0";
- 
+
 module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol";
  
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
