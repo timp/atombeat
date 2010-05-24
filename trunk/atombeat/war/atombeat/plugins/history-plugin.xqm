@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace hp = "http://purl.org/atombeat/xquery/history-plugin";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 (: see http://tools.ietf.org/html/draft-snell-atompub-revision-00 :)
 declare namespace ar = "http://purl.org/atompub/revision/1.0" ;
@@ -67,12 +68,8 @@ declare function hp:before-create-collection(
 	let $message := concat( "history plugin, before create-collection, request-path-info: " , $request-path-info ) 
 	let $log := util:log( "debug" , $message )
 
-	let $enable-history := request:get-header( "X-Atom-Enable-History" )
+	let $enable-history := xs:boolean( $request-data/@atombeat:enable-versioning )
 	
-	let $enable-history := 
-		if ( $enable-history castable as xs:boolean ) then xs:boolean( $enable-history )
-		else false()
-
 	let $history-enabled :=
 		
 		if ( $enable-history )

@@ -214,12 +214,21 @@ public class AtomTestUtils {
 	
 	public static String createTestCollection(String serverUri, String user, String pass, Header[] headers) {
 
+		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection</atom:title></atom:feed>";
+		return createTestCollection(serverUri, user, pass, headers, content);
+
+	}
+	
+	
+	
+	
+	public static String createTestCollection(String serverUri, String user, String pass, Header[] headers, String content) {
+
 		String collectionUri = serverUri + Double.toString(Math.random());
 		PutMethod method = new PutMethod(collectionUri);
 		for (Header h : headers) {
 			method.setRequestHeader(h);
 		}
-		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection</atom:title></atom:feed>";
 		setAtomRequestEntity(method, content);
 		
 		int result = executeMethod(method, user, pass);

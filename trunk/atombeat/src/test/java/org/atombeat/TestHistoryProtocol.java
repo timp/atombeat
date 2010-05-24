@@ -43,15 +43,19 @@ public class TestHistoryProtocol extends TestCase {
 	
 	public void setUp() {
 		
-		Header[] headers = {
-				new Header("X-Atom-Enable-History", "true")
-		};
+		Header[] headers = {};
 		
-		collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers);
-	
-		Header[] headers2 = {};
-		
-		noHistoryCollectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers2);
+		String content = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:enable-versioning=\"true\">" +
+				"<atom:title>Test Collection With Versioning</atom:title>" +
+			"</atom:feed>";
+		collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, content);
+
+		String noHistoryContent = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection (No Versioning)</atom:title></atom:feed>";
+		noHistoryCollectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, noHistoryContent);
 	
 	}
 	
