@@ -479,11 +479,12 @@ declare function atomdb:mutable-feed-children(
     let $namespace-uri := namespace-uri($child)
     let $local-name := local-name($child)
     where
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ID ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-UPDATED ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "self" ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ENTRY )
+        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ID ) 
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-UPDATED ) 
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "self" ) 
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" ) 
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ENTRY )
+        and not( $config:auto-author and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-AUTHOR )
     return $child
 };
 
@@ -498,12 +499,13 @@ declare function atomdb:mutable-entry-children(
     let $namespace-uri := namespace-uri($child)
     let $local-name := local-name($child)
     where
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ID ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-UPDATED ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-PUBLISHED ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "self" ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" ) and
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit-media" )
+        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ID )
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-UPDATED )
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-PUBLISHED )
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "self" )
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" )
+        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit-media" )
+        and not( $config:auto-author and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-AUTHOR )
     return $child
 };
 
@@ -522,19 +524,33 @@ declare function atomdb:create-feed(
     let $self-uri := $id
     let $edit-uri := $id
     
+    (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    
     return
     
         <atom:feed>
-        	{
-        		$request-data/attribute::*
-        	}
+    	{
+    		$request-data/attribute::*
+    	}
             <atom:id>{$id}</atom:id>
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
             <atom:link rel="edit" href="{$edit-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
-            {
-                atomdb:mutable-feed-children($request-data)
-            }
+        {
+            if ( $config:auto-author )
+            then
+                <atom:author>
+                {
+                    if ( $config:user-name-is-email ) then <atom:email>{$user-name}</atom:email>
+                    else <atom:name>{$user-name}</atom:name>
+                }                
+                </atom:author>
+            else ()
+        }
+        {
+            atomdb:mutable-feed-children($request-data)
+        }
         </atom:feed>  
 
 };
@@ -563,6 +579,7 @@ declare function atomdb:update-feed(
             {
                 $feed/atom:link[@rel="self"] ,
                 $feed/atom:link[@rel="edit"] ,
+                if ( $config:auto-author ) then $feed/atom:author else () ,
                 atomdb:mutable-feed-children($request-data)
             }
         </atom:feed>  
@@ -595,9 +612,20 @@ declare function atomdb:create-entry(
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" type="application/atom+xml" href="{$self-uri}"/>
             <atom:link rel="edit" type="application/atom+xml" href="{$edit-uri}"/>
-            {
-                atomdb:mutable-entry-children($request-data)
-            }
+        {
+            if ( $config:auto-author )
+            then
+                <atom:author>
+                {
+                    if ( $config:user-name-is-email ) then <atom:email>{$user-name}</atom:email>
+                    else <atom:name>{$user-name}</atom:name>
+                }                
+                </atom:author>
+            else ()
+        }
+        {
+            atomdb:mutable-entry-children($request-data)
+        }
         </atom:entry>  
      
 };
@@ -623,6 +651,9 @@ declare function atomdb:create-media-link-entry(
     let $edit-uri := $id
     let $media-uri := concat( $config:service-url , $request-path-info , "/" , $member-id , ".media" )
     
+    (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+
     let $title :=
     	if ( $media-link-title ) then $media-link-title
     	else concat( "download-" , $member-id , ".media" )
@@ -646,6 +677,17 @@ declare function atomdb:create-media-link-entry(
             <atom:content src="{$media-uri}" type="{$media-type}"/>
             <atom:title type="text">{$title}</atom:title>
             <atom:summary type="text">{$summary}</atom:summary>
+        {
+            if ( $config:auto-author )
+            then
+                <atom:author>
+                {
+                    if ( $config:user-name-is-email ) then <atom:email>{$user-name}</atom:email>
+                    else <atom:name>{$user-name}</atom:name>
+                }                
+                </atom:author>
+            else ()
+        }
         </atom:entry>  
      
 };
@@ -676,6 +718,7 @@ declare function atomdb:update-entry(
                 $entry/atom:link[@rel="self"] ,
                 $entry/atom:link[@rel="edit"] ,
                 $entry/atom:link[@rel="edit-media"] ,
+                if ( $config:auto-author ) then $entry/atom:author else () ,
                 atomdb:mutable-entry-children($request-data)
             }
         </atom:entry>  
