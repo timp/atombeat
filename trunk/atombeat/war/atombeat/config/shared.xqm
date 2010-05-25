@@ -48,6 +48,10 @@ declare variable $config:user-name-request-attribute-key as xs:string := "user-n
 declare variable $config:user-roles-request-attribute-key as xs:string := "user-roles" ; 
 
 
+(: TODO doc me :)
+declare variable $config:auto-author as xs:boolean := true() ;
+
+
 (:
  : If usernames should be treated as email addresses, set this to true(). (I.e.,
  : if users are logging in with their email address as their user ID.)

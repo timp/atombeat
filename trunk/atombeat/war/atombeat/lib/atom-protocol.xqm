@@ -1,7 +1,7 @@
 xquery version "1.0";
 
 module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol";
- 
+
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
@@ -9,17 +9,16 @@ import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
- 
+
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
- 
+
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
 
 declare variable $atom-protocol:param-request-path-info := "request-path-info" ;
 declare variable $atom-protocol:logger-name := "org.atombeat.xquery.lib.atom-protocol" ;
-
 
 
 declare function local:debug(
