@@ -750,7 +750,9 @@ declare function atom-protocol:op-update-member(
 ) as item()*
 {
     
-	let $entry := atomdb:update-member( $request-path-info , $request-data )
+	let $entry-updated := atomdb:update-member( $request-path-info , $request-data )
+	
+	let $entry := atomdb:retrieve-member( $request-path-info )
 
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
     
@@ -976,16 +978,16 @@ declare function atom-protocol:op-retrieve-member(
 ) as item()*
 {
 
-	let $entry-doc := atomdb:retrieve-entry( $request-path-info )
+	let $entry := atomdb:retrieve-member( $request-path-info )
 	
-	let $log := local:debug( $entry-doc )
+	let $log := local:debug( $entry )
 
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
     
     let $etag-header-set := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
     
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 

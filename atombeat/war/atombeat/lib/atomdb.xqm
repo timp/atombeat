@@ -116,9 +116,9 @@ declare function atomdb:media-link-available(
             return false()
         
         else
-            let $entry-doc := atomdb:retrieve-entry( $request-path-info )
-            let $log := util:log( "debug" , $entry-doc )
-            let $edit-media-link := $entry-doc/atom:entry/atom:link[@rel="edit-media"]
+            let $entry := atomdb:retrieve-member( $request-path-info )
+            let $log := util:log( "debug" , $entry )
+            let $edit-media-link := $entry/atom:link[@rel="edit-media"]
             let $log := util:log( "debug" , $edit-media-link )
             let $available := exists( $edit-media-link )
             let $log := util:log( "debug" , $available )
@@ -308,13 +308,20 @@ declare function atomdb:generate-member-identifier(
 
 
 
+(:~
+ : Create a new Atom collection member.
+ :
+ : @param $collection-path-info the path info (e.g., "/studies") for the collection where the new member will be created.
+ : @param $request-data the Atom entry data to use to create the new member.
+ : @return the eXist database path where the new member is stored, or empty if the collection is not available.
+ :)
 declare function atomdb:create-member(
-	$request-path-info as xs:string ,
+	$collection-path-info as xs:string ,
 	$request-data as element(atom:entry) 
 ) as xs:string?
 {
 
-	if ( not( atomdb:collection-available( $request-path-info ) ) )
+	if ( not( atomdb:collection-available( $collection-path-info ) ) )
 	
 	then ()
 	
@@ -323,9 +330,9 @@ declare function atomdb:create-member(
 		let $log := util:log( "debug" , "atomdb:create-member()" )
 		let $log := util:log( "debug" , $request-data )
 				
-	    let $member-id := atomdb:generate-member-identifier( $request-path-info ) 
+	    let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
 	    
-	    let $entry := atomdb:create-entry( $request-path-info, $request-data , $member-id )
+	    let $entry := atomdb:create-entry( $collection-path-info, $request-data , $member-id )
 		let $log := util:log( "debug" , $entry )
 	    
 		(:
@@ -333,7 +340,7 @@ declare function atomdb:create-member(
 		 : e.g., "/db/foo".
 		 :)
 		 
-        let $entry-doc-db-path := atomdb:store-member( $request-path-info , concat( $member-id , ".atom" ) , $entry )
+        let $entry-doc-db-path := atomdb:store-member( $collection-path-info , concat( $member-id , ".atom" ) , $entry )
         
 	    return $entry-doc-db-path
 		
@@ -358,14 +365,20 @@ declare function atomdb:store-member(
 
 
 
-
+(:~
+ : Update an Atom collection member.
+ : 
+ : @param $member-path-info the path info identifying the member to be updated.
+ : @param $request-data the Atom entry data to use to update the member.
+ : @return the eXist database path where the entry is stored, or empty if no member is available at that location.
+ :)
 declare function atomdb:update-member(
-	$request-path-info as xs:string ,
+	$member-path-info as xs:string ,
 	$request-data as element(atom:entry) 
-) as item()?
+) as xs:string?
 {
 
-	if ( not( atomdb:member-available( $request-path-info ) ) )
+	if ( not( atomdb:member-available( $member-path-info ) ) )
 	
 	then ()
 	
@@ -375,27 +388,19 @@ declare function atomdb:update-member(
 		 : Map the request path info, e.g., "/foo/bar", to a database path,
 		 : e.g., "/db/foo/bar".
 		 :)
-		 
-		let $member-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+		
+		let $current := atomdb:retrieve-member( $member-path-info )
 	
-		let $entry := atomdb:update-entry( doc( $member-db-path )/atom:entry , $request-data )
+		let $new := atomdb:update-entry( $current , $request-data )
 
-		let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)$" )
+		let $groups := text:groups( $member-path-info , "^(.*)/([^/]+)$" )
 		
-		let $collection-db-path := atomdb:request-path-info-to-db-path( $groups[2] )
-		
+		let $collection-path-info := $groups[2]
 		let $entry-resource-name := $groups[3]
 		
-		let $entry-db-path := xmldb:store( $collection-db-path , $entry-resource-name , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
+		let $entry-db-path := atomdb:store-member( $collection-path-info , $entry-resource-name , $new )
 
-		(: 
-		 : N.B. we return the entry here, rather than just the path, because of
-		 : a weird interaction with the versioning module and retrieving a document
-		 : that has been updated but not seeing the update within the same
-		 : query.
-		 :)
-		 
-		return $entry
+		return $entry-db-path
 
 };
 
@@ -901,9 +906,9 @@ declare function atomdb:exclude-entry-content(
 
 
 
-declare function atomdb:retrieve-entry(
+declare function atomdb:retrieve-member(
 	$request-path-info as xs:string 
-) as item()?
+) as element(atom:entry)?
 {
 
 	if ( not( atomdb:member-available( $request-path-info ) ) )
@@ -923,7 +928,7 @@ declare function atomdb:retrieve-entry(
 		let $entry-doc := doc( $entry-doc-db-path )
 		let $log := local:debug( $entry-doc )
 		
-		return $entry-doc
+		return $entry-doc/atom:entry
 
 };
 
@@ -993,7 +998,7 @@ declare function atomdb:generate-etag(
      
     if ( atomdb:member-available( $request-path-info ) )
     then
-        let $entry := atomdb:retrieve-entry( $request-path-info )
+        let $entry := atomdb:retrieve-member( $request-path-info )
         return util:hash( $entry , "md5" )
         
     else ()
