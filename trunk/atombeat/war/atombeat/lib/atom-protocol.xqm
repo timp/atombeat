@@ -42,8 +42,10 @@ declare function local:info(
 
 
 
-(:
- : TODO doc me  
+(:~
+ : This is the starting point for the Atom protocol engine. 
+ : 
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-service()
 as item()*
@@ -77,8 +79,12 @@ as item()*
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a POST request.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : 
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-post(
 	$request-path-info as xs:string 
@@ -104,8 +110,13 @@ declare function atom-protocol:do-post(
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a POST request where the request entity content type is  
+ : application/atom+xml.
+ :
+ : @param $request-path-info the path info for the current request.
+ : 
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-post-atom(
 	$request-path-info as xs:string 
@@ -137,24 +148,31 @@ declare function atom-protocol:do-post-atom(
 
 
 
+(:~
+ : Process a POST request where the request entity is an Atom feed document. 
+ : <p>
+ : N.B. this is not a standard Atom protocol operation, but is a protocol 
+ : extension. The PUT request is preferred for creating collections, but the 
+ : POST form is also supported for compatibility with the native eXist Atom
+ : Protocol implementation.
+ : </p>
+ : <p>
+ : If an Atom collection already exists at the request path, the request will 
+ : be treated as an error, otherwise the request will create a new Atom 
+ : collection and initialise the collection feed document with the request data.
+ : </p>
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request 
+ : entity.
+ : 
+ : @return depends on the outcome of request processing.
+ :)
 declare function atom-protocol:do-post-atom-feed(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed)
 ) as item()*
 {
 
-    (: 
-     : Here we bottom out at the "create-collection" operation.
-     :)
-     
-	(: 
-	 : We need to know whether an atom collection already exists at the 
-	 : request path, in which case the request will be treated as an error,
-	 : or whether no atom collection exists at the request path, in which case
-	 : the request will create a new atom collection and initialise the atom
-	 : feed document with the given feed metadata.
-	 :)
-	 
 	let $create := not( atomdb:collection-available( $request-path-info ) )
 	
 	return 
@@ -163,6 +181,10 @@ declare function atom-protocol:do-post-atom-feed(
 
 		then 
 			
+            (: 
+             : Here we bottom out at the "CREATE_COLLECTION" operation.
+             :)
+             
 			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-collection" ) , 3 )
 			return atom-protocol:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
 		
@@ -173,8 +195,16 @@ declare function atom-protocol:do-post-atom-feed(
 
 
 
-(:
- : TODO doc me 
+(:~ 
+ : Implementation of the CREATE_COLLECTION operation.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request 
+ : entity.
+ : @param $request-media-type the media type of the current request (should be 
+ : "application/atom+xml")
+ : 
+ : @return a sequence like ( $response-status-code , $response-data , $response-content-type )
  :)
 declare function atom-protocol:op-create-collection(
 	$request-path-info as xs:string ,
@@ -183,15 +213,15 @@ declare function atom-protocol:op-create-collection(
 ) as item()*
 {
 
-	let $feed-doc-db-path := atomdb:create-collection( $request-path-info , $request-data )
+	let $create-collection := atomdb:create-collection( $request-path-info , $request-data )
 
-	let $feed := doc( $feed-doc-db-path )/atom:feed
+	let $feed := atomdb:retrieve-feed( $request-path-info )
             
-	let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
+	let $set-header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
 	
     let $location := $feed/atom:link[@rel="self"]/@href
         	
-	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
+	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 
@@ -201,8 +231,13 @@ declare function atom-protocol:op-create-collection(
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a POST request where the request entity in an Atom entry document.
+ :
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request entity.
+ :
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-post-atom-entry(
 	$request-path-info as xs:string ,
@@ -226,7 +261,7 @@ declare function atom-protocol:do-post-atom-entry(
 		else
 		
             (: 
-             : Here we bottom out at the "create-member" operation.
+             : Here we bottom out at the "CREATE_MEMBER" operation.
              :)
              
 			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-member" ) , 3 )
@@ -238,8 +273,16 @@ declare function atom-protocol:do-post-atom-entry(
 
 
 
-(:
- : TODO doc me
+(:~ 
+ : Implementation of the CREATE_MEMBER operation.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom entry document that was provided as the request 
+ : entity.
+ : @param $request-media-type the media type of the current request (should be 
+ : "application/atom+xml")
+ : 
+ : @return a sequence like ( $response-status-code , $response-data , $response-content-type )
  :)
 declare function atom-protocol:op-create-member(
 	$request-path-info as xs:string ,
@@ -248,40 +291,43 @@ declare function atom-protocol:op-create-member(
 ) as item()*
 {
 
-	let $log := local:debug( "op-create-member" )
-	let $log := local:debug( $request-data )
-	
-	let $entry-doc-db-path := atomdb:create-member( $request-path-info , $request-data )
+    (: create the member :)
+	let $entry := atomdb:create-member( $request-path-info , $request-data )
 
-	let $entry-doc := doc( $entry-doc-db-path )
-            
-    let $location := $entry-doc/atom:entry/atom:link[@rel="self"]/@href
-        	
-	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-    let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
+    (: set the location and content-location headers :)
+    let $location := $entry/atom:link[@rel="self"]/@href
+	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
+    let $set-header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 	
-	let $entry-path-info := atomdb:db-path-to-request-path-info( $entry-doc-db-path )
-
+	(: set the etag header :)
+    let $entry-path-info := substring-after( $location , $config:service-url )
     let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
-    
-    let $etag-header-set := 
+    let $set-header-etag := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
         
+    (: update the feed date updated :)    
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
     	
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
 		
 };
 
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a POST request where the request content type is not 
+ : application/atom+xml.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-content-type the value of the Content-Type header in the 
+ : request.
+ :
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-post-media(
 	$request-path-info as xs:string ,
-	$request-content-type
+	$request-content-type as xs:string 
 ) as item()*
 {
 
@@ -301,7 +347,7 @@ declare function atom-protocol:do-post-media(
 		else
 		
             (: 
-             : Here we bottom out at the "create-media" operation.
+             : Here we bottom out at the "CREATE_MEDIA" operation.
              :)
              
         	let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
@@ -314,8 +360,15 @@ declare function atom-protocol:do-post-media(
 
 
 
-(:
- : TODO doc me
+(:~
+ : Implementation of the CREATE_MEDIA operation.
+ :
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the data that was provided as the request entity.
+ : @param $request-media-type the media type of the current request (should 
+ : *not* be "application/atom+xml")
+ : 
+ : @return a sequence like ( $response-status-code , $response-data , $response-content-type )
  :)
 declare function atom-protocol:op-create-media(
 	$request-path-info as xs:string ,
@@ -325,33 +378,37 @@ declare function atom-protocol:op-create-media(
 {
 
 	(: check for slug to use as title :)
-	
 	let $slug := request:get-header( $CONSTANT:HEADER-SLUG )
 	
 	(: check for summary :) 
-	
 	let $summary := request:get-header( "X-Atom-Summary" )
 	
-	let $media-link-doc-db-path := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary )
+	(: create the media resource :)
+	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary )
 	
-	let $media-link-doc := doc( $media-link-doc-db-path )
-            
-    let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
-        	
+	(: set location and content-location headers :)
+    let $location := $media-link/atom:link[@rel="self"]/@href
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
     let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 
+    (: update date feed updated :)
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
         
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link-doc/atom:entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a POST request where the content-type is multipart/form-data. N.B. 
+ : this is not a standard Atom protocol operation but is a protocol extension
+ : included to enable POSTing of media resources directly from HTML forms.
+ :
+ : @param $request-path-info the path info for the current request.
+ :
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-post-multipart(
 	$request-path-info as xs:string 
@@ -393,7 +450,10 @@ declare function atom-protocol:do-post-multipart(
 			let $request-data := request:get-uploaded-file-data( "media" )
 			
             (: 
-             : Here we bottom out at the "create-media" operation.
+             : Here we bottom out at the "CREATE_MEDIA" operation. However, we
+             : will use a special implementation to support return of HTML
+             : response to requests from HTML forms for compatibility with forms
+             : submitted via JavaScript.
              :)
              
             let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-media-from-multipart-form-data" ) , 3 ) 
@@ -405,8 +465,16 @@ declare function atom-protocol:do-post-multipart(
 
 
 
-(: 
- : TODO doc me 
+(:~
+ : Special implementation of the CREATE_MEDIA operation for multipart/form-data 
+ : requests.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the data that was provided as the request entity.
+ : @param $request-media-type the media type of the media resource to be created 
+ : (should *not* be "application/atom+xml")
+ :
+ : @return a sequence like ( $response-status-code , $response-data , $response-content-type )
  :)
 declare function atom-protocol:op-create-media-from-multipart-form-data (
 	$request-path-info as xs:string ,
@@ -418,18 +486,14 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
     (: TODO bad request if expected form parts are missing :)
     
 	(: check for file name to use as title :)
-	
 	let $file-name := request:get-uploaded-file-name( "media" )
 
 	(: check for summary param :)
-	
 	let $summary := request:get-parameter( "summary" , "" )
 
-	let $media-link-doc-db-path := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary )
+	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary )
 	
-	let $media-link-doc := doc( $media-link-doc-db-path )
-            
-    let $location := $media-link-doc/atom:entry/atom:link[@rel="self"]/@href
+    let $location := $media-link/atom:link[@rel="self"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 
@@ -449,7 +513,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 		 
 		if ( $accept = "application/atom+xml" )
 		
-		then $media-link-doc/atom:entry
+		then $media-link
 	
 		else 
 		
@@ -457,7 +521,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 				<head>
 					<title>{$CONSTANT:STATUS-SUCCESS-OK}</title>
 				</head>
-				<body>{ comment { util:serialize( $media-link-doc/atom:entry , () ) } }</body>
+				<body>{ comment { util:serialize( $media-link , () ) } }</body>
 			</html>
 				
 	let $response-content-type :=
@@ -470,7 +534,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 
     let $header-content-location := 
         if ( $accept = "application/atom+xml" )
-        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link-doc/atom:entry/atom:link[@rel='self']/@href )
+        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link/atom:link[@rel='self']/@href )
         else ()
 
     (:
@@ -488,8 +552,12 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a PUT request.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : 
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-put (
 	$request-path-info as xs:string 
@@ -511,6 +579,14 @@ declare function atom-protocol:do-put (
 
 
 
+(:~
+ : Process a PUT request where the media type of the request entity is 
+ : application/atom+xml.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : 
+ : @return depends on the outcome of request processing.
+ :)
 declare function atom-protocol:do-put-atom(
 	$request-path-info as xs:string 
 ) as item()*
@@ -541,8 +617,19 @@ declare function atom-protocol:do-put-atom(
 
 
 
-(:
- : TODO doc me 
+(:~
+ : Process a PUT request where the request entity is an Atom feed document. N.B.
+ : this is not a standard Atom protocol operation, but is a protocol extension
+ : to provide a means for creating new collections. The interpretation of the 
+ : request will depend on whether a collection already exists at the given
+ : location. If it does, the feed metadata will be updated using the request
+ : data. If it does not, a new Atom collection will be created at that location.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request 
+ : entity.
+ :
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-put-atom-feed(
 	$request-path-info as xs:string ,
@@ -573,8 +660,15 @@ declare function atom-protocol:do-put-atom-feed(
 
 
 
-(: 
- : TODO doc me
+(:~
+ : Process a PUT request where the request entity is an Atom feed document and
+ : no collection exists at the given location.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request 
+ : entity.
+ :
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-put-atom-feed-to-create-collection(
 	$request-path-info as xs:string ,
@@ -583,11 +677,10 @@ declare function atom-protocol:do-put-atom-feed-to-create-collection(
 {
 
     (: 
-     : Here we bottom out at the "create-collection" operation.
+     : Here we bottom out at the "CREATE_COLLECTION" operation.
      :)
      
 	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-collection" ) , 3 )
-	
     return atom-protocol:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
         		
 };
@@ -595,8 +688,15 @@ declare function atom-protocol:do-put-atom-feed-to-create-collection(
 
 
 
-(:
- : TODO doc me
+(:~
+ : Process a PUT request where the request entity is an Atom feed document and
+ : an Atom collection already exists at the given location.
+ : 
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request 
+ : entity.
+ :
+ : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-put-atom-feed-to-update-collection(
 	$request-path-info as xs:string ,
@@ -605,12 +705,10 @@ declare function atom-protocol:do-put-atom-feed-to-update-collection(
 {
 
     (: 
-     : Here we bottom out at the "update-collection" operation, so we need to 
-     : apply a security decision.
+     : Here we bottom out at the "UPDATE_COLLECTION" operation.
      :)
 
 	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-update-collection" ) , 3 )
-	
     return atom-protocol:apply-op( $CONSTANT:OP-UPDATE-COLLECTION , $op , $request-path-info , $request-data )
 
 };
@@ -618,8 +716,15 @@ declare function atom-protocol:do-put-atom-feed-to-update-collection(
 
 
 
-(:
- : TODO doc me 
+(:~ 
+ : Implementation of the UPDATE_COLLECTION operation.
+ :
+ : @param $request-path-info the path info for the current request.
+ : @param $request-data the data that was provided as the request entity.
+ : @param $request-media-type the media type of the media resource to be created 
+ : (should be "application/atom+xml")
+ :
+ : @return a sequence like ( $response-status-code , $response-data , $response-content-type )
  :)
 declare function atom-protocol:op-update-collection(
 	$request-path-info as xs:string ,
@@ -628,10 +733,8 @@ declare function atom-protocol:op-update-collection(
 ) as item()*
 {
 
-	let $feed-doc-db-path := atomdb:update-collection( $request-path-info , $request-data )
+	let $feed := atomdb:update-collection( $request-path-info , $request-data )
 		
-	let $feed := doc( $feed-doc-db-path )/atom:feed
-            
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
@@ -750,17 +853,13 @@ declare function atom-protocol:op-update-member(
 ) as item()*
 {
     
-	let $entry-updated := atomdb:update-member( $request-path-info , $request-data )
+	let $entry := atomdb:update-member( $request-path-info , $request-data )
 	
-	let $entry := atomdb:retrieve-member( $request-path-info )
-
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
-    
-    let $etag-header-set := 
+    let $set-header-etag := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
 
     let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
-    
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
 	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
@@ -823,7 +922,7 @@ declare function atom-protocol:op-update-media(
 ) as item()*
 {
 	
-	let $media-doc-db-path := atomdb:update-media-resource( $request-path-info , $request-data , $request-content-type )
+	let $media-link := atomdb:update-media-resource( $request-path-info , $request-data , $request-content-type )
 	
     let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
     
@@ -831,29 +930,9 @@ declare function atom-protocol:op-update-media(
     
     (: return the media-link entry :)
     
-    let $media-link-entry := atomdb:get-media-link( $request-path-info )
-    
-    let $content-location-header-set := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link-entry/atom:link[@rel='edit']/@href )
+    let $set-header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link/atom:link[@rel='edit']/@href )
 
-    return ( $CONSTANT:STATUS-SUCCESS-OK , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )
-
-(:
-    
-    let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
-    
-    let $mime-type := atomdb:get-mime-type( $request-path-info )
-    
-    let $media-link := atomdb:get-media-link( $request-path-info )
-    let $title := $media-link/atom:title
-    let $content-disposition :=
-    	if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
-    	else ()
-    
-    let $response-stream := response:stream-binary( atomdb:retrieve-media( $request-path-info ) , $mime-type )
-	
-	return ( () , () , () )
-
-:)
+    return ( $CONSTANT:STATUS-SUCCESS-OK , $media-link , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
@@ -871,15 +950,15 @@ declare function atom-protocol:do-get(
 
 	if ( atomdb:media-resource-available( $request-path-info ) )
 	
-	then atom-protocol:do-get-media( $request-path-info )
+	then atom-protocol:do-get-media-resource( $request-path-info )
 	
 	else if ( atomdb:member-available( $request-path-info ) )
 	
-	then atom-protocol:do-get-entry( $request-path-info )
+	then atom-protocol:do-get-member( $request-path-info )
 	
 	else if ( atomdb:collection-available( $request-path-info ) )
 	
-	then atom-protocol:do-get-feed( $request-path-info )
+	then atom-protocol:do-get-collection( $request-path-info )
 
 	else atom-protocol:do-not-found( $request-path-info )
 	
@@ -891,7 +970,7 @@ declare function atom-protocol:do-get(
 (:
  : TODO doc me
  :)
-declare function atom-protocol:do-get-entry(
+declare function atom-protocol:do-get-member(
 	$request-path-info
 ) as item()*
 {
@@ -998,7 +1077,7 @@ declare function atom-protocol:op-retrieve-member(
 (:
  : TODO doc me
  :)
-declare function atom-protocol:do-get-media(
+declare function atom-protocol:do-get-media-resource(
 	$request-path-info
 )
 {
@@ -1049,7 +1128,7 @@ declare function atom-protocol:op-retrieve-media(
 
 
 
-declare function atom-protocol:do-get-feed(
+declare function atom-protocol:do-get-collection(
 	$request-path-info
 )
 {
