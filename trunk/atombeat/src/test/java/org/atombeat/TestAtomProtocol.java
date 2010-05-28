@@ -1,7 +1,9 @@
 package org.atombeat;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
@@ -1474,6 +1476,61 @@ public class TestAtomProtocol extends TestCase {
 		assertEquals(1, entries4.getLength());
 		
 	}
+	
+	
+	
+	
+	public void testPutEntryCausesNoMangle() {
+		
+		// setup test
+		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
+
+		// now put an updated entry document using a PUT request
+		PutMethod put1 = new PutMethod(location);
+		InputStream content1 = this.getClass().getClassLoader().getResourceAsStream("entry1.xml");
+		String contentType = "application/atom+xml";
+		setInputStreamRequestEntity(put1, content1, contentType);
+		int result1 = executeMethod(put1);
+
+		// expect the status code is 200 OK - we just did an update, no creation
+		assertEquals(200, result1);
+		
+		Document d1 = getResponseBodyAsDocument(put1);
+
+		// now put an updated entry document using a PUT request
+		PutMethod put2 = new PutMethod(location);
+		InputStream content2 = this.getClass().getClassLoader().getResourceAsStream("entry1.xml");
+		setInputStreamRequestEntity(put2, content2, contentType);
+		int result2 = executeMethod(put2);
+
+		// expect the status code is 200 OK - we just did an update, no creation
+		assertEquals(200, result2);
+
+		Document d2 = getResponseBodyAsDocument(put2);
+		
+		assertEquals( d1.getDocumentElement().getChildNodes().getLength(), d2.getDocumentElement().getChildNodes().getLength());
+		
+		// now put an updated entry document using a PUT request
+		PutMethod put3 = new PutMethod(location);
+		InputStream content3 = this.getClass().getClassLoader().getResourceAsStream("entry1.xml");
+		setInputStreamRequestEntity(put3, content3, contentType);
+		int result3 = executeMethod(put3);
+
+		// expect the status code is 200 OK - we just did an update, no creation
+		assertEquals(200, result3);
+
+		Document d3 = getResponseBodyAsDocument(put3);
+		
+		assertEquals( d1.getDocumentElement().getChildNodes().getLength(), d3.getDocumentElement().getChildNodes().getLength());
+		assertEquals( d2.getDocumentElement().getChildNodes().getLength(), d3.getDocumentElement().getChildNodes().getLength());
+		
+		
+		
+
+	}
+
+	
 	
 }
 

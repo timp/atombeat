@@ -75,7 +75,7 @@ declare function exp:do-get-entry(
 	let $log := util:log( "debug" , "== exp:do-get-entry() ==" )
 	let $log := util:log( "debug" , $request-path-info )
 
-    let $entry := atomdb:retrieve-entry( $request-path-info )
+    let $entry := atomdb:retrieve-member( $request-path-info )
     
     return exp:default-expansion( $entry )
     
@@ -100,7 +100,7 @@ declare function exp:default-expansion(
             then 
                 let $entry-path-info := substring-after( $link/@href , $config:service-url )
                 (: TODO security - only inline if allowed to retrieve :)
-                let $entry := atomdb:retrieve-entry( $entry-path-info )
+                let $entry := atomdb:retrieve-member( $entry-path-info )
                 return 
                     <atom:link>
                     {
