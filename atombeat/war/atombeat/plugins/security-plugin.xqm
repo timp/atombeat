@@ -205,7 +205,7 @@ declare function sp:after-create-member(
 	let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $entry-doc-db-path )
 	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
 	
-    let $response-data := sp:append-descriptor-links( $request-path-info , $response-data )
+    let $response-data := sp:augment-entry( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -220,7 +220,7 @@ declare function sp:after-update-member(
 ) as item()*
 {
 
-    let $response-data := sp:append-descriptor-links( $request-path-info , $response-data )
+    let $response-data := sp:augment-entry( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -265,7 +265,7 @@ declare function sp:after-create-media(
     (: need to workaround html response for create media with multipart request :)
     let $response-data := 
         if ( starts-with( $response-content-type , $CONSTANT:MEDIA-TYPE-ATOM ) )
-        then sp:append-descriptor-links( $entry-path-info , $response-data )
+        then sp:augment-entry( $entry-path-info , $response-data )
         else $response-data
 
     return ( $response-data , $response-content-type )
@@ -283,7 +283,7 @@ declare function sp:after-update-media(
 
     let $response-data := 
         if ( starts-with( $response-content-type , $CONSTANT:MEDIA-TYPE-ATOM ) )
-        then sp:append-descriptor-links( $request-path-info , $response-data )
+        then sp:augment-entry( $request-path-info , $response-data )
         else $response-data
 
     return ( $response-data , $response-content-type )
@@ -354,7 +354,7 @@ declare function sp:after-retrieve-member(
 
 	let $log := local:debug("== sp:after-retrieve-member ==" )
 
-    let $response-data := sp:append-descriptor-links( $request-path-info , $response-data )
+    let $response-data := sp:augment-entry( $request-path-info , $response-data )
 
 	return ( $response-data , $response-content-type )
 
@@ -363,7 +363,7 @@ declare function sp:after-retrieve-member(
 
 
 
-declare function sp:append-descriptor-links(
+declare function sp:augment-entry(
     $request-path-info as xs:string ,
     $response-data as element(atom:entry)
 ) as element(atom:entry)
@@ -507,11 +507,7 @@ declare function sp:filter-feed-by-permissions(
                     let $forbidden := atomsec:is-denied( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
                     return 
                         if ( not( $forbidden ) ) 
-                        then 
-                            let $can-update-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () )
-                            return
-                                if ( $can-update-descriptor ) then sp:append-descriptor-links( $entry-path-info , $entry ) 
-                                else $entry
+                        then sp:augment-entry( $entry-path-info , $entry ) 
                         else ()
                 }
             </atom:feed>
