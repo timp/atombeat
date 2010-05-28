@@ -226,12 +226,12 @@ declare function atomdb:create-collection(
 
 
 declare function atomdb:update-collection(
-	$request-path-info as xs:string ,
+	$collection-path-info as xs:string ,
 	$request-data as element(atom:feed)
-) as xs:string
+) as element(atom:feed)?
 {
 
-	if ( not( atomdb:collection-available( $request-path-info ) ) )
+	if ( not( atomdb:collection-available( $collection-path-info ) ) )
 	
 	then ()
 	
@@ -242,7 +242,7 @@ declare function atomdb:update-collection(
 		 : e.g., "/db/foo".
 		 :)
 		 
-		let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+		let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
 
 		let $collection-db-path := xutil:get-or-create-collection( $collection-db-path )
 
@@ -256,7 +256,9 @@ declare function atomdb:update-collection(
 
 		let $feed := atomdb:update-feed( doc( $feed-doc-db-path )/atom:feed , $request-data )
 		
-		return xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
+		let $store := xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
+		
+		return atomdb:retrieve-feed( $collection-path-info )
 			
 };
 
@@ -318,7 +320,7 @@ declare function atomdb:generate-member-identifier(
 declare function atomdb:create-member(
 	$collection-path-info as xs:string ,
 	$request-data as element(atom:entry) 
-) as xs:string?
+) as element(atom:entry)?
 {
 
 	if ( not( atomdb:collection-available( $collection-path-info ) ) )
@@ -342,7 +344,7 @@ declare function atomdb:create-member(
 		 
         let $entry-doc-db-path := atomdb:store-member( $collection-path-info , concat( $member-id , ".atom" ) , $entry )
         
-	    return $entry-doc-db-path
+	    return doc( $entry-doc-db-path )/atom:entry
 		
 };
 
@@ -370,12 +372,12 @@ declare function atomdb:store-member(
  : 
  : @param $member-path-info the path info identifying the member to be updated.
  : @param $request-data the Atom entry data to use to update the member.
- : @return the eXist database path where the entry is stored, or empty if no member is available at that location.
+ : @return the updated Atom entry, or empty if no member is available at that location.
  :)
 declare function atomdb:update-member(
 	$member-path-info as xs:string ,
 	$request-data as element(atom:entry) 
-) as xs:string?
+) as element(atom:entry)?
 {
 
 	if ( not( atomdb:member-available( $member-path-info ) ) )
@@ -398,9 +400,9 @@ declare function atomdb:update-member(
 		let $collection-path-info := $groups[2]
 		let $entry-resource-name := $groups[3]
 		
-		let $entry-db-path := atomdb:store-member( $collection-path-info , $entry-resource-name , $new )
+		let $entry-doc-db-path := atomdb:store-member( $collection-path-info , $entry-resource-name , $new )
 
-		return $entry-db-path
+		return doc( $entry-doc-db-path )/atom:entry
 
 };
 
@@ -737,7 +739,7 @@ declare function atomdb:create-media-resource(
 	$media-type as xs:string ,
 	$media-link-title as xs:string? ,
 	$media-link-summary as xs:string? 
-) as xs:string
+) as element(atom:entry)?
 {
 
 	let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
@@ -752,7 +754,7 @@ declare function atomdb:create-media-resource(
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
-    return $media-link-entry-doc-db-path
+    return doc( $media-link-entry-doc-db-path )/atom:entry
 	 
 };
 
@@ -763,7 +765,7 @@ declare function atomdb:update-media-resource(
 	$request-path-info as xs:string , 
 	$request-data as xs:base64Binary , 
 	$request-content-type as xs:string
-) as xs:string
+) as element(atom:entry)?
 {
 
 	if ( not( atomdb:media-resource-available( $request-path-info ) ) )
@@ -809,43 +811,24 @@ declare function atomdb:update-media-resource(
 			
 		let $media-link-updated := xmldb:store( $collection-db-path , $media-link-doc-name , $media-link )
 	
-		return $media-doc-db-path
+		return doc( $media-link-doc-db-path )/atom:entry
 };
 
 
 
 
 declare function atomdb:retrieve-feed(
-	$request-path-info as xs:string 
-) as element(atom:feed)
+	$collection-path-info as xs:string 
+) as element(atom:feed)?
 {
 	
-	if ( not( atomdb:collection-available( $request-path-info ) ) )
+	if ( not( atomdb:collection-available( $collection-path-info ) ) )
 	
 	then ()
 	
 	else
 	
-		(:
-		 : Map the request path info, e.g., "/foo", to a database collection path,
-		 : e.g., "/db/foo".
-		 :)
-		
-		let $log := util:log( "debug" , $request-path-info )
-		let $db-collection-path := atomdb:request-path-info-to-db-path( $request-path-info )
-		let $log := util:log( "debug" , $db-collection-path )
-	
-		(:
-		 : Obtain the database path for the atom feed document in the given database
-		 : collection. Currently, this appends ".feed" to the database collection
-		 : path.
-		 :)
-		 
-		let $feed-doc-db-path := atomdb:feed-doc-db-path( $db-collection-path )
-		let $log := util:log( "debug" , $feed-doc-db-path )
-
-        let $feed := doc( $feed-doc-db-path )/atom:feed
-        let $log := util:log( "debug" , $feed )
+        let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
 		
 		let $complete-feed :=
 		
@@ -854,7 +837,7 @@ declare function atomdb:retrieve-feed(
 				$feed/attribute::* ,
 				$feed/child::* ,
 				let $recursive := xs:boolean( $feed/@atombeat:recursive )
-				let $entries := atomdb:get-entries( $db-collection-path , $recursive )
+				let $entries := atomdb:retrieve-members( $collection-path-info , $recursive )
 				return
 				    for $entry in $entries
     				order by $entry/atom:updated descending
@@ -874,15 +857,52 @@ declare function atomdb:retrieve-feed(
 
 
 
-declare function atomdb:get-entries(
-    $db-collection-path as xs:string ,
+declare function atomdb:retrieve-feed-without-entries(
+	$collection-path-info as xs:string 
+) as element(atom:feed)?
+{
+	
+	if ( not( atomdb:collection-available( $collection-path-info ) ) )
+	
+	then ()
+	
+	else
+	
+		(:
+		 : Map the request path info, e.g., "/foo", to a database collection path,
+		 : e.g., "/db/atom/content/foo".
+		 :)
+		
+		let $db-collection-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+	
+		(:
+		 : Obtain the database path for the atom feed document in the given database
+		 : collection. Currently, this appends ".feed" to the database collection
+		 : path.
+		 :)
+		 
+		let $feed-doc-db-path := atomdb:feed-doc-db-path( $db-collection-path )
+
+        let $feed := doc( $feed-doc-db-path )/atom:feed
+		
+		return $feed
+
+};
+
+
+
+
+declare function atomdb:retrieve-members(
+    $collection-path-info as xs:string ,
     $recursive as xs:boolean?
 ) as element(atom:entry)*
 {
-
-    if ( $recursive )
-    then collection( $db-collection-path )/atom:entry (: recursive :)
-    else xmldb:xcollection( $db-collection-path )/atom:entry (: not recursive :)
+    
+    let $db-collection-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+    return
+        if ( $recursive )
+        then collection( $db-collection-path )/atom:entry (: recursive :)
+        else xmldb:xcollection( $db-collection-path )/atom:entry (: not recursive :)
 
 };
 
