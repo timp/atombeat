@@ -1,0 +1,41 @@
+<atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+
+	<atombeat:groups>
+	
+		<atombeat:group id="GROUP_ADMINISTRATORS">
+			<atombeat:member>alice</atombeat:member>
+			<atombeat:member>bob</atombeat:member>
+		</atombeat:group>	
+
+		<atombeat:group id="GROUP_FOO" src="http://localhost:8081/atombeat/atombeat/content/foo/bar.atom"/>
+		
+	</atombeat:groups>
+	
+	<atombeat:acl>
+	
+		<atombeat:ace>
+			<atombeat:type>ALLOW</atombeat:type>
+			<atombeat:permission>LIST_COLLECTION</atombeat:permission>
+			<atombeat:recipient type="user">alice</atombeat:recipient>
+			<atombeat:conditions/>
+		</atombeat:ace>
+
+		<atombeat:ace>
+			<atombeat:type>ALLOW</atombeat:type>
+			<atombeat:permission>CREATE_MEDIA</atombeat:permission>
+			<atombeat:recipient type="group">GROUP_ADMINISTRATORS</atombeat:recipient>
+			<atombeat:conditions>
+				<atombeat:condition type="mediarange">text/*</atombeat:condition>
+			</atombeat:conditions>
+		</atombeat:ace>
+
+		<atombeat:ace>
+			<atombeat:type>ALLOW</atombeat:type>
+			<atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
+			<atombeat:recipient type="role">ROLE_CURATOR</atombeat:recipient>
+			<atombeat:conditions/>
+		</atombeat:ace>
+
+	</atombeat:acl>
+
+</atombeat:security-descriptor>
