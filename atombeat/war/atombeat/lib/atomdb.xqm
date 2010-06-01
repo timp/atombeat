@@ -526,7 +526,7 @@ declare function atomdb:create-feed(
 
     (: TODO validate input data :)
     
-    let $id := concat( $config:service-url , $request-path-info )
+    let $id := concat( $config:content-service-url , $request-path-info )
     let $updated := current-dateTime()
     let $self-uri := $id
     let $edit-uri := $id
@@ -602,7 +602,7 @@ declare function atomdb:create-entry(
 ) as element(atom:entry)
 {
 
-    let $id := concat( $config:service-url , $request-path-info , "/" , $member-id , ".atom" )
+    let $id := concat( $config:content-service-url , $request-path-info , "/" , $member-id , ".atom" )
     let $published := current-dateTime()
     let $updated := $published
     let $self-uri := $id
@@ -649,14 +649,14 @@ declare function atomdb:create-media-link-entry(
 ) as element(atom:entry)
 {
 
-    let $id := concat( $config:service-url , $request-path-info , "/" , $member-id , ".atom" )
+    let $id := concat( $config:content-service-url , $request-path-info , "/" , $member-id , ".atom" )
     let $log := util:log( "debug", $id )
     
     let $published := current-dateTime()
     let $updated := $published
     let $self-uri := $id
     let $edit-uri := $id
-    let $media-uri := concat( $config:service-url , $request-path-info , "/" , $member-id , ".media" )
+    let $media-uri := concat( $config:content-service-url , $request-path-info , "/" , $member-id , ".media" )
     
     (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
     let $user-name := request:get-attribute( $config:user-name-request-attribute-key )

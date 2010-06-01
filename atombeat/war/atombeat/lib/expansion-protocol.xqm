@@ -96,9 +96,9 @@ declare function exp:default-expansion(
         return $child ,
         for $link in $entry/atom:link
         return
-            if ( starts-with( $link/@href , $config:service-url ) )
+            if ( starts-with( $link/@href , $config:content-service-url ) )
             then 
-                let $entry-path-info := substring-after( $link/@href , $config:service-url )
+                let $entry-path-info := substring-after( $link/@href , $config:content-service-url )
                 (: TODO security - only inline if allowed to retrieve :)
                 let $entry := atomdb:retrieve-member( $entry-path-info )
                 return 

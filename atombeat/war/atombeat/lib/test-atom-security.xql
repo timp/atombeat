@@ -21,9 +21,9 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 declare variable $test-collection-path as xs:string := "/test-security" ;
 declare variable $test-member-name as xs:string := "test-member.atom" ;
 declare variable $test-member-path as xs:string := concat( $test-collection-path , "/" , $test-member-name ) ;
-declare variable $workspace-uri := concat( $config:service-url , "/" ) ;
-declare variable $test-collection-uri := concat( $config:service-url , $test-collection-path ) ; 
-declare variable $test-member-uri := concat( $config:service-url , $test-member-path ) ;
+declare variable $workspace-uri := concat( $config:content-service-url , "/" ) ;
+declare variable $test-collection-uri := concat( $config:content-service-url , $test-collection-path ) ; 
+declare variable $test-member-uri := concat( $config:content-service-url , $test-member-path ) ;
 
 
 
