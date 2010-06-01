@@ -259,7 +259,7 @@ declare function ah:construct-entry-base-revision(
 		else ()
 
 	let $current-revision-href :=
-		concat( $config:service-url , $request-path-info )
+		concat( $config:content-service-url , $request-path-info )
 
 	let $initial-revision-href := $this-revision-href
 
@@ -323,7 +323,7 @@ declare function ah:construct-entry-specified-revision(
 		else ()
 		
 	let $current-revision-href :=
-		concat( $config:service-url , $request-path-info )
+		concat( $config:content-service-url , $request-path-info )
 
 	let $initial-revision-href :=
 		concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( 1 ) )	

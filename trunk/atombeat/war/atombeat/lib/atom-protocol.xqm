@@ -300,7 +300,7 @@ declare function atom-protocol:op-create-member(
     let $set-header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 	
 	(: set the etag header :)
-    let $entry-path-info := substring-after( $location , $config:service-url )
+    let $entry-path-info := substring-after( $location , $config:content-service-url )
     let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
     let $set-header-etag := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()

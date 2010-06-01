@@ -381,7 +381,7 @@ declare function hp:append-history-link (
 	let $self-uri := $response-entry/atom:link[@rel="self"]/@href
 	let $log := util:log( "debug" , concat( "$self-uri: " , $self-uri ) )
 	
-	let $entry-path-info := substring-after( $self-uri , $config:service-url )
+	let $entry-path-info := substring-after( $self-uri , $config:content-service-url )
 	let $log := util:log( "debug" , concat( "$entry-path-info: " , $entry-path-info ) )
 	
     let $collection-path-info := text:groups( $entry-path-info , "^(.+)/[^/]+$" )[2]

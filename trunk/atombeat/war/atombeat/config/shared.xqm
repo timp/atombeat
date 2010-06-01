@@ -10,21 +10,24 @@ import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 
 
+declare variable $config:service-url-base as xs:string := "http://localhost:8081/atombeat/atombeat" ;
+
+
 (:
  : The base URL for the Atom service. This URL will be prepended to all edit
  : and self link href values.
  :)
-declare variable $config:service-url as xs:string := "http://localhost:8081/atombeat/atombeat/content" ;
+declare variable $config:content-service-url as xs:string := concat( $config:service-url-base , "/content" ) ;
 
 
 (:
  : The base URL for the History service. This URL will be prepended to all 
  : history link href values.
  :)
-declare variable $config:history-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/history" ;
+declare variable $config:history-service-url as xs:string := concat( $config:service-url-base , "/history" ) ;
  
 
-declare variable $config:security-service-url as xs:string := "http://localhost:8081/atombeat/atombeat/security" ;
+declare variable $config:security-service-url as xs:string := concat( $config:service-url-base , "/security" ) ;
 
 
 (:

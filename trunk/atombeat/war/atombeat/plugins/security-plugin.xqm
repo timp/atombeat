@@ -195,7 +195,7 @@ declare function sp:after-create-member(
 	let $entry-uri := $response-data/atom:link[@rel="edit"]/@href
 	let $log := local:debug( concat( "$entry-uri: " , $entry-uri ) )
 	
-	let $entry-path-info := substring-after( $entry-uri , $config:service-url )
+	let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
 	let $log := local:debug( concat( "$entry-path-info: " , $entry-path-info ) )
 
 	let $entry-doc-db-path := atomdb:request-path-info-to-db-path( $entry-path-info )
@@ -239,7 +239,7 @@ declare function sp:after-create-media(
     let $entry-uri := $response-data/atom:link[@rel="edit"]/@href
     let $log := local:debug( concat( "$entry-uri: " , $entry-uri ) )
     
-    let $entry-path-info := substring-after( $entry-uri , $config:service-url )
+    let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
     let $log := local:debug( concat( "$entry-path-info: " , $entry-path-info ) )
 
     let $entry-doc-db-path := atomdb:request-path-info-to-db-path( $entry-path-info )
@@ -252,7 +252,7 @@ declare function sp:after-create-media(
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     let $log := local:debug( concat( "$media-uri: " , $media-uri ) )
     
-    let $media-path-info := substring-after( $media-uri , $config:service-url )
+    let $media-path-info := substring-after( $media-uri , $config:content-service-url )
     let $log := local:debug( concat( "$media-path-info: " , $media-path-info ) )
 
     let $media-resource-db-path := atomdb:request-path-info-to-db-path( $media-path-info )
@@ -372,9 +372,9 @@ declare function sp:augment-entry(
     (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
     let $entry-uri := $response-data/atom:link[@rel="self"]/@href
-    let $entry-path-info := substring-after( $entry-uri , $config:service-url )
+    let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
-    let $media-path-info := substring-after( $media-uri , $config:service-url )
+    let $media-path-info := substring-after( $media-uri , $config:content-service-url )
 
     let $can-retrieve-member := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
     let $can-update-member := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER , $entry-path-info , () )
@@ -502,7 +502,7 @@ declare function sp:filter-feed-by-permissions(
                     $feed/child::*[ not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI ) ] ,
                     $descriptor-link ,
                     for $entry in $feed/atom:entry
-                    let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:service-url )
+                    let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:content-service-url )
                     let $log := local:debug( concat( "checking permission to retrieve member for entry-path-info: " , $entry-path-info ) )
                     let $forbidden := atomsec:is-denied( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
                     return 

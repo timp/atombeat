@@ -482,7 +482,7 @@ declare function atomsec:dereference-group(
 ) as element(group)?
 {
     
-    let $src := substring-after( $src , $config:service-url )
+    let $src := substring-after( $src , $config:content-service-url )
     
     let $descriptor :=
         if ( $src = "/" )
