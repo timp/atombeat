@@ -499,6 +499,7 @@ declare function atomdb:mutable-feed-children(
 
 
 declare function atomdb:mutable-entry-children(
+    $request-path-info as xs:string ,
     $request-data as element(atom:entry)
 ) as element()*
 {
@@ -513,6 +514,7 @@ declare function atomdb:mutable-entry-children(
         and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" )
         and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit-media" )
         and not( $config:auto-author and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-AUTHOR )
+        and not( atomdb:media-link-available( $request-path-info ) and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-CONTENT )
     return $child
 };
 
@@ -607,6 +609,7 @@ declare function atomdb:create-entry(
     let $updated := $published
     let $self-uri := $id
     let $edit-uri := $id
+    let $path-info := substring-after( $id , $config:content-service-url )
     
     (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
     let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
@@ -631,7 +634,7 @@ declare function atomdb:create-entry(
             else ()
         }
         {
-            atomdb:mutable-entry-children($request-data)
+            atomdb:mutable-entry-children( $path-info , $request-data )
         }
         </atom:entry>  
      
@@ -712,6 +715,7 @@ declare function atomdb:update-entry(
     
     let $updated := current-dateTime()
     let $log := util:log( "debug" , concat( "$updated: " , $updated ) )
+    let $path-info := substring-after( $entry/atom:link[@rel='edit']/@href , $config:content-service-url )
 
     return
     
@@ -726,7 +730,8 @@ declare function atomdb:update-entry(
                 $entry/atom:link[@rel="edit"] ,
                 $entry/atom:link[@rel="edit-media"] ,
                 if ( $config:auto-author ) then $entry/atom:author else () ,
-                atomdb:mutable-entry-children($request-data)
+                if ( atomdb:media-link-available( $path-info ) ) then $entry/atom:content else () ,
+                atomdb:mutable-entry-children( $path-info , $request-data )
             }
         </atom:entry>  
 };

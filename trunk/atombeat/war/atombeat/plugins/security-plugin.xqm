@@ -76,6 +76,24 @@ declare function sp:before(
     			let $status-code := 0 (: we don't want to interrupt request processing :)
     			return ( $status-code , $request-data )
     			
+            else if (
+                $operation = $CONSTANT:OP-MULTI-CREATE
+            )
+            
+            then 
+
+                (: TODO check permissions to retrieve media locally :)
+                
+                let $request-data := 
+                    <atom:feed>
+                    {
+                        for $entry in $request-data/atom:entry
+                        return sp:strip-descriptor-links( $entry )
+                    }
+                    </atom:feed>
+    			let $status-code := 0 (: we don't want to interrupt request processing :)
+    			return ( $status-code , $request-data )
+    			
     		else
     		
     			let $status-code := 0 (: we don't want to interrupt request processing :)

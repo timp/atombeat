@@ -10,6 +10,7 @@ public class AllTests {
 				"All AtomBeat Protocol Tests");
 		//$JUnit-BEGIN$
 		suite.addTestSuite(TestAtomProtocol.class);
+		suite.addTestSuite(TestAtomProtocolExtensions.class);
 		suite.addTestSuite(TestHistoryProtocol.class);
 		suite.addTestSuite(TestAtomProtocolWithDefaultSecurity.class);
 		suite.addTestSuite(TestSecurityProtocol.class);

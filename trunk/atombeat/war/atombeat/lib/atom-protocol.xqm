@@ -123,7 +123,10 @@ declare function atom-protocol:do-post-atom(
 ) as item()*
 {
 
+	let $log := local:debug( "== do-post-atom ==" )
+
 	let $request-data := request:get-data()
+	let $log := local:debug( $request-data )
 
 	return
 	
@@ -188,7 +191,16 @@ declare function atom-protocol:do-post-atom-feed(
 			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-collection" ) , 3 )
 			return atom-protocol:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
 		
-		else atom-protocol:do-bad-request( $request-path-info , "A collection already exists at the given location." )
+(:		else atom-protocol:do-bad-request( $request-path-info , "A collection already exists at the given location." ) :)
+
+        else 
+        
+            (:
+             : EXPERIMENTAL - here we bottom out at the "MULTI_CREATE" operation
+             :)
+             
+			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-multi-create" ) , 3 )
+			return atom-protocol:apply-op( $CONSTANT:OP-MULTI-CREATE , $op , $request-path-info , $request-data )
         	
 };
 
@@ -217,13 +229,65 @@ declare function atom-protocol:op-create-collection(
 
 	let $feed := atomdb:retrieve-feed( $request-path-info )
             
-	let $set-header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
-	
     let $location := $feed/atom:link[@rel="self"]/@href
         	
 	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 
 	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
+
+};
+
+
+
+
+(:~ 
+ : EXPERIMENTAL - Implementation of the MULTI_CREATE operation.
+ : 
+ : @param $collection-path-info the path info for the current request.
+ : @param $request-data the Atom feed document that was provided as the request 
+ : entity.
+ : @param $request-media-type the media type of the current request (should be 
+ : "application/atom+xml")
+ : 
+ : @return a sequence like ( $response-status-code , $response-data , $response-content-type )
+ :)
+declare function atom-protocol:op-multi-create(
+	$collection-path-info as xs:string ,
+	$request-data as element(atom:feed) ,
+	$request-media-type as xs:string?
+) as item()*
+{
+
+    (:
+     : Iterate through the entries in the supplied feed, creating a member for
+     : each.
+     :)
+
+    let $response :=
+        <atom:feed>
+        {
+            for $entry in $request-data/atom:entry
+            let $edit-media-location := $entry/atom:link[@rel='edit-media']/@href
+            let $media-path-info := substring-after( $edit-media-location , $config:content-service-url )
+            let $local-media-available := 
+                if ( exists( $media-path-info ) ) then atomdb:media-resource-available( $media-path-info )
+                else false()
+            return 
+                if ( $local-media-available )
+                then
+                    (: media is local, attempt to copy :)
+                    let $media := atomdb:retrieve-media( $media-path-info )
+                    let $media-type := $entry/atom:link[@rel='edit-media']/@type
+                    let $media-link := atomdb:create-media-resource( $collection-path-info , $media , $media-type , () , () )
+                    let $media-link-path-info := substring-after( $media-link/atom:link[@rel='edit']/@href , $config:content-service-url )
+                    let $media-link := atomdb:update-member( $media-link-path-info , $entry )
+                    return $media-link
+                else atomdb:create-member( $collection-path-info , $entry )
+        }
+        </atom:feed>
+        
+
+	return ( $CONSTANT:STATUS-SUCCESS-OK , $response , $CONSTANT:MEDIA-TYPE-ATOM )
 
 };
 
@@ -1475,30 +1539,32 @@ declare function atom-protocol:send-error(
 		<error>
 		    <status>{$status-code}</status>
 			<content>{$content}</content>
-			<method>{request:get-method()}</method>
-			<path-info>{$request-path-info}</path-info>
-			<parameters>
-			{
-				for $parameter-name in request:get-parameter-names()
-				return
-				    <parameter>
-				        <name>{$parameter-name}</name>
-				        <value>{request:get-parameter( $parameter-name , "" )}</value>						
-					</parameter>
-			}
-			</parameters>
-			<headers>
-			{
-				for $header-name in request:get-header-names()
-				return
-				    <header>
-				        <name>{$header-name}</name>
-				        <value>{request:get-header( $header-name )}</value>						
-					</header>
-			}
-			</headers>
-			<user>{request:get-attribute($config:user-name-request-attribute-key)}</user>
-			<roles>{string-join(request:get-attribute($config:user-roles-request-attribute-key), " ")}</roles>
+			<request>
+    			<method>{request:get-method()}</method>
+    			<path-info>{$request-path-info}</path-info>
+    			<parameters>
+    			{
+    				for $parameter-name in request:get-parameter-names()
+    				return
+    				    <parameter>
+    				        <name>{$parameter-name}</name>
+    				        <value>{request:get-parameter( $parameter-name , "" )}</value>						
+    					</parameter>
+    			}
+    			</parameters>
+    			<headers>
+    			{
+    				for $header-name in request:get-header-names()
+    				return
+    				    <header>
+    				        <name>{$header-name}</name>
+    				        <value>{request:get-header( $header-name )}</value>						
+    					</header>
+    			}
+    			</headers>
+    			<user>{request:get-attribute($config:user-name-request-attribute-key)}</user>
+    			<roles>{string-join(request:get-attribute($config:user-roles-request-attribute-key), " ")}</roles>
+            </request>    		
 		</error>
 			
 	return $response

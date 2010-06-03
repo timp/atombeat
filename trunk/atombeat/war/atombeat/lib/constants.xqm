@@ -63,3 +63,4 @@ declare variable $CONSTANT:OP-UPDATE-MEDIA as xs:string          := "UPDATE_MEDI
 declare variable $CONSTANT:OP-DELETE-MEDIA as xs:string          := "DELETE_MEDIA" ;
 declare variable $CONSTANT:OP-RETRIEVE-ACL as xs:string          := "RETRIEVE_ACL" ;
 declare variable $CONSTANT:OP-UPDATE-ACL as xs:string            := "UPDATE_ACL" ;
+declare variable $CONSTANT:OP-MULTI-CREATE as xs:string          := "MULTI_CREATE" ;
