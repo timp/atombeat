@@ -301,6 +301,12 @@ public class AtomTestUtils {
 	
 	
 	
+	public static String getEditMediaLocation(Element mediaLinkEntry) {
+		return getLinkHref(mediaLinkEntry, "edit-media");
+	}
+	
+	
+	
 	public static String getEditLocation(Document entryDoc) {
 		return getLinkHref(entryDoc, "edit");
 	}
@@ -395,6 +401,17 @@ public class AtomTestUtils {
 	public static Element getContent(Document doc) {
 		
 		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
+		Element e = (Element) nodes.item(0);
+		return e;
+		
+	}
+	
+	
+	
+	
+	public static Element getContent(Element elm) {
+		
+		NodeList nodes = elm.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
 		Element e = (Element) nodes.item(0);
 		return e;
 		

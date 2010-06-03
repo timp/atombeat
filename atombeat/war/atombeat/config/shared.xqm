@@ -188,6 +188,11 @@ declare variable $config:default-workspace-security-descriptor :=
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
                 <atombeat:permission>UPDATE_ACL</atombeat:permission>
             </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                <atombeat:permission>MULTI_CREATE</atombeat:permission>
+            </atombeat:ace>
             <!-- you could also use a wildcard -->
             <!--
             <atombeat:ace>
