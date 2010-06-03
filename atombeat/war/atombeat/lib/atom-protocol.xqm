@@ -278,7 +278,7 @@ declare function atom-protocol:op-multi-create(
                     (: media is local, attempt to copy :)
                     let $media := atomdb:retrieve-media( $media-path-info )
                     let $media-type := $entry/atom:link[@rel='edit-media']/@type
-                    let $media-link := atomdb:create-media-resource( $collection-path-info , $media , $media-type , () , () )
+                    let $media-link := atomdb:create-media-resource( $collection-path-info , $media , $media-type )
                     let $media-link-path-info := substring-after( $media-link/atom:link[@rel='edit']/@href , $config:content-service-url )
                     let $media-link := atomdb:update-member( $media-link-path-info , $entry )
                     return $media-link
@@ -447,8 +447,11 @@ declare function atom-protocol:op-create-media(
 	(: check for summary :) 
 	let $summary := request:get-header( "X-Atom-Summary" )
 	
+	(: check for category :) 
+	let $category := request:get-header( "X-Atom-Category" )
+	
 	(: create the media resource :)
-	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary )
+	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary , $category )
 	
 	(: set location and content-location headers :)
     let $location := $media-link/atom:link[@rel="self"]/@href
@@ -554,8 +557,11 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 
 	(: check for summary param :)
 	let $summary := request:get-parameter( "summary" , "" )
-
-	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary )
+	
+	(: check for category param :)
+	let $category := request:get-parameter( "category" , "" )
+ 
+	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary , $category )
 	
     let $location := $media-link/atom:link[@rel="self"]/@href
         	
