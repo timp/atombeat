@@ -947,7 +947,13 @@ public class TestAtomProtocol extends TestCase {
 		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
-		PostMethod post = createMultipartRequest(collectionUri);
+		PostMethod post = new PostMethod(collectionUri);
+		File file = new File(this.getClass().getClassLoader().getResource("spreadsheet1.xls").getFile());
+		FilePart fp = createFilePart(file, "spreadsheet1.xls", "application/vnd.ms-excel", "media");
+		StringPart sp1 = new StringPart("summary", "this is a great spreadsheet");
+		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
+		Part[] parts = { fp , sp1 , sp2 };
+		setMultipartRequestEntity(post, parts);
 		post.setRequestHeader("Accept", "application/atom+xml");
 		int result = executeMethod(post);
 		
@@ -965,7 +971,22 @@ public class TestAtomProtocol extends TestCase {
 		String responseContentType = post.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
 		assertTrue(responseContentType.trim().startsWith("application/atom+xml"));
+
+		// check additional parts are used
+		Document d = getResponseBodyAsDocument(post);
 		
+		NodeList sl = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "summary");
+		assertEquals(1, sl.getLength());
+		Element se = (Element) sl.item(0);
+		assertEquals("this is a great spreadsheet", se.getTextContent());
+
+		NodeList cl = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "category");
+		assertEquals(1, cl.getLength());
+		Element ce = (Element) cl.item(0);
+		assertEquals("foo", ce.getAttribute("scheme"));
+		assertEquals("bar", ce.getAttribute("term"));
+		assertEquals("baz", ce.getAttribute("label"));
+
 	}
 
 
@@ -1009,8 +1030,9 @@ public class TestAtomProtocol extends TestCase {
 		PostMethod post = new PostMethod(collectionUri);
 		File file = new File(this.getClass().getClassLoader().getResource("spreadsheet1.xls").getFile());
 		FilePart fp = createFilePart(file, "spreadsheet1.xls", "application/vnd.ms-excel", "media");
-		StringPart sp = new StringPart("summary", "this is a great spreadsheet");
-		Part[] parts = { fp , sp };
+		StringPart sp1 = new StringPart("summary", "this is a great spreadsheet");
+		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
+		Part[] parts = { fp , sp1 , sp2 };
 		setMultipartRequestEntity(post, parts);
 		return post;
 		

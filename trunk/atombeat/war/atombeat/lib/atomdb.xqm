@@ -648,7 +648,8 @@ declare function atomdb:create-media-link-entry(
     $member-id as xs:string ,
     $media-type as xs:string ,
     $media-link-title as xs:string? ,
-    $media-link-summary as xs:string? 
+    $media-link-summary as xs:string? ,
+    $media-link-category as xs:string?
 ) as element(atom:entry)
 {
 
@@ -672,6 +673,15 @@ declare function atomdb:create-media-link-entry(
     	if ( $media-link-summary ) then $media-link-summary
     	else "media resource"
     	
+    let $category :=
+        if ( exists( $media-link-category ) )
+        then 
+            let $scheme := text:groups( $media-link-category , 'scheme="([^"]+)"' )[2]
+            let $term := text:groups( $media-link-category , 'term="([^"]+)"' )[2]
+            let $label := text:groups( $media-link-category , 'label="([^"]+)"' )[2]
+            return <atom:category scheme="{$scheme}" term="{$term}" label="{$label}"/>
+        else ()        
+    	
 	let $media-size :=
 		xmldb:size( atomdb:request-path-info-to-db-path( $request-path-info ) , concat( $member-id , ".media" ) )
     	    
@@ -688,6 +698,7 @@ declare function atomdb:create-media-link-entry(
             <atom:title type="text">{$title}</atom:title>
             <atom:summary type="text">{$summary}</atom:summary>
         {
+            $category , 
             if ( $config:auto-author )
             then
                 <atom:author>
@@ -741,9 +752,22 @@ declare function atomdb:update-entry(
 declare function atomdb:create-media-resource(
 	$request-path-info as xs:string , 
 	$request-data as item()* , 
+	$media-type as xs:string 
+) as element(atom:entry)?
+{
+    atomdb:create-media-resource( $request-path-info , $request-data , $media-type , () , () , () )
+};
+
+
+
+
+declare function atomdb:create-media-resource(
+	$request-path-info as xs:string , 
+	$request-data as item()* , 
 	$media-type as xs:string ,
 	$media-link-title as xs:string? ,
-	$media-link-summary as xs:string? 
+	$media-link-summary as xs:string? ,
+	$media-link-category as xs:string?
 ) as element(atom:entry)?
 {
 
@@ -755,7 +779,7 @@ declare function atomdb:create-media-resource(
 
 	let $media-resource-db-path := xmldb:store( $collection-db-path , $media-resource-name , $request-data , $media-type )
 	
-    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary )
+    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
