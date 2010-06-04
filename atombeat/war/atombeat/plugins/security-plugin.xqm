@@ -187,6 +187,10 @@ declare function sp:after(
     		else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
     		
     		then sp:after-update-member( $request-path-info , $response-data , $response-content-type )
+    		
+    		else if ( $operation = $CONSTANT:OP-MULTI-CREATE ) 
+    		
+    		then sp:after-multi-create( $request-path-info , $response-data , $response-content-type )
     
             else 
     
@@ -224,6 +228,41 @@ declare function sp:after-create-member(
 	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
 	
     let $response-data := sp:augment-entry( $request-path-info , $response-data )
+
+	return ( $response-data , $response-content-type )
+
+};
+
+
+
+declare function sp:after-multi-create(
+	$request-path-info as xs:string ,
+	$response-data as item()* ,
+	$response-content-type as xs:string?
+) as item()*
+{
+
+	
+    let $response-data := 
+        <atom:feed>
+        {
+            for $entry in $response-data/atom:entry
+            let $entry-uri := $entry/atom:link[@rel="edit"]/@href
+            let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
+            let $entry-doc-db-path := atomdb:request-path-info-to-db-path( $entry-path-info )
+            (: if security is enabled, install default resource ACL :)
+            let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $entry-doc-db-path )
+            let $media-uri := $entry/atom:link[@rel="edit-media"]/@href
+            let $media-path-info := substring-after( $media-uri , $config:content-service-url )
+            let $media-resource-db-path := atomdb:request-path-info-to-db-path( $media-path-info )
+            (: if security is enabled, install default resource ACL :)
+            let $resource-descriptor-installed := 
+                if ( exists( $media-resource-db-path ) ) then sp:install-resource-descriptor( $request-path-info , $media-resource-db-path )
+                else () 
+            return sp:augment-entry( $entry-path-info , $entry )
+        }
+        </atom:feed>
+    
 
 	return ( $response-data , $response-content-type )
 
