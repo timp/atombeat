@@ -583,3 +583,31 @@ declare function atomsec:is-allowed(
 
 
 
+declare function atomsec:wrap-with-entry(
+    $request-path-info as xs:string ,
+    $descriptor as element(atombeat:security-descriptor)?
+) as element(atom:entry)
+{
+    let $id := concat( $config:security-service-url , $request-path-info )
+    let $self-uri := $id
+    let $updated := atomsec:descriptor-updated( $request-path-info )
+    return
+        <atom:entry>
+            <atom:id>{$id}</atom:id>
+            <atom:title type="text">Security Descriptor</atom:title>
+            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:updated>{$updated}</atom:updated>
+            <atom:content type="application/vnd.atombeat+xml">
+                { $descriptor }
+            </atom:content>
+        </atom:entry>
+};
+
+
+
+
+
+
+
+

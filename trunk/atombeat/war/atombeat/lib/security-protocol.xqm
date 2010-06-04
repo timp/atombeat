@@ -398,23 +398,11 @@ declare function security-protocol:send-descriptor(
     $descriptor as element(atombeat:security-descriptor)?
 ) as item()*
 {
-    let $id := concat( $config:security-service-url , $request-path-info )
-    let $self-uri := $id
-    let $updated := atomsec:descriptor-updated( $request-path-info )
     let $response-header-set := response:set-header( "Content-Type" , $CONSTANT:MEDIA-TYPE-ATOM )
-    return
-        <atom:entry>
-            <atom:id>{$id}</atom:id>
-            <atom:title type="text">Security Descriptor</atom:title>
-            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
-            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
-            <atom:updated>{$updated}</atom:updated>
-            <atom:content type="application/vnd.atombeat+xml">
-                { $descriptor }
-            </atom:content>
-        </atom:entry>
+    return atomsec:wrap-with-entry( $request-path-info , $descriptor )
 
 };
+
 
 
 
