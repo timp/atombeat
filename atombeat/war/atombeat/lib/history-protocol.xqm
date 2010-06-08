@@ -142,7 +142,7 @@ declare function ah:do-get-entry-history(
 (:				$vvers , :)
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
-				return ah:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions )
+				return ah:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions , true() )
 				
 			}
 		</atom:feed>
@@ -191,9 +191,10 @@ declare function ah:do-get-entry-revision(
     	    
     	    let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
     
-        	return ah:construct-entry-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers )
+        	return ah:construct-entry-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , false() )
         
 };
+
 
 
 
@@ -201,7 +202,8 @@ declare function ah:construct-entry-revision(
 	$request-path-info as xs:string ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
-	$revision-numbers as xs:integer*
+	$revision-numbers as xs:integer* ,
+	$exclude-content as xs:boolean?
 ) as element(atom:entry)
 {
     
@@ -211,9 +213,9 @@ declare function ah:construct-entry-revision(
      
     if ( $revision-index = 1 )
     
-    then ah:construct-entry-base-revision( $request-path-info , $revision-numbers )
+    then ah:construct-entry-base-revision( $request-path-info , $revision-numbers , $exclude-content )
     
-    else ah:construct-entry-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers )
+    else ah:construct-entry-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
     
 };
 
@@ -222,7 +224,8 @@ declare function ah:construct-entry-revision(
 
 declare function ah:construct-entry-base-revision(
 	$request-path-info as xs:string ,
-	$revision-numbers as xs:integer*
+	$revision-numbers as xs:integer* ,
+	$exclude-content as xs:boolean?
 ) as element(atom:entry)
 {
 
@@ -281,7 +284,7 @@ declare function ah:construct-entry-base-revision(
 			else () ,
 			for $ec in $revision/* 
 			return 
-				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI and $exclude-content )
 				then <atom:content>{$ec/attribute::*}</atom:content>
 				else $ec
 		}
@@ -297,7 +300,8 @@ declare function ah:construct-entry-specified-revision(
 	$request-path-info as xs:string ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
-	$revision-numbers as xs:integer*
+	$revision-numbers as xs:integer* ,
+	$exclude-content as xs:boolean?
 ) as element(atom:entry)
 { 
 
@@ -349,7 +353,7 @@ declare function ah:construct-entry-specified-revision(
 			else () ,
 			for $ec in $revision/child::* 
 			return 
-				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI and $exclude-content )
 				then <atom:content>{$ec/attribute::*}</atom:content>
 				else $ec
 		}
