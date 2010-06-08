@@ -229,7 +229,7 @@ declare function atom-protocol:op-create-collection(
 
 	let $feed := atomdb:retrieve-feed( $request-path-info )
             
-    let $location := $feed/atom:link[@rel="self"]/@href
+    let $location := $feed/atom:link[@rel="edit"]/@href
         	
 	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 
@@ -267,8 +267,7 @@ declare function atom-protocol:op-multi-create(
         <atom:feed>
         {
             for $entry in $request-data/atom:entry
-            let $edit-media-location := $entry/atom:link[@rel='edit-media']/@href
-            let $media-path-info := substring-after( $edit-media-location , $config:content-service-url )
+            let $media-path-info := atomdb:edit-media-path-info( $entry )
             let $local-media-available := 
                 if ( exists( $media-path-info ) ) then atomdb:media-resource-available( $media-path-info )
                 else false()
@@ -279,7 +278,7 @@ declare function atom-protocol:op-multi-create(
                     let $media := atomdb:retrieve-media( $media-path-info )
                     let $media-type := $entry/atom:link[@rel='edit-media']/@type
                     let $media-link := atomdb:create-media-resource( $collection-path-info , $media , $media-type )
-                    let $media-link-path-info := substring-after( $media-link/atom:link[@rel='edit']/@href , $config:content-service-url )
+                    let $media-link-path-info := atomdb:edit-path-info( $media-link )
                     let $media-link := atomdb:update-member( $media-link-path-info , $entry )
                     return $media-link
                 else atomdb:create-member( $collection-path-info , $entry )
@@ -359,12 +358,12 @@ declare function atom-protocol:op-create-member(
 	let $entry := atomdb:create-member( $request-path-info , $request-data )
 
     (: set the location and content-location headers :)
-    let $location := $entry/atom:link[@rel="self"]/@href
+    let $location := $entry/atom:link[@rel="edit"]/@href
 	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
     let $set-header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 	
 	(: set the etag header :)
-    let $entry-path-info := substring-after( $location , $config:content-service-url )
+    let $entry-path-info := atomdb:edit-path-info( $entry )
     let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
     let $set-header-etag := 
         if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
@@ -454,7 +453,7 @@ declare function atom-protocol:op-create-media(
 	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary , $category )
 	
 	(: set location and content-location headers :)
-    let $location := $media-link/atom:link[@rel="self"]/@href
+    let $location := $media-link/atom:link[@rel="edit"]/@href
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
     let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
 
@@ -563,7 +562,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
  
 	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary , $category )
 	
-    let $location := $media-link/atom:link[@rel="self"]/@href
+    let $location := $media-link/atom:link[@rel="edit"]/@href
         	
 	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
 
@@ -604,7 +603,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 
     let $header-content-location := 
         if ( $accept = "application/atom+xml" )
-        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link/atom:link[@rel='self']/@href )
+        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link/atom:link[@rel='edit']/@href )
         else ()
 
     (:

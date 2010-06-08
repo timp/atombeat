@@ -378,37 +378,41 @@ declare function hp:append-history-link (
 {
 	let $log := util:log( "debug" , $response-entry )
 	
-	let $self-uri := $response-entry/atom:link[@rel="self"]/@href
-	let $log := util:log( "debug" , concat( "$self-uri: " , $self-uri ) )
+	let $entry-path-info := atomdb:edit-path-info( $response-entry )
+	let $collection-path-info := atomdb:collection-path-info( $response-entry )
 	
-	let $entry-path-info := substring-after( $self-uri , $config:content-service-url )
-	let $log := util:log( "debug" , concat( "$entry-path-info: " , $entry-path-info ) )
+	return
 	
-    let $collection-path-info := text:groups( $entry-path-info , "^(.+)/[^/]+$" )[2]
-    let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
-    let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
-    
-	let $history-uri := concat( $config:history-service-url , $entry-path-info )
-	let $log := util:log( "debug" , $history-uri )
+	    if ( exists( $entry-path-info ) )
+	    
+	    then
 	
-	let $response-entry :=
-	
-	   if ( $versioning-enabled )
-	   
-	   then
-	   
-    		<atom:entry>
-    		{
-    			$response-entry/attribute::* ,
-    			$response-entry/child::*
-    		}
-    			<atom:link rel="history" href="{$history-uri}" type="application/atom+xml"/>			
-    		</atom:entry>
-    		
-		else $response-entry
-
-	let $log := util:log( "debug" , $response-entry )
-	return $response-entry
+            let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+            let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
+            
+        	let $history-uri := concat( $config:history-service-url , $entry-path-info )
+        	let $log := util:log( "debug" , $history-uri )
+        	
+        	let $response-entry :=
+        	
+        	   if ( $versioning-enabled )
+        	   
+        	   then
+        	   
+            		<atom:entry>
+            		{
+            			$response-entry/attribute::* ,
+            			$response-entry/child::*
+            		}
+            			<atom:link rel="history" href="{$history-uri}" type="application/atom+xml"/>			
+            		</atom:entry>
+            		
+        		else $response-entry
+        
+        	let $log := util:log( "debug" , $response-entry )
+        	return $response-entry
+        	
+        else $response-entry                        
 	
 };
 

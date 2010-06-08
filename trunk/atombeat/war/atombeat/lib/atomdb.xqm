@@ -171,6 +171,40 @@ declare function atomdb:db-path-to-request-path-info(
 
 
 
+declare function atomdb:edit-path-info( $entry as element(atom:entry) ) as xs:string?
+{
+    let $uri := $entry/atom:link[@rel='edit']/@href
+    return
+        if ( starts-with( $uri , $config:content-service-url ) )
+        then substring-after( $uri , $config:content-service-url )
+        else ()
+};
+
+
+
+declare function atomdb:edit-media-path-info( $entry as element(atom:entry) ) as xs:string?
+{
+    let $uri := $entry/atom:link[@rel='edit-media']/@href
+    return
+        if ( starts-with( $uri , $config:content-service-url ) )
+        then substring-after( $uri , $config:content-service-url )
+        else ()
+};
+
+
+
+declare function atomdb:collection-path-info( $entry as element(atom:entry) ) as xs:string?
+{
+    let $entry-path-info := atomdb:edit-path-info( $entry )
+    return
+        if ( exists( $entry-path-info ) )
+        then text:groups( $entry-path-info , "^(.+)/[^/]+$" )[2]
+        else ()
+};
+
+
+
+
 declare function atomdb:feed-doc-db-path(
 	$db-collection-path as xs:string
 ) as xs:string
