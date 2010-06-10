@@ -38,7 +38,7 @@ public class TestAtomProtocolExtensions extends TestCase {
 	
 	static {
 		
-		String installUrl = BASE_URI + "admin/install-for-test.xql";
+		String installUrl = BASE_URI + "admin/setup-for-test.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		
