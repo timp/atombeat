@@ -25,9 +25,9 @@ public class TestHistoryProtocol extends TestCase {
 	private String noHistoryCollectionUri = null;
 	
 
-	public TestHistoryProtocol() {
 
-		// need to run install once to ensure default global acl is stored
+	
+	public void setUp() {
 		
 		String installUrl = BASE_URI + "admin/setup-for-test.xql";
 		
@@ -39,10 +39,6 @@ public class TestHistoryProtocol extends TestCase {
 			throw new RuntimeException("installation failed: "+result);
 		}
 
-	}
-	
-	public void setUp() {
-		
 		Header[] headers = {};
 		
 		String content = 

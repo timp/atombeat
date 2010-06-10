@@ -1,6 +1,5 @@
 package org.atombeat;
 
-import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.httpclient.HttpMethod;
@@ -13,7 +12,6 @@ import org.w3c.dom.bootstrap.DOMImplementationRegistry;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.w3c.dom.ls.LSSerializer;
 
-
 import static org.atombeat.AtomTestUtils.*;
 
 import junit.framework.TestCase;
@@ -22,7 +20,7 @@ import junit.framework.TestCase;
 
 
 
-public class TestAtomProtocolExtensions extends TestCase {
+public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 
 
 	
@@ -31,28 +29,16 @@ public class TestAtomProtocolExtensions extends TestCase {
 	private static final String USER = "adam"; // should be allowed all operations
 	private static final String PASS = "test";
 	
+
+	
 	private DOMImplementationRegistry domImplRegistry;
 	private DOMImplementationLS domImplLs;
 	private LSSerializer lsWriter;
 
 	
-	static {
-		
-		String installUrl = BASE_URI + "admin/setup-for-test.xql";
-		
-		GetMethod method = new GetMethod(installUrl);
-		
-		int result = executeMethod(method);
-		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
 
-	}
 	
-	
-	
-	public static Integer executeMethod(HttpMethod method) {
+	private static Integer executeMethod(HttpMethod method) {
 		
 		return AtomTestUtils.executeMethod(method, USER, PASS);
 
@@ -60,8 +46,19 @@ public class TestAtomProtocolExtensions extends TestCase {
 
 	
 	
+	
 	protected void setUp() throws Exception {
 		super.setUp();
+
+		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
+		
+		PostMethod method = new PostMethod(setupUrl);
+		
+		int result = executeMethod(method);
+		
+		if (result != 200) {
+			throw new RuntimeException("setup failed: "+result);
+		}
 
 		domImplRegistry = DOMImplementationRegistry.newInstance();
 		domImplLs = (DOMImplementationLS)domImplRegistry.getDOMImplementation("LS");
@@ -216,7 +213,6 @@ public class TestAtomProtocolExtensions extends TestCase {
 
 	}
 
-	
 	
 	
 }

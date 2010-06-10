@@ -345,8 +345,7 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	public void testDeleteMedia() {
 		
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = AtomTestUtils.getEditLocation(mediaLinkDoc);
 		
@@ -383,8 +382,7 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	public void testDeleteMediaLinkEntry() {
 		
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = AtomTestUtils.getEditLocation(mediaLinkDoc);
 		
