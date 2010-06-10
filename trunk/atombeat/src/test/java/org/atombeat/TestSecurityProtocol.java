@@ -41,7 +41,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// need to run install before each test to ensure default workspace descriptor is restored
 		
-		String installUrl = BASE_URI + "admin/install-for-test.xql";
+		String installUrl = BASE_URI + "admin/setup-for-test.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		

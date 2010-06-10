@@ -8,7 +8,8 @@ import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" a
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
-import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
+import module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
+import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "../lib/common-protocol.xqm" ;
 import module namespace config-collections = "http://purl.org/atombeat/xquery/config-collections" at "collections.xqm" ;
 
 
@@ -108,36 +109,23 @@ declare function local:do-post() as item()*
     
     (: INSTALL THE COLLECTIONS :)
     let $collections-installed :=
+
         for $collection in $config-collections:collection-spec/collection
         let $title := $collection/title/text()
         let $path-info := $collection/path-info/text()
-        return 
-            if ( not( atomdb:collection-available( $path-info ) ) )
-            then 
+
+        (: CREATE THE COLLECTION :)
+        let $feed-doc := 
+            <atom:feed 
+                atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}"
+                atombeat:recursive="{$collection/recursive/text()}"
+                atombeat:enable-versioning="{$collection/enable-history/text()}">
+                <atom:title>{$title}</atom:title>
+            </atom:feed>
             
-                (: CREATE THE COLLECTION :)
-                let $feed-doc := 
-                    <atom:feed 
-                        atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}"
-                        atombeat:recursive="{$collection/recursive/text()}">
-                        <atom:title>{$title}</atom:title>
-                    </atom:feed>
-                let $collection-created := atomdb:create-collection( $path-info , $feed-doc )
-                let $collection-db-path := atomdb:request-path-info-to-db-path( $path-info )
+        let $put-feed-response := atom-protocol:do-put-atom-feed( $path-info , $feed-doc )                                    
+        return $put-feed-response
                 
-                (: INSTALL ACL :)
-                let $acl := config:default-collection-security-descriptor( $path-info , () )
-                let $acl-stored := atomsec:store-collection-descriptor( $path-info , $acl )
-                
-                (: ENABLE HISTORY :)
-                let $history-enabled :=
-                    if ( xs:boolean( $collection/enable-history/text() ) )
-                    then xutil:enable-versioning( $collection-db-path )
-                    else false()
-                    
-                return $collection-db-path
-            else ()
-            
     (: SEND RESPONSE :)        
     let $response-code-set := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
     let $response-content-type-set := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , "text/html" )
@@ -159,7 +147,7 @@ return
     
     then local:do-post()
     
-    else ap:do-method-not-allowed( "/admin/install.xql" , ( "GET" , "POST" ) )
+    else common-protocol:respond( common-protocol:do-method-not-allowed( "/admin/install.xql" , ( "GET" , "POST" ) ) )
     
     
 

@@ -512,6 +512,29 @@ declare function atomdb:delete-media(
 
 
 
+declare function atomdb:delete-collection(
+    $collection-path-info as xs:string ,
+    $hard as xs:boolean?
+) as empty()
+{
+
+    if ( atomdb:collection-available( $collection-path-info ) )
+    
+    then
+    
+        let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+        let $remove-collection := 
+            if ( $hard ) then xmldb:remove( $collection-db-path )
+            else xmldb:remove( $collection-db-path , $config:feed-doc-name )
+        return ()
+    
+    else ()
+
+};
+
+
+
+
 declare function atomdb:mutable-feed-children(
     $request-data as element(atom:feed)
 ) as element()*
