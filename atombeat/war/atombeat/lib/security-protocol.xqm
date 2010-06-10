@@ -16,7 +16,7 @@ import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xuti
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "atom-security.xqm" ;
-import module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol" at "atom-protocol.xqm" ;
+import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
  
@@ -26,7 +26,7 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 declare function security-protocol:main() as item()*
 {
     let $response := security-protocol:do-service()
-    return atom-protocol:respond( $response )
+    return common-protocol:respond( $response )
 };
 
 
@@ -36,10 +36,10 @@ declare function security-protocol:main() as item()*
  : TODO doc me
  :)
 declare function security-protocol:do-service()
-as item()*
+as element(response)
 {
 
-	let $request-path-info := request:get-attribute( $atom-protocol:param-request-path-info )
+	let $request-path-info := request:get-attribute( $common-protocol:param-request-path-info )
 	let $request-method := request:get-method()
 	
 	return
@@ -52,7 +52,7 @@ as item()*
 		
 		then security-protocol:do-put( $request-path-info )
 		
-		else atom-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "PUT" ) )
+		else common-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "PUT" ) )
 
 };
 
@@ -64,7 +64,7 @@ as item()*
  :)
 declare function security-protocol:do-get(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
     
     if ( $request-path-info = "/" )
@@ -83,14 +83,14 @@ declare function security-protocol:do-get(
     
     then security-protocol:do-get-media-descriptor( $request-path-info )
     
-    else atom-protocol:do-not-found( $request-path-info )
+    else common-protocol:do-not-found( $request-path-info )
 	
 };
 
 
 
 
-declare function security-protocol:do-get-workspace-descriptor() as item()*
+declare function security-protocol:do-get-workspace-descriptor() as element(response)
 {
     (: 
      : We will only allow retrieval of workspace ACL if user is allowed
@@ -103,7 +103,7 @@ declare function security-protocol:do-get-workspace-descriptor() as item()*
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( "/" ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( "/" ) (: TODO factor these utility methods out :)
         
         else
         
@@ -118,7 +118,7 @@ declare function security-protocol:do-get-workspace-descriptor() as item()*
 
 declare function security-protocol:do-get-collection-descriptor(
     $request-path-info as xs:string
-) as item()*
+) as element(response)
 {
 
     let $allowed := security-protocol:is-retrieve-acl-allowed( $request-path-info )
@@ -127,7 +127,7 @@ declare function security-protocol:do-get-collection-descriptor(
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -141,7 +141,7 @@ declare function security-protocol:do-get-collection-descriptor(
 
 declare function security-protocol:do-get-member-descriptor(
     $request-path-info as xs:string
-) as item()*
+) as element(response)
 {
 
     let $allowed := security-protocol:is-retrieve-acl-allowed( $request-path-info )
@@ -150,7 +150,7 @@ declare function security-protocol:do-get-member-descriptor(
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -164,7 +164,7 @@ declare function security-protocol:do-get-member-descriptor(
 
 declare function security-protocol:do-get-media-descriptor(
     $request-path-info as xs:string
-) as item()*
+) as element(response)
 {
      
     let $allowed := security-protocol:is-retrieve-acl-allowed( $request-path-info )
@@ -173,7 +173,7 @@ declare function security-protocol:do-get-media-descriptor(
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -190,7 +190,7 @@ declare function security-protocol:do-get-media-descriptor(
  :)
 declare function security-protocol:do-put(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
     
     if ( $request-path-info = "/" )
@@ -209,7 +209,7 @@ declare function security-protocol:do-put(
     
     then security-protocol:do-put-media-descriptor( $request-path-info )
     
-    else atom-protocol:do-not-found( $request-path-info )
+    else common-protocol:do-not-found( $request-path-info )
 	
 };
 
@@ -218,7 +218,7 @@ declare function security-protocol:do-put(
 
 
 
-declare function security-protocol:do-put-workspace-descriptor() as item()*
+declare function security-protocol:do-put-workspace-descriptor() as element(response)
 {
     
     let $allowed := security-protocol:is-update-acl-allowed( "/" )
@@ -227,7 +227,7 @@ declare function security-protocol:do-put-workspace-descriptor() as item()*
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( "/" ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( "/" ) (: TODO factor these utility methods out :)
         
         else
         
@@ -252,7 +252,7 @@ declare function security-protocol:do-put-workspace-descriptor() as item()*
 
 declare function security-protocol:do-put-collection-descriptor(
     $request-path-info as xs:string
-) as item()*
+) as element(response)
 {
     (: 
      : We will only allow retrieval of collection ACL if user is allowed
@@ -265,7 +265,7 @@ declare function security-protocol:do-put-collection-descriptor(
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -289,7 +289,7 @@ declare function security-protocol:do-put-collection-descriptor(
 
 declare function security-protocol:do-put-member-descriptor(
     $request-path-info as xs:string
-) as item()*
+) as element(response)
 {
     (: 
      : We will only allow retrieval of member ACL if user is allowed
@@ -302,7 +302,7 @@ declare function security-protocol:do-put-member-descriptor(
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -325,7 +325,7 @@ declare function security-protocol:do-put-member-descriptor(
 
 declare function security-protocol:do-put-media-descriptor(
     $request-path-info as xs:string
-) as item()*
+) as element(response)
 {
     (: 
      : We will only allow retrieval of media ACL if user is allowed
@@ -338,7 +338,7 @@ declare function security-protocol:do-put-media-descriptor(
     
         if ( not( $allowed ) )
         
-        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then common-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -364,10 +364,7 @@ declare function security-protocol:is-update-acl-allowed(
 ) as xs:boolean 
 {
 
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    let $allowed as xs:boolean :=
-        ( atomsec:decide( $user , $roles , $request-path-info , $CONSTANT:OP-UPDATE-ACL ) = $atomsec:decision-allow )
+    let $allowed as xs:boolean := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () )
     return $allowed
 
 };
@@ -380,10 +377,7 @@ declare function security-protocol:is-retrieve-acl-allowed(
 ) as xs:boolean 
 {
 
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    let $allowed as xs:boolean :=
-        ( atomsec:decide( $user , $roles , $request-path-info , $CONSTANT:OP-RETRIEVE-ACL ) = $atomsec:decision-allow )
+    let $allowed as xs:boolean := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-ACL , $request-path-info , () )
     return $allowed
 
 };
@@ -405,11 +399,22 @@ declare function security-protocol:get-descriptor-from-request-data(
 declare function security-protocol:send-descriptor(
     $request-path-info as xs:string ,
     $descriptor as element(atombeat:security-descriptor)?
-) as item()*
+) as element(response)
 {
-    let $response-header-set := response:set-header( "Content-Type" , $CONSTANT:MEDIA-TYPE-ATOM )
-    return atomsec:wrap-with-entry( $request-path-info , $descriptor )
+    let $entry := atomsec:wrap-with-entry( $request-path-info , $descriptor )
 
+    return
+    
+        <response>
+            <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                </header>
+            </headers>
+            <body>{$entry}</body>
+        </response>
 };
 
 
@@ -419,8 +424,8 @@ declare function security-protocol:do-bad-descriptor(
     $request-path-info as xs:string
 ) as item()*
 {
-    let $message := "Request entity must match atom:entry/atom:content[@type='application/vnd.atombeat+xml']/acl/rules."
-    return atom-protocol:do-bad-request( $request-path-info , $message )
+    let $message := "Request entity must match atom:entry/atom:content[@type='application/vnd.atombeat+xml']/atombeat:security-descriptor/atombeat:acl."
+    return common-protocol:do-bad-request( $request-path-info , $message )
 };
 
 
