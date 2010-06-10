@@ -1,4 +1,4 @@
-package org.atombeat;
+package org.atombeat.legacy;
 
 import java.io.File;
 import java.io.InputStream;
@@ -12,6 +12,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
+import org.atombeat.AtomTestUtils;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;

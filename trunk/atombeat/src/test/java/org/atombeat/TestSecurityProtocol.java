@@ -25,17 +25,6 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	
-	
-
-	public TestSecurityProtocol() {
-	
-	
-	}
-	
-	
-	
-	
 	protected void setUp() throws Exception {
 		super.setUp();
 

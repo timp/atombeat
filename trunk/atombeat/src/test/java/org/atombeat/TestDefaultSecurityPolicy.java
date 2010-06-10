@@ -20,7 +20,7 @@ import junit.framework.TestCase;
 
 
 
-public class TestAtomProtocolWithDefaultSecurity extends TestCase {
+public class TestDefaultSecurityPolicy extends TestCase {
 
 
 	
@@ -30,10 +30,10 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 	
 	
 	
- 	public TestAtomProtocolWithDefaultSecurity() {
+	
+	protected void setUp() throws Exception {
+		super.setUp();
 
-		// need to run install script once for example setup
-		
 		String installUrl = BASE_URI + "admin/setup-for-test.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
@@ -44,13 +44,6 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 			throw new RuntimeException("installation failed: "+result);
 		}
 	
-	}
-	
-	
-	
-	
-	protected void setUp() throws Exception {
-		super.setUp();
 		testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 	}
 	
