@@ -4,7 +4,7 @@ module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol"
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
-
+ 
 import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
@@ -48,7 +48,7 @@ declare function local:info(
  : @return depends on the outcome of request processing.
  :)
 declare function atom-protocol:do-service()
-as item()*
+as element(response)
 {
 
 	let $request-path-info := request:get-attribute( $atom-protocol:param-request-path-info )
@@ -88,7 +88,7 @@ as item()*
  :)
 declare function atom-protocol:do-post(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	let $request-content-type := request:get-header( $CONSTANT:HEADER-CONTENT-TYPE )
@@ -120,7 +120,7 @@ declare function atom-protocol:do-post(
  :)
 declare function atom-protocol:do-post-atom(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	let $log := local:debug( "== do-post-atom ==" )
@@ -173,7 +173,7 @@ declare function atom-protocol:do-post-atom(
 declare function atom-protocol:do-post-atom-feed(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed)
-) as item()*
+) as element(response)
 {
 
 	let $create := not( atomdb:collection-available( $request-path-info ) )
@@ -222,18 +222,31 @@ declare function atom-protocol:op-create-collection(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed) ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
 	let $create-collection := atomdb:create-collection( $request-path-info , $request-data )
 
 	let $feed := atomdb:retrieve-feed( $request-path-info )
             
-    let $location := $feed/atom:link[@rel="edit"]/@href
+    let $location := $feed/atom:link[@rel="edit"]/@href cast as xs:string
         	
-	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-CREATED}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-LOCATION}</name>
+	                <value>{$location}</value>
+	            </header>
+	        </headers>
+	        <body>{$feed}</body>
+	    </response>
 
 };
 
@@ -255,7 +268,7 @@ declare function atom-protocol:op-multi-create(
 	$collection-path-info as xs:string ,
 	$request-data as element(atom:feed) ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
     (:
@@ -263,7 +276,8 @@ declare function atom-protocol:op-multi-create(
      : each.
      :)
 
-    let $response :=
+    let $feed :=
+
         <atom:feed>
         {
             for $entry in $request-data/atom:entry
@@ -286,7 +300,18 @@ declare function atom-protocol:op-multi-create(
         </atom:feed>
         
 
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $response , $CONSTANT:MEDIA-TYPE-ATOM )
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+	        </headers>
+	        <body>{$feed}</body>
+	    </response>
 
 };
 
@@ -305,7 +330,7 @@ declare function atom-protocol:op-multi-create(
 declare function atom-protocol:do-post-atom-entry(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:entry)
-) as item()*
+) as element(response)
 {
 
 	(: 
@@ -351,28 +376,46 @@ declare function atom-protocol:op-create-member(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:entry) ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
     (: create the member :)
 	let $entry := atomdb:create-member( $request-path-info , $request-data )
 
     (: set the location and content-location headers :)
-    let $location := $entry/atom:link[@rel="edit"]/@href
-	let $set-header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-    let $set-header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
-	
+    let $location := $entry/atom:link[@rel="edit"]/@href cast as xs:string
+
 	(: set the etag header :)
     let $entry-path-info := atomdb:edit-path-info( $entry )
     let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
-    let $set-header-etag := 
-        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
         
     (: update the feed date updated :)    
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
-    	
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
-		
+    			
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-CREATED}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-LOCATION}</name>
+	                <value>{$location}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name>
+	                <value>{$location}</value>
+	            </header>
+                <header>
+                    <name>{$CONSTANT:HEADER-ETAG}</name>
+                    <value>{$etag}</value>
+                </header>
+	        </headers>
+	        <body>{$entry}</body>
+	    </response>
 };
 
 
@@ -391,7 +434,7 @@ declare function atom-protocol:op-create-member(
 declare function atom-protocol:do-post-media(
 	$request-path-info as xs:string ,
 	$request-content-type as xs:string 
-) as item()*
+) as element(response)
 {
 
 	(: 
@@ -437,7 +480,7 @@ declare function atom-protocol:op-create-media(
 	$request-path-info as xs:string ,
 	$request-data as item()* ,
 	$request-media-type as xs:string
-) as item()*
+) as element(response)
 {
 
 	(: check for slug to use as title :)
@@ -453,14 +496,31 @@ declare function atom-protocol:op-create-media(
 	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary , $category )
 	
 	(: set location and content-location headers :)
-    let $location := $media-link/atom:link[@rel="edit"]/@href
-	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-    let $header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $location )
+    let $location := $media-link/atom:link[@rel="edit"]/@href cast as xs:string
 
     (: update date feed updated :)
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
         
-	return ( $CONSTANT:STATUS-SUCCESS-CREATED , $media-link , $CONSTANT:MEDIA-TYPE-ATOM )
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-CREATED}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-LOCATION}</name>
+	                <value>{$location}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name>
+	                <value>{$location}</value>
+	            </header>
+	        </headers>
+	        <body>{$media-link}</body>
+	    </response>
 
 };
 
@@ -478,7 +538,7 @@ declare function atom-protocol:op-create-media(
  :)
 declare function atom-protocol:do-post-multipart(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	(: 
@@ -546,7 +606,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	$request-path-info as xs:string ,
 	$request-data as item()* ,
 	$request-media-type as xs:string
-) as item()*
+) as element(response)
 {
 
     (: TODO bad request if expected form parts are missing :)
@@ -562,10 +622,6 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
  
 	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary , $category )
 	
-    let $location := $media-link/atom:link[@rel="edit"]/@href
-        	
-	let $header-location := response:set-header( $CONSTANT:HEADER-LOCATION, $location )
-
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
         
 	let $accept := request:get-header( $CONSTANT:HEADER-ACCEPT )
@@ -601,19 +657,32 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	
 		else "text/html"
 
+    let $location := $media-link/atom:link[@rel="edit"]/@href cast as xs:string
+       
     let $header-content-location := 
         if ( $accept = "application/atom+xml" )
-        then response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link/atom:link[@rel='edit']/@href )
+        then <header><name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name><value>{$location}</value></header>
         else ()
 
-    (:
-     : Although the semantics of 201 Created would be more appropriate 
-     : to the operation performed, we'll respond with 200 OK because the
-     : request is most likely to originate from an HTML form submission
-     : and I don't know how all browsers handle 201 responses.
-     :)
-     
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $response-data , $response-content-type )
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-CREATED}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$response-content-type}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-LOCATION}</name>
+	                <value>{$location}</value>
+	            </header>
+            {
+                $header-content-location
+            }
+	        </headers>
+	        <body>{$response-data}</body>
+	    </response>
 
 };
 
@@ -630,7 +699,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
  :)
 declare function atom-protocol:do-put (
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	let $request-content-type := request:get-header( $CONSTANT:HEADER-CONTENT-TYPE )
@@ -658,7 +727,7 @@ declare function atom-protocol:do-put (
  :)
 declare function atom-protocol:do-put-atom(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	let $request-data := request:get-data()
@@ -703,7 +772,7 @@ declare function atom-protocol:do-put-atom(
 declare function atom-protocol:do-put-atom-feed(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed)
-) as item()*
+) as element(response)
 {
 
 	(: TODO what if $request-path-info points to a member or media resource? :)
@@ -742,7 +811,7 @@ declare function atom-protocol:do-put-atom-feed(
 declare function atom-protocol:do-put-atom-feed-to-create-collection(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed)
-) as item()*
+) as element(response)
 {
 
     (: 
@@ -770,7 +839,7 @@ declare function atom-protocol:do-put-atom-feed-to-create-collection(
 declare function atom-protocol:do-put-atom-feed-to-update-collection(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed)
-) as item()*
+) as element(response)
 {
 
     (: 
@@ -799,13 +868,23 @@ declare function atom-protocol:op-update-collection(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed) ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
 	let $feed := atomdb:update-collection( $request-path-info , $request-data )
 		
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
-
+    return 
+    
+        <response>
+            <status>{ $CONSTANT:STATUS-SUCCESS-OK }</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                </header>
+            </headers>
+            <body>{$feed}</body>
+        </response>
 };
 
 
@@ -818,7 +897,7 @@ declare function atom-protocol:op-update-collection(
 declare function atom-protocol:do-put-atom-entry(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:entry)
-) as item()*
+) as element(response)
 {
 
 	(:
@@ -875,7 +954,7 @@ declare function atom-protocol:do-put-atom-entry(
 declare function atom-protocol:do-conditional-put-atom-entry(
     $request-path-info as xs:string ,
     $request-data as element(atom:entry)
-) as item()*
+) as element(response)
 {
 
     let $header-if-match := request:get-header( "If-Match" )
@@ -919,19 +998,32 @@ declare function atom-protocol:op-update-member(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:entry) ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
     
 	let $entry := atomdb:update-member( $request-path-info , $request-data )
 	
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
-    let $set-header-etag := 
-        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
 
-    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
+    let $collection-path-info := atomdb:collection-path-info( $entry )
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+                <header>
+                    <name>{$CONSTANT:HEADER-ETAG}</name>
+                    <value>{$etag}</value>
+                </header>
+	        </headers>
+	        <body>{$entry}</body>
+	    </response>
 
 };
 
@@ -944,7 +1036,7 @@ declare function atom-protocol:op-update-member(
 declare function atom-protocol:do-put-media(
 	$request-path-info as xs:string ,
 	$request-content-type
-) as item()*
+) as element(response)
 {
 
 	
@@ -988,21 +1080,33 @@ declare function atom-protocol:op-update-media(
 	$request-path-info as xs:string ,
 	$request-data as item()? ,
 	$request-content-type as xs:string?
-) as item()*
+) as element(response)
 {
 	
 	let $media-link := atomdb:update-media-resource( $request-path-info , $request-data , $request-content-type )
 	
-    let $collection-path-info := text:groups( $request-path-info , "^(.*)/[^/]+$" )[2]
+    let $collection-path-info := atomdb:collection-path-info( $media-link )
     
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
     (: return the media-link entry :)
     
-    let $set-header-content-location := response:set-header( $CONSTANT:HEADER-CONTENT-LOCATION , $media-link/atom:link[@rel='edit']/@href )
-
-    return ( $CONSTANT:STATUS-SUCCESS-OK , $media-link , $CONSTANT:MEDIA-TYPE-ATOM )
-
+	return
+	
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name>
+	                <value>{$media-link/atom:link[@rel='edit']/@href cast as xs:string}</value>
+	            </header>
+	        </headers>
+	        <body>{$media-link}</body>
+	    </response>
 };
 
 
@@ -1014,7 +1118,7 @@ declare function atom-protocol:op-update-media(
  :)
 declare function atom-protocol:do-get(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	if ( atomdb:media-resource-available( $request-path-info ) )
@@ -1041,7 +1145,7 @@ declare function atom-protocol:do-get(
  :)
 declare function atom-protocol:do-get-member(
 	$request-path-info
-) as item()*
+) as element(response)
 {
     
     let $header-if-none-match := request:get-header( "If-None-Match" )
@@ -1071,7 +1175,7 @@ declare function atom-protocol:do-get-member(
  :)
 declare function atom-protocol:do-conditional-get-entry(
     $request-path-info
-) as item()*
+) as element(response)
 {
     
     (: TODO is this a security risk? i.e., could someone probe for changes to a 
@@ -1123,7 +1227,7 @@ declare function atom-protocol:op-retrieve-member(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:entry)? ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
 	let $entry := atomdb:retrieve-member( $request-path-info )
@@ -1132,10 +1236,22 @@ declare function atom-protocol:op-retrieve-member(
 
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
     
-    let $etag-header-set := 
-        if ( exists( $etag ) ) then response:set-header( "ETag" , $etag ) else ()
-    
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $entry , $CONSTANT:MEDIA-TYPE-ATOM )
+	return
+
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+                <header>
+                    <name>{$CONSTANT:HEADER-ETAG}</name>
+                    <value>{$etag}</value>
+                </header>
+	        </headers>
+	        <body>{$entry}</body>
+	    </response>
 
 };
 
@@ -1148,7 +1264,7 @@ declare function atom-protocol:op-retrieve-member(
  :)
 declare function atom-protocol:do-get-media-resource(
 	$request-path-info
-)
+) as element(response)
 {
 
 	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-retrieve-media" ) , 3 )
@@ -1164,13 +1280,9 @@ declare function atom-protocol:op-retrieve-media(
 	$request-path-info as xs:string ,
 	$request-data as item()? ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
-	(: set status here, because we have to stream binary :)
-	
-    let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
-    
     (: media type :)
     
     let $mime-type := atomdb:get-mime-type( $request-path-info )
@@ -1179,18 +1291,26 @@ declare function atom-protocol:op-retrieve-media(
     
     let $media-link := atomdb:get-media-link( $request-path-info )
     let $title := $media-link/atom:title
-    let $content-disposition :=
-        if ( $title ) then response:set-header( $CONSTANT:HEADER-CONTENT-DISPOSITION , concat( 'attachment; filename="' , $title , '"' ) )
+    let $content-disposition-header :=
+        if ( $title ) then <header><name>{$CONSTANT:HEADER-CONTENT-DISPOSITION}</name><value>{concat( 'attachment; filename="' , $title , '"' )}</value></header>
     	else ()
     
-    (: decoding from base 64 binary :)
-    
-    let $response-stream := response:stream-binary( atomdb:retrieve-media( $request-path-info ) , $mime-type )
+	return 
 
-	(: don't return status code, because already set :)
-	
-	return ( () , () , () )
-
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$mime-type}</value>
+	            </header>
+            {
+                $content-disposition-header
+            }
+	        </headers>
+	        <body type="media">{$request-path-info}</body>
+	    </response>
+	    
 };
 
 
@@ -1199,7 +1319,7 @@ declare function atom-protocol:op-retrieve-media(
 
 declare function atom-protocol:do-get-collection(
 	$request-path-info
-)
+) as element(response)
 {
 
     (: 
@@ -1219,12 +1339,23 @@ declare function atom-protocol:op-list-collection(
 	$request-path-info as xs:string ,
 	$request-data as item()? ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(reponse)
 {
 
     let $feed := atomdb:retrieve-feed( $request-path-info ) 
     
-	return ( $CONSTANT:STATUS-SUCCESS-OK , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
+	return
+
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+	        <headers>
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	            </header>
+	        </headers>
+	        <body>{$feed}</body>
+	    </response>
 
 };
 
@@ -1234,7 +1365,7 @@ declare function atom-protocol:op-list-collection(
 
 declare function atom-protocol:do-delete(
 	$request-path-info as xs:string
-) as item()*
+) as element(response)
 {
 	
 	(: 
@@ -1260,7 +1391,7 @@ declare function atom-protocol:do-delete(
 
 declare function atom-protocol:do-delete-collection(
 	$request-path-info as xs:string
-) as item()*
+) as element(response)
 {
 
     (: for now, do not support this operation :)
@@ -1273,7 +1404,7 @@ declare function atom-protocol:do-delete-collection(
 
 declare function atom-protocol:do-delete-member(
 	$request-path-info as xs:string
-) as item()*
+) as element(response)
 {
 
     (: 
@@ -1310,7 +1441,7 @@ declare function atom-protocol:op-delete-member(
 	$request-path-info as xs:string ,
 	$request-data as item()? ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
     let $member-deleted := atomdb:delete-member( $request-path-info ) 
@@ -1319,7 +1450,13 @@ declare function atom-protocol:op-delete-member(
     
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
-	return ( $CONSTANT:STATUS-SUCCESS-NO-CONTENT , () , () )
+	return
+
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-NO-CONTENT}</status>
+	        <headers/>
+	        <body/>
+	    </response>
 
 };
 
@@ -1329,7 +1466,7 @@ declare function atom-protocol:op-delete-member(
 
 declare function atom-protocol:do-delete-media(
 	$request-path-info as xs:string
-) as item()*
+) as element(response)
 {
 
     (: here we bottom out at the "delete-media" operation :)
@@ -1350,7 +1487,7 @@ declare function atom-protocol:op-delete-media(
 	$request-path-info as xs:string ,
 	$request-data as item()? ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
     let $media-deleted := atomdb:delete-media( $request-path-info ) 
@@ -1359,33 +1496,53 @@ declare function atom-protocol:op-delete-media(
     
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
-	return ( $CONSTANT:STATUS-SUCCESS-NO-CONTENT , () , () )
+	return
 
+	    <response>
+	        <status>{$CONSTANT:STATUS-SUCCESS-NO-CONTENT}</status>
+	        <headers/>
+	        <body/>
+	    </response>
 };
  
 
 
 declare function atom-protocol:do-not-modified(
     $request-path-info
-) as item()?
+) as element(response)
 {
 
-    let $status-code-set := response:set-status-code( $CONSTANT:STATUS-REDIRECT-NOT-MODIFIED )
-    
-    return ()
+    <response>
+        <status>{$CONSTANT:STATUS-REDIRECT-NOT-MODIFIED}</status>
+        <headers/>
+        <body/>
+    </response>
     
 };
 
 
 
+
+
 declare function atom-protocol:do-not-found(
     $request-path-info
-) as item()?
+) as element(response)
 {
 
     let $message := "The server has not found anything matching the Request-URI."
+
+    return
     
-    return atom-protocol:send-error( $CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND , $message , $request-path-info )
+        <response>
+            <status>{$CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+            </headers>
+            <body type="text">{$message}</body>
+        </response>
 
 };
 
@@ -1394,10 +1551,19 @@ declare function atom-protocol:do-not-found(
 declare function atom-protocol:do-precondition-failed(
     $request-path-info ,
     $message
-) as item()?
+) as element(response)
 {
 
-    atom-protocol:send-error( $CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED , concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." ) , $request-path-info )
+    <response>
+        <status>{$CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED}</status>
+        <headers>
+            <header>
+                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+            </header>
+        </headers>
+        <body type="text">{concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." )}</body>
+    </response>
 
 };
 
@@ -1406,12 +1572,23 @@ declare function atom-protocol:do-precondition-failed(
 declare function atom-protocol:do-bad-request(
 	$request-path-info as xs:string ,
 	$message as xs:string 
-) as item()?
+) as element(response)
 {
 
     let $message := concat( $message , " The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications." )
 
-    return atom-protocol:send-error( $CONSTANT:STATUS-CLIENT-ERROR-BAD-REQUEST , $message , $request-path-info )
+    return 
+    
+        <response>
+            <status>{$CONSTANT:STATUS-CLIENT-ERROR-BAD-REQUEST}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+            </headers>
+            <body type="text">{$message}</body>
+        </response>
 
 };
 
@@ -1420,7 +1597,7 @@ declare function atom-protocol:do-bad-request(
 
 declare function atom-protocol:do-method-not-allowed(
 	$request-path-info
-) as item()?
+) as element(response)
 {
 
     atom-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "POST" , "PUT" ) )
@@ -1433,15 +1610,28 @@ declare function atom-protocol:do-method-not-allowed(
 declare function atom-protocol:do-method-not-allowed(
 	$request-path-info as xs:string ,
 	$allow as xs:string*
-) as item()?
+) as element(response)
 {
 
     let $message := "The method specified in the Request-Line is not allowed for the resource identified by the Request-URI."
 
-	let $header-allow := response:set-header( $CONSTANT:HEADER-ALLOW , string-join( $allow , " " ) )
-
-    return atom-protocol:send-error( $CONSTANT:STATUS-CLIENT-ERROR-METHOD-NOT-ALLOWED , $message , $request-path-info )
-
+    return 
+    
+        <response>
+            <status>{$CONSTANT:STATUS-CLIENT-ERROR-METHOD-NOT-ALLOWED}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+	            <header>
+	                <name>{$CONSTANT:HEADER-ALLOW}</name>
+	                <value>{string-join( $allow , " " )}</value>
+	            </header>
+            </headers>
+            <body type="text">{$message}</body>
+        </response>
+    
 };
 
  
@@ -1450,12 +1640,23 @@ declare function atom-protocol:do-method-not-allowed(
 
 declare function atom-protocol:do-forbidden(
 	$request-path-info as xs:string
-) as item()?
+) as element(response)
 {
 
     let $message := "The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated."
 
-    return atom-protocol:send-error( $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN , $message , $request-path-info )
+    return
+
+        <response>
+            <status>{$CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+            </headers>
+            <body type="text">{$message}</body>
+        </response>
 
 };
 
@@ -1464,121 +1665,29 @@ declare function atom-protocol:do-forbidden(
 
 declare function atom-protocol:do-unsupported-media-type(
 	$request-path-info as xs:string
-) as item()?
+) as element(response)
 {
 
     let $message := "The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method."
 
-    return atom-protocol:send-error( $CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE , $message , $request-path-info )
-
-};
-
-
-
-
-
-declare function atom-protocol:send-atom(
-    $status as xs:integer ,
-    $data as item()
-) as item()*
-{
-
-    let $status-code := response:set-status-code( $status )
+    return
     
-    let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
-    
-    return $data
+        <response>
+            <status>{$CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+            </headers>
+            <body type="text">{$message}</body>
+        </response>
 
 };
-
-
-
-declare function atom-protocol:send-response(
-    $status as xs:integer? ,
-    $data as item()? ,
-    $content-type as xs:string?
-) as item()*
-{
-
-	if ( $status >= 400 and $status < 600 )
-	
-	then (: override to wrap response with useful debugging information :)
-		let $request-path-info := request:get-attribute( $atom-protocol:param-request-path-info )
-		return atom-protocol:send-error( $status , $data , $request-path-info )
-		
-	else
-	
-	    let $status-code-set := 
-	    	if ( exists( $status ) ) then response:set-status-code( $status )
-	    	else ()
-
-	    let $header-content-type := 
-	    	if ( exists( $content-type ) ) then response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $content-type )
-			else ()
-			
-	    return $data
-
-};
-
-
 
 
 
  
-(:
- : TODO doc me
- :)
-declare function atom-protocol:send-error(
-    $status-code as xs:integer , 
-    $content as item()? ,
-    $request-path-info as xs:string?
-) as item()*
-{
-
-	let $status-code-set := response:set-status-code( $status-code )
-
-	let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-XML )
-
-	let $response := 
-	
-		<error>
-		    <status>{$status-code}</status>
-			<content>{$content}</content>
-			<request>
-    			<method>{request:get-method()}</method>
-    			<path-info>{$request-path-info}</path-info>
-    			<parameters>
-    			{
-    				for $parameter-name in request:get-parameter-names()
-    				return
-    				    <parameter>
-    				        <name>{$parameter-name}</name>
-    				        <value>{request:get-parameter( $parameter-name , "" )}</value>						
-    					</parameter>
-    			}
-    			</parameters>
-    			<headers>
-    			{
-    				for $header-name in request:get-header-names()
-    				return
-    				    <header>
-    				        <name>{$header-name}</name>
-    				        <value>{request:get-header( $header-name )}</value>						
-    					</header>
-    			}
-    			</headers>
-    			<user>{request:get-attribute($config:user-name-request-attribute-key)}</user>
-    			<roles>{string-join(request:get-attribute($config:user-roles-request-attribute-key), " ")}</roles>
-            </request>    		
-		</error>
-			
-	return $response
-
-};
-
-
-
-
 (:
  : Main request processing function.
  :)
@@ -1587,7 +1696,7 @@ declare function atom-protocol:apply-op(
 	$op as function ,
 	$request-path-info as xs:string ,
 	$request-data as item()*
-) as item()*
+) as element(response)
 {
 
 	atom-protocol:apply-op( $op-name , $op , $request-path-info , $request-data , () )
@@ -1606,54 +1715,41 @@ declare function atom-protocol:apply-op(
 	$request-path-info as xs:string ,
 	$request-data as item()* ,
 	$request-media-type as xs:string?
-) as item()*
+) as element(response)
 {
 
+    let $log := util:log( "info" , "hello world!" )
 	let $log := local:debug( "call plugin functions before main operation" )
 	
 	let $before-advice := atom-protocol:apply-before( plugin:before() , $op-name , $request-path-info , $request-data , $request-media-type )
-	let $log := local:debug( count( $before-advice ) )
 	
-	let $status-code as xs:integer := $before-advice[1]
+	let $log := local:debug( "done calling before plugins" )
+	let $log := local:debug( $before-advice )
 	
 	return 
 	 
-		if ( $status-code > 0 ) (: interrupt request processing :)
+		if ( $before-advice instance of element(response) ) (: interrupt request processing :)
 		
 		then 
 		
-			let $log := local:info( ( "bail out - plugin has overridden default behaviour, status: " , $status-code ) )
+			let $log := local:info( ( "bail out - plugin has overridden default behaviour, status: " , $before-advice/status ) )
 		
-			let $response-data := $before-advice[2]
-			let $response-content-type := $before-advice[3]
-			let $log := local:debug( concat( "$status-code: " , $status-code ) )
-			let $log := local:debug( concat( "$response-data: " , $response-data ) )
-			let $log := local:debug( concat( "$response-content-type: " , $response-content-type ) )
-			return atom-protocol:send-response( $status-code , $response-data , $response-content-type ) 
+			return $before-advice
 		  
 		else
 		
 			let $log := local:debug( "carry on as normal - execute main operation" )
 			
-			let $request-data := $before-advice[2] (: request data may have been modified by plugins :)
+			let $request-data := $before-advice (: request data may have been modified by plugins :)
 
-			let $result := util:call( $op , $request-path-info , $request-data , $request-media-type )
-			let $response-status := $result[1]
-			let $response-data := $result[2]
-			let $response-content-type := $result[3]
-			
-			let $log := local:debug( $response-status )
-			let $log := local:debug( $response-data )
-			let $log := local:debug( $response-content-type )
-
+			let $response := util:call( $op , $request-path-info , $request-data , $request-media-type )
 			let $log := local:debug( "call plugin functions after main operation" ) 
 			 
-			let $after-advice := atom-protocol:apply-after( plugin:after() , $op-name , $request-path-info , $response-data , $response-content-type )
+			let $after-advice := atom-protocol:apply-after( plugin:after() , $op-name , $request-path-info , $response )
 			
-			let $response-data := $after-advice[1]
-			let $response-content-type := $after-advice[2]
+			let $response := $after-advice
 					    
-			return atom-protocol:send-response( $response-status , $response-data , $response-content-type )
+			return $response
 
 };
 
@@ -1670,7 +1766,8 @@ declare function atom-protocol:apply-before(
 	$request-path-info as xs:string ,
 	$request-data as item()* ,
 	$request-media-type as xs:string?
-) as item()* {
+) as item()* 
+{
 	
 	(:
 	 : Plugin functions applied during the before phase can have no side-effects,
@@ -1682,7 +1779,7 @@ declare function atom-protocol:apply-before(
 	 
 	if ( empty( $functions ) )
 	
-	then ( 0 , $request-data )
+	then $request-data
 	
 	else
 	
@@ -1690,17 +1787,15 @@ declare function atom-protocol:apply-before(
 		
 		(: what happens next depends on advice :)
 		
-		let $status-code as xs:integer := $advice[1]
-		
 		return
 		
-			if ( $status-code > 0 )
+			if ( $advice instance of element(response) )
 			
 			then $advice (: bail out, no further calling of before functions :)
 
 			else 
 			
-			    let $request-data := $advice[2]
+			    let $request-data := $advice
 			    
 			    (: recursively call until before functions are exhausted :)
 			    return atom-protocol:apply-before( subsequence( $functions , 2 ) , $operation , $request-path-info , $request-data , $request-media-type )
@@ -1717,34 +1812,145 @@ declare function atom-protocol:apply-after(
 	$functions as function* ,
 	$operation as xs:string ,
 	$request-path-info as xs:string ,
-	$response-data as item()* ,
-	$content-type as xs:string?
+	$response as element(response)
 ) as item()* {
 	
 	if ( empty( $functions ) )
 	
-	then ( $response-data , $content-type )
+	then $response
 	
 	else
 	
-		(:
-		 : The after functions can modify the response data and response content
-		 : type, but cannot alter the status code.
-		 :)
-		 
-		let $advice := util:call( $functions[1] , $operation , $request-path-info , $response-data , $content-type )
+		let $advice := util:call( $functions[1] , $operation , $request-path-info , $response )
 		
-		let $response-data := $advice[1]
-		let $content-type := $advice[2]
+		let $response := $advice
 		
 		return
 		
-			atom-protocol:apply-after( subsequence( $functions , 2 ) , $operation , $request-path-info , $response-data , $content-type )
+			atom-protocol:apply-after( subsequence( $functions , 2 ) , $operation , $request-path-info , $response )
 
 };
 
 
 
+
+declare function atom-protocol:respond( $response as element(response) ) as item()*
+{
+
+    let $response := atom-protocol:augment-errors( $response )
+    
+    let $log := local:debug( $response )
+    
+    let $set-headers :=
+        for $header in $response/headers/header
+        return 
+            let $name := $header/name/text()
+            let $value := $header/value/text()
+            return 
+                if ( exists( $name ) and exists( $value ) ) 
+                then response:set-header( $name , $value )
+                else ()
+    
+    let $set-status := response:set-status-code( xs:integer( $response/status ) )
+
+    return
+    
+        if ( $response/body/@type = "media" )
+        then
+            let $binary-doc := atomdb:retrieve-media( $response/body/text() )
+            return response:stream-binary( $binary-doc , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
+        else if ( $response/body/@type = "text" )
+        then $response/body/text()
+        else $response/body/*
+        
+};
+
+
+
+
+
+declare function atom-protocol:main() as item()*
+{
+    let $response := atom-protocol:do-service()
+    return atom-protocol:respond( $response )
+};
+
+
+
+
+
+declare function atom-protocol:augment-errors(
+	$response as element(response)
+) as element(response)
+{
+
+    let $status := xs:integer( $response/status )
+    let $content-type := $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text()
+	let $request-path-info := request:get-attribute( $atom-protocol:param-request-path-info )
+    
+    let $log := util:log( "debug" , "== error-plugin:after ==" )
+    let $log := util:log( "debug" , $status )
+    let $log := util:log( "debug" , $content-type )
+    
+
+    return 
+	
+        if ( 
+            $status ge 400 
+            and $status lt 600 
+            and $content-type = $CONSTANT:MEDIA-TYPE-TEXT
+        )
+        
+        then 
+
+            <response>
+    	        <status>{$response/status}</status>
+    	        <headers>
+    	        {
+    	            $response/headers/header[name != $CONSTANT:HEADER-CONTENT-TYPE]
+    	        }
+    	            <header>
+    	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+    	                <value>{$CONSTANT:MEDIA-TYPE-XML}</value>
+    	            </header>
+    	        </headers>
+    	        <body>
+            		<error>
+            		    <status>{$status}</status>
+            			<message>{$response/body/text()}</message>
+            			<request>
+                			<method>{request:get-method()}</method>
+                			<path-info>{$request-path-info}</path-info>
+                			<parameters>
+                			{
+                				for $parameter-name in request:get-parameter-names()
+                				return
+                				    <parameter>
+                				        <name>{$parameter-name}</name>
+                				        <value>{request:get-parameter( $parameter-name , "" )}</value>						
+                					</parameter>
+                			}
+                			</parameters>
+                			<headers>
+                			{
+                				for $header-name in request:get-header-names()
+                				return
+                				    <header>
+                				        <name>{$header-name}</name>
+                				        <value>{request:get-header( $header-name )}</value>						
+                					</header>
+                			}
+                			</headers>
+                			<user>{request:get-attribute($config:user-name-request-attribute-key)}</user>
+                			<roles>{string-join(request:get-attribute($config:user-roles-request-attribute-key), " ")}</roles>
+                        </request>    		
+            		</error>
+    	        </body>
+    	    </response>
+    	    
+        else $response        
+
+}; 
 
 
 

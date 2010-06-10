@@ -4,4 +4,4 @@ import module namespace security-protocol = "http://purl.org/atombeat/xquery/sec
 
 let $login := xmldb:login( "/" , "admin" , "" )
 
-return security-protocol:do-service()
+return security-protocol:main()

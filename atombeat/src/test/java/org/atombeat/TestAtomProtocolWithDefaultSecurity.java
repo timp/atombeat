@@ -851,7 +851,7 @@ public class TestAtomProtocolWithDefaultSecurity extends TestCase {
 		
 		PostMethod method = createMultipartRequest(testCollectionUri);
 		int result = executeMethod(method, "audrey", "test");
-		assertEquals(200, result);
+		assertEquals(201, result);
 		
 	}
 	
