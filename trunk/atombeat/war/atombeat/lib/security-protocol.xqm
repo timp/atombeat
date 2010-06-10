@@ -16,11 +16,20 @@ import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xuti
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "atom-security.xqm" ;
-import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "atom-protocol.xqm" ;
+import module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol" at "atom-protocol.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
  
  
+ 
+ 
+declare function security-protocol:main() as item()*
+{
+    let $response := security-protocol:do-service()
+    return atom-protocol:respond( $response )
+};
+
+
 
 
 (:
@@ -30,7 +39,7 @@ declare function security-protocol:do-service()
 as item()*
 {
 
-	let $request-path-info := request:get-attribute( $ap:param-request-path-info )
+	let $request-path-info := request:get-attribute( $atom-protocol:param-request-path-info )
 	let $request-method := request:get-method()
 	
 	return
@@ -43,7 +52,7 @@ as item()*
 		
 		then security-protocol:do-put( $request-path-info )
 		
-		else ap:do-method-not-allowed( $request-path-info , ( "GET" , "PUT" ) )
+		else atom-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "PUT" ) )
 
 };
 
@@ -74,7 +83,7 @@ declare function security-protocol:do-get(
     
     then security-protocol:do-get-media-descriptor( $request-path-info )
     
-    else ap:do-not-found( $request-path-info )
+    else atom-protocol:do-not-found( $request-path-info )
 	
 };
 
@@ -94,7 +103,7 @@ declare function security-protocol:do-get-workspace-descriptor() as item()*
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( "/" ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( "/" ) (: TODO factor these utility methods out :)
         
         else
         
@@ -118,7 +127,7 @@ declare function security-protocol:do-get-collection-descriptor(
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -141,7 +150,7 @@ declare function security-protocol:do-get-member-descriptor(
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -164,7 +173,7 @@ declare function security-protocol:do-get-media-descriptor(
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -200,7 +209,7 @@ declare function security-protocol:do-put(
     
     then security-protocol:do-put-media-descriptor( $request-path-info )
     
-    else ap:do-not-found( $request-path-info )
+    else atom-protocol:do-not-found( $request-path-info )
 	
 };
 
@@ -218,7 +227,7 @@ declare function security-protocol:do-put-workspace-descriptor() as item()*
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( "/" ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( "/" ) (: TODO factor these utility methods out :)
         
         else
         
@@ -256,7 +265,7 @@ declare function security-protocol:do-put-collection-descriptor(
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -293,7 +302,7 @@ declare function security-protocol:do-put-member-descriptor(
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -329,7 +338,7 @@ declare function security-protocol:do-put-media-descriptor(
     
         if ( not( $allowed ) )
         
-        then ap:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
+        then atom-protocol:do-forbidden( $request-path-info ) (: TODO factor these utility methods out :)
         
         else
         
@@ -411,7 +420,7 @@ declare function security-protocol:do-bad-descriptor(
 ) as item()*
 {
     let $message := "Request entity must match atom:entry/atom:content[@type='application/vnd.atombeat+xml']/acl/rules."
-    return ap:do-bad-request( $request-path-info , $message )
+    return atom-protocol:do-bad-request( $request-path-info , $message )
 };
 
 

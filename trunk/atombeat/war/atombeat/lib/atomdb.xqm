@@ -315,7 +315,7 @@ declare function atomdb:touch-collection(
             $feed/attribute::* ,
             for $child in $feed/child::*
             return
-                if ( local-name( $child ) = $CONSTANT:ATOM-UPDATED and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI ) 
+                if ( $child instance of element(atom:updated) ) 
                 then <atom:updated>{$updated}</atom:updated>
                 else $child
         }
@@ -517,15 +517,14 @@ declare function atomdb:mutable-feed-children(
 ) as element()*
 {
     for $child in $request-data/*
-    let $namespace-uri := namespace-uri($child)
-    let $local-name := local-name($child)
     where
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ID ) 
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-UPDATED ) 
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "self" ) 
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" ) 
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ENTRY )
-        and not( $config:auto-author and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-AUTHOR )
+        not( $child instance of element(atom:id) )
+        and not( $child instance of element(atom:updated) )
+        and not( $child instance of element(atom:published) )
+        and not( $child instance of element(atom:link) and $child/@rel = "self" )
+        and not( $child instance of element(atom:link) and $child/@rel = "edit" )
+        and not( $child instance of element(atom:entry) )
+        and not( $config:auto-author and $child instance of element(atom:author) )
     return $child
 };
 
@@ -538,17 +537,15 @@ declare function atomdb:mutable-entry-children(
 ) as element()*
 {
     for $child in $request-data/*
-    let $namespace-uri := namespace-uri($child)
-    let $local-name := local-name($child)
     where
-        not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-ID )
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-UPDATED )
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-PUBLISHED )
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "self" )
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit" )
-        and not( $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-LINK and $child/@rel = "edit-media" )
-        and not( $config:auto-author and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-AUTHOR )
-        and not( atomdb:media-link-available( $request-path-info ) and $namespace-uri = $CONSTANT:ATOM-NSURI and $local-name = $CONSTANT:ATOM-CONTENT )
+        not( $child instance of element(atom:id) )
+        and not( $child instance of element(atom:updated) )
+        and not( $child instance of element(atom:published) )
+        and not( $child instance of element(atom:link) and $child/@rel = "self" )
+        and not( $child instance of element(atom:link) and $child/@rel = "edit" )
+        and not( $child instance of element(atom:link) and $child/@rel = "edit-media" )
+        and not( $config:auto-author and $child instance of element(atom:author) )
+        and not( atomdb:media-link-available( $request-path-info ) and $child instance of element(atom:content) )
     return $child
 };
 
@@ -859,11 +856,11 @@ declare function atomdb:update-media-resource(
 			{
 				for $child in doc($media-link-doc-db-path)/atom:entry/*
 				return
-				    if ( local-name( $child ) = $CONSTANT:ATOM-UPDATED and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI )
+				    if ( $child instance of element(atom:updated) )
 				    then <atom:updated>{current-dateTime()}</atom:updated>
-				    else if ( local-name( $child ) = $CONSTANT:ATOM-LINK and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI and $child/@rel='edit-media' )
+				    else if ( $child instance of element(atom:link) and $child/@rel='edit-media' )
 					then <atom:link rel='edit-media' type='{$media-type}' href='{$child/@href}' length='{$media-size}'/>
-				    else if ( local-name( $child ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $child ) = $CONSTANT:ATOM-NSURI )
+				    else if ( $child instance of element(atom:content) )
 					then <atom:content type='{$media-type}' src='{$child/@src}'/>
 					else $child
 				
@@ -980,7 +977,7 @@ declare function atomdb:exclude-entry-content(
         $entry/attribute::* ,
         for $ec in $entry/child::* 
         return 
-            if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI )
+            if ( $ec instance of element(atom:content) )
             then <atom:content>{$ec/attribute::*}</atom:content>
             else $ec
     }   

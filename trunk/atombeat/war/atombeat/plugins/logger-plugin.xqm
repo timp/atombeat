@@ -14,11 +14,11 @@ declare function logger-plugin:before(
 	$request-media-type as xs:string?
 ) as item()*
 {
+
 	let $message := concat( "before: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	
-	let $status-code := 0 (: we don't want to interrupt request processing :)
-	return ( $status-code , $request-data )
+	return $request-data
 	
 };
 
@@ -27,15 +27,15 @@ declare function logger-plugin:before(
 declare function logger-plugin:after(
 	$operation as xs:string ,
 	$request-path-info as xs:string ,
-	$response-data as item()* ,
-	$content-type as xs:string?
-) as item()*
+	$response as element(response)
+) as element(response)
 {
+
 	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	
-	(: pass response data and content type through, we don't want to modify response :)
-	return ( $response-data , $content-type )
+	return $response
+
 }; 
 
 

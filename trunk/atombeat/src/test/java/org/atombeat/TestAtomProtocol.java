@@ -958,7 +958,7 @@ public class TestAtomProtocol extends TestCase {
 		int result = executeMethod(post);
 		
 		// expect the status code is 200 OK
-		assertEquals(200, result);
+		assertEquals(201, result);
 
 		// expect the Location header is set with an absolute URI
 		String responseLocation = post.getResponseHeader("Location").getValue();
@@ -1000,8 +1000,7 @@ public class TestAtomProtocol extends TestCase {
 		PostMethod post = createMultipartRequest(collectionUri);
 		int result = executeMethod(post);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
+		assertEquals(201, result);
 
 		// expect the Location header is set with an absolute URI
 		String responseLocation = post.getResponseHeader("Location").getValue();
