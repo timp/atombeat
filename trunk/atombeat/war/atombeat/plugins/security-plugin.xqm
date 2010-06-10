@@ -342,7 +342,7 @@ declare function sp:after-create-media(
     
     (: need to workaround html response for create media with multipart request :)
     let $response-data := 
-        if ( starts-with( $response/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value , $CONSTANT:MEDIA-TYPE-ATOM ) )
+        if ( starts-with( $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value , $CONSTANT:MEDIA-TYPE-ATOM ) )
         then sp:augment-entry( $entry-path-info , $response-data )
         else $response-data
 

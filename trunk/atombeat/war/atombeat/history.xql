@@ -4,4 +4,4 @@ import module namespace hp = "http://purl.org/atombeat/xquery/history-protocol" 
 
 let $login := xmldb:login( "/" , "admin" , "" )
 
-return hp:do-service()
+return hp:main()

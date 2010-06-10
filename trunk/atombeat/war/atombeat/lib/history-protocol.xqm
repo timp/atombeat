@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace ah = "http://purl.org/atombeat/xquery/history-protocol";
+module namespace history-protocol = "http://purl.org/atombeat/xquery/history-protocol";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
@@ -19,11 +19,11 @@ import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" a
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
-import module namespace ap = "http://purl.org/atombeat/xquery/atom-protocol" at "atom-protocol.xqm" ;
+import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
-declare variable $ah:param-name-revision-index as xs:string := "revision" ;
+declare variable $history-protocol:param-name-revision-index as xs:string := "revision" ;
 
 
 (: 
@@ -31,23 +31,34 @@ declare variable $ah:param-name-revision-index as xs:string := "revision" ;
  :)
  
  
+
+
+declare function history-protocol:main() as item()*
+{
+    let $response := history-protocol:do-service()
+    return common-protocol:respond( $response )
+};
+
+
+ 
+ 
 (:
  : TODO doc me
  :)
-declare function ah:do-service()
-as item()*
+declare function history-protocol:do-service()
+as element(response)
 {
 
-	let $request-path-info := request:get-attribute( $ap:param-request-path-info )
+	let $request-path-info := request:get-attribute( $common-protocol:param-request-path-info )
 	let $request-method := request:get-method()
 	
 	return
 	
 		if ( $request-method = $CONSTANT:METHOD-GET )
 		
-		then ah:do-get( $request-path-info )
+		then history-protocol:do-get( $request-path-info )
 		
-		else ap:do-method-not-allowed( $request-path-info , ( "GET" ) )
+		else common-protocol:do-method-not-allowed( $request-path-info , ( "GET" ) )
 
 };
 
@@ -57,44 +68,44 @@ as item()*
 (:
  : TODO doc me 
  :)
-declare function ah:do-get(
+declare function history-protocol:do-get(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
 	if ( atomdb:member-available( $request-path-info ) )
 	
-	then ah:do-get-entry( $request-path-info )
+	then history-protocol:do-get-entry( $request-path-info )
 	
-	else ap:do-not-found( $request-path-info )
+	else common-protocol:do-not-found( $request-path-info )
 	
 };
 
 
 
 
-declare function ah:do-get-entry(
+declare function history-protocol:do-get-entry(
 	$request-path-info as xs:string 
-) as item()*
+) as element(response)
 {
 
-	let $log := util:log( "debug" , "== ah:do-get-entry() ==" )
+	let $log := util:log( "debug" , "== history-protocol:do-get-entry() ==" )
 	let $log := util:log( "debug" , $request-path-info )
 
-    let $revision-index := request:get-parameter( $ah:param-name-revision-index , "" )
+    let $revision-index := request:get-parameter( $history-protocol:param-name-revision-index , "" )
 	let $log := util:log( "debug" , $revision-index )
 	
 	return
 	
 		if ( $revision-index = "" )
 		
-		then ah:do-get-entry-history( $request-path-info )
+		then history-protocol:do-get-entry-history( $request-path-info )
 		
 		else if ( $revision-index castable as xs:integer )
 		
-		then ah:do-get-entry-revision( $request-path-info , xs:integer( $revision-index ) )
+		then history-protocol:do-get-entry-revision( $request-path-info , xs:integer( $revision-index ) )
 		
-		else ap:do-bad-request( $request-path-info , "Revision index parameter must be an integer." )
+		else common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer." )
 };
 
 
@@ -103,11 +114,11 @@ declare function ah:do-get-entry(
 (:
  : TODO doc me
  :)
-declare function ah:do-get-entry-history(
+declare function history-protocol:do-get-entry-history(
 	$request-path-info as xs:string
-) as element(atom:feed)
+) as element(response)
 {
-	let $log := util:log( "debug" , "== ah:do-get-entry-history() ==" )
+	let $log := util:log( "debug" , "== history-protocol:do-get-entry-history() ==" )
 	let $log := util:log( "debug" , $request-path-info )
 	
     let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
@@ -115,12 +126,6 @@ declare function ah:do-get-entry-history(
 
     let $entry-doc := doc( $entry-doc-path )
     let $log := util:log( "debug" , $entry-doc )
-    
-    let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
-    let $log := util:log( "debug" , concat( "status-code: " , $status-code ) )
-    
-    let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
-    let $log := util:log( "debug" , concat( "header-content-type: " , $header-content-type ) )
     
     let $vhist := v:history( $entry-doc )
     let $log := util:log( "debug" , $vhist )
@@ -131,7 +136,7 @@ declare function ah:do-get-entry-history(
     let $revisions := v:revisions( $entry-doc )
     let $log := util:log( "debug" , $revisions )
     
-    return 
+    let $feed := 
 
 		<atom:feed atombeat:exclude-entry-content="true">
 			<atom:title>History</atom:title>
@@ -142,20 +147,32 @@ declare function ah:do-get-entry-history(
 (:				$vvers , :)
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
-				return ah:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions , true() )
+				return history-protocol:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions , true() )
 				
 			}
 		</atom:feed>
 
+    return 
+    
+        <response>
+            <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                </header>
+            </headers>
+            <body>{$feed}</body>
+        </response>
 };
 
 
 
 
-declare function ah:do-get-entry-revision(
+declare function history-protocol:do-get-entry-revision(
 	$request-path-info as xs:string ,
 	$revision-index as xs:integer 
-) as item()*
+) as element(response)
 {
 
     let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
@@ -179,26 +196,35 @@ declare function ah:do-get-entry-revision(
     
         if ( $revision-index <= 0 )
         
-        then ap:do-bad-request( $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
+        then common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
         
         else if ( $revision-index > ( count($revision-numbers) + 1 ) )
         
-        then ap:do-not-found( $request-path-info )
+        then common-protocol:do-not-found( $request-path-info )
         
         else 
         
-    	    let $status-code := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
-    	    
-    	    let $header-content-type := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , $CONSTANT:MEDIA-TYPE-ATOM )
-    
-        	return ah:construct-entry-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , false() )
-        
+        	let $entry-revision := history-protocol:construct-entry-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , false() )
+
+            return 
+            
+                <response>
+                    <status>{$CONSTANT:STATUS-SUCCESS-OK}</status>
+                    <headers>
+                        <header>
+                            <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                            <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                        </header>
+                    </headers>
+                    <body>{$entry-revision}</body>
+                </response>
+
 };
 
 
 
 
-declare function ah:construct-entry-revision(
+declare function history-protocol:construct-entry-revision(
 	$request-path-info as xs:string ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
@@ -213,23 +239,23 @@ declare function ah:construct-entry-revision(
      
     if ( $revision-index = 1 )
     
-    then ah:construct-entry-base-revision( $request-path-info , $revision-numbers , $exclude-content )
+    then history-protocol:construct-entry-base-revision( $request-path-info , $revision-numbers , $exclude-content )
     
-    else ah:construct-entry-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
+    else history-protocol:construct-entry-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
     
 };
 
 
 
 
-declare function ah:construct-entry-base-revision(
+declare function history-protocol:construct-entry-base-revision(
 	$request-path-info as xs:string ,
 	$revision-numbers as xs:integer* ,
 	$exclude-content as xs:boolean?
 ) as element(atom:entry)
 {
 
-    let $log := util:log( "debug" , "== ah:construct-entry-base-revision() ==" )
+    let $log := util:log( "debug" , "== history-protocol:construct-entry-base-revision() ==" )
 
     (: 
      : N.B. if no updates on the doc yet, then base revision won't have been
@@ -254,11 +280,11 @@ declare function ah:construct-entry-base-revision(
     let $when := $revision/atom:updated
 
 	let $this-revision-href :=
-		concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( 1 ) )	
+		concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )	
 
 	let $next-revision-href :=
 		if ( count( $revision-numbers ) > 0 ) 
-		then concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( 2 ) )	
+		then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 2 ) )	
 		else ()
 
 	let $current-revision-href :=
@@ -296,7 +322,7 @@ declare function ah:construct-entry-base-revision(
 
 
 
-declare function ah:construct-entry-specified-revision(
+declare function history-protocol:construct-entry-specified-revision(
 	$request-path-info as xs:string ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
@@ -314,23 +340,23 @@ declare function ah:construct-entry-specified-revision(
 	let $initial := "no"
 	
 	let $this-revision-href :=
-		concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( $revision-index ) )	
+		concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index ) )	
 
 	let $next-revision-href :=
 		if ( $revision-index <= count( $revision-numbers ) ) 
-		then concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( $revision-index + 1 ) )	
+		then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index + 1 ) )	
 		else ()
 
 	let $previous-revision-href :=
 		if ( $revision-index > 1 ) 
-		then concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( $revision-index - 1 ) )	
+		then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index - 1 ) )	
 		else ()
 		
 	let $current-revision-href :=
 		concat( $config:content-service-url , $request-path-info )
 
 	let $initial-revision-href :=
-		concat( $config:history-service-url , $request-path-info , "?" , $ah:param-name-revision-index , "=" , xs:string( 1 ) )	
+		concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )	
 
 	(: N.B. don't need history link because already in entry :)
 	
