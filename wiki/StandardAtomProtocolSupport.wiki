@@ -14,9 +14,9 @@ See also the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src
 
 The documentation below assumes that you have already created an Atom Collection at the path `/test`. @@TODO Link to docs on creating collections.
 
-== Creating a Collection Member (CREATE_MEMBER) ==
+== Creating a Collection Member ==
 
-POST an Atom Entry document to the collection URI...
+Sending a POST request with an Atom Entry document to a collection URI...
 
 {{{
 POST /atombeat/atombeat/content/test HTTP/1.1
@@ -29,7 +29,7 @@ Content-Type: application/atom+xml; charset=utf-8
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member</atom:title><atom:summary>This is a summary.</atom:summary></atom:entry>
 }}}
 
-...and receive a 201 response...
+...will result in a 201 response...
 
 {{{
 HTTP/1.1 201 Created
@@ -57,3 +57,126 @@ Date: Mon, 21 Jun 2010 17:42:31 GMT
     <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/bfc1c76c-880a-4c37-9f9e-a58a11796ce6.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
 </atom:entry>
 }}}
+
+== Retrieving a Collection Member ==
+
+Sending a GET request to a member URI...
+
+{{{
+GET /atombeat/atombeat/content/test/6b9bf0e7-ba7a-4d77-a48b-50f49f5081d7.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...will result in a 200 response...
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+ETag: "3b5aaa8f4c8bf933de7d0b3d17777c44"
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Mon, 21 Jun 2010 18:15:53 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/test/6b9bf0e7-ba7a-4d77-a48b-50f49f5081d7.atom</atom:id>
+    <atom:published>2010-06-21T19:15:53.934+01:00</atom:published>
+    <atom:updated>2010-06-21T19:15:53.934+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/6b9bf0e7-ba7a-4d77-a48b-50f49f5081d7.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/6b9bf0e7-ba7a-4d77-a48b-50f49f5081d7.atom"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Entry</atom:title>
+    <atom:summary>this is a test</atom:summary>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/6b9bf0e7-ba7a-4d77-a48b-50f49f5081d7.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+== Updating a Collection Member ==
+
+Sending a PUT request to a member URI...
+
+{{{
+PUT /atombeat/atombeat/content/test/3f594416-6e08-4f84-bd70-ce6277c8cf42.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 168
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member - Updated</atom:title><atom:summary>This is a summary, updated.</atom:summary></atom:entry>
+}}}
+
+...will result in a 200 response...
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+ETag: "eb5c85291c2b6c75d959cc8384aed1ba"
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Mon, 21 Jun 2010 18:19:20 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/test/3f594416-6e08-4f84-bd70-ce6277c8cf42.atom</atom:id>
+    <atom:published>2010-06-21T19:19:20.214+01:00</atom:published>
+    <atom:updated>2010-06-21T19:19:20.358+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/3f594416-6e08-4f84-bd70-ce6277c8cf42.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/3f594416-6e08-4f84-bd70-ce6277c8cf42.atom"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Member - Updated</atom:title>
+    <atom:summary>This is a summary, updated.</atom:summary>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/3f594416-6e08-4f84-bd70-ce6277c8cf42.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+== Deleting a Collection Member ==
+
+Sending a DELETE request to a member URI...
+
+{{{
+DELETE /atombeat/atombeat/content/test/3efcece5-9557-4c7b-bb1c-976aa7c6b1c5.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...will result in a 204 response...
+
+{{{
+HTTP/1.1 204 No Content
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Date: Mon, 21 Jun 2010 18:21:16 GMT
+}}}
+
+== Listing a Collection ==
+
+TODO
+
+== Creating a Media Resource ==
+
+TODO 
+ 
+== Retrieving a Media Resource ==
+
+TODO
+
+== Updating a Media Resource ==
+
+TODO
+
+== Deleting a Media Resource ==
+
+TODO 
+
+
