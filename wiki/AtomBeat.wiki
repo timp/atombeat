@@ -8,7 +8,7 @@
 
 AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Protocol] implementation for [http://exist.sourceforge.net/ eXist] 1.4.
 
-== Features ==
+= Features =
 
   * [StandardAtomProtocolSupport Standard Atom Protocol operations] are supported: create, retrieve, update and delete Atom entries and media resources; retrieve feeds of Atom collection members.
 
@@ -18,7 +18,13 @@ AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spe
 
   * Security extensions for management of access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
 
-== eXist already has an Atom Protocol implementation, why do another? ==
+= Status =
+
+AtomBeat is in an experimental phase. If you're interested in the Atom Publishing Protocol and what to do some quick prototyping, then AtomBeat may be a good option. We don't as yet have any experience of deploying AtomBeat in a production setting.
+
+AtomBeat is being developed as part of work on scientific data repositories at the University of Oxford, and is closely linked to the [http://dsn-chassis.googlecode.com Chassis project]. However, we've found a need across several projects for a customisable content repository capable of storing and querying files, data and metadata, with support for access control and versioning, all via HTTP and following the REST style. Because these are generic capabilities, we've factored this work out into AtomBeat. If it's of interest to you, please feel free to [alimanfoo@gmail.com get in touch].
+
+= eXist already has an Atom Protocol implementation, why do another? =
 
 There are a couple of reasons why we've rolled our own Atom Protocol implementation, rather than using the Atom servlet that comes bundled with eXist...
 
@@ -30,7 +36,7 @@ There are a couple of reasons why we've rolled our own Atom Protocol implementat
 
 Of course, we're on the exist-open mailing list and hope to feed back as much as we can to the eXist developers.
 
-== Why "Atom Beat"? ==
+= Why "Atom Beat"? =
 
 No particular reason. Apparently, "Atom Beat" was the name given to the style of drumming that Pete Best brought back to Liverpool after the Beatles' stint in Hamburg. It's got nothing to do with the Atom Publishing Protocol, but I saw it on an old Beatles gig poster and it caught my eye.
 
