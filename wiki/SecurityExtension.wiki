@@ -4,7 +4,7 @@
 
 = Introduction =
 
-AtomBeat implements a security system based on access control lists, inspired by the approach used in NFS and the !WebDav ACL extension. 
+AtomBeat implements an experimental security system based on access control lists, inspired by the approach used in NFS and the !WebDav ACL extension. 
 
 We commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules for two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.  
 
