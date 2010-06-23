@@ -10,7 +10,7 @@ AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spe
 
   * [StandardAtomProtocolSupport Standard Atom Protocol Operations]: create, retrieve, update and delete Atom entries and media resources; retrieve feeds of Atom collection members.
 
-  * [AtomProtocolExtensions#Managing_Collections Protocol Extensions for Managing Atom Collections]: create collections and update collection metadata; create recursive collections.
+  * [AtomProtocolExtensions#Managing_Collections Protocol Extensions for Managing Atom Collections]: create collections and update collection metadata; create collection hierarchies with recursive collections.
 
   * [AtomProtocolExtensions#Posting_Media_From_Forms Protocol Extensions for Posting Media Directly From HTML Forms or XForms]: create media resources using multipart/form-data requests.
 

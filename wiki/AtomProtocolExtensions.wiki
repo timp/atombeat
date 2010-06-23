@@ -179,7 +179,7 @@ If an Atom collection was then created at this parent location, or if an Atom co
 
 == Recursive Collections ==
 
-If two collections are created, where the location of one collection is nested within the location of the other, then the parent collection can be configured as a *recursive* collection, by using the `atombeat:recursive` extension attribute on the Atom Feed document element. The parent collection will then include all members all descendent collections in its feed document.
+If two collections are created, where the location of one collection is nested within the location of the other, then the parent collection can be configured as a *recursive* collection, by using the `atombeat:recursive` extension attribute on the Atom Feed document element. The parent collection will then include all members of all descendent collections in its feed document.
 
 E.g., create the parent collection...
 
@@ -384,3 +384,175 @@ Date: Wed, 23 Jun 2010 11:55:17 GMT
     </atom:entry>
 </atom:feed>
 }}}
+
+= Posting Media From Forms =
+
+While the standard Atom Protocol operation for creating media resources, by sending the media content as the body of a POST request, is simple and elegant, and very useful when working in desktop or server-side programming context, it is, unfortunately, impossible to use from a browser context (i.e., from an HTML form), or from XForms. This means that, if you want to use an Atom Protocol service to store file uploads, you have to write some sort of intermediate service that can receive form posts, and adapt them to standard Atom requests, which can be inconvenient.
+
+To work around this, the AtomBeat Atom Protocol engine has custom behaviour for handling multipart/form-data requests that follow a particular convention, so you can upload files to an AtomBeat collection directly from an HTML form or XForm.
+
+Note that some JavaScript client libraries (e.g., GWT) report inconsistent browser behaviour when returning anything other than text/html from a form post request. If this is an issue for you, let us know, and we can look into returning text/html by default, but enabling some primitive content negiotation for others who want application/atom+xml (this feature was available in previous versions of AtomBeat but has been removed due to issues with the previous implementation). 
+
+See also the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestExtendedAtomProtocol_MultipartFormdata.java TestExtendedAtomProtocol_MultipartFormdata.java test case].
+
+Sending a POST request to a collection URI with multipart/form-data content, with a file part named "media"...
+
+{{{
+POST /atombeat/atombeat/content/test HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 7303
+Content-Type: multipart/form-data; boundary=nFFsBIs7mx6CJa9KWAvJp6U-BIKBdXRs8
+
+--nFFsBIs7mx6CJa9KWAvJp6U-BIKBdXRs8
+Content-Disposition: form-data; name="media"; filename="spreadsheet1.xls"
+Content-Type: application/vnd.ms-excel; charset=ISO-8859-1
+Content-Transfer-Encoding: binary
+
+[... binary data ...]
+--nFFsBIs7mx6CJa9KWAvJp6U-BIKBdXRs8
+Content-Disposition: form-data; name="summary"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+
+this is a great spreadsheet
+--nFFsBIs7mx6CJa9KWAvJp6U-BIKBdXRs8
+Content-Disposition: form-data; name="category"
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 8bit
+
+scheme="foo"; term="bar"; label="baz"
+--nFFsBIs7mx6CJa9KWAvJp6U-BIKBdXRs8--
+}}}
+
+...will result in a 201 response, and create a new media resource, also using other form parts named "summary" and "category", if present, to populate the media-link entry...
+
+{{{
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.atom
+Content-Location: http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 12:18:02 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.atom</atom:id>
+    <atom:published>2010-06-23T13:18:02.15+01:00</atom:published>
+    <atom:updated>2010-06-23T13:18:02.15+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="application/vnd.ms-excel" href="http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.media" length="6656"/>
+    <atom:content src="http://localhost:8081/atombeat/atombeat/content/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.media" type="application/vnd.ms-excel"/>
+    <atom:title type="text">spreadsheet1.xls</atom:title>
+    <atom:summary type="text">this is a great spreadsheet</atom:summary>
+    <atom:category scheme="foo" term="bar" label="baz"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/948d2173-41a5-40a8-b0f0-a4b31bf102e3.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+An HTML form to create an appropriate multipart/form-data request might look something like...
+
+{{{
+<form 
+  action="/atombeat/atombeat/content/test"
+  enctype="multipart/form-data"  
+  method="post">
+  <p>Summary:<br/><input type="text" name="summary" size="30"/></p>
+  <p>Select file:<br/><input type="file" name="media" size="40"></p>
+  <input type="hidden" name="category" value="scheme=&quot;foo&quot;; term=&quot;bar&quot;; label=&quot;baz&quot;"/>
+  <p><input type="submit" value="Submit"/></p>
+</form>
+}}}
+
+An XForm to send an appropriate request might look like (e.g., using Orbeon)...
+
+{{{
+<html xmlns:xforms="http://www.w3.org/2002/xforms"
+    xmlns="http://www.w3.org/1999/xhtml"
+    xmlns:xxforms="http://orbeon.org/oxf/xml/xforms"
+    xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ev="http://www.w3.org/2001/xml-events"
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:xi="http://www.w3.org/2001/XInclude"
+    xmlns:atombeat="http://purl.org/atombeat/xmlns">
+    
+    <head>
+    
+        <title>Spike Upload</title>
+        
+        <xforms:model>
+
+        	<xforms:instance id="ins-upload">
+        		<upload xmlns="">
+        			<summary/>
+        			<media
+        				filename=""
+        				mediatype=""
+        				size=""
+        				xsi:type="xs:anyURI"/>
+        			<category>term="foo"; scheme="bar"; label="baz"</category>
+        		</upload>
+        	</xforms:instance>
+        	
+        	<xforms:submission
+        		id="sub-form-data-post"
+        		method="form-data-post"
+        		resource="/atombeat/content/test"
+        		replace="instance"
+        		instance="ins-post-response"
+        		ref="instance('ins-upload')">
+        	</xforms:submission>
+        	
+        	<xforms:instance id="ins-post-response">
+        		<foo xmlns=""/>
+        	</xforms:instance>
+ 
+        </xforms:model>
+
+    </head>
+    <body>
+
+    	<h1>Spike Upload</h1>
+    	
+    	<xforms:group ref="instance('ins-upload')">
+
+    		<p>
+    			
+    			<!-- Upload field -->
+    			<xforms:upload ref="media" xxforms:size="60">
+    				<xforms:label>Upload file: </xforms:label>
+    				<xforms:filename ref="@filename"/>
+    				<xforms:mediatype ref="@mediatype"/>
+    				<xxforms:size ref="@size"/>
+    			</xforms:upload>
+    			
+    		</p>
+    		
+    		<p>
+    			<xforms:textarea ref="summary">
+    				<xforms:label>Summary: </xforms:label>
+    			</xforms:textarea>
+    		</p>
+
+    	</xforms:group>
+    	
+    	<p>
+    		<xforms:submit submission="sub-form-data-post">
+    			<xforms:label>Submit (form-data-post)</xforms:label>
+    		</xforms:submit>
+    	</p>
+    	    	
+    </body>
+</html>
+}}}
+
+
