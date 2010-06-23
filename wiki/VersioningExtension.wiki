@@ -4,7 +4,7 @@
 
 = Introduction =
 
-This page has informal documentation on the AtomBeat implementation of the [http://tools.ietf.org/html/draft-snell-atompub-revision-00 Atom Syndication Format Revision Tracking IETF draft]. Although the draft expired some time ago, we've found it to be a very useful, simple approach to managing versioned data and metadata.
+This page has informal documentation on the AtomBeat implementation of the [http://tools.ietf.org/html/draft-snell-atompub-revision-00 Atom Syndication Format Revision Tracking IETF draft]. Although the draft expired some time ago, we've found it to be a very useful, simple approach to managing versioned data and metadata. If anyone else is interested in this draft, we would be interested to pursue standardisation further.
 
 Consult [http://tools.ietf.org/html/draft-snell-atompub-revision-00 the draft] for normative documentation on the Atom format extensions and link relations used by AtomBeat and illustrated below. See also the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestHistoryProtocol.java TestHistoryProtocol.java] test case.
 
