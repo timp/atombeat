@@ -159,24 +159,211 @@ Cache-Control: no-cache
 Date: Mon, 21 Jun 2010 18:21:16 GMT
 }}}
 
+Any subsequent GET request to the member URI will result in a 404 response.
+
 == Listing a Collection ==
 
-TODO
+Sending a GET request to a collection URI...
+
+{{{
+GET /atombeat/atombeat/content/test HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...will result in a 200 response...
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 09:51:02 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/test</atom:id>
+    <atom:updated>2010-06-23T10:51:02.966+01:00</atom:updated>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/content/test" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/content/test" type="application/atom+xml"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test" type="application/atom+xml"/>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/test/f4117db5-77d7-4d9d-9ef7-7afa7a02e51f.atom</atom:id>
+        <atom:published>2010-06-23T10:51:02.966+01:00</atom:published>
+        <atom:updated>2010-06-23T10:51:02.966+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/f4117db5-77d7-4d9d-9ef7-7afa7a02e51f.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/f4117db5-77d7-4d9d-9ef7-7afa7a02e51f.atom"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:title>Test Entry</atom:title>
+        <atom:summary>this is a test</atom:summary>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/f4117db5-77d7-4d9d-9ef7-7afa7a02e51f.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/test/139427ca-7f91-44c4-ad2c-6bdaca875698.atom</atom:id>
+        <atom:published>2010-06-23T10:51:02.72+01:00</atom:published>
+        <atom:updated>2010-06-23T10:51:02.72+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/139427ca-7f91-44c4-ad2c-6bdaca875698.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/139427ca-7f91-44c4-ad2c-6bdaca875698.atom"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:title>Test Entry</atom:title>
+        <atom:summary>this is a test</atom:summary>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/139427ca-7f91-44c4-ad2c-6bdaca875698.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+</atom:feed>
+}}}
 
 == Creating a Media Resource ==
 
-TODO 
- 
+Sending a POST request with a mediatype that not `application/atom+xml`...
+
+{{{
+POST /atombeat/atombeat/content/test HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 15
+Content-Type: text/plain;charset=utf-8
+
+This is a test.HTTP/1.1 
+}}}
+
+...will result in a 201 response...
+
+{{{
+201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.atom
+Content-Location: http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 09:54:01 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.atom</atom:id>
+    <atom:published>2010-06-23T10:54:01.533+01:00</atom:published>
+    <atom:updated>2010-06-23T10:54:01.533+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.media" length="15"/>
+    <atom:content src="http://localhost:8081/atombeat/atombeat/content/test/a671667d-f01f-427f-8021-99091fbff6b0.media" type="text/plain"/>
+    <atom:title type="text">download-a671667d-f01f-427f-8021-99091fbff6b0.media</atom:title>
+    <atom:summary type="text">media resource</atom:summary>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/a671667d-f01f-427f-8021-99091fbff6b0.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/a671667d-f01f-427f-8021-99091fbff6b0.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
 == Retrieving a Media Resource ==
 
-TODO
+Sending a GET request to a media resource URI...
+
+{{{
+GET /atombeat/atombeat/content/test/8ccc487b-f67e-4cde-b9f4-3be65bd698d0.media HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...will result in a 200 response...
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Disposition: attachment; filename="download-8ccc487b-f67e-4cde-b9f4-3be65bd698d0.media"
+Content-Type: text/plain;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 09:57:01 GMT
+
+This is a test.
+}}}
+
+Note that the text content of the `atom:title` element in the associated media-link entry will be used as the value of the `filename` parameter in the `Content-Disposition` response header. I.e., you can use the `atom:title` to store the file name of the media resource.
 
 == Updating a Media Resource ==
 
-TODO
+Sending a PUT request to a media resource URI with a mediatype that not `application/atom+xml`...
+
+{{{
+PUT /atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.media HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 25
+Content-Type: text/plain;charset=utf-8
+
+This is a test - updated.HTTP/1.1 
+}}}
+
+...will result in a 200 response...
+
+{{{
+200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Location: http://localhost:8081/atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 10:01:10 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.atom</atom:id>
+    <atom:published>2010-06-23T11:01:10.798+01:00</atom:published>
+    <atom:updated>2010-06-23T11:01:10.94+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.media" length="25"/>
+    <atom:content type="text/plain" src="http://localhost:8081/atombeat/atombeat/content/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.media"/>
+    <atom:title type="text">download-03dc72f7-c162-4d81-b022-23dc39d24ca1.media</atom:title>
+    <atom:summary type="text">media resource</atom:summary>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/test/03dc72f7-c162-4d81-b022-23dc39d24ca1.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
 
 == Deleting a Media Resource ==
 
-TODO 
+Sending a DELETE request to a media resource URI...
+
+{{{
+DELETE /atombeat/atombeat/content/test/ec40e120-5b9d-4b1e-980a-de4402dc8dee.media HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...will result in a 204 response...
+
+{{{
+HTTP/1.1 204 No Content
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Date: Wed, 23 Jun 2010 10:03:19 GMT
+}}}
+
+Any subsequent request to the media resource URI *or* the member URI of the associated media-link entry will result in a 404 response. I.e., *both* the media resource and the media-link entry will be deleted.
+
+Note also that sending a DELETE request to the member URI of a media-link entry will delete *both* the media-link entry and the associated media resource.
 
 
