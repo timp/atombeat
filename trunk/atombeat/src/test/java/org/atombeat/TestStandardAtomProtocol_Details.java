@@ -66,7 +66,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 	
 	
 	
-	public void testPutAtomEntryToCollectionUriIsBadRequest() {
+	public void testPutAtomEntryToCollectionUriIsClientError() {
 		
 		PutMethod method = new PutMethod(TEST_COLLECTION_URI);
 		String content = 
@@ -205,7 +205,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		method.setRequestHeader("Slug", "foo bar");
+		method.setRequestHeader("Slug", "foo bar.txt");
 		executeMethod(method);
 		
 		Document mediaLinkDoc = getResponseBodyAsDocument(method);
@@ -217,7 +217,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		String contentDisposition = get.getResponseHeader("Content-Disposition").getValue();
 		assertNotNull(contentDisposition);
 		
-		assertEquals("attachment; filename=\"foo bar\"", contentDisposition);
+		assertEquals("attachment; filename=\"foo bar.txt\"", contentDisposition);
 		
 	}
 
@@ -282,7 +282,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 	
 	
 	
-	public void testPutMediaContentToAtomEntry() {
+	public void testPutMediaContentToMemberUriIsClientError() {
 
 		// setup test
 		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
@@ -298,10 +298,41 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		assertEquals(415, putResult);
 
 	}
+
+	
+	
+	public void testPutAtomFeedToMemberUriIsClientError() {
+		
+		// setup test
+		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+
+		PutMethod method = new PutMethod(location);
+		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection - Updated</atom:title></atom:feed>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method);
+		
+		assertEquals(400, result);
+
+	}
+	
+	
+	public void testPutMediaContentToCollectionUriIsClientError() {
+
+		// put media
+		PutMethod put = new PutMethod(TEST_COLLECTION_URI);
+		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
+		String contentType = "application/vnd.ms-excel";
+		setInputStreamRequestEntity(put, content, contentType);
+		int putResult = executeMethod(put);
+		
+		// check result
+		assertEquals(415, putResult);
+
+	}
 	
 	
 	
-	public void testPutAtomEntryToMediaResource() {
+	public void testPutAtomEntryToMediaResourceUriIsClientError() {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -314,6 +345,27 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:title>Test Member - Updated</atom:title>" +
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method);
+
+		assertEquals(415, result);
+
+	}
+	
+	
+	
+	public void testPutAtomFeedToMediaResourceUriIsClientError() {
+
+		// setup test
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+		
+		// now try PUT atom entry to media location
+		PutMethod method = new PutMethod(mediaLocation);
+		String content = 
+			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Collection</atom:title>" +
+			"</atom:feed>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method);
 

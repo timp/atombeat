@@ -340,11 +340,7 @@ declare function sp:after-create-media(
     let $resource-descriptor-installed := sp:install-resource-descriptor( $request-path-info , $media-resource-db-path )
     let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
     
-    (: need to workaround html response for create media with multipart request :)
-    let $response-data := 
-        if ( starts-with( $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value , $CONSTANT:MEDIA-TYPE-ATOM ) )
-        then sp:augment-entry( $entry-path-info , $response-data )
-        else $response-data
+    let $response-data := sp:augment-entry( $entry-path-info , $response-data )
 
 	return
 	
