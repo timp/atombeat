@@ -14,9 +14,9 @@ AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spe
 
   * [AtomProtocolExtensions#Posting_Media_From_Forms Protocol Extensions for Posting Media Directly From HTML Forms or XForms]: create media resources using multipart/form-data requests.
 
-  * [AtomProtocolExtensions#Multi-Create Protocol Extensions for Creating Multiple Collection Members in a Single Request]: add one or more members to a collection in a single request; copy one collection to another. 
+  * [AtomProtocolExtensions#Multi-Create Protocol Extensions for Creating Multiple Collection Members in a Single Request]: add one or more members to a collection in a single request; copy one collection to another, including media resources. 
 
-  * Protocol and Format Extensions for Versioning Collection Members: retrieve a version history feed for any Atom entry; retrieve any previous revision of an Atom entry.
+  * [VersioningExtension Protocol and Format Extensions for Versioning]: retrieve a version history feed for any collection member; retrieve any previous revision of a member.
 
   * Security extensions for management of access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
 
