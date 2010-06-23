@@ -368,4 +368,93 @@ Any subsequent request to the media resource URI *or* the member URI of the asso
 
 Note also that sending a DELETE request to the member URI of a media-link entry will delete *both* the media-link entry and the associated media resource.
 
+= Conditional Requests Using ETags =
+
+== Conditionally Retrieving a Collection Member ==
+
+Sending a GET request with a `If-None-Match` header to a member URI...
+
+{{{
+GET /atombeat/atombeat/content/test/bd9f61cf-b030-4dd8-8372-04c8310fc855.atom HTTP/1.1
+If-None-Match: "29d0d0352cbe1dde0ef8f173306467dc"
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...will result in a 304 response if the supplied ETag matches the current state of the member (i.e., if the member has not been updated since the ETag was obtained)...
+
+{{{
+HTTP/1.1 304 Not Modified
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Date: Wed, 23 Jun 2010 10:12:23 GMT
+}}}
+
+== Conditionally Updating a Collection Member ==
+
+Sending a PUT request with a `If-Match` header to a member URI...
+
+{{{
+PUT /atombeat/atombeat/content/test/03a181ea-5746-4ffb-b07b-8dc452d7467c.atom HTTP/1.1
+If-Match: foo
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 168
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom"><atom:title>Test Member - Updated</atom:title><atom:summary>This is a summary, updated.</atom:summary></atom:entry>
+}}}
+
+...will result in a 412 response if the current state of the member does not match the supplied ETag (i.e., if the member has been updated since the ETag was obtained)...
+
+{{{
+HTTP/1.1 412 Precondition Failed
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 10:17:30 GMT
+
+<error>
+    <status>412</status>
+    <message>The entity tag does not match. The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server.</message>
+    <request>
+        <method>PUT</method>
+        <path-info>/test/03a181ea-5746-4ffb-b07b-8dc452d7467c.atom</path-info>
+        <parameters/>
+        <headers>
+            <header>
+                <name>if-match</name>
+                <value>foo</value>
+            </header>
+            <header>
+                <name>authorization</name>
+                <value>Basic YWRhbTp0ZXN0</value>
+            </header>
+            <header>
+                <name>user-agent</name>
+                <value>Jakarta Commons-HttpClient/3.1</value>
+            </header>
+            <header>
+                <name>host</name>
+                <value>localhost:8081</value>
+            </header>
+            <header>
+                <name>content-length</name>
+                <value>168</value>
+            </header>
+            <header>
+                <name>content-type</name>
+                <value>application/atom+xml; charset=utf-8</value>
+            </header>
+        </headers>
+        <user>adam</user>
+        <roles>ROLE_ADMINISTRATOR ROLE_USER</roles>
+    </request>
+</error>
+}}}
 
