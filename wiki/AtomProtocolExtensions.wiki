@@ -1,5 +1,7 @@
 #summary extensions to the Atom Protocol
 
+<wiki:toc/>
+
 = Introduction =
 
 This page has informal documentation on extensions to the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Publishing Protocol standard] that we've found useful to implement while developing applications against AtomBeat. Some of these extensions may be contentious from the point of view of REST, HTTP 1.1, or the Atom Protocol standard, and we would appreciate input and discussion - please feel free to add comments on this page.
