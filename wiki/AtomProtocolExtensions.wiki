@@ -391,7 +391,7 @@ While the standard Atom Protocol operation for creating media resources, by send
 
 To work around this, the AtomBeat Atom Protocol engine has custom behaviour for handling multipart/form-data requests that follow a particular convention, so you can upload files to an AtomBeat collection directly from an HTML form or XForm.
 
-Note that some JavaScript client libraries (e.g., GWT) report inconsistent browser behaviour when returning anything other than text/html from a form post request. If this is an issue for you, let us know, and we can look into returning text/html by default, but enabling some primitive content negiotation for others who want application/atom+xml (this feature was available in previous versions of AtomBeat but has been removed due to issues with the previous implementation). 
+Note that some !JavaScript client libraries (e.g., [http://google-web-toolkit.googlecode.com/svn/javadoc/2.1/com/google/gwt/user/client/ui/FormPanel.html#FormPanel%28%29 GWT]) report inconsistent browser behaviour when returning anything other than text/html from a form post request, if you want to handle the response in a hidden iframe. If this is an issue for you, let us know, and we can look into returning text/html by default, but enabling some primitive content negiotation for others who want application/atom+xml (this feature was available in previous versions of AtomBeat but has been removed due to issues with the previous implementation). 
 
 See also the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestExtendedAtomProtocol_MultipartFormdata.java TestExtendedAtomProtocol_MultipartFormdata.java test case].
 
