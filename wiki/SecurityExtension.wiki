@@ -1,5 +1,7 @@
 #summary documentation on the AtomBeat security system
 
+<wiki:toc/>
+
 = Introduction =
 
 AtomBeat implements a security system based on access control lists, inspired by the approach used in NFS and the !WebDav ACL extension. 
