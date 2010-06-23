@@ -626,45 +626,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
         
-	let $accept := request:get-header( $CONSTANT:HEADER-ACCEPT )
-	
-	let $response-data :=
-	
-		(: 
-		 : Do very naive processing of accept header. If header is set
-		 : and is exactly "application/atom+xml" then return the media-
-		 : link entry, otherwise fall back to text/html output to 
-		 : support browser applications programmatically manipulating
-		 : HTML forms.
-		 :)
-		 
-		if ( $accept = "application/atom+xml" )
-		
-		then $media-link
-	
-		else 
-		
-			<html>
-				<head>
-					<title>{$CONSTANT:STATUS-SUCCESS-OK}</title>
-				</head>
-				<body>{ comment { util:serialize( $media-link , () ) } }</body>
-			</html>
-				
-	let $response-content-type :=
-
-		if ( $accept = "application/atom+xml" )
-		
-		then $CONSTANT:MEDIA-TYPE-ATOM 
-	
-		else "text/html"
-
     let $location := $media-link/atom:link[@rel="edit"]/@href cast as xs:string
-       
-    let $header-content-location := 
-        if ( $accept = "application/atom+xml" )
-        then <header><name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name><value>{$location}</value></header>
-        else ()
 
 	return
 	
@@ -673,17 +635,18 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$response-content-type}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
 	            </header>
 	            <header>
 	                <name>{$CONSTANT:HEADER-LOCATION}</name>
 	                <value>{$location}</value>
 	            </header>
-            {
-                $header-content-location
-            }
+	            <header>
+	                <name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name>
+	                <value>{$location}</value>
+                </header>
 	        </headers>
-	        <body>{$response-data}</body>
+	        <body>{$media-link}</body>
 	    </response>
 
 };
@@ -732,25 +695,30 @@ declare function atom-protocol:do-put-atom(
 ) as element(response)
 {
 
-	let $request-data := request:get-data()
-
-	return
-	
-		if (
-			local-name( $request-data ) = $CONSTANT:ATOM-FEED and 
-			namespace-uri( $request-data ) = $CONSTANT:ATOM-NSURI
-		)
-		
-		then atom-protocol:do-put-atom-feed( $request-path-info , $request-data )
-
-		else if (
-			local-name( $request-data ) = $CONSTANT:ATOM-ENTRY and 
-			namespace-uri( $request-data ) = $CONSTANT:ATOM-NSURI
-		)
-		
-		then atom-protocol:do-put-atom-entry( $request-path-info , $request-data )
-		
-		else common-protocol:do-bad-request( $request-path-info , "Request entity must be either atom feed or atom entry." )
+    if ( atomdb:media-resource-available( $request-path-info ) )
+    then common-protocol:do-unsupported-media-type( "You cannot PUT content with mediatype application/atom+xml to a media resource URI." , $request-path-info )
+    
+    else
+ 	 
+    	let $request-data := request:get-data()
+    
+    	return
+    	
+    		if (
+    			local-name( $request-data ) = $CONSTANT:ATOM-FEED and 
+    			namespace-uri( $request-data ) = $CONSTANT:ATOM-NSURI
+    		)
+    		
+    		then atom-protocol:do-put-atom-feed( $request-path-info , $request-data )
+    
+    		else if (
+    			local-name( $request-data ) = $CONSTANT:ATOM-ENTRY and 
+    			namespace-uri( $request-data ) = $CONSTANT:ATOM-NSURI
+    		)
+    		
+    		then atom-protocol:do-put-atom-entry( $request-path-info , $request-data )
+    		
+    		else common-protocol:do-bad-request( $request-path-info , "Request entity must be either atom feed or atom entry." )
 
 };
 
@@ -777,23 +745,30 @@ declare function atom-protocol:do-put-atom-feed(
 ) as element(response)
 {
 
-	(: TODO what if $request-path-info points to a member or media resource? :)
+    (:
+     : Check for bad request.
+     :)
+    
+    if ( atomdb:member-available( $request-path-info ) )
+    then common-protocol:do-bad-request( $request-path-info , "You cannot PUT an atom:feed to a member URI." )
+    
+    else
 	
-	(: 
-	 : We need to know whether an atom collection already exists at the 
-	 : request path, in which case the request will update the feed metadata,
-	 : or whether no atom collection exists at the request path, in which case
-	 : the request will create a new atom collection and initialise the atom
-	 : feed document with the given feed metadata.
-	 :)
-	 
-	let $create := not( atomdb:collection-available( $request-path-info ) )
-
-	return
-	
-		if ( $create )
-		then atom-protocol:do-put-atom-feed-to-create-collection( $request-path-info , $request-data )
-		else atom-protocol:do-put-atom-feed-to-update-collection( $request-path-info , $request-data )	
+    	(: 
+    	 : We need to know whether an atom collection already exists at the 
+    	 : request path, in which case the request will update the feed metadata,
+    	 : or whether no atom collection exists at the request path, in which case
+    	 : the request will create a new atom collection and initialise the atom
+    	 : feed document with the given feed metadata.
+    	 :)
+    	 
+    	let $create := not( atomdb:collection-available( $request-path-info ) )
+    
+    	return
+    	
+    		if ( $create )
+    		then atom-protocol:do-put-atom-feed-to-create-collection( $request-path-info , $request-data )
+    		else atom-protocol:do-put-atom-feed-to-update-collection( $request-path-info , $request-data )	
 
 };
 
@@ -907,10 +882,7 @@ declare function atom-protocol:do-put-atom-entry(
 	 :)
 	 
  	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then common-protocol:do-bad-request( $request-path-info , "You cannot PUT and atom:entry to a collection URI." )
- 	 
- 	 else if ( atomdb:media-resource-available( $request-path-info ) )
- 	 then common-protocol:do-unsupported-media-type( $request-path-info )
+ 	 then common-protocol:do-bad-request( $request-path-info , "You cannot PUT an atom:entry to a collection URI." )
  	 
  	 else
  	  
@@ -1043,10 +1015,10 @@ declare function atom-protocol:do-put-media(
 
 	
  	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then common-protocol:do-unsupported-media-type( $request-path-info )
+ 	 then common-protocol:do-unsupported-media-type( "You cannot PUT media content to a collection URI." , $request-path-info )
  	 
  	 else if ( atomdb:member-available( $request-path-info ) )
- 	 then common-protocol:do-unsupported-media-type( $request-path-info )
+ 	 then common-protocol:do-unsupported-media-type( "You cannot PUT media content to a member URI." , $request-path-info )
  	 
  	 else
 

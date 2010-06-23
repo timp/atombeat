@@ -187,11 +187,12 @@ declare function common-protocol:do-forbidden(
 
 
 declare function common-protocol:do-unsupported-media-type(
+	$message as xs:string? ,
 	$request-path-info as xs:string
 ) as element(response)
 {
 
-    let $message := "The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method."
+    let $message := concat( $message , " The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method." )
 
     return
     
@@ -205,6 +206,18 @@ declare function common-protocol:do-unsupported-media-type(
             </headers>
             <body type="text">{$message}</body>
         </response>
+
+};
+
+
+
+
+declare function common-protocol:do-unsupported-media-type(
+	$request-path-info as xs:string 
+) as element(response)
+{
+
+    common-protocol:do-unsupported-media-type( $request-path-info , () )
 
 };
 

@@ -65,7 +65,7 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 	
 	
 	
-	public void testMultipartRequestWithFileAcceptAtom() {
+	public void testMultipartRequestWithFile() {
 		
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
 		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
@@ -75,7 +75,6 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
 		Part[] parts = { fp , sp1 , sp2 };
 		setMultipartRequestEntity(post, parts);
-		post.setRequestHeader("Accept", "application/atom+xml");
 		int result = executeMethod(post);
 		
 		// expect the status code is 200 OK
@@ -112,48 +111,8 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 
 
 
-	public void testMultipartRequestWithFileDefault() {
-		
-		// now create a new media resource by POSTing multipart/form-data to the collection URI
-		PostMethod post = createMultipartRequest(TEST_COLLECTION_URI);
-		int result = executeMethod(post);
-		
-		assertEquals(201, result);
-
-		// expect the Location header is set with an absolute URI
-		String responseLocation = post.getResponseHeader("Location").getValue();
-		assertNotNull(responseLocation);
-		
-		assertTrue(responseLocation.startsWith("http://")); 
-		// N.B. we shouldn't assume any more than this, because entry could have
-		// a location anywhere
-		
-		// expect Content-Type header 
-		
-		// without an Accept request header, we expect the response to default
-		// to text/html content, to be compatible with use from GWT clients
-		// and other browser environments where other content types cause
-		// inconsistent behaviour across browsers
-		String responseContentType = post.getResponseHeader("Content-Type").getValue();
-		assertNotNull(responseContentType);
-		assertTrue(responseContentType.trim().startsWith("text/html"));
-		
-	}
 	
 	
-	
-	private PostMethod createMultipartRequest(String collectionUri) {
-		
-		PostMethod post = new PostMethod(collectionUri);
-		File file = new File(this.getClass().getClassLoader().getResource("spreadsheet1.xls").getFile());
-		FilePart fp = createFilePart(file, "spreadsheet1.xls", "application/vnd.ms-excel", "media");
-		StringPart sp1 = new StringPart("summary", "this is a great spreadsheet");
-		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
-		Part[] parts = { fp , sp1 , sp2 };
-		setMultipartRequestEntity(post, parts);
-		return post;
-		
-	}
 
 	
 	
