@@ -2,19 +2,19 @@
 
 = Introduction =
 
-AtomBeat implements a security system based on access control lists, inspired by the approach used in NFS and the WebDav ACL extension. 
+AtomBeat implements a security system based on access control lists, inspired by the approach used in NFS and the !WebDav ACL extension. 
 
-The motivation for this was that we commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules to two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.  
+We commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules for two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.  
 
-To support this kind of scenario, AtomBeat implements a *security plugin* for the main Atom protocol engine, which can be configured to intercept all incoming requests, and to apply access control lists and allow or deny the request as appropriate. The security plugin is optional, so you don't have to enable it. 
+To support this kind of scenario, AtomBeat implements a *security plugin* for the main Atom protocol engine, which can be configured to intercept all incoming requests, and to apply access control lists and allow or deny the request as appropriate. The security plugin is optional, so you don't have to enable it if you don't want to. 
 
-AtomBeat also implements a *security protocol* which enables you to retrieve and update access control lists for a workspace, collections and members, using the Atom Protocol.
+AtomBeat also implements a *security protocol* which enables you to retrieve and update access control lists for a workspace, collections and members, using a subset of the Atom Protocol.
 
 = Authentication; Roles =
 
 *AtomBeat does not implement any kind of authentication*. To use the AtomBeat security system, you will need to implement or configure some sort of authentication yourself. E.g., you could use Spring Security to implement HTTP digest authentication with user credentials stored in a relational database. Or you could use your favourite servlet container's built-in authentication options. Or you could roll your own.
 
-Similarly, *AtomBeat does not implement any kind of user role management*. If you want to use access control entries based on roles (which you can do with AtomBeat), you will first need to implement or configure some sort of role management system yourself. E.g., you could use Spring Security to store and retrieve role information for authenticated users from a relational database. Or you could use your favourite servlet container's build-in role management options. Or you could roll your own.
+Similarly, *AtomBeat does not implement any kind of user role management*. If you want to use access control entries based on roles (which you can do with AtomBeat), you will first need to implement or configure some sort of role management system yourself. E.g., you could use Spring Security to store and retrieve role information for authenticated users from a relational database. Or you could use your favourite servlet container's built-in role management options. Or you could roll your own.
 
 The point is, AtomBeat expects that, by the time the request reaches AtomBeat for processing, *the user will have already been authenticated*. It also expects that the authenticated user's username will have been stored in a request attribute using the attribute key "user-name" (this is configurable, TODO link to config docs). 
 
@@ -82,6 +82,116 @@ public class MinimalSpringSecuritySetUserRequestAttributesFilter extends HttpFil
 The AtomBeat workspace, each Atom collection, each collection member, and each media resource, has an associated *security descriptor*, which contains an access control list. Each security descriptor has a URI, and the security descriptor can be retrieved and updated using standard Atom Protocol retrieve member and update member requests (i.e., GET and PUT).
 
 See also the  [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestSecurityProtocol.java TestSecurityProtocol.java] test case
+
+== Retrieve the Workspace Security Descriptor ==
+
+To retrieve the workspace security descriptor, send a GET request to the security service base URL. E.g., ...
+
+{{{
+GET /atombeat/atombeat/security/ HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 17:29:33 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/security/</atom:id>
+    <atom:title type="text">Security Descriptor</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/security/" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/security/" type="application/atom+xml"/>
+    <atom:updated>2010-06-23T18:29:33.129+01:00</atom:updated>
+    <atom:content type="application/vnd.atombeat+xml">
+        <atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>UPDATE_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>LIST_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>UPDATE_ACL</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                    <atombeat:permission>MULTI_CREATE</atombeat:permission>
+                </atombeat:ace><!-- you could also use a wildcard --><!--
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                <atombeat:permission>*</atombeat:permission>
+            </atombeat:ace>
+            -->
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+    </atom:content>
+</atom:entry>
+}}}
 
 == Retrieve a Collection Security Descriptor ==
 
@@ -247,4 +357,277 @@ Date: Wed, 23 Jun 2010 16:54:21 GMT
 </atom:entry>
 }}}
 
- 
+== Retrieve a Member Security Descriptor ==
+
+To retrieve the security descriptor for an Atom collection member, retrieve the member, then follow the `http://purl.org/atombeat/rel/security-descriptor` link found in the Atom entry document.
+
+E.g., retrieve a member...
+
+{{{
+GET /atombeat/atombeat/content/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom HTTP/1.1
+Authorization: Basic YXVkcmV5OnRlc3Q=
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+ETag: "319d8fe2d88f64cef8905fb3a38eb2b9"
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 17:21:49 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom</atom:id>
+    <atom:published>2010-06-23T18:21:49.429+01:00</atom:published>
+    <atom:updated>2010-06-23T18:21:49.429+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom"/>
+    <atom:author>
+        <atom:name>audrey</atom:name>
+    </atom:author>
+    <atom:title>Test Entry</atom:title>
+    <atom:summary>this is a test</atom:summary>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+...then follow the `http://purl.org/atombeat/rel/security-descriptor` link...
+
+{{{
+GET /atombeat/atombeat/security/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 17:21:49 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/security/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom</atom:id>
+    <atom:title type="text">Security Descriptor</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/security/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/security/foo/4b82ad6c-43d9-481a-9c75-8c99b026f2f8.atom" type="application/atom+xml"/>
+    <atom:updated>2010-06-23T18:21:49.436+01:00</atom:updated>
+    <atom:content type="application/vnd.atombeat+xml">
+        <atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+            <atombeat:acl><!-- 
+		    The user who created the resource has full rights.
+		    -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>UPDATE_ACL</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+    </atom:content>
+</atom:entry>
+}}} 
+
+== Retrieve a Media Resource Security Descriptor ==
+
+To retrieve the security descriptor for a media resource, obtain a media-link entry, then follow the `http://purl.org/atombeat/rel/media-security-descriptor` link found in the Atom entry document.
+
+E.g., create a media resource...
+
+{{{
+POST /atombeat/atombeat/content/foo HTTP/1.1
+Authorization: Basic YXVkcmV5OnRlc3Q=
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 15
+Content-Type: text/plain;charset=utf-8
+
+This is a test.
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.atom
+Content-Location: http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.atom
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 17:24:40 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.atom</atom:id>
+    <atom:published>2010-06-23T18:24:40.587+01:00</atom:published>
+    <atom:updated>2010-06-23T18:24:40.587+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media" length="15"/>
+    <atom:content src="http://localhost:8081/atombeat/atombeat/content/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media" type="text/plain"/>
+    <atom:title type="text">download-3dbdbac4-affe-4a7a-83c8-ce126e449405.media</atom:title>
+    <atom:summary type="text">media resource</atom:summary>
+    <atom:author>
+        <atom:name>audrey</atom:name>
+    </atom:author>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+...then follow the `http://purl.org/atombeat/rel/media-security-descriptor` link...
+
+{{{
+GET /atombeat/atombeat/security/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media HTTP/1.1
+Authorization: Basic YXVkcmV5OnRlc3Q=
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 17:24:40 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/security/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media</atom:id>
+    <atom:title type="text">Security Descriptor</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/security/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/security/foo/3dbdbac4-affe-4a7a-83c8-ce126e449405.media" type="application/atom+xml"/>
+    <atom:updated>2010-06-23T18:24:40.596+01:00</atom:updated>
+    <atom:content type="application/vnd.atombeat+xml">
+        <atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+            <atombeat:acl><!-- 
+		    The user who created the resource has full rights.
+		    -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">audrey</atombeat:recipient>
+                    <atombeat:permission>UPDATE_ACL</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+    </atom:content>
+</atom:entry>
+}}}
+
+== Updating a Security Descriptor ==
+
+Any security descriptor can be updated using the standard Atom Protocol update request, i.e., a PUT with an Atom entry document, to the URL found in the `edit` link.
+
+E.g., updating a collection security descriptor (in this case, to remove all access control entries)...
+
+{{{
+PUT /atombeat/atombeat/security/foo HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 255
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+	<atom:content type="application/vnd.atombeat+xml">
+		<atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+			<atombeat:acl/>
+		</atombeat:security-descriptor>
+	</atom:content>
+</atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 17:31:55 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/security/foo</atom:id>
+    <atom:title type="text">Security Descriptor</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/security/foo" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/security/foo" type="application/atom+xml"/>
+    <atom:updated>2010-06-23T18:31:55.792+01:00</atom:updated>
+    <atom:content type="application/vnd.atombeat+xml">
+        <atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+            <atombeat:acl/>
+        </atombeat:security-descriptor>
+    </atom:content>
+</atom:entry>
+}}}
