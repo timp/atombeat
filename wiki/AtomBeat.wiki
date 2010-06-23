@@ -16,9 +16,9 @@ AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spe
 
   * [AtomProtocolExtensions#Multi-Create Protocol Extensions for Creating Multiple Collection Members in a Single Request]: add one or more members to a collection in a single request; copy one collection to another, including media resources. 
 
-  * [VersioningExtension Protocol and Format Extensions for Versioning]: retrieve a version history feed for any collection member; retrieve any previous revision of a member.
+  * [VersioningExtension Protocol and Format Extensions for Versioning]: create versioned collections; retrieve a version history feed for any collection member; retrieve any previous revision of a member.
 
-  * Security extensions for management of access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
+  * [SecurityExtension Security Extensions for Access Control]: manage access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
 
   * A Plug-in Framework for Developing Custom Extensions: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
 
