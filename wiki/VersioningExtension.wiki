@@ -1,5 +1,242 @@
 #summary documentation on support for versioning
 
+<wiki:toc/>
+
 = Introduction =
 
-Add your content here.
+This page has informal documentation on the AtomBeat implementation of the [http://tools.ietf.org/html/draft-snell-atompub-revision-00 Atom Syndication Format Revision Tracking IETF draft]. Consult [http://tools.ietf.org/html/draft-snell-atompub-revision-00 the draft] for normative documentation on the Atom format extensions and link relations used by AtomBeat and illustrated below. See also the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestHistoryProtocol.java TestHistoryProtocol.java] test case.
+
+= Creating a Versioned Collection =
+
+To create a versioned collection, add the `atombeat:enable-versioning` extension attribute to the Atom feed document when creating the collection, e.g., ...
+
+{{{
+PUT /atombeat/atombeat/content/0.45963072441421815 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 202
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:feed 
+	xmlns:atom="http://www.w3.org/2005/Atom" 
+	xmlns:atombeat="http://purl.org/atombeat/xmlns" 
+	atombeat:enable-versioning="true">
+	<atom:title>Test Collection With Versioning</atom:title>
+</atom:feed>
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.45963072441421815
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 16:02:03 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:enable-versioning="true">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.45963072441421815</atom:id>
+    <atom:updated>2010-06-23T17:02:03.74+01:00</atom:updated>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815" type="application/atom+xml"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Collection With Versioning</atom:title>
+    <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/0.45963072441421815" type="application/atom+xml"/>
+</atom:feed>
+}}}
+
+Note that versioning cannot be turned off once the collection is created. I.e., if you were to update the feed document and set the value of `atombeat:enable-versioning` to `false`, this would have no effect. Similarly, versioning cannot be turned on after a collection has been created. TODO raise issue about this?
+
+= Retrieving a Member Version History =
+
+For a member in a versioned collection, the Atom entry will include an `atom:link` with `@rel="history"`. Retrieving the link URL will return a feed where each entry is a revision of the member.
+
+E.g., create a member...
+
+{{{
+POST /atombeat/atombeat/content/0.45963072441421815 HTTP/1.1
+X-Atom-Revision-Comment: first draft
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 161
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+	<atom:title>Test Member</atom:title>
+	<atom:summary>This is a summary, first daft.</atom:summary>
+</atom:entry>
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom
+Content-Location: http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom
+ETag: "99801958d0debdb5507195dd3a283d24"
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 16:02:03 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom</atom:id>
+    <atom:published>2010-06-23T17:02:03.917+01:00</atom:published>
+    <atom:updated>2010-06-23T17:02:03.917+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Member</atom:title>
+    <atom:summary>This is a summary, first daft.</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:updated>2010-06-23T17:02:03.917+01:00</atom:updated>
+        <atom:summary>first draft</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom" type="application/atom+xml"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+...then update it...
+
+{{{
+PUT /atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom HTTP/1.1
+X-Atom-Revision-Comment: second draft
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 168
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+	<atom:title>Test Member - Updated</atom:title>
+	<atom:summary>This is a summary, updated.</atom:summary>
+</atom:entry>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+ETag: "2798e16ff374028a57f3285d73bb47fc"
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 16:02:03 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom</atom:id>
+    <atom:published>2010-06-23T17:02:03.917+01:00</atom:published>
+    <atom:updated>2010-06-23T17:02:04.093+01:00</atom:updated>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Member - Updated</atom:title>
+    <atom:summary>This is a summary, updated.</atom:summary>
+    <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:updated>2010-06-23T17:02:04.093+01:00</atom:updated>
+        <atom:summary>second draft</atom:summary>
+    </ar:comment>
+    <atom:link rel="history" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom" type="application/atom+xml"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+</atom:entry>
+}}}
+
+...then send a GET request to the `history` link URL...
+
+{{{
+GET /atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+}}}
+
+...and receive the version history feed...
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 16:02:03 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:exclude-entry-content="true">
+    <atom:title>History</atom:title>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="1" when="2010-06-23T17:02:03.917+01:00" initial="yes"/>
+        <atom:link rel="current-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom?revision=1"/>
+        <atom:link rel="next-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom?revision=2"/>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom</atom:id>
+        <atom:published>2010-06-23T17:02:03.917+01:00</atom:published>
+        <atom:updated>2010-06-23T17:02:03.917+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+        <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:title>Test Member</atom:title>
+        <atom:summary>This is a summary, first daft.</atom:summary>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>adam</atom:name>
+            </atom:author>
+            <atom:updated>2010-06-23T17:02:03.917+01:00</atom:updated>
+            <atom:summary>first draft</atom:summary>
+        </ar:comment>
+    </atom:entry>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="2" when="2010-06-23T17:02:04.093+01:00" initial="no"/>
+        <atom:link rel="current-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom?revision=2"/>
+        <atom:link rel="previous-revision" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/history/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom?revision=1"/>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom</atom:id>
+        <atom:published>2010-06-23T17:02:03.917+01:00</atom:published>
+        <atom:updated>2010-06-23T17:02:04.093+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+        <atom:link rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.45963072441421815/8f187956-fbf7-4628-8bb7-66f9fd1865a4.atom"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:title>Test Member - Updated</atom:title>
+        <atom:summary>This is a summary, updated.</atom:summary>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>adam</atom:name>
+            </atom:author>
+            <atom:updated>2010-06-23T17:02:04.093+01:00</atom:updated>
+            <atom:summary>second draft</atom:summary>
+        </ar:comment>
+    </atom:entry>
+</atom:feed>
+}}}
+
+= Notes =
+
+== Entry Content is Excluded in History Feeds ==
+
+Note also that AtomBeat excludes any child of an `atom:content` element when generating a history feed. I.e., the Atom entries in a history feed are only a *partial* representation of the member at that revision. To retrieve a *complete* representation of the member at that revision, send a GET request to the `this-revision` link URL. The reason for this is that we typically use the `atom:content` element to store the data for each member, but when we retrieve a history feed we only want to retrieve the metadata for each revision, to efficiently present a revision history to a user. Each specified revision can then be retrieved in full, if desired.
+
+== Revision Comments and Revision Authors ==
+
+Note that AtomBeat will process a `X-Atom-Revision-Comment` header in the request to update a member of a versioned collection as a revision comment. 
+
+Note also that AtomBeat will *not* allow arbitrary insertion or modification of `ar:comment` elements in an Atom entry, rather it will automatically insert a single `ar:comment` after each update to the member, replacing the previous one. I.e., you are guaranteed that the information in the `ar:comment` element corresponds to the version in which it is found. This behaviour is not specified in James Snell's IETF draft, but we found this was the only way to reliably represent the author of the revision (i.e., who made that particular change) without creating further extension elements.
+
+

@@ -387,6 +387,10 @@ Date: Wed, 23 Jun 2010 11:55:17 GMT
 </atom:feed>
 }}}
 
+== Excluding Entry Content in Feeds ==
+
+Typically, we use content-based extensions of Atom in our applications. I.e., all the application-specific data is stored inside the `atom:content` element in an Atom entry. There is then a clear distinction between the metadata (all other children of `atom:entry`) and the data (child of `atom:content`). However, when some entries can contain a reasonable amount of data, retrieving a feed of the collection with a complete representation of every entry can be inefficient. This is the default behaviour, but you can turn it off by setting the `atombeat:exclude-entry-content` attribute on the collection feed document to `true`. If this attribute is set, any child element of the `atom:content` element will be removed when generating a collection feed. You can, of course, obtain a complete representation of a member by sending a GET request to the member URI.
+
 = Posting Media From Forms =
 
 While the standard Atom Protocol operation for creating media resources, by sending the media content as the body of a POST request, is simple and elegant, and very useful when working in desktop or server-side programming context, it is, unfortunately, impossible to use from a browser context (i.e., from an HTML form), or from XForms. This means that, if you want to use an Atom Protocol service to store file uploads, you have to write some sort of intermediate service that can receive form posts, and adapt them to standard Atom requests, which can be inconvenient.
