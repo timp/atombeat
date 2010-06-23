@@ -557,4 +557,240 @@ An XForm to send an appropriate request might look like (e.g., using Orbeon)...
 </html>
 }}}
 
+= Multi-Create =
 
+We've coming across situations where it is useful to create some new members one by one in a collection, then copy them all across in one go to another collection. This can of course be done by POSTing each entry one by one to the new collection, but it is more convenient to send the entries in a single request. AtomBeat supports a "multi-create" operation, where POSTing a feed document containing one or more entries to a collection URI will be processed as if each Atom entry had been individually POSTed to the collection URI.
+
+See also the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestExtendedAtomProtocol_MultiCreate.java TestExtendedAtomProtocol_MultiCreate.java test case].
+ 
+== Create One or More New Collection Members ==
+
+A POST request with an Atom Feed document containing one or more Atom entries to a collection URI...
+
+{{{
+POST /atombeat/atombeat/content/0.9214369778190652 HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 294
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:entry>
+        <atom:title>Test Member</atom:title>
+        <atom:summary>This is a summary.</atom:summary>
+    </atom:entry>
+    <atom:entry>
+        <atom:title>Another Test Member</atom:title>
+        <atom:summary>This is another summary.</atom:summary>
+    </atom:entry>
+</atom:feed>
+}}}
+
+...will be processed as if each Atom entry had been individually POSTed to the collection URI, thus creating a new member for each Atom entry in the submitted feed document, and will result in a 200 response, where the response is an Atom feed document containing the newly created members...
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 14:52:14 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.9214369778190652/9bd60358-e0b8-4b8c-9d8c-d337f40b3347.atom</atom:id>
+        <atom:published>2010-06-23T15:52:14.52+01:00</atom:published>
+        <atom:updated>2010-06-23T15:52:14.52+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9214369778190652/9bd60358-e0b8-4b8c-9d8c-d337f40b3347.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9214369778190652/9bd60358-e0b8-4b8c-9d8c-d337f40b3347.atom"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:title>Test Member</atom:title>
+        <atom:summary>This is a summary.</atom:summary>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/0.9214369778190652/9bd60358-e0b8-4b8c-9d8c-d337f40b3347.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/0.9214369778190652/c0e0c57e-3cb4-4098-b792-80929822bbd7.atom</atom:id>
+        <atom:published>2010-06-23T15:52:14.52+01:00</atom:published>
+        <atom:updated>2010-06-23T15:52:14.52+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9214369778190652/c0e0c57e-3cb4-4098-b792-80929822bbd7.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/0.9214369778190652/c0e0c57e-3cb4-4098-b792-80929822bbd7.atom"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:title>Another Test Member</atom:title>
+        <atom:summary>This is another summary.</atom:summary>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/0.9214369778190652/c0e0c57e-3cb4-4098-b792-80929822bbd7.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+</atom:feed>
+}}}
+
+== Copying Media Resources ==
+
+If an Atom entry in a multi-create request (as above) is a media-link entry, and the associated media resource is also hosted by the AtomBeat instance, then the effect will be to copy *both* the media resource and the media-link entry to the new collection. I.e., you can use the multi-create request to copy a set of media resources from one collection to another.
+
+E.g., retrieve a feed from the collection at `/foo`...
+
+{{{
+GET /atombeat/atombeat/content/foo HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 14:59:13 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/foo</atom:id>
+    <atom:updated>2010-06-23T15:59:13.206+01:00</atom:updated>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/content/foo" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/content/foo" type="application/atom+xml"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo" type="application/atom+xml"/>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom</atom:id>
+        <atom:published>2010-06-23T15:59:13.206+01:00</atom:published>
+        <atom:updated>2010-06-23T15:59:13.206+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="application/vnd.ms-excel" href="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.media" length="6656"/>
+        <atom:content src="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.media" type="application/vnd.ms-excel"/>
+        <atom:title type="text">download-f9434b75-567b-42fc-a8e4-27bf4f669ad0.media</atom:title>
+        <atom:summary type="text">media resource</atom:summary>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom</atom:id>
+        <atom:published>2010-06-23T15:59:12.947+01:00</atom:published>
+        <atom:updated>2010-06-23T15:59:12.947+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.media" length="15"/>
+        <atom:content src="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.media" type="text/plain"/>
+        <atom:title type="text">download-d0b86219-50f7-46dd-9779-3bedb74e2cba.media</atom:title>
+        <atom:summary type="text">media resource</atom:summary>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+</atom:feed>
+}}}
+
+...then copy the members of `/foo` to `/bar`...
+
+{{{
+POST /atombeat/atombeat/content/bar HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+Content-Length: 4841
+Content-Type: application/atom+xml; charset=utf-8
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/foo</atom:id>
+    <atom:updated>2010-06-23T15:59:13.206+01:00</atom:updated>
+    <atom:link href="http://localhost:8081/atombeat/atombeat/content/foo" rel="self" type="application/atom+xml"/>
+    <atom:link href="http://localhost:8081/atombeat/atombeat/content/foo" rel="edit" type="application/atom+xml"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Collection</atom:title>
+    <atom:link href="http://localhost:8081/atombeat/atombeat/security/foo" rel="http://purl.org/atombeat/rel/security-descriptor" type="application/atom+xml"/>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom</atom:id>
+        <atom:published>2010-06-23T15:59:13.206+01:00</atom:published>
+        <atom:updated>2010-06-23T15:59:13.206+01:00</atom:updated>
+        <atom:link href="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom" rel="self" type="application/atom+xml"/>
+        <atom:link atombeat:allow="GET, PUT, DELETE" href="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom" rel="edit" type="application/atom+xml" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+        <atom:link atombeat:allow="GET, PUT, DELETE" href="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.media" length="6656" rel="edit-media" type="application/vnd.ms-excel" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+        <atom:content src="http://localhost:8081/atombeat/atombeat/content/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.media" type="application/vnd.ms-excel"/>
+        <atom:title type="text">download-f9434b75-567b-42fc-a8e4-27bf4f669ad0.media</atom:title>
+        <atom:summary type="text">media resource</atom:summary>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:link atombeat:allow="GET, PUT" href="http://localhost:8081/atombeat/atombeat/security/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.atom" rel="http://purl.org/atombeat/rel/security-descriptor" type="application/atom+xml" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+        <atom:link atombeat:allow="GET, PUT" href="http://localhost:8081/atombeat/atombeat/security/foo/f9434b75-567b-42fc-a8e4-27bf4f669ad0.media" rel="http://purl.org/atombeat/rel/media-security-descriptor" type="application/atom+xml" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+    </atom:entry>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom</atom:id>
+        <atom:published>2010-06-23T15:59:12.947+01:00</atom:published>
+        <atom:updated>2010-06-23T15:59:12.947+01:00</atom:updated>
+        <atom:link href="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom" rel="self" type="application/atom+xml"/>
+        <atom:link atombeat:allow="GET, PUT, DELETE" href="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom" rel="edit" type="application/atom+xml" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+        <atom:link atombeat:allow="GET, PUT, DELETE" href="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.media" length="15" rel="edit-media" type="text/plain" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+        <atom:content src="http://localhost:8081/atombeat/atombeat/content/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.media" type="text/plain"/>
+        <atom:title type="text">download-d0b86219-50f7-46dd-9779-3bedb74e2cba.media</atom:title>
+        <atom:summary type="text">media resource</atom:summary>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:link atombeat:allow="GET, PUT" href="http://localhost:8081/atombeat/atombeat/security/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.atom" rel="http://purl.org/atombeat/rel/security-descriptor" type="application/atom+xml" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+        <atom:link atombeat:allow="GET, PUT" href="http://localhost:8081/atombeat/atombeat/security/foo/d0b86219-50f7-46dd-9779-3bedb74e2cba.media" rel="http://purl.org/atombeat/rel/media-security-descriptor" type="application/atom+xml" xmlns:atombeat="http://purl.org/atombeat/xmlns"/>
+    </atom:entry>
+</atom:feed>
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 14:59:13 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/bar/16311072-839a-4181-8e1e-658a67249d2c.atom</atom:id>
+        <atom:published>2010-06-23T15:59:14.04+01:00</atom:published>
+        <atom:updated>2010-06-23T15:59:14.04+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/bar/16311072-839a-4181-8e1e-658a67249d2c.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/bar/16311072-839a-4181-8e1e-658a67249d2c.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="application/vnd.ms-excel" href="http://localhost:8081/atombeat/atombeat/content/bar/16311072-839a-4181-8e1e-658a67249d2c.media" length="6656"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:content src="http://localhost:8081/atombeat/atombeat/content/bar/16311072-839a-4181-8e1e-658a67249d2c.media" type="application/vnd.ms-excel"/>
+        <atom:title type="text">download-f9434b75-567b-42fc-a8e4-27bf4f669ad0.media</atom:title>
+        <atom:summary type="text">media resource</atom:summary>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/bar/16311072-839a-4181-8e1e-658a67249d2c.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/bar/16311072-839a-4181-8e1e-658a67249d2c.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/atombeat/content/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.atom</atom:id>
+        <atom:published>2010-06-23T15:59:14.04+01:00</atom:published>
+        <atom:updated>2010-06-23T15:59:14.04+01:00</atom:updated>
+        <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/atombeat/atombeat/content/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.atom"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/atombeat/content/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.media" length="15"/>
+        <atom:author>
+            <atom:name>adam</atom:name>
+        </atom:author>
+        <atom:content src="http://localhost:8081/atombeat/atombeat/content/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.media" type="text/plain"/>
+        <atom:title type="text">download-d0b86219-50f7-46dd-9779-3bedb74e2cba.media</atom:title>
+        <atom:summary type="text">media resource</atom:summary>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.atom" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+        <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/bar/ee41e4b9-94e9-4807-b9d6-4cdc8990ae0f.media" type="application/atom+xml" atombeat:allow="GET, PUT"/>
+    </atom:entry>
+</atom:feed>
+}}}
+
+Notice that the second entry is a media-link entry, and that the associated media resource has also been copied to the target collection.
