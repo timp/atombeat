@@ -239,4 +239,8 @@ Note that AtomBeat will process a `X-Atom-Revision-Comment` header in the reques
 
 Note also that AtomBeat will *not* allow arbitrary insertion or modification of `ar:comment` elements in an Atom entry, rather it will automatically insert a single `ar:comment` after each update to the member, replacing the previous one. I.e., you are guaranteed that the information in the `ar:comment` element corresponds to the version in which it is found. This behaviour is not specified in James Snell's IETF draft, but we found this was the only way to reliably represent the author of the revision (i.e., who made that particular change) without creating further extension elements.
 
+== Check in, Check out ==
 
+Note that there is no notion of checking in or out. Each new member of a versioned collection is automatically versioned. I.e., any updates to the member will cause a new revision to be created. 
+
+If you need to detect update conflicts, you could use [StandardAtomProtocolSupport#Conditionally_Updating_a_Collection_Member conditional PUT requests].
