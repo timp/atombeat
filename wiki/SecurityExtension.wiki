@@ -736,8 +736,18 @@ Note also that groups defined in one security descriptor can be referenced from 
 
 If the source URL is not within the same AtomBeat instance, the group is ignored.
 
-= Disclaimer =
+= Configuring Default ACLs =
 
-This security system may have bugs, use at your own risk. Note also that, although this security system is more expressive than the native eXist model of permissions, *it is not integrated with the eXist XQuery engine*. I.e., if you access the XML content you create using AtomBeat via some other means, e.g., via the eXist REST servlet, or via a custom XQuery, *you can completely bypass the AtomBeat access control system*.
+When new collections, members or media resources are created, the security plugin will attempt to install a default security descriptor at the time of creation. To obtain a default security descriptor, the $config:default-workspace-security-descriptor variable, and config:default-collection-security-descriptor() and config:default-resource-security-descriptor() functions are invoked as appropriate to the resource being created. These variables/functions are defined in the shared.xqm configuration file, so you will need to override these functions to implement appropriate defaults for your configuration. See also @@TODO link to config docs
+
+= Notes =
+
+*This security system may have bugs, use at your own risk*. 
+
+Note also that, although this security system is more expressive than the native eXist model of permissions, *it is not integrated with the eXist XQuery engine*. I.e., if you access the XML content you create using AtomBeat via some other means, e.g., via the eXist REST servlet, or via a custom XQuery, *you can completely bypass the AtomBeat access control system*.
+
+== Deleting Media Resources ==
+
+The DELETE_MEDIA operation poses a problem because deleting a media-link entry is a side-effect of deleting a media resource, and vice versa. So what do you do if you want to have a mixed collection with some plain Atom members, and some media resources, and you want to allow deletion of plain members, but not of media resources? AtomBeat works around this by treating a deletion of a media-link entry as a DELETE_MEDIA operation, and *not* as a DELETE_MEMBER operation. This is just something to bear in mind when defining access control lists.
 
 
