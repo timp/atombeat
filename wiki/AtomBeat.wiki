@@ -2,21 +2,21 @@
 
 <wiki:toc/>
 
-*TODO* - update this page for Atombeat 0.1
-
 = Introduction =
 
 AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Protocol] implementation for [http://exist.sourceforge.net/ eXist] 1.4.
 
 = Features =
 
-  * [StandardAtomProtocolSupport Standard Atom Protocol operations] are supported: create, retrieve, update and delete Atom entries and media resources; retrieve feeds of Atom collection members.
+  * [StandardAtomProtocolSupport Standard Atom Protocol Operations]: create, retrieve, update and delete Atom entries and media resources; retrieve feeds of Atom collection members.
 
-  * Extensions to the Atom Protocol for creating Atom collections and for updating collection metadata.
+  * [AtomProtocolExtensions#Managing_Collections Protocol Extensions for Managing Atom Collections]: create collections and update collection metadata; create recursive collections.
 
-  * Extensions for versioning of collection members: retrieve feeds of revision history for any given Atom entry; retrieve any previous revision of an Atom entry.
+  * Protocol and Format Extensions for Versioning Collection Members: retrieve a version history feed for any Atom entry; retrieve any previous revision of an Atom entry.
 
   * Security extensions for management of access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
+
+  * A Plug-in Framework for Developing Custom Extensions: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
 
 = Status =
 
