@@ -2,4 +2,249 @@
 
 = Introduction =
 
-Add your content here.
+AtomBeat implements a security system based on access control lists, inspired by the approach used in NFS and the WebDav ACL extension. 
+
+The motivation for this was that we commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules to two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.  
+
+To support this kind of scenario, AtomBeat implements a *security plugin* for the main Atom protocol engine, which can be configured to intercept all incoming requests, and to apply access control lists and allow or deny the request as appropriate. The security plugin is optional, so you don't have to enable it. 
+
+AtomBeat also implements a *security protocol* which enables you to retrieve and update access control lists for a workspace, collections and members, using the Atom Protocol.
+
+= Authentication; Roles =
+
+*AtomBeat does not implement any kind of authentication*. To use the AtomBeat security system, you will need to implement or configure some sort of authentication yourself. E.g., you could use Spring Security to implement HTTP digest authentication with user credentials stored in a relational database. Or you could use your favourite servlet container's built-in authentication options. Or you could roll your own.
+
+Similarly, *AtomBeat does not implement any kind of user role management*. If you want to use access control entries based on roles (which you can do with AtomBeat), you will first need to implement or configure some sort of role management system yourself. E.g., you could use Spring Security to store and retrieve role information for authenticated users from a relational database. Or you could use your favourite servlet container's build-in role management options. Or you could roll your own.
+
+The point is, AtomBeat expects that, by the time the request reaches AtomBeat for processing, *the user will have already been authenticated*. It also expects that the authenticated user's username will have been stored in a request attribute using the attribute key "user-name" (this is configurable, TODO link to config docs). 
+
+If you are using role-based security, AtomBeat also expects that any roles possessed by the current user will have been stored in a request attribute using the attribute key "user-roles" (also configurable). 
+
+So, whatever authentication and role management system you are using, you will *need to implement a servlet filter to set the required request attributes before the request reaches AtomBeat*. An example of a minimal servlet filter for integration with Spring Security is given below...
+
+{{{
+package org.atombeat.http;
+
+import java.io.IOException;
+
+import javax.servlet.FilterChain;
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.atombeat.http.HttpFilter;
+import org.exist.xquery.value.ValueSequence;
+import org.exist.xquery.value.StringValue;
+import org.springframework.security.Authentication;
+import org.springframework.security.GrantedAuthority;
+import org.springframework.security.context.SecurityContextHolder;
+
+public class MinimalSpringSecuritySetUserRequestAttributesFilter extends HttpFilter {
+
+	public static final String USERNAMEREQUESTATTRIBUTEKEY = "user-name";
+	public static final String USERROLESREQUESTATTRIBUTEKEY = "user-roles";
+	
+	@Override
+	public void doHttpFilter(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
+
+		Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+		
+		String name = null;
+		
+		if (authentication != null) {
+			
+			name = authentication.getName();
+			
+			request.setAttribute(USERNAMEREQUESTATTRIBUTEKEY, new StringValue(name));
+			
+			GrantedAuthority[] authorities = authentication.getAuthorities();
+
+			ValueSequence roles = new ValueSequence();
+			
+			for (GrantedAuthority a : authorities) {
+				StringValue s = new StringValue(a.toString());
+				roles.add(s);
+			}
+
+			request.setAttribute(USERROLESREQUESTATTRIBUTEKEY, roles);
+			
+		}
+		
+		chain.doFilter(request, response);
+
+	}
+
+}
+}}}
+
+= Security Procotol =
+
+The AtomBeat workspace, each Atom collection, each collection member, and each media resource, has an associated *security descriptor*, which contains an access control list. Each security descriptor has a URI, and the security descriptor can be retrieved and updated using standard Atom Protocol retrieve member and update member requests (i.e., GET and PUT).
+
+See also the  [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestSecurityProtocol.java TestSecurityProtocol.java] test case
+
+== Retrieve a Collection Security Descriptor ==
+
+To retrieve the security descriptor for an Atom collection, list the collection, then follow the `http://purl.org/atombeat/rel/security-descriptor` link found in the collection feed document.
+
+E.g., list a collection...
+
+{{{
+GET /atombeat/atombeat/content/foo HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 16:54:21 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/content/foo</atom:id>
+    <atom:updated>2010-06-23T17:54:21.875+01:00</atom:updated>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/content/foo" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/content/foo" type="application/atom+xml"/>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <atom:title>Test Collection</atom:title>
+    <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="http://localhost:8081/atombeat/atombeat/security/foo" type="application/atom+xml"/>
+</atom:feed>
+}}}
+
+...then follow the `http://purl.org/atombeat/rel/security-descriptor` link...
+
+{{{
+GET /atombeat/atombeat/security/foo HTTP/1.1
+Authorization: Basic YWRhbTp0ZXN0
+User-Agent: Jakarta Commons-HttpClient/3.1
+Host: localhost:8081
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Wed, 23 Jun 2010 16:54:21 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/atombeat/security/foo</atom:id>
+    <atom:title type="text">Security Descriptor</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/atombeat/security/foo" type="application/atom+xml"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/atombeat/security/foo" type="application/atom+xml"/>
+    <atom:updated>2010-06-23T17:54:21.879+01:00</atom:updated>
+    <atom:content type="application/vnd.atombeat+xml">
+        <atombeat:security-descriptor xmlns:atombeat="http://purl.org/atombeat/xmlns">
+            <atombeat:acl><!--  
+            Authors can create entries and media, and can list the collection,
+            but can only retrieve resources they have created.
+            -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
+                    <atombeat:permission>LIST_COLLECTION</atombeat:permission>
+                </atombeat:ace><!--
+            Editors can list the collection, retrieve and update any member.
+            -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
+                    <atombeat:permission>LIST_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_EDITOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_ACL</atombeat:permission>
+                </atombeat:ace><!-- Media editors -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
+                    <atombeat:permission>LIST_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEDIA</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_MEDIA_EDITOR</atombeat:recipient>
+                    <atombeat:permission>DELETE_MEDIA</atombeat:permission>
+                </atombeat:ace><!--
+            Readers can list the collection and retrieve any member.
+            -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_READER</atombeat:recipient>
+                    <atombeat:permission>LIST_COLLECTION</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_READER</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_READER</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEDIA</atombeat:permission>
+                </atombeat:ace><!--
+            Data authors can only create media resources with a specific media
+            type.
+            -->
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="role">ROLE_DATA_AUTHOR</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+                    <atombeat:conditions>
+                        <atombeat:condition type="mediarange">application/vnd.ms-excel</atombeat:condition>
+                    </atombeat:conditions>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+    </atom:content>
+</atom:entry>
+}}}
+
+ 
