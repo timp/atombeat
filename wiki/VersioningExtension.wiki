@@ -246,3 +246,5 @@ Note also that AtomBeat will *not* allow arbitrary insertion or modification of 
 Note that there is no notion of checking in or out. Each new member of a versioned collection is automatically versioned. I.e., any updates to the member will cause a new revision to be created. 
 
 If you need to detect update conflicts, you could use [StandardAtomProtocolSupport#Conditionally_Updating_a_Collection_Member conditional PUT requests].
+
+
