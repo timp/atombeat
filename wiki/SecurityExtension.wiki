@@ -4,7 +4,7 @@
 
 = Introduction =
 
-AtomBeat implements an experimental security system based on access control lists, inspired by the approach used in NFS and the !WebDav ACL extension. 
+AtomBeat implements an experimental security system based on access control lists, inspired by the approach used in NFS and the !WebDav ACL extension. *This security system may have bugs, use at your own risk*. 
 
 We commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules for two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.  
 
@@ -83,7 +83,7 @@ public class MinimalSpringSecuritySetUserRequestAttributesFilter extends HttpFil
 
 The AtomBeat workspace, each Atom collection, each collection member, and each media resource, has an associated *security descriptor*, which contains an access control list. Each security descriptor has a URI, and the security descriptor can be retrieved and updated using standard Atom Protocol retrieve member and update member requests (i.e., GET and PUT).
 
-See also the  [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestSecurityProtocol.java TestSecurityProtocol.java] test case
+See also the  [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestSecurityProtocol.java TestSecurityProtocol.java] test case.
 
 == Retrieve the Workspace Security Descriptor ==
 
@@ -636,11 +636,8 @@ Date: Wed, 23 Jun 2010 17:31:55 GMT
 
 = Security Concepts and Model; Processing ACLs =
 
-The AtomBeat security system divides the Atom Protocol and extensions into the following abstract operations:
+The AtomBeat security system divides the Atom Protocol and AtomBeat protocol extensions into the following abstract operations:
  
-  * CREATE_COLLECTION
-  * UPDATE_COLLECTION
-  * LIST_COLLECTION
   * CREATE_MEMBER
   * RETRIEVE_MEMBER
   * UPDATE_MEMBER
@@ -649,9 +646,14 @@ The AtomBeat security system divides the Atom Protocol and extensions into the f
   * RETRIEVE_MEDIA
   * UPDATE_MEDIA
   * DELETE_MEDIA
+  * LIST_COLLECTION
+  * CREATE_COLLECTION
+  * UPDATE_COLLECTION
   * RETRIEVE_ACL
   * UPDATE_ACL
   * MULTI_CREATE
+  * RETRIEVE_HISTORY
+  * RETRIEVE_REVISION
 
 These are also the names of the permissions that can be allowed or denied in access control entries. I.e., there is a one-to-one correspondance between protocol operations and permissions.
 
@@ -662,6 +664,12 @@ For any given protocol operation, *up to three* access control lists could be in
 For any given protocol operation, the relevant access control lists are processed in a particular order. By default, the workspace ACL is processed first, then the collection ACL, then the member or media resource ACL. *The first matching ACE is applied, and ACL processing terminates*. This means that the workspace ACL overrides any collection ACLs, and collection ACLs override member ACLs. However, this order of precendence is configurable, @@TODO link to config docs.
 
 For a definitive account of the AtomBeat ACL processing behaviour, see the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/lib/test-atom-security.xql test-atom-security.xql] script.
+
+== Configuring Default ACLs ==
+
+When new collections, members or media resources are created, the security plugin will attempt to install a default security descriptor at the time of creation. To obtain a default security descriptor, the $config:default-workspace-security-descriptor variable, and config:default-collection-security-descriptor() and config:default-resource-security-descriptor() functions are invoked as appropriate to the resource being created. These variables/functions are defined in the shared.xqm configuration file, so you will need to override these functions to implement appropriate defaults for your configuration. See also @@TODO link to config docs
+
+For an example of configuring and verifying default ACLs for an AtomBeat instance, see the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/config/shared.xqm shared.xqm] configuration file in the main AtomBeat project, and the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/src/test/java/org/atombeat/TestDefaultSecurityPolicy.java TestDefaultSecurityPolicy.java] test case.
 
 == Groups ==
 
@@ -736,18 +744,12 @@ Note also that groups defined in one security descriptor can be referenced from 
 
 If the source URL is not within the same AtomBeat instance, the group is ignored.
 
-= Configuring Default ACLs =
-
-When new collections, members or media resources are created, the security plugin will attempt to install a default security descriptor at the time of creation. To obtain a default security descriptor, the $config:default-workspace-security-descriptor variable, and config:default-collection-security-descriptor() and config:default-resource-security-descriptor() functions are invoked as appropriate to the resource being created. These variables/functions are defined in the shared.xqm configuration file, so you will need to override these functions to implement appropriate defaults for your configuration. See also @@TODO link to config docs
-
-= Notes =
-
-*This security system may have bugs, use at your own risk*. 
-
-Note also that, although this security system is more expressive than the native eXist model of permissions, *it is not integrated with the eXist XQuery engine*. I.e., if you access the XML content you create using AtomBeat via some other means, e.g., via the eXist REST servlet, or via a custom XQuery, *you can completely bypass the AtomBeat access control system*.
-
 == Deleting Media Resources ==
 
 The DELETE_MEDIA operation poses a problem because deleting a media-link entry is a side-effect of deleting a media resource, and vice versa. So what do you do if you want to have a mixed collection with some plain Atom members, and some media resources, and you want to allow deletion of plain members, but not of media resources? AtomBeat works around this by treating a deletion of a media-link entry as a DELETE_MEDIA operation, and *not* as a DELETE_MEMBER operation. This is just something to bear in mind when defining access control lists.
+
+== AtomBeat ACLs vs. eXist Permissions ==
+
+Note also that, although this security system is more expressive than the native eXist model of permissions, *it is not integrated with the eXist XQuery engine*. I.e., if you access the XML content you create using AtomBeat via some other means, e.g., via the eXist REST servlet, or via a custom XQuery, *you can completely bypass the AtomBeat access control system*.
 
 
