@@ -756,7 +756,7 @@ If the source URL is not within the same AtomBeat instance, the group is ignored
 
 The DELETE_MEDIA operation poses a problem because deleting a media-link entry is a side-effect of deleting a media resource, and vice versa. So what do you do if you want to have a mixed collection with some plain Atom members, and some media resources, and you want to allow deletion of plain members, but not of media resources? AtomBeat works around this by treating a deletion of a media-link entry as a DELETE_MEDIA operation, and *not* as a DELETE_MEMBER operation. This is just something to bear in mind when defining access control lists.
 
-== AtomBeat ACLs vs. eXist Permissions ==
+== !AtomBeat ACLs vs. eXist Permissions ==
 
 Note also that, although this security system is more expressive than the native eXist model of permissions, *it is not integrated with the eXist XQuery engine*. I.e., if you access the XML content you create using AtomBeat via some other means, e.g., via the eXist REST servlet, or via a custom XQuery, *you can completely bypass the AtomBeat access control system*.
 
