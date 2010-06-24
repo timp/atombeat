@@ -22,6 +22,8 @@ AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spe
 
   * [DevelopingPlugins A Plug-in Framework for Developing Custom Extensions]: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
 
+  * [InstallationAndConfiguration Deployment Options]: deploy as a standalone WAR, or drop the AtomBeat folder into an eXist 1.4 installation.
+
 = Status =
 
 AtomBeat is in an experimental phase. If you're interested in the Atom Publishing Protocol and what to do some quick prototyping, then AtomBeat may be a good option. We don't as yet have any experience of deploying AtomBeat in a production setting.
