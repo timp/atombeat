@@ -20,7 +20,7 @@ E.g., the Atom protocol engine will determine if the resource to which the reque
 
 In other words, the AtomBeat protocol engine will attempt to map the incoming request onto one of its known protocol operations, prior to executing plug-ins. The *plug-ins wrap the execution of a valid protocol operation*, and *not* the entire request processing engine. The plug-in framework is also roughly analogous to aspect-oriented programming, where code is executed before and after a method invocation.
 
-= A Simple Plug-in: logger-plugin.xqm =
+= A Simple Plug-in Example: logger-plugin.xqm =
 
 Below is an example of a simple plug-in function to log some information during the *before* phase of protocol execution. (See [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/plugins/logger-plugin.xqm logger-plugin.xqm] for the full source code.)
 
@@ -101,7 +101,7 @@ The plug-in functions are invoked in the order in which they are given. In the e
 
 The syntax of this configuration module may seem obscure, I'm sorry we haven't found a good way of simplifying it yet. One thing to be careful of when adding or removing plug-ins from this configuration file is to ensure that the commas at the end of each plug-in declaration are correct to construct an XQuery sequence.
 
-== Advanced Plug-ins: security-plugin.xqm ==
+= An Advanced Plug-in Example: security-plugin.xqm =
 
 You will probably have noticed by now that both the versioning functionality and the security system are implemented in AtomBeat as plug-ins to the main (vanilla) Atom protocol engine. 
 
