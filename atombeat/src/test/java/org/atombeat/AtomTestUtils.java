@@ -212,9 +212,34 @@ public class AtomTestUtils {
 	
 	
 	
+	public static String createTestVersionedCollection(String serverUri, String user, String pass) {
+
+		Header[] headers = {};
+		return createTestVersionedCollection(serverUri, user, pass, headers);
+
+	}
+	
+	
+	
+	
 	public static String createTestCollection(String serverUri, String user, String pass, Header[] headers) {
 
 		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection</atom:title></atom:feed>";
+		return createTestCollection(serverUri, user, pass, headers, content);
+
+	}
+	
+	
+	
+	public static String createTestVersionedCollection(String serverUri, String user, String pass, Header[] headers) {
+
+		String content = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:enable-versioning=\"true\">\n" +
+			"	<atom:title>Test Collection</atom:title>\n" +
+			"</atom:feed>";
 		return createTestCollection(serverUri, user, pass, headers, content);
 
 	}

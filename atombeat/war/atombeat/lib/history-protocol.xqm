@@ -75,7 +75,7 @@ declare function history-protocol:do-get(
 
 	if ( atomdb:member-available( $request-path-info ) )
 	
-	then history-protocol:do-get-entry( $request-path-info )
+	then history-protocol:do-get-member( $request-path-info )
 	
 	else common-protocol:do-not-found( $request-path-info )
 	
@@ -84,12 +84,12 @@ declare function history-protocol:do-get(
 
 
 
-declare function history-protocol:do-get-entry(
+declare function history-protocol:do-get-member(
 	$request-path-info as xs:string 
 ) as element(response)
 {
 
-	let $log := util:log( "debug" , "== history-protocol:do-get-entry() ==" )
+	let $log := util:log( "debug" , "== history-protocol:do-get-member() ==" )
 	let $log := util:log( "debug" , $request-path-info )
 
     let $revision-index := request:get-parameter( $history-protocol:param-name-revision-index , "" )
@@ -99,11 +99,11 @@ declare function history-protocol:do-get-entry(
 	
 		if ( $revision-index = "" )
 		
-		then history-protocol:do-get-entry-history( $request-path-info )
+		then history-protocol:do-get-member-history( $request-path-info )
 		
 		else if ( $revision-index castable as xs:integer )
 		
-		then history-protocol:do-get-entry-revision( $request-path-info , xs:integer( $revision-index ) )
+		then history-protocol:do-get-member-revision( $request-path-info , xs:integer( $revision-index ) )
 		
 		else common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer." )
 };
@@ -114,13 +114,31 @@ declare function history-protocol:do-get-entry(
 (:
  : TODO doc me
  :)
-declare function history-protocol:do-get-entry-history(
+declare function history-protocol:do-get-member-history(
 	$request-path-info as xs:string
 ) as element(response)
 {
-	let $log := util:log( "debug" , "== history-protocol:do-get-entry-history() ==" )
+
+	let $log := util:log( "debug" , "== history-protocol:do-get-member-history() ==" )
 	let $log := util:log( "debug" , $request-path-info )
 	
+    let $op := util:function( QName( "http://purl.org/atombeat/xquery/history-protocol" , "history-protocol:op-retrieve-member-history" ) , 3 )
+    
+    (: enable plugins to intercept the request :)
+    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-HISTORY , $op , $request-path-info , () )
+
+};
+
+
+
+
+declare function history-protocol:op-retrieve-member-history(
+	$request-path-info as xs:string ,
+	$request-data as element(atom:entry)? ,
+	$request-media-type as xs:string?
+) as element(response)
+{
+
     let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
 	let $log := util:log( "debug" , $entry-doc-path )
 
@@ -147,7 +165,7 @@ declare function history-protocol:do-get-entry-history(
 (:				$vvers , :)
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
-				return history-protocol:construct-entry-revision( $request-path-info , $entry-doc , $i , $revisions , true() )
+				return history-protocol:construct-member-revision( $request-path-info , $entry-doc , $i , $revisions , true() )
 				
 			}
 		</atom:feed>
@@ -164,17 +182,40 @@ declare function history-protocol:do-get-entry-history(
             </headers>
             <body>{$feed}</body>
         </response>
+        
 };
 
 
 
 
-declare function history-protocol:do-get-entry-revision(
+declare function history-protocol:do-get-member-revision(
 	$request-path-info as xs:string ,
 	$revision-index as xs:integer 
 ) as element(response)
 {
 
+	let $log := util:log( "debug" , "== history-protocol:do-get-member-revision() ==" )
+	let $log := util:log( "debug" , $request-path-info )
+	
+    let $op := util:function( QName( "http://purl.org/atombeat/xquery/history-protocol" , "history-protocol:op-retrieve-member-revision" ) , 3 )
+    
+    (: enable plugins to intercept the request :)
+    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-REVISION , $op , $request-path-info , () )
+
+};
+
+
+
+declare function history-protocol:op-retrieve-member-revision(
+	$request-path-info as xs:string ,
+	$request-data as element(atom:entry)? ,
+	$request-media-type as xs:string?
+) as element(response)
+{
+
+    let $revision-index := xs:integer( request:get-parameter( $history-protocol:param-name-revision-index , "" ) )
+	let $log := util:log( "debug" , $revision-index )
+	
     let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
 
     let $entry-doc := doc( $entry-doc-path )
@@ -204,7 +245,7 @@ declare function history-protocol:do-get-entry-revision(
         
         else 
         
-        	let $entry-revision := history-protocol:construct-entry-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , false() )
+        	let $entry-revision := history-protocol:construct-member-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , false() )
 
             return 
             
@@ -223,8 +264,7 @@ declare function history-protocol:do-get-entry-revision(
 
 
 
-
-declare function history-protocol:construct-entry-revision(
+declare function history-protocol:construct-member-revision(
 	$request-path-info as xs:string ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
@@ -239,23 +279,23 @@ declare function history-protocol:construct-entry-revision(
      
     if ( $revision-index = 1 )
     
-    then history-protocol:construct-entry-base-revision( $request-path-info , $revision-numbers , $exclude-content )
+    then history-protocol:construct-member-base-revision( $request-path-info , $revision-numbers , $exclude-content )
     
-    else history-protocol:construct-entry-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
+    else history-protocol:construct-member-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
     
 };
 
 
 
 
-declare function history-protocol:construct-entry-base-revision(
+declare function history-protocol:construct-member-base-revision(
 	$request-path-info as xs:string ,
 	$revision-numbers as xs:integer* ,
 	$exclude-content as xs:boolean?
 ) as element(atom:entry)
 {
 
-    let $log := util:log( "debug" , "== history-protocol:construct-entry-base-revision() ==" )
+    let $log := util:log( "debug" , "== history-protocol:construct-member-base-revision() ==" )
 
     (: 
      : N.B. if no updates on the doc yet, then base revision won't have been
@@ -322,7 +362,7 @@ declare function history-protocol:construct-entry-base-revision(
 
 
 
-declare function history-protocol:construct-entry-specified-revision(
+declare function history-protocol:construct-member-specified-revision(
 	$request-path-info as xs:string ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
