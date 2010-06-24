@@ -636,7 +636,7 @@ Date: Wed, 23 Jun 2010 17:31:55 GMT
 
 = Security Concepts =
 
-== ACLs and ACEs ==
+== Operations and Permissions ==
 
 The AtomBeat security system divides the Atom Protocol and AtomBeat protocol extensions into the following abstract operations:
  
@@ -658,6 +658,8 @@ The AtomBeat security system divides the Atom Protocol and AtomBeat protocol ext
   * RETRIEVE_REVISION
 
 These are also the names of the permissions that can be allowed or denied in access control entries. I.e., there is a one-to-one correspondance between protocol operations and permissions.
+
+== ACLs and ACEs ==
 
 An access control list (ACL) comprises a sequence of access control entries (ACEs). Each ACE has a *type* (either ALLOW or DENY), a *recipient* (the type of the recipient could be user, group or role), a *permission*, and optionally, a list of *conditions*.
 
