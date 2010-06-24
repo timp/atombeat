@@ -16,7 +16,7 @@ Plug-ins are written as XQuery functions, so you have access to the eXist functi
 
 The AtomBeat plug-in framework is roughly similar in concept to servlet filters, in that each protocol operation has a before chain (a sequence of functions invoked in turn prior to the main operation) and an after chain (a sequence of functions invoked in turn after the main operation has been executed). However, there are some important differences. The plug-in functions in the before chain are *not* invoked immediately upon receiving an incoming request. Rather, the Atom protocol operation will do some work to determine if the request is a *valid protocol operation*, prior to invoking the before chain. 
 
-E.g., the Atom protocol engine will determine if the resource to which the request is addressed exists, before the plug-in framework is involved. If the resource does not exist, a 404 response will be sent, and the *before* and *after* plugins will never be invoked. 
+E.g., the Atom protocol engine will determine if the resource to which the request is addressed exists, before the plug-in framework is involved. If the resource does not exist, a 404 response will be sent, and the *before* and *after* plug-ins will never be invoked. 
 
 In other words, the AtomBeat protocol engine will attempt to map the incoming request onto one of its known protocol operations, prior to executing plug-ins. The *plug-ins wrap the execution of a valid protocol operation*, and *not* the entire request processing engine. The plug-in framework is also roughly analogous to aspect-oriented programming, where code is executed before and after a method invocation.
 
@@ -97,7 +97,7 @@ declare function plugin:after() as function* {
 };
 }}}
 
-The plug-in functions are invoked in the order in which they are given. In the example above, the logger plugin will be invoked as the first in the before chain and the last in the after chain.
+The plug-in functions are invoked in the order in which they are given. In the example above, the logger plug-in will be invoked as the first in the before chain and the last in the after chain.
 
 The syntax of this configuration module may seem obscure, I'm sorry we haven't found a good way of simplifying it yet. One thing to be careful of when adding or removing plug-ins from this configuration file is to ensure that the commas at the end of each plug-in declaration are correct to construct an XQuery sequence.
 
@@ -105,9 +105,9 @@ The syntax of this configuration module may seem obscure, I'm sorry we haven't f
 
 You will probably have noticed by now that both the versioning functionality and the security system are implemented in AtomBeat as plug-ins to the main (vanilla) Atom protocol engine. 
 
-For example, the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/plugins/security-plugin.xqm security-plugin.xqm] module checks during the before phase whether an operation is allowed for the current user, and if not, will interrupt request processing with a 403 Forbidden response. During the after phase, the security plugin will install default security descriptors if a new collection, member or media resource has been created, and will augment responses with the appropriate security links.
+For example, the [http://code.google.com/p/atombeat/source/browse/trunk/atombeat/war/atombeat/plugins/security-plugin.xqm security-plugin.xqm] module checks during the before phase whether an operation is allowed for the current user, and if not, will interrupt request processing with a 403 Forbidden response. During the after phase, the security plug-in will install default security descriptors if a new collection, member or media resource has been created, and will augment responses with the appropriate security links.
 
-For example, below is a slightly simplified version of the security plugin before function...
+For example, below is a slightly simplified version of the security plug-in before function...
 
 {{{
 xquery version "1.0";
@@ -211,7 +211,7 @@ declare function security-plugin:strip-descriptor-links(
 
 A before plug-in terminates request processing by returning a `<response>` element.
 
-Notice that the before function uses the `strip-descriptor-links` function to modify the incoming request data when creating or updating an Atom collection or member. If you write a plug-in that augments Atom responses in any way (e.g., the security plugin adds links), then you will also need to make sure that those additions cannot be corrupted by being persisted in the AtomBeat database. I.e., you need to also check incoming create and update requests, and filter out any elements or attributes you want to retain control of in the plug-in.
+Notice that the before function uses the `strip-descriptor-links` function to modify the incoming request data when creating or updating an Atom collection or member. If you write a plug-in that augments Atom responses in any way (e.g., the security plug-in adds links), then you will also need to make sure that those additions cannot be corrupted by being persisted in the AtomBeat database. I.e., you need to also check incoming create and update requests, and filter out any elements or attributes you want to retain control of in the plug-in.
 
 A snippet of the main after plug-in function of the security plug-in is below...
 
