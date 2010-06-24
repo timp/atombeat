@@ -369,6 +369,37 @@ declare function common-protocol:apply-after(
 
 
 
+declare function common-protocol:do-internal-server-error(
+	$request-path-info as xs:string ,
+	$message as xs:string 
+) as element(response)
+{
+
+    let $message := concat( $message , " The server encountered an unexpected condition which prevented it from fulfilling the request." )
+
+    return 
+    
+        <response>
+            <status>{$CONSTANT:STATUS-SERVER-ERROR-INTERNAL-SERVER-ERROR}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+            </headers>
+            <body type="text">{$message}</body>
+        </response>
+
+};
+
+
+
+
+
+
+
+
+
 declare function common-protocol:respond( $response as element(response) ) as item()*
 {
 

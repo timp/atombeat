@@ -43,6 +43,26 @@ declare function local:info(
 
 
 
+declare function atomsec:store-descriptor(
+    $request-path-info as xs:string ,
+    $descriptor as element(atombeat:security-descriptor)
+) as xs:string?
+{
+
+    if ( $request-path-info = "/" )
+    then atomsec:store-workspace-descriptor( $descriptor )
+    else if ( atomdb:collection-available( $request-path-info ) )
+    then atomsec:store-collection-descriptor( $request-path-info , $descriptor )
+    else if ( atomdb:member-available( $request-path-info ) )
+    then atomsec:store-resource-descriptor( $request-path-info , $descriptor )
+    else if ( atomdb:media-resource-available( $request-path-info ) )
+    then atomsec:store-resource-descriptor( $request-path-info , $descriptor )
+    else ()
+
+};
+
+
+
 
 declare function atomsec:store-workspace-descriptor(
     $descriptor as element(atombeat:security-descriptor)
@@ -169,6 +189,29 @@ declare function atomsec:store-resource-descriptor(
             
         else ()
 
+};
+
+
+
+
+declare function atomsec:retrieve-descriptor(
+    $request-path-info as xs:string
+) as element(atombeat:security-descriptor)?
+{
+
+    let $descriptor := 
+        if ( $request-path-info = "/" )
+        then atomsec:retrieve-workspace-descriptor()
+        else if ( atomdb:collection-available( $request-path-info ) )
+        then atomsec:retrieve-collection-descriptor( $request-path-info )
+        else if ( atomdb:member-available( $request-path-info ) )
+        then atomsec:retrieve-resource-descriptor( $request-path-info )
+        else if ( atomdb:media-resource-available( $request-path-info ) )
+        then atomsec:retrieve-resource-descriptor( $request-path-info )
+        else ()
+
+    return $descriptor
+    
 };
 
 
