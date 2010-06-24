@@ -634,7 +634,9 @@ Date: Wed, 23 Jun 2010 17:31:55 GMT
 </atom:entry>
 }}}
 
-= Security Concepts and Model; Processing ACLs =
+= Security Concepts =
+
+== ACLs and ACEs ==
 
 The AtomBeat security system divides the Atom Protocol and AtomBeat protocol extensions into the following abstract operations:
  
@@ -659,7 +661,11 @@ These are also the names of the permissions that can be allowed or denied in acc
 
 An access control list (ACL) comprises a sequence of access control entries (ACEs). Each ACE has a *type* (either ALLOW or DENY), a *recipient* (the type of the recipient could be user, group or role), a *permission*, and optionally, a list of *conditions*.
 
-For any given protocol operation, *up to three* access control lists could be involved in reaching a decision about whether the operation should be allowed to execute. For example, when updating a collection member, the member's ACL, the collection ACL, and the workspace ACL, could all be involved. For example, when creating a new collection member, only the collection ACL and the workspace ACL will be involved. For example, when creating a new collection, only the workspace ACL is involved.
+The AtomBeat workspace, each Atom collection, each collection member, and each media resource, has an associated *security descriptor*. The security descriptor encapsulates the ACL for that resource. A security descriptor can also define local groups, see below.
+
+== Processing ACLs ==
+
+For any given protocol operation, *up to three* access control lists could be involved in reaching a decision about whether the operation should be allowed to execute. For example, when updating a collection member, the member's ACL, the collection ACL, and the workspace ACL, could all be involved. When creating a new collection member, only the collection ACL and the workspace ACL will be involved. When creating a new collection, only the workspace ACL is involved.
 
 For any given protocol operation, the relevant access control lists are processed in a particular order. By default, the workspace ACL is processed first, then the collection ACL, then the member or media resource ACL. *The first matching ACE is applied, and ACL processing terminates*. This means that the workspace ACL overrides any collection ACLs, and collection ACLs override member ACLs. However, this order of precendence is configurable, @@TODO link to config docs.
 
