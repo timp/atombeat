@@ -1,0 +1,5 @@
+#summary documentation on the AtomBeat plug-in framework
+
+= Introduction =
+
+Add your content here.
