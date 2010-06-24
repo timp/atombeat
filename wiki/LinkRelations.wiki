@@ -1,7 +1,5 @@
 #summary non-standard link relations used in atombeat
 
-*TODO update this for new link rels and namespace*
-
 <wiki:toc/>
 
 = Versioning =
