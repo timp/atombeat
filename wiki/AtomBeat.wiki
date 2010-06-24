@@ -20,7 +20,7 @@ AtomBeat is an [http://www.atomenabled.org/developers/protocol/atom-protocol-spe
 
   * [SecurityExtension Security Extensions for Access Control]: manage access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
 
-  * A Plug-in Framework for Developing Custom Extensions: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
+  * [DevelopingPlugins A Plug-in Framework for Developing Custom Extensions]: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
 
 = Status =
 
