@@ -760,4 +760,11 @@ The DELETE_MEDIA operation poses a problem because deleting a media-link entry i
 
 Note also that, although this security system is more expressive than the native eXist model of permissions, *it is not integrated with the eXist XQuery engine*. I.e., if you access the XML content you create using AtomBeat via some other means, e.g., via the eXist REST servlet, or via a custom XQuery, *you can completely bypass the AtomBeat access control system*.
 
+== Nested and Recursive Collections ==
+
+Note that, if you have one Atom collection at `/foo` and another collection at `/foo/bar`, by default *AtomBeat is not aware of the nesting of the two collections*. This means that, e.g., when retrieving a member of the collection at `/foo/bar`, the *only* ACLs that will be involved will be the member ACL, the `/foo/bar` collection ACL, and the workspace ACL. The ACL for the `/foo` collection *will not* be considered. I.e., even though the collections appear to be nested, they are not, and there is no inheritance of ACLs from the apparent parent to child.
+
+The case of recursive collections is slightly more complicated. If you have a collection configured as a recursive collection, then when you list the recursive collection, the collection and workspace ACLs will be consulted to see if you are allowed the LIST_COLLECTION permission. If you are, then AtomBeat will generate a feed for the collection. When generating the feed, AtomBeat will filter the entries that appear in the feed based on your permissions. For each entry that appears in the feed, AtomBeat will include the entry if you have the RETRIEVE_MEMBER permission for that entry. When determining if you have this permission, the member's ACL is consulted, along with the *ACL for the collection containing the member* (which might not be the collection you are listing) and the workspace ACL.
+
+
 
