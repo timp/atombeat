@@ -11,6 +11,7 @@ import org.apache.commons.httpclient.methods.multipart.FilePart;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.w3c.dom.Document;
+import org.w3c.dom.Element;
 import org.w3c.dom.NodeList;
 
 import static org.atombeat.AtomTestUtils.*;
@@ -1025,6 +1026,42 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 	}
 
+	
+	
+	public void testUserWithoutReaderRoleCannotRetrieveHistoryOrRevision() {
+		
+		String collectionUri = createTestVersionedCollection(CONTENT_URI, "adam", "test");
+		Document d = createTestEntryAndReturnDocument(collectionUri, "austin", "test");
+		String historyLocation = getLinkHref(d, "history");
+		assertNotNull(historyLocation);
+		
+		// try to retrieve history as reader
+		GetMethod get1 = new GetMethod(historyLocation);
+		int get1result = executeMethod(get1, "rebecca", "test");
+		assertEquals(200, get1result);
+		
+		// pick out revision from history feed
+		Document historyFeedDoc = getResponseBodyAsDocument(get1);
+		Element entry = (Element) historyFeedDoc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry").item(0);
+		String revLocation = getLinkHref(entry, "this-revision");
+		assertNotNull(revLocation);
+		
+		// try to retrieve history as user
+		GetMethod get2 = new GetMethod(historyLocation);
+		int get2result = executeMethod(get2, "ursula", "test");
+		assertEquals(403, get2result);
+		
+		// retrieve revision as reader
+		GetMethod get3 = new GetMethod(revLocation);
+		int get3result = executeMethod(get3, "rebecca", "test");
+		assertEquals(200, get3result);
+		
+		// retrieve revision as user
+		GetMethod get4 = new GetMethod(revLocation);
+		int get4result = executeMethod(get4, "ursula", "test");
+		assertEquals(403, get4result);
+		
+	}
 
 	
 	
