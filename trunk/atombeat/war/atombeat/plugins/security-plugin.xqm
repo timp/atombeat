@@ -116,26 +116,18 @@ declare function security-plugin:strip-descriptor-links(
 ) as element()
 {
     let $log := local:debug( "== security-plugin:strip-descriptor-links ==" )
-    let $log := local:debug( $request-data )
-    let $request-data :=
-        element { node-name( $request-data ) }
-        {
-            $request-data/attribute::* ,
-            for $child in $request-data/child::*
-            let $ln := local-name( $child )
-            let $ns := namespace-uri( $child )
-            let $rel := $child/@rel
-            where (
-                not(
-                    $ln = $CONSTANT:ATOM-LINK
-                    and $ns = $CONSTANT:ATOM-NSURI 
-                    and ( $rel = "http://purl.org/atombeat/rel/security-descriptor" or $rel = "http://purl.org/atombeat/rel/media-security-descriptor" )
-                )
-            )
-            return $child
-        }
-    let $log := local:debug( $request-data )
-    return $request-data
+
+    let $reserved :=
+        <reserved>
+            <atom-links>
+                <link rel="http://purl.org/atombeat/rel/security-descriptor"/>
+                <link rel="http://purl.org/atombeat/rel/media-security-descriptor"/>
+            </atom-links>
+        </reserved>
+        
+    let $filtered := atomdb:filter( $request-data , $reserved )
+    
+    return $filtered
 };
 
 
@@ -508,7 +500,7 @@ declare function security-plugin:augment-entry(
     
     let $descriptor-link :=     
         if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
-        then <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml" atombeat:allow="{$allow}"/>
+        then <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml;type=entry"/>
         else ()
         
     let $log := local:debug( concat( "$descriptor-link: " , $descriptor-link ) )
@@ -524,7 +516,7 @@ declare function security-plugin:augment-entry(
                 if ( $can-update-media-descriptor or $can-retrieve-media-descriptor )
                 then 
                     let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
-                    return <atom:link rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml" atombeat:allow="{$allow}"/>
+                    return <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml;type=entry"/>
                 else ()                
         else ()
         

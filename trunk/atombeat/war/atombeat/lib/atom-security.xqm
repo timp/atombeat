@@ -632,14 +632,21 @@ declare function atomsec:wrap-with-entry(
 ) as element(atom:entry)
 {
     let $id := concat( $config:security-service-url , $request-path-info )
+    let $secured-uri := concat( $config:content-service-url , $request-path-info )
+    let $secured-type :=
+        if ( atomdb:collection-available( $request-path-info ) ) then concat( $CONSTANT:MEDIA-TYPE-ATOM , ";type=feed" )
+        else if ( atomdb:member-available( $request-path-info ) ) then concat( $CONSTANT:MEDIA-TYPE-ATOM , ";type=entry" )
+        else if ( atomdb:media-resource-available( $request-path-info ) ) then atomdb:get-mime-type( $request-path-info )
+        else ()
     let $self-uri := $id
     let $updated := atomsec:descriptor-updated( $request-path-info )
     return
         <atom:entry>
             <atom:id>{$id}</atom:id>
             <atom:title type="text">Security Descriptor</atom:title>
-            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
-            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=entry"/>
+            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=entry"/>
+            <atom:link rel="http://purl.org/atombeat/rel/secured" href="{$secured-uri}" type="{$secured-type}"/>
             <atom:updated>{$updated}</atom:updated>
             <atom:content type="application/vnd.atombeat+xml">
                 { $descriptor }
