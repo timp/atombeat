@@ -30,6 +30,7 @@ import org.apache.commons.httpclient.methods.multipart.MultipartRequestEntity;
 import org.apache.commons.httpclient.methods.multipart.Part;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
@@ -319,6 +320,25 @@ public class AtomTestUtils {
 	}
 	
 	
+	
+	public static List<Element> getChildrenByTagNameNS(Document d, String nsuri, String tagName) {
+		return getChildrenByTagNameNS(d.getDocumentElement(), nsuri, tagName);
+	}
+	
+	public static List<Element> getChildrenByTagNameNS( Element parent, String nsuri, String tagName ) {
+		NodeList l = parent.getChildNodes();
+		List<Element> o = new ArrayList<Element>();
+		for (int i=0;i<l.getLength();i++) {
+			Node n = l.item(i);
+			if (n instanceof Element) {
+				Element e = (Element) n;
+				if (e.getNamespaceURI() != null && e.getNamespaceURI().equals(nsuri) && e.getLocalName() != null && e.getLocalName().equals(tagName)) {
+					o.add(e);
+				}
+			}
+		}
+		return o;
+	}
 	
 	public static String getEditMediaLocation(Document mediaLinkDoc) {
 		return getLinkHref(mediaLinkDoc, "edit-media");

@@ -1,6 +1,7 @@
 package org.atombeat;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
@@ -10,7 +11,6 @@ import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 
 import static org.atombeat.AtomTestUtils.*;
 
@@ -208,8 +208,8 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		assertNotNull(editLocation);
 		String selfLocation = AtomTestUtils.getLinkHref(d1, "self");
 		assertNotNull(selfLocation);
-		NodeList entries1 = d1.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(0, entries1.getLength());
+		List<Element> entries1 = getChildrenByTagNameNS(d1, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(0, entries1.size());
 
 		// add a member
 		createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
@@ -223,8 +223,8 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// check content
 		Document d2 = getResponseBodyAsDocument(get2);
-		NodeList entries2 = d2.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries2.getLength());
+		List<Element> entries2 = getChildrenByTagNameNS(d2, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries2.size());
 
 		// add a member
 		createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
@@ -238,8 +238,8 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// check content
 		Document d3 = getResponseBodyAsDocument(get3);
-		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, entries3.getLength());
+		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, entries3.size());
 
 	}
 	
