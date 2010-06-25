@@ -597,7 +597,7 @@ declare function security-plugin:filter-feed-by-permissions(
         let $can-update-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () )
         let $descriptor-link :=     
             if ( $can-update-collection-descriptor )
-            then <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml"/>
+            then <atom:link rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml;type=entry"/>
             else ()
         let $filtered-feed :=
             <atom:feed>
