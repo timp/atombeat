@@ -9,6 +9,7 @@ declare variable $config-collections:collection-spec :=
             <path-info>/foo</path-info>
             <enable-history>true</enable-history>
             <exclude-entry-content>true</exclude-entry-content>
+            <expand-security-descriptors>true</expand-security-descriptors>
             <recursive>false</recursive>
         </collection>   
     </spec>

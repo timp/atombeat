@@ -425,7 +425,7 @@ declare function security-plugin:after-list-collection(
 {
 
     let $response-data := $response/body/atom:feed
-
+    
     let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data )
 
 	return
@@ -452,7 +452,7 @@ declare function security-plugin:after-retrieve-member(
 	let $log := local:debug("== security-plugin:after-retrieve-member ==" )
 
     let $response-data := $response/body/atom:entry
-
+    
     let $response-data := security-plugin:augment-entry( $request-path-info , $response-data )
 
 	return
@@ -472,7 +472,18 @@ declare function security-plugin:after-retrieve-member(
 
 declare function security-plugin:augment-entry(
     $request-path-info as xs:string ,
-    $response-data as element(atom:entry)
+    $response-data as element(atom:entry) 
+) as element(atom:entry)
+{
+    security-plugin:augment-entry( $request-path-info , $response-data , false() )
+};
+
+
+
+declare function security-plugin:augment-entry(
+    $request-path-info as xs:string ,
+    $response-data as element(atom:entry) ,
+    $expand-descriptors as xs:boolean?
 ) as element(atom:entry)
 {
 
@@ -499,7 +510,7 @@ declare function security-plugin:augment-entry(
         then 
             <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml;type=entry">
             {
-                if ( $can-retrieve-member-descriptor )
+                if ( $can-retrieve-member-descriptor and $expand-descriptors )
                 then 
                     <ae:inline>
                     { atomsec:wrap-with-entry( $entry-path-info , atomsec:retrieve-descriptor( $entry-path-info ) ) }
@@ -525,7 +536,7 @@ declare function security-plugin:augment-entry(
                     return 
                         <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml;type=entry">
                         {
-                            if ( $can-retrieve-media-descriptor )
+                            if ( $can-retrieve-media-descriptor and $expand-descriptors )
                             then 
                                 <ae:inline>
                                 { atomsec:wrap-with-entry( $media-path-info , atomsec:retrieve-descriptor( $media-path-info ) ) }
@@ -653,6 +664,8 @@ declare function security-plugin:filter-feed-by-permissions(
     if ( not( $config:enable-security ) )
     then $feed
     else
+        let $expand-descriptors := xs:boolean( $feed/@atombeat:expand-security-descriptors )
+
         let $can-retrieve-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-ACL , $request-path-info , () )
         let $can-update-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () )
         let $allow := string-join((
@@ -661,7 +674,17 @@ declare function security-plugin:filter-feed-by-permissions(
         ) , ", " )
         let $descriptor-link :=     
             if ( $can-retrieve-collection-descriptor or $can-update-collection-descriptor )
-            then <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml;type=entry"/>
+            then 
+                <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml;type=entry">
+                {
+                    if ( $can-retrieve-collection-descriptor and $expand-descriptors )
+                    then 
+                        <ae:inline>
+                        { atomsec:wrap-with-entry( $request-path-info , atomsec:retrieve-descriptor( $request-path-info ) ) }
+                        </ae:inline>
+                    else ()                
+                }
+                </atom:link>
             else ()
         let $filtered-feed :=
             <atom:feed>
@@ -674,7 +697,7 @@ declare function security-plugin:filter-feed-by-permissions(
                     let $forbidden := atomsec:is-denied( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
                     return 
                         if ( not( $forbidden ) ) 
-                        then security-plugin:augment-entry( $entry-path-info , $entry ) 
+                        then security-plugin:augment-entry( $entry-path-info , $entry , $expand-descriptors ) 
                         else ()
                     ,
                     (: decorate other links with atombeat:allow :)
