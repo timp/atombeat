@@ -19,6 +19,7 @@ import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" a
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
+import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
@@ -374,17 +375,30 @@ declare function history-plugin:append-history-link (
         	
         	let $response-entry :=
         	
-        	   if ( $versioning-enabled )
+        	    if ( $versioning-enabled )
         	   
-        	   then
+        	    then
         	   
-            		<atom:entry>
-            		{
-            			$response-entry/attribute::* ,
-            			$response-entry/child::*
-            		}
-            			<atom:link rel="history" href="{$history-uri}" type="application/atom+xml;type=feed"/>			
-            		</atom:entry>
+        	        let $link := <atom:link rel="history" href="{$history-uri}" type="application/atom+xml;type=feed"/>
+        	       
+        	        let $history-link := 
+        	            if ( $config:enable-security )
+        	            then 
+        	                let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-HISTORY , $entry-path-info , () )
+                            let $allow := if ( $can-get ) then "GET" else ()   
+                            return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
+
+                    else $link
+        	       
+        	        return
+
+                        <atom:entry>
+                		{
+                			$response-entry/attribute::* ,
+                			$response-entry/child::* ,
+                			$history-link
+                		}
+                		</atom:entry>
             		
         		else $response-entry
         
