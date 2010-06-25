@@ -522,52 +522,8 @@ declare function security-plugin:augment-entry(
             $response-data/child::*[not(. instance of element(atom:link))] ,
             
             (: decorate other links with atombeat:allow :)
-            for $link in $response-data/atom:link
-            return
-                if ( not( starts-with( $link/@href , $config:content-service-url ) ) )
-                then $link
-                else 
-                    let $path-info := substring-after( $link/@href , $config:content-service-url )
-                    return 
-                        if ( atomdb:member-available( $path-info ) )
-                        then
-                            let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () )
-                            let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER , $path-info , () )
-                            let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEMBER , $path-info , () )
-                            let $allow := string-join( (
-                                if ( $can-get ) then "GET" else () ,
-                                if ( $can-put ) then "PUT" else () ,
-                                if ( $can-delete ) then "DELETE" else ()
-                            ) , ", " )
-                            return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
-                        else if ( atomdb:media-resource-available( $path-info ) )
-                        then 
-                            let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $path-info , () )
-                            let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA , $path-info , () )
-                            let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEDIA , $path-info , () )
-                            let $allow := string-join( (
-                                if ( $can-get ) then "GET" else () ,
-                                if ( $can-put ) then "PUT" else () ,
-                                if ( $can-delete ) then "DELETE" else ()
-                            ) , ", " )
-                            return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
-                        else if ( atomdb:collection-available( $path-info ) )
-                        then 
-                            let $can-get := atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () )
-                            let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION , $path-info , () )
-                            let $can-post := (
-                                atomsec:is-allowed( $CONSTANT:OP-CREATE-MEMBER , $path-info , () )
-                                or atomsec:is-allowed( $CONSTANT:OP-CREATE-MEDIA , $path-info , () )
-                                or atomsec:is-allowed( $CONSTANT:OP-MULTI-CREATE , $path-info , () )
-                            )
-                            let $allow := string-join( (
-                                if ( $can-get ) then "GET" else () ,
-                                if ( $can-put ) then "PUT" else () ,
-                                if ( $can-post ) then "POST" else ()
-                            ) , ", " )
-                            return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
-                        else $link
-            ,
+            security-plugin:decorate-links( $response-data/atom:link ) ,
+            
             $descriptor-link ,
             $media-descriptor-link
                         
@@ -576,6 +532,62 @@ declare function security-plugin:augment-entry(
     
     return $augmented-entry
     
+};
+
+
+
+
+declare function security-plugin:decorate-links(
+    $links as element(atom:link)*
+) as element(atom:link)*
+{
+
+    for $link in $links
+    return
+        if ( not( starts-with( $link/@href , $config:content-service-url ) ) )
+        then $link
+        else 
+            let $path-info := substring-after( $link/@href , $config:content-service-url )
+            return 
+                if ( atomdb:member-available( $path-info ) )
+                then
+                    let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () )
+                    let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER , $path-info , () )
+                    let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEMBER , $path-info , () )
+                    let $allow := string-join( (
+                        if ( $can-get ) then "GET" else () ,
+                        if ( $can-put ) then "PUT" else () ,
+                        if ( $can-delete ) then "DELETE" else ()
+                    ) , ", " )
+                    return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
+                else if ( atomdb:media-resource-available( $path-info ) )
+                then 
+                    let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $path-info , () )
+                    let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA , $path-info , () )
+                    let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEDIA , $path-info , () )
+                    let $allow := string-join( (
+                        if ( $can-get ) then "GET" else () ,
+                        if ( $can-put ) then "PUT" else () ,
+                        if ( $can-delete ) then "DELETE" else ()
+                    ) , ", " )
+                    return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
+                else if ( atomdb:collection-available( $path-info ) )
+                then 
+                    let $can-get := atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () )
+                    let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION , $path-info , () )
+                    let $can-post := (
+                        atomsec:is-allowed( $CONSTANT:OP-CREATE-MEMBER , $path-info , () )
+                        or atomsec:is-allowed( $CONSTANT:OP-CREATE-MEDIA , $path-info , () )
+                        or atomsec:is-allowed( $CONSTANT:OP-MULTI-CREATE , $path-info , () )
+                    )
+                    let $allow := string-join( (
+                        if ( $can-get ) then "GET" else () ,
+                        if ( $can-put ) then "PUT" else () ,
+                        if ( $can-post ) then "POST" else ()
+                    ) , ", " )
+                    return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
+                else $link
+
 };
 
 
@@ -633,8 +645,7 @@ declare function security-plugin:filter-feed-by-permissions(
             <atom:feed>
                 {
                     $feed/attribute::* ,
-                    $feed/child::*[ not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI ) ] ,
-                    $descriptor-link ,
+                    $feed/child::*[ not( . instance of element(atom:entry) ) and not( . instance of element(atom:link) ) ] ,
                     for $entry in $feed/atom:entry
                     let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:content-service-url )
                     let $log := local:debug( concat( "checking permission to retrieve member for entry-path-info: " , $entry-path-info ) )
@@ -643,6 +654,10 @@ declare function security-plugin:filter-feed-by-permissions(
                         if ( not( $forbidden ) ) 
                         then security-plugin:augment-entry( $entry-path-info , $entry ) 
                         else ()
+                    ,
+                    (: decorate other links with atombeat:allow :)
+                    security-plugin:decorate-links( $feed/atom:link ) ,
+                    $descriptor-link
                 }
             </atom:feed>
         let $log := local:debug( $filtered-feed )
