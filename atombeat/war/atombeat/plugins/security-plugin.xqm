@@ -4,6 +4,8 @@ module namespace security-plugin = "http://purl.org/atombeat/xquery/security-plu
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
+(: see http://tools.ietf.org/html/draft-mehta-atom-inline-01 :)
+declare namespace ae = "http://purl.org/atom/ext/" ;
 
 
 import module namespace request = "http://exist-db.org/xquery/request" ;
@@ -494,7 +496,17 @@ declare function security-plugin:augment-entry(
     
     let $descriptor-link :=     
         if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
-        then <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml;type=entry"/>
+        then 
+            <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml;type=entry">
+            {
+                if ( $can-retrieve-member-descriptor )
+                then 
+                    <ae:inline>
+                    { atomsec:wrap-with-entry( $entry-path-info , atomsec:retrieve-descriptor( $entry-path-info ) ) }
+                    </ae:inline>
+                else ()                
+            }
+            </atom:link>
         else ()
         
     let $log := local:debug( concat( "$descriptor-link: " , $descriptor-link ) )
@@ -510,7 +522,17 @@ declare function security-plugin:augment-entry(
                 if ( $can-update-media-descriptor or $can-retrieve-media-descriptor )
                 then 
                     let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
-                    return <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml;type=entry"/>
+                    return 
+                        <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml;type=entry">
+                        {
+                            if ( $can-retrieve-media-descriptor )
+                            then 
+                                <ae:inline>
+                                { atomsec:wrap-with-entry( $media-path-info , atomsec:retrieve-descriptor( $media-path-info ) ) }
+                                </ae:inline>
+                            else ()
+                        }
+                        </atom:link>
                 else ()                
         else ()
         

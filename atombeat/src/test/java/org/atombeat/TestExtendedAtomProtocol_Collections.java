@@ -1,12 +1,14 @@
 package org.atombeat;
 
+import java.util.List;
+
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.w3c.dom.Document;
-import org.w3c.dom.NodeList;
+import org.w3c.dom.Element;
 
 import static org.atombeat.AtomTestUtils.*;
 
@@ -230,15 +232,15 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 		int result3 = executeMethod(get3);
 		assertEquals(200, result3);
 		Document d3 = getResponseBodyAsDocument(get3);
-		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, entries3.getLength()); // should be 2 because 1 is included via recursion into sub-collection
+		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, entries3.size()); // should be 2 because 1 is included via recursion into sub-collection
 		
 		GetMethod get4 = new GetMethod(col2);
 		int result4 = executeMethod(get4);
 		assertEquals(200, result4);
 		Document d4 = getResponseBodyAsDocument(get4);
-		NodeList entries4 = d4.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries4.getLength());
+		List<Element> entries4 = getChildrenByTagNameNS(d4, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries4.size());
 		
 	}
 	
@@ -278,15 +280,15 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 		int result3 = executeMethod(get3);
 		assertEquals(200, result3);
 		Document d3 = getResponseBodyAsDocument(get3);
-		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries3.getLength()); // should be 1 because not recursive
+		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries3.size()); // should be 1 because not recursive
 		
 		GetMethod get4 = new GetMethod(col2);
 		int result4 = executeMethod(get4);
 		assertEquals(200, result4);
 		Document d4 = getResponseBodyAsDocument(get4);
-		NodeList entries4 = d4.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries4.getLength());
+		List<Element> entries4 = getChildrenByTagNameNS(d4, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries4.size());
 		
 	}
 	
@@ -325,15 +327,15 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 		int result3 = executeMethod(get3);
 		assertEquals(200, result3);
 		Document d3 = getResponseBodyAsDocument(get3);
-		NodeList entries3 = d3.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries3.getLength()); // should be 1 because not recursive by default
+		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries3.size()); // should be 1 because not recursive by default
 		
 		GetMethod get4 = new GetMethod(col2);
 		int result4 = executeMethod(get4);
 		assertEquals(200, result4);
 		Document d4 = getResponseBodyAsDocument(get4);
-		NodeList entries4 = d4.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries4.getLength());
+		List<Element> entries4 = getChildrenByTagNameNS(d4, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries4.size());
 		
 	}
 	

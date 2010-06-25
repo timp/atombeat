@@ -1,6 +1,7 @@
 package org.atombeat;
 
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -83,7 +84,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		GetMethod get1, get2;
 		PostMethod post;
 		int get1Result, get2Result, postResult;
-		Document d; NodeList l; 
+		Document d; List<Element> l; 
 		
 		// create a collection to run test against
 		
@@ -96,8 +97,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 
 		assertEquals(200, get1Result);
 		d = getResponseBodyAsDocument(get1);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(0, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(0, l.size());
 		
 		// do post on collection uri with feed doc containing entries, expect to 
 		// succeed and return feed doc with created entries
@@ -118,8 +119,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		postResult = executeMethod(post); 
 		assertEquals(200, postResult);
 		d = getResponseBodyAsDocument(post);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, l.size());
 		
 		// do a second get on the collection uri, expect to find 2 members
 		
@@ -127,8 +128,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		get2Result = executeMethod(get2);
 		assertEquals(200, get2Result);
 		d = getResponseBodyAsDocument(get2);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, l.size());
 
 	}
 
@@ -140,7 +141,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		GetMethod get1, get2, get3;
 		PostMethod post1, post2, post3;
 		int get1Result, get2Result, get3Result, post1Result, post2Result, post3Result;
-		Document d; NodeList l;
+		Document d; List<Element> l;
 		
 		// set up two test collections
 
@@ -167,8 +168,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		get1Result = executeMethod(get1);
 		assertEquals(200, get1Result);
 		d = getResponseBodyAsDocument(get1);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(0, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(0, l.size());
 		
 		// get feed from first collection
 		
@@ -176,8 +177,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		get2Result = executeMethod(get2);
 		assertEquals(200, get2Result);
 		d = getResponseBodyAsDocument(get2);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, l.size());
 		
 		// post feed from first collection to second collection 
 		
@@ -188,8 +189,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		post3Result = executeMethod(post3);
 		assertEquals(200, post3Result);
 		d = getResponseBodyAsDocument(post3);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, l.size());
 		
 		// get second collection to see change
 		
@@ -197,13 +198,12 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		get3Result = executeMethod(get3);
 		assertEquals(200, get3Result);
 		d = getResponseBodyAsDocument(get3);
-		l = d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, l.getLength());
+		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, l.size());
 		
 		// look for edit-media links, check same as content @src
 		
-		for (int i=0; i<l.getLength(); i++) {
-			Element e = (Element) l.item(i);
+		for (Element e : l) {
 			String editMediaLocation = getEditMediaLocation(e);
 			assertNotNull(editMediaLocation);
 			String contentSrc = getContent(e).getAttribute("src");

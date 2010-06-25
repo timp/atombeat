@@ -2,6 +2,7 @@ package org.atombeat;
 
 import java.io.File;
 import java.io.InputStream;
+import java.util.List;
 
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -636,8 +637,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 		Document feedDoc = getResponseBodyAsDocument(method);
 		
-		NodeList entries = feedDoc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries.getLength());
+		List<Element> entries = getChildrenByTagNameNS(feedDoc, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries.size());
 		
 		method = new GetMethod(testCollectionUri);
 		result = executeMethod(method, "austin", "test");
@@ -646,8 +647,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 		feedDoc = getResponseBodyAsDocument(method);
 		
-		entries = feedDoc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(1, entries.getLength());
+		entries = getChildrenByTagNameNS(feedDoc, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(1, entries.size());
 		
 		// but readers should be able to retrieve all entries
 		
@@ -658,8 +659,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 		feedDoc = getResponseBodyAsDocument(method);
 		
-		entries = feedDoc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry");
-		assertEquals(2, entries.getLength());
+		entries = getChildrenByTagNameNS(feedDoc, "http://www.w3.org/2005/Atom", "entry");
+		assertEquals(2, entries.size());
 		
 	}
 
