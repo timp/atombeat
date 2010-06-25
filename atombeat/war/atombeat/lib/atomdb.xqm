@@ -598,8 +598,8 @@ declare function atomdb:create-feed(
     	}
             <atom:id>{$id}</atom:id>
             <atom:updated>{$updated}</atom:updated>
-            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
-            <atom:link rel="edit" href="{$edit-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM}"/>
+            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=feed"/>
+            <atom:link rel="edit" href="{$edit-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=feed"/>
         {
             if ( $config:auto-author )
             then
@@ -674,8 +674,8 @@ declare function atomdb:create-entry(
             <atom:id>{$id}</atom:id>
             <atom:published>{$published}</atom:published>
             <atom:updated>{$updated}</atom:updated>
-            <atom:link rel="self" type="application/atom+xml" href="{$self-uri}"/>
-            <atom:link rel="edit" type="application/atom+xml" href="{$edit-uri}"/>
+            <atom:link rel="self" type="application/atom+xml;type=entry" href="{$self-uri}"/>
+            <atom:link rel="edit" type="application/atom+xml;type=entry" href="{$edit-uri}"/>
         {
             if ( $config:auto-author )
             then
@@ -745,8 +745,8 @@ declare function atomdb:create-media-link-entry(
             <atom:id>{$id}</atom:id>
             <atom:published>{$published}</atom:published>
             <atom:updated>{$updated}</atom:updated>
-            <atom:link rel="self" type="application/atom+xml" href="{$self-uri}"/>
-            <atom:link rel="edit" type="application/atom+xml" href="{$edit-uri}"/>
+            <atom:link rel="self" type="application/atom+xml;type=entry" href="{$self-uri}"/>
+            <atom:link rel="edit" type="application/atom+xml;type=entry" href="{$edit-uri}"/>
             <atom:link rel="edit-media" type="{$media-type}" href="{$media-uri}" length="{$media-size}"/>
             <atom:content src="{$media-uri}" type="{$media-type}"/>
             <atom:title type="text">{$title}</atom:title>
@@ -1105,4 +1105,126 @@ declare function atomdb:generate-etag(
         return util:hash( $entry , "md5" )
         
     else ()
+};
+
+
+
+
+declare function atomdb:filter(
+    $new as element() ,
+    $reserved as element(reserved)
+) as element() 
+{
+
+(:
+    <reserved>
+        <attributes namespace-uri="">
+            <attribute>baz</attribute>
+        </attributes>
+        <attributes namespace-uri="http://example.org/foo">
+            <attribute>bar</attribute>
+        </attributes>
+        <elements namespace-uri="">
+            <element>baz</element>
+        </elements>
+        <elements namespace-uri="http://example.org/foo">
+            <element>spong</element>
+        </elements>
+        <atom-elements>
+            <element>id</element>
+        </atom-elements>
+        <atom-links>
+            <link rel="http://example.org/rel/see-also"/>
+        </atom-links>
+    </reserved>
+:)
+
+    (: filter out reserved attributes :)
+    
+    let $attributes :=
+        for $a in $new/attribute::*
+        where empty( $reserved/attributes/attribute[../@namespace-uri=namespace-uri($a) and text()=local-name($a)] )
+        return $a
+
+    (: filter out reserved elements :)
+    
+    let $children1 :=
+        for $c in $new/child::*
+        where empty( $reserved/elements/element[../@namespace-uri=namespace-uri($c) and text()=local-name($c)] )
+        return $c
+        
+    (: filter out reserved atom elements :)    
+        
+    let $children2 :=
+        for $c in $children1
+        where namespace-uri($c) != $CONSTANT:ATOM-NSURI
+        or empty( $reserved/atom-elements/element[text()=local-name($c)] )
+        return $c
+        
+    (: filter out reserved atom links :)
+    
+    let $children3 :=
+        for $c in $children2
+        where not( $c instance of element(atom:link) )
+        or empty( $reserved/atom-links/link[ ( empty(@rel) or @rel=$c/@rel ) and ( empty(@type) or @type=$c/@type ) ] )
+        return $c
+        
+    (: construct filtered data :)    
+        
+    return 
+
+        element { node-name( $new ) }
+        {
+            $attributes ,
+            $children3
+        }
+
+};
+
+
+
+
+declare function atomdb:filter(
+    $old as element() ,
+    $new as element() ,
+    $reserved as element(reserved)
+) as element() 
+{
+
+    let $reserved-attributes := 
+        for $a in $old/attribute::*
+        where exists( $reserved/attributes/attribute[../@namespace-uri=namespace-uri($a) and text()=local-name($a)] )
+        return $a
+
+    let $reserved-elements :=
+        for $c in $old/child::*
+        where exists( $reserved/elements/element[../@namespace-uri=namespace-uri($c) and text()=local-name($c)] )
+        return $c
+        
+    let $reserved-atom-elements :=
+        for $c in $old/child::*
+        where namespace-uri($c) = $CONSTANT:ATOM-NSURI
+        and exists( $reserved/atom-elements/element[text()=local-name($c)] )
+        return $c
+        
+    let $reserved-atom-links :=
+        for $c in $old/child::*
+        where ( $c instance of element(atom:link) )
+        and exists( $reserved/atom-links/link[ ( empty(@rel) or @rel=$c/@rel ) and ( empty(@type) or @type=$c/@type ) ] )
+        return $c
+        
+    let $reserved-children := ( $reserved-elements , $reserved-atom-elements , $reserved-atom-links )
+
+    let $new-filtered := atomdb:filter( $new , $reserved )
+            
+    return 
+    
+        element { node-name( $new ) }
+        {
+            $reserved-attributes ,
+            $new-filtered/attribute::* ,
+            $reserved-children ,
+            $new-filtered/child::*
+        }
+    
 };

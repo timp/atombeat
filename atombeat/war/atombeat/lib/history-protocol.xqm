@@ -139,6 +139,10 @@ declare function history-protocol:op-retrieve-member-history(
 ) as element(response)
 {
 
+    let $self-uri := concat( $config:history-service-url , $request-path-info )
+    let $versioned-uri := concat( $config:content-service-url , $request-path-info )
+    let $updated := atomdb:retrieve-member( $request-path-info )/atom:updated
+    
     let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
 	let $log := util:log( "debug" , $entry-doc-path )
 
@@ -157,9 +161,14 @@ declare function history-protocol:op-retrieve-member-history(
     let $feed := 
 
 		<atom:feed atombeat:exclude-entry-content="true">
-			<atom:title>History</atom:title>
+		    <atom:id>{$self-uri}</atom:id>
+		    <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=feed"/>
+		    <atom:link rel="http://purl.org/atombeat/rel/versioned" href="{$versioned-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=entry"/>
+			<atom:title type="text">Version History</atom:title>
 			{
 
+                $updated ,
+                
 (:				$vhist , :)
 				
 (:				$vvers , :)
@@ -341,12 +350,12 @@ declare function history-protocol:construct-member-base-revision(
 				when="{$when}"
 				initial="yes">
 			</ar:revision>
-			<atom:link rel="current-revision" type="application/atom+xml" href="{$current-revision-href}"/>
-			<atom:link rel="initial-revision" type="application/atom+xml" href="{$initial-revision-href}"/>
-			<atom:link rel="this-revision" type="application/atom+xml" href="{$this-revision-href}"/>
+			<atom:link rel="current-revision" type="application/atom+xml;type=entry" href="{$current-revision-href}"/>
+			<atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="{$initial-revision-href}"/>
+			<atom:link rel="this-revision" type="application/atom+xml;type=entry" href="{$this-revision-href}"/>
 		{
 			if ( $next-revision-href ) then
-			<atom:link rel="next-revision" type="application/atom+xml" href="{$next-revision-href}"/> 
+			<atom:link rel="next-revision" type="application/atom+xml;type=entry" href="{$next-revision-href}"/> 
 			else () ,
 			for $ec in $revision/* 
 			return 
@@ -407,15 +416,15 @@ declare function history-protocol:construct-member-specified-revision(
 				when="{$when}"
 				initial="{$initial}">
 			</ar:revision>
-			<atom:link rel="current-revision" type="application/atom+xml" href="{$current-revision-href}"/>
-			<atom:link rel="initial-revision" type="application/atom+xml" href="{$initial-revision-href}"/>
-			<atom:link rel="this-revision" type="application/atom+xml" href="{$this-revision-href}"/>
+			<atom:link rel="current-revision" type="application/atom+xml;type=entry" href="{$current-revision-href}"/>
+			<atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="{$initial-revision-href}"/>
+			<atom:link rel="this-revision" type="application/atom+xml;type=entry" href="{$this-revision-href}"/>
 		{
 			if ( $next-revision-href ) then
-			<atom:link rel="next-revision" type="application/atom+xml" href="{$next-revision-href}"/> 
+			<atom:link rel="next-revision" type="application/atom+xml;type=entry" href="{$next-revision-href}"/> 
 			else () ,
 			if ( $previous-revision-href ) then
-			<atom:link rel="previous-revision" type="application/atom+xml" href="{$previous-revision-href}"/> 
+			<atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="{$previous-revision-href}"/> 
 			else () ,
 			for $ec in $revision/child::* 
 			return 
