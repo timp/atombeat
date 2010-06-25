@@ -65,6 +65,7 @@ declare function local:content() as item()*
                         <th>Path</th>
                         <th>Enable History</th>
                         <th>Exclude Entry Content in Feed</th>
+                        <th>Expand Security Descriptors</th>
                         <th>Recursive</th>
                         <th>Available</th>
                     </tr>
@@ -74,6 +75,7 @@ declare function local:content() as item()*
                         let $path-info := $collection/path-info/text()
                         let $enable-history := $collection/enable-history/text()
                         let $exclude-entry-content := $collection/exclude-entry-content/text()
+                        let $expand-security-descriptors := $collection/expand-security-descriptors/text()
                         let $recursive := $collection/recursive/text()
                         let $available := atomdb:collection-available($path-info)
                         return
@@ -82,6 +84,7 @@ declare function local:content() as item()*
                                 <td><a href="../content{$path-info}">{$path-info}</a></td>
                                 <td>{$enable-history}</td>
                                 <td>{$exclude-entry-content}</td>
+                                <td>{$expand-security-descriptors}</td>
                                 <td>{$recursive}</td>
                                 <td><strong>{$available}</strong></td>
                             </tr>
@@ -119,7 +122,8 @@ declare function local:do-post() as item()*
             <atom:feed 
                 atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}"
                 atombeat:recursive="{$collection/recursive/text()}"
-                atombeat:enable-versioning="{$collection/enable-history/text()}">
+                atombeat:enable-versioning="{$collection/enable-history/text()}"
+                atombeat:expand-security-descriptors="{$collection/expand-security-descriptors/text()}">
                 <atom:title>{$title}</atom:title>
             </atom:feed>
             
