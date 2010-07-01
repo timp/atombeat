@@ -357,6 +357,29 @@ declare function atomdb:create-member(
 ) as element(atom:entry)?
 {
 
+    let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
+
+    return atomdb:create-member( $collection-path-info , $member-id , $request-data )
+		
+};
+
+
+
+(:~
+ : Create a new Atom collection member.
+ :
+ : @param $collection-path-info the path info (e.g., "/studies") for the collection where the new member will be created.
+ : @param $member-id the string token to use when generating the member URI
+ : @param $request-data the Atom entry data to use to create the new member.
+ : @return the eXist database path where the new member is stored, or empty if the collection is not available.
+ :)
+declare function atomdb:create-member(
+	$collection-path-info as xs:string ,
+	$member-id as xs:string ,
+	$request-data as element(atom:entry) 
+) as element(atom:entry)?
+{
+
 	if ( not( atomdb:collection-available( $collection-path-info ) ) )
 	
 	then ()
@@ -366,8 +389,6 @@ declare function atomdb:create-member(
 		let $log := util:log( "debug" , "atomdb:create-member()" )
 		let $log := util:log( "debug" , $request-data )
 				
-	    let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
-	    
 	    let $entry := atomdb:create-entry( $collection-path-info, $request-data , $member-id )
 		let $log := util:log( "debug" , $entry )
 	    

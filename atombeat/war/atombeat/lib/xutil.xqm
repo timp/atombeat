@@ -173,4 +173,20 @@ declare function xutil:random-alphanumeric(
 
 
 
+declare function xutil:append-child(
+    $parent as element() ,
+    $children as element()*
+) as element() 
+{
+    
+    element { node-name( $parent ) }
+    {
+        $parent/attribute::* ,
+        $parent/child::* ,
+        $children
+    }
+
+};
+
+
 
