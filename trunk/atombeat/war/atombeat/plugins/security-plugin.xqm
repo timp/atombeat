@@ -16,6 +16,7 @@ import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace security-config = "http://purl.org/atombeat/xquery/security-config" at "../config/security.xqm" ;
 
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
@@ -211,8 +212,8 @@ declare function security-plugin:after-create-member(
 	let $log := local:debug( concat( "$entry-path-info: " , $entry-path-info ) )
 
 	(: if security is enabled, install default resource ACL :)
-	let $resource-descriptor-installed := security-plugin:install-resource-descriptor( $request-path-info , $entry-path-info )
-	let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
+	let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
+	let $log := local:debug( concat( "$member-descriptor-installed: " , $member-descriptor-installed ) )
 	
     let $response-data := security-plugin:augment-entry( $request-path-info , $response-data )
 
@@ -245,12 +246,12 @@ declare function security-plugin:after-multi-create(
             let $entry-uri := $entry/atom:link[@rel="edit"]/@href
             let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
             (: if security is enabled, install default resource ACL :)
-            let $resource-descriptor-installed := security-plugin:install-resource-descriptor( $request-path-info , $entry-path-info )
+            let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
             let $media-uri := $entry/atom:link[@rel="edit-media"]/@href
             let $media-path-info := substring-after( $media-uri , $config:content-service-url )
             (: if security is enabled, install default resource ACL :)
-            let $resource-descriptor-installed := 
-                if ( exists( $media-path-info ) and $media-path-info != "" ) then security-plugin:install-resource-descriptor( $request-path-info , $media-path-info )
+            let $media-descriptor-installed := 
+                if ( exists( $media-path-info ) and $media-path-info != "" ) then security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
                 else () 
             return security-plugin:augment-entry( $entry-path-info , $entry )
         }
@@ -310,8 +311,8 @@ declare function security-plugin:after-create-media(
     let $log := local:debug( concat( "$entry-path-info: " , $entry-path-info ) )
 
     (: if security is enabled, install default resource ACL :)
-    let $resource-descriptor-installed := security-plugin:install-resource-descriptor( $request-path-info , $entry-path-info )
-    let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
+    let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
+    let $log := local:debug( concat( "$member-descriptor-installed: " , $member-descriptor-installed ) )
 
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     let $log := local:debug( concat( "$media-uri: " , $media-uri ) )
@@ -320,8 +321,8 @@ declare function security-plugin:after-create-media(
     let $log := local:debug( concat( "$media-path-info: " , $media-path-info ) )
 
     (: if security is enabled, install default resource ACL :)
-    let $resource-descriptor-installed := security-plugin:install-resource-descriptor( $request-path-info , $media-path-info )
-    let $log := local:debug( concat( "$resource-descriptor-installed: " , $resource-descriptor-installed ) )
+    let $media-descriptor-installed := security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
+    let $log := local:debug( concat( "$media-descriptor-installed: " , $media-descriptor-installed ) )
     
     let $response-data := security-plugin:augment-entry( $entry-path-info , $response-data )
 
@@ -494,11 +495,11 @@ declare function security-plugin:augment-entry(
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     let $media-path-info := substring-after( $media-uri , $config:content-service-url )
 
-    let $can-retrieve-member-descriptor := atomsec:is-allowed(  $CONSTANT:OP-RETRIEVE-ACL , $entry-path-info , ()  )
-    let $can-update-member-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $entry-path-info , () )
+    let $can-retrieve-member-descriptor := atomsec:is-allowed(  $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $entry-path-info , ()  )
+    let $can-update-member-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER-ACL , $entry-path-info , () )
     
-    let $can-retrieve-media-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-ACL , $media-path-info , () )
-    let $can-update-media-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $media-path-info , () )
+    let $can-retrieve-media-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $media-path-info , () )
+    let $can-update-media-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA-ACL , $media-path-info , () )
     
     let $allow := string-join((
         if ( $can-retrieve-member-descriptor ) then "GET" else () ,
@@ -626,7 +627,7 @@ declare function security-plugin:decorate-links(
 
 
 
-declare function security-plugin:install-resource-descriptor(
+declare function security-plugin:install-member-descriptor(
     $request-path-info as xs:string,
     $resource-path-info as xs:string
 ) as xs:string?
@@ -634,7 +635,24 @@ declare function security-plugin:install-resource-descriptor(
     if ( $config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
-        let $acl := config:default-resource-security-descriptor( $request-path-info , $user )
+        let $acl := security-config:default-member-security-descriptor( $request-path-info , $user )
+        let $acl-db-path := atomsec:store-descriptor( $resource-path-info , $acl )
+    	return $acl-db-path
+    else ()
+};
+
+
+
+
+declare function security-plugin:install-media-descriptor(
+    $request-path-info as xs:string,
+    $resource-path-info as xs:string
+) as xs:string?
+{
+    if ( $config:enable-security )
+    then 
+        let $user := request:get-attribute( $config:user-name-request-attribute-key )
+        let $acl := security-config:default-media-security-descriptor( $request-path-info , $user )
         let $acl-db-path := atomsec:store-descriptor( $resource-path-info , $acl )
     	return $acl-db-path
     else ()
@@ -648,7 +666,7 @@ declare function security-plugin:install-collection-descriptor( $request-path-in
     if ( $config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
-        let $acl := config:default-collection-security-descriptor( $request-path-info , $user )
+        let $acl := security-config:default-collection-security-descriptor( $request-path-info , $user )
         return atomsec:store-descriptor( $request-path-info , $acl )
     else ()
 };
@@ -666,8 +684,8 @@ declare function security-plugin:filter-feed-by-permissions(
     else
         let $expand-descriptors := xs:boolean( $feed/@atombeat:expand-security-descriptors )
 
-        let $can-retrieve-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-ACL , $request-path-info , () )
-        let $can-update-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-ACL , $request-path-info , () )
+        let $can-retrieve-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $request-path-info , () )
+        let $can-update-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION-ACL , $request-path-info , () )
         let $allow := string-join((
             if ( $can-retrieve-collection-descriptor ) then "GET" else () ,
             if ( $can-update-collection-descriptor ) then "PUT" else ()

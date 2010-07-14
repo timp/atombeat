@@ -75,9 +75,16 @@ declare function security-protocol:do-get(
 ) as element(response)
 {
 
+    let $op-name := 
+        if ( $request-path-info = "/" ) then $CONSTANT:OP-RETRIEVE-WORKSPACE-ACL
+        else if ( atomdb:collection-available( $request-path-info ) ) then $CONSTANT:OP-RETRIEVE-COLLECTION-ACL
+        else if ( atomdb:member-available( $request-path-info ) ) then $CONSTANT:OP-RETRIEVE-MEMBER-ACL
+        else if ( atomdb:media-resource-available( $request-path-info ) ) then $CONSTANT:OP-RETRIEVE-MEDIA-ACL
+        else () (: should never be reached :)
+    
     let $op := util:function( QName( "http://purl.org/atombeat/xquery/security-protocol" , "atom-protocol:op-retrieve-descriptor" ) , 3 )
     
-    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-ACL , $op , $request-path-info , () )
+    return common-protocol:apply-op( $op-name , $op , $request-path-info , () )
 
 };
 
@@ -110,9 +117,16 @@ declare function security-protocol:do-put(
 
     let $request-data := request:get-data()
 
+    let $op-name := 
+        if ( $request-path-info = "/" ) then $CONSTANT:OP-UPDATE-WORKSPACE-ACL
+        else if ( atomdb:collection-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-COLLECTION-ACL
+        else if ( atomdb:member-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-MEMBER-ACL
+        else if ( atomdb:media-resource-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-MEDIA-ACL
+        else () (: should never be reached :)
+
     let $op := util:function( QName( "http://purl.org/atombeat/xquery/security-protocol" , "atom-protocol:op-update-descriptor" ) , 3 )
     
-    return common-protocol:apply-op( $CONSTANT:OP-UPDATE-ACL , $op , $request-path-info , $request-data )
+    return common-protocol:apply-op( $op-name , $op , $request-path-info , $request-data )
 
 };
 

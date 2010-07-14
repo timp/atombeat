@@ -333,11 +333,11 @@ declare function atomsec:decide(
     
     (: process ACLs :)
     
-    let $resource-decision := atomsec:apply-acl( $resource-descriptor , $operation , $media-type , $user , $roles )
+    let $resource-decision := atomsec:apply-acl( $resource-descriptor , $operation , $media-type , $user , $roles , $request-path-info )
     
-    let $collection-decision := atomsec:apply-acl( $collection-descriptor , $operation , $media-type , $user , $roles )   
+    let $collection-decision := atomsec:apply-acl( $collection-descriptor , $operation , $media-type , $user , $roles , $request-path-info )   
 
-    let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $operation , $media-type , $user , $roles )  
+    let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $operation , $media-type , $user , $roles , $request-path-info )  
     
     let $log := local:debug( concat( "$resource-decision: " , $resource-decision ) )
     let $log := local:debug( concat( "$collection-decision: " , $collection-decision ) )
@@ -374,11 +374,12 @@ declare function atomsec:apply-acl(
     $operation as xs:string ,
     $media-type as xs:string? ,
     $user as xs:string? ,
-    $roles as xs:string*
+    $roles as xs:string* ,
+    $request-path-info as xs:string
 ) as xs:string?
 {
 
-    let $matching-aces := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles)
+    let $matching-aces := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles, $request-path-info )
     
     let $decision := 
         if ( exists( $matching-aces ) ) then normalize-space( $matching-aces[1]/atombeat:type/text() ) 
@@ -395,7 +396,8 @@ declare function atomsec:match-acl(
     $operation as xs:string ,
     $media-type as xs:string? ,
     $user as xs:string? ,
-    $roles as xs:string*
+    $roles as xs:string* ,
+    $request-path-info as xs:string
 ) as element(atombeat:ace)*
 {
 
@@ -420,7 +422,9 @@ declare function atomsec:match-acl(
                     atomsec:match-group( $ace , $user , $descriptor )
                 ) 
                 
-                and atomsec:match-media-type( $ace , $media-type )
+                and atomsec:match-media-range-condition( $ace , $media-type )
+                
+                and atomsec:match-request-path-info-condition( $ace , $request-path-info )
                 
             ) 
             
@@ -541,7 +545,7 @@ declare function atomsec:dereference-group(
 
 
 
-declare function atomsec:match-media-type(
+declare function atomsec:match-media-range-condition(
     $ace as element(atombeat:ace) ,
     $media-type as xs:string*
 ) as xs:boolean
@@ -580,6 +584,23 @@ declare function atomsec:match-media-type(
 };
 
 
+
+
+declare function atomsec:match-request-path-info-condition( 
+    $ace as element(atombeat:ace) , 
+    $request-path-info as xs:string?
+) as xs:boolean
+{
+
+    let $pattern := normalize-space( $ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"]/text() )
+    
+    return
+    
+        if ( empty( $pattern ) or $pattern = "" ) then true() 
+        
+        else matches( $request-path-info , $pattern )
+    
+};
 
 
 

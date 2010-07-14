@@ -4,6 +4,7 @@ declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 import module namespace response = "http://exist-db.org/xquery/response" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace security-config = "http://purl.org/atombeat/xquery/security-config" at "../config/security.xqm" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
@@ -108,7 +109,7 @@ declare function local:do-post() as item()*
 {
 
     (: INSTALL THE workspace ACL :)
-    let $workspace-descriptor-installed := atomsec:store-workspace-descriptor( $config:default-workspace-security-descriptor )
+    let $workspace-descriptor-installed := atomsec:store-workspace-descriptor( $security-config:default-workspace-security-descriptor )
     
     (: INSTALL THE COLLECTIONS :)
     let $collections-installed :=
