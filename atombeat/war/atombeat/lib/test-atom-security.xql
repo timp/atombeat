@@ -516,10 +516,10 @@ declare function local:test-wildcards() as item()*
 
 
 
-declare function local:test-media-ranges() as item()*
+declare function local:test-media-range-condition() as item()*
 {
 
-    let $output := ( "test-media-ranges..." )
+    let $output := ( "test-media-range-condition..." )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -648,10 +648,92 @@ declare function local:test-media-ranges() as item()*
 
 
 
-declare function local:test-inline-groups() as item()*
+declare function local:test-match-request-path-info-condition() as item()*
 {
 
-    (: TODO update for new ACL syntax :)
+    let $output := ( "test-match-request-path-info-condition..." )
+    
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">alice</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                    <atombeat:conditions>
+                        <atombeat:condition type="match-request-path-info">^/foo/</atombeat:condition>
+                    </atombeat:conditions>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="user">bob</atombeat:recipient>
+                    <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
+                    <atombeat:conditions>
+                        <atombeat:condition type="match-request-path-info">^/foo/[^/]+$</atombeat:condition>
+                    </atombeat:conditions>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+    
+    let $request-path-info := "/foo/bar"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "alice"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create collections with path beginning /foo/" ) )
+        
+    let $request-path-info := "/foo/bar/baz"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "alice"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create collections with path beginning /foo/" ) )
+        
+    let $request-path-info := "/bar/baz"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "alice"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "alice should only be allowed to create collections with path beginning /foo/" ) )
+        
+    let $request-path-info := "/foo/bar"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "bob"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "bob should be allowed to create collections with path matching /foo/*" ) )
+        
+    let $request-path-info := "/foo/bar/baz"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "bob"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "bob should only be allowed to create collections with path matching /foo/*" ) )
+                
+    let $request-path-info := "/bar/baz"
+    let $permission := $CONSTANT:OP-CREATE-COLLECTION
+    let $media-type := ()
+    let $user := "bob"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "bob should only be allowed to create collections with path matching /foo/*" ) )
+                
+    return $output
+    
+};
+
+
+
+
+declare function local:test-inline-groups() as item()*
+{
 
     let $output := ( "test-inline-groups..." )
     
@@ -1240,7 +1322,8 @@ declare function local:main() as item()*
         local:test-collection-descriptor(),
         local:test-resource-descriptor() ,
         local:test-wildcards() ,
-        local:test-media-ranges() ,
+        local:test-media-range-condition() ,
+        local:test-match-request-path-info-condition() ,
         local:test-inline-groups() ,
         local:test-reference-workspace-groups() ,
         local:test-reference-collection-groups() ,
