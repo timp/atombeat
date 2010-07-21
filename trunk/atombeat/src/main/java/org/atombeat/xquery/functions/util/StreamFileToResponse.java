@@ -47,14 +47,14 @@ import org.exist.xquery.value.Type;
 
 /**
  */
-public class StreamFile extends BasicFunction {
+public class StreamFileToResponse extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(StreamFile.class);
+	protected static final Logger logger = Logger.getLogger(StreamFileToResponse.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
-				"stream-file",
+				"stream-file-to-response",
 				AtombeatUtilModule.NAMESPACE_URI,
 				AtombeatUtilModule.PREFIX),
 			"Streams a file to the current servlet response output stream.",
@@ -63,7 +63,7 @@ public class StreamFile extends BasicFunction {
 					new FunctionParameterSequenceType("content-type", Type.STRING, Cardinality.EXACTLY_ONE, "The Content-Type HTTP header value.")},
 			new SequenceType(Type.ITEM, Cardinality.EMPTY));
 		
-	public StreamFile(XQueryContext context) {
+	public StreamFileToResponse(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -100,13 +100,17 @@ public class StreamFile extends BasicFunction {
 			File file = new File(path);
 			FileInputStream in = new FileInputStream(file);
             OutputStream out = response.getOutputStream();
-		    byte buf[]=new byte[8*1024];
-		    int len;
-		    while((len=in.read(buf))>0)
-		    	out.write(buf,0,len);
-		    out.flush();
-		    out.close();
-		    in.close();	
+
+            Stream.copy(in, out);
+            
+//            byte buf[]=new byte[8*1024];
+//		    int len;
+//		    while((len=in.read(buf))>0)
+//		    	out.write(buf,0,len);
+//		    out.flush();
+//		    out.close();
+//		    in.close();	
+
 		    response.flushBuffer(); // is this necessary?
 			
 		} catch (IOException e) {

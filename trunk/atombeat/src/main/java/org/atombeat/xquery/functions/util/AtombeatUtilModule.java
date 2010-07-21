@@ -15,8 +15,12 @@ public class AtombeatUtilModule extends AbstractInternalModule {
 	public static final FunctionDef[] functions = {
 		new FunctionDef(StreamRequestDataToFile.signature, StreamRequestDataToFile.class),
 		new FunctionDef(Mkdirs.signature, Mkdirs.class),
+		new FunctionDef(CopyFile.signature, CopyFile.class),
+		new FunctionDef(FileLength.signature, FileLength.class),
 		new FunctionDef(FileExists.signature, FileExists.class),
-		new FunctionDef(StreamFile.signature, StreamFile.class)
+		new FunctionDef(DeleteFile.signature, DeleteFile.class),
+		new FunctionDef(StreamFileToResponse.signature, StreamFileToResponse.class),
+		new FunctionDef(SaveUploadAs.signature, SaveUploadAs.class)
 	};
 
     static {
