@@ -12,6 +12,7 @@ import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xuti
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace security-config = "http://purl.org/atombeat/xquery/security-config" at "../config/security.xqm" ;
 
 declare variable $atomsec:decision-deny as xs:string            := "DENY" ;
 declare variable $atomsec:decision-allow as xs:string           := "ALLOW" ;
@@ -346,7 +347,7 @@ declare function atomsec:decide(
     (: order decision :)
     
     let $decisions :=
-        for $level in $config:security-priority
+        for $level in $security-config:priority
         return
             if ($level = "WORKSPACE") then $workspace-decision
             else if ($level = "COLLECTION") then $collection-decision
@@ -356,7 +357,7 @@ declare function atomsec:decide(
     (: take first decision, or default if no decision :)
     
     let $decision :=
-        if (empty($decisions)) then $config:default-security-decision
+        if (empty($decisions)) then $security-config:default-decision
         else $decisions[1]
     
     let $message := ( "security decision (" , $decision , ") for user (" , $user , "), roles (" , string-join( $roles , " " ) , "), request-path-info (" , $request-path-info , "), operation(" , $operation , "), media-type (" , $media-type , ")" )
@@ -615,7 +616,7 @@ declare function atomsec:is-denied(
     let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
     
     let $denied := 
-        if ( not( $config:enable-security ) ) then false()
+        if ( not( $security-config:enable-security ) ) then false()
         else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-deny )
         
     return $denied 
@@ -636,7 +637,7 @@ declare function atomsec:is-allowed(
     let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
     
     let $allowed := 
-        if ( not( $config:enable-security ) ) then false()
+        if ( not( $security-config:enable-security ) ) then false()
         else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-allow )
         
     return $allowed 
@@ -665,8 +666,8 @@ declare function atomsec:wrap-with-entry(
         <atom:entry>
             <atom:id>{$id}</atom:id>
             <atom:title type="text">Security Descriptor</atom:title>
-            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=entry"/>
-            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=entry"/>
+            <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
+            <atom:link rel="edit" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
             <atom:link rel="http://purl.org/atombeat/rel/secured" href="{$secured-uri}" type="{$secured-type}"/>
             <atom:updated>{$updated}</atom:updated>
             <atom:content type="application/vnd.atombeat+xml">

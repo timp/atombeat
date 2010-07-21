@@ -86,6 +86,32 @@ declare variable $config:base-security-collection-path as xs:string := "/db/atom
 declare variable $config:feed-doc-name as xs:string := ".feed" ;
 
 
+(:~
+ : Set the strategy to use when storing media resources. If set to "FILE", new
+ : media resources will be stored on the file system as ordinary files. If set
+ : to "DB", new media resources will be stored as binary objects in the eXist
+ : database. The "FILE" mode is more scalable, as file data is streamed to and
+ : from the file system, so AtomBeat can handle larger files. The "DB" mode is
+ : less scalable because file data is read into memory before being stored in
+ : the database, but is more convenient for backup and restore because you don't
+ : have to worry about keeping backups of the filesystem and the eXist database
+ : in sync.
+ :)
+declare variable $config:media-storage-mode as xs:string := "FILE" (: "DB" :) ;
+
+
+(:~ 
+ : Only relevant if media-storage-mode is "FILE". The base directory where all
+ : media files will be stored. N.B. the process running AtomBeat MUST have 
+ : permission to create this directory and any child directories.
+ :)
+declare variable $config:media-storage-dir as xs:string := "/data/atombeat/media" ; 
+ 
+
+(:~
+ : The function that generates an identifier token to use when constructing the
+ : Atom ID for a new collection member.
+ :)
 declare function config:generate-identifier(
     $collection-path-info as xs:string
 ) as xs:string
@@ -94,29 +120,5 @@ declare function config:generate-identifier(
     (: xutil:random-alphanumeric( 6 ) :) (: N.B. it's OK to use randoms because atomdb will automatically check for collisions within a collection :)
     (: xutil:random-alphanumeric( 7 , 21 , "0123456789abcdefghijk" , "abcdefghjkmnpqrstuxyz" ) :) 
 };
-
-
-(:
- : Enable or disable the ACL-based security system.
- :)
-declare variable $config:enable-security := true() ;
-
-
-(:
- : The default security decision which will be applied if no ACL rules match 
- : a request. Either "DENY" or "ALLOW".
- :)
-declare variable $config:default-security-decision := "DENY" ;
-
-
-(:
- : The order in which to process the relevant access control lists for
- : any given operation. E.g., if "WORKSPACE" comes before "COLLECTION" then 
- : ACEs in the workspace ACL will take precedence over ACEs in the collection
- : ACLs.
- :)
-declare variable $config:security-priority := ( "WORKSPACE" , "COLLECTION" , "RESOURCE") ;
-(: declare variable $config:security-priority := ( "RESOURCE" , "COLLECTION" , "WORKSPACE") ; :)
-
 
 

@@ -36,6 +36,8 @@ declare variable $CONSTANT:HEADER-IF-MODIFIED-SINCE as xs:string		:= "If-Modifie
 declare variable $CONSTANT:MEDIA-TYPE-MULTIPART-FORM-DATA as xs:string	:= "multipart/form-data" ;
 declare variable $CONSTANT:MEDIA-TYPE-XML as xs:string					:= "application/xml" ;
 declare variable $CONSTANT:MEDIA-TYPE-ATOM as xs:string					:= "application/atom+xml" ;
+declare variable $CONSTANT:MEDIA-TYPE-ATOM-FEED as xs:string			:= "application/atom+xml;type=feed" ;
+declare variable $CONSTANT:MEDIA-TYPE-ATOM-ENTRY as xs:string			:= "application/atom+xml;type=entry" ;
 declare variable $CONSTANT:MEDIA-TYPE-TEXT as xs:string					:= "text/plain" ;
 
 declare variable $CONSTANT:ATOM-NSURI 						:= "http://www.w3.org/2005/Atom" ;

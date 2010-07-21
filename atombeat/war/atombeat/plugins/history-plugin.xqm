@@ -379,16 +379,7 @@ declare function history-plugin:append-history-link (
         	   
         	    then
         	   
-        	        let $link := <atom:link rel="history" href="{$history-uri}" type="application/atom+xml;type=feed"/>
-        	       
-        	        let $history-link := 
-        	            if ( $config:enable-security )
-        	            then 
-        	                let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-HISTORY , $entry-path-info , () )
-                            let $allow := if ( $can-get ) then "GET" else ()   
-                            return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
-
-                    else $link
+        	        let $history-link := <atom:link rel="history" href="{$history-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-FEED}"/>
         	       
         	        return
 
