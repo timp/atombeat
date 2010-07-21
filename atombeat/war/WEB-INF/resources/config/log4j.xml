@@ -114,15 +114,15 @@
     -->
 
     <category name="org.exist.storage">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.exist.indexing">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.exist.xquery">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.exist.http">
@@ -130,7 +130,7 @@
     </category>
     
     <category name="org.exist.util">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.quartz">
@@ -146,32 +146,32 @@
     </category>
     
     <category name="org.atombeat.http">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.atombeat.xquery.lib">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.atombeat.xquery.lib.atomdb">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.atombeat.xquery.lib.atom-protocol">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.atombeat.xquery.lib.atom-security">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <category name="org.atombeat.xquery.plugin">
-        <priority value="debug"/>
+        <priority value="info"/>
     </category>
     
     <!-- You decide here which one of the loggers listed above you want to use. -->
     <root>
-        <priority value="debug"/>
+        <priority value="info"/>
         <appender-ref ref="ConsoleAppender"/>
         <!--<appender-ref ref="ChainsawAppender"/>-->
         <!--<appender-ref ref="SingleFileAppender"/>-->

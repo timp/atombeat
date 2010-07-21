@@ -9,6 +9,8 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace xmldb = "http://exist-db.org/xquery/xmldb" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
+import module namespace xrequest = "http://purl.org/atombeat/xquery/request" ;
+
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
@@ -757,8 +759,8 @@ declare function atomdb:create-media-link-entry(
             return <atom:category scheme="{$scheme}" term="{$term}" label="{$label}"/>
         else ()        
     	
-	let $media-size :=
-		xmldb:size( atomdb:request-path-info-to-db-path( $request-path-info ) , concat( $member-id , ".media" ) )
+	let $media-size := ()
+(:		xmldb:size( atomdb:request-path-info-to-db-path( $request-path-info ) , concat( $member-id , ".media" ) ) :)
     	    
 	return
 	
@@ -854,6 +856,38 @@ declare function atomdb:create-media-resource(
 
 	let $media-resource-db-path := xmldb:store( $collection-db-path , $media-resource-name , $request-data , $media-type )
 	
+    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category )
+    
+    let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
+    
+    return doc( $media-link-entry-doc-db-path )/atom:entry
+	 
+};
+
+
+
+
+declare function atomdb:create-file-backed-media-resource(
+	$request-path-info as xs:string , 
+	$media-type as xs:string ,
+	$media-link-title as xs:string? ,
+	$media-link-summary as xs:string? ,
+	$media-link-category as xs:string?
+) as element(atom:entry)?
+{
+
+	let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+
+    let $member-id := atomdb:generate-member-identifier( $request-path-info ) 
+    
+	let $media-resource-name := concat( $member-id , ".media" )
+	
+	let $media-resource-path := concat( $request-path-info , "/" , $media-resource-name )
+	
+	let $file-path := concat( "/home/aliman/Desktop" , $media-resource-path )
+
+    let $media-resource-stored := xrequest:stream-data-to-file( $file-path )
+    
     let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    

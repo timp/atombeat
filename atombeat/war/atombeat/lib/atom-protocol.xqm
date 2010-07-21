@@ -461,9 +461,10 @@ declare function atom-protocol:do-post-media(
         	let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
         	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-media" ) , 3 )
 	
-            return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , request:get-data() , $media-type )
+            return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , (: request:get-data() :) () , $media-type )
                         			
 };
+
 
 
 
@@ -495,7 +496,8 @@ declare function atom-protocol:op-create-media(
 	let $category := request:get-header( "X-Atom-Category" )
 	
 	(: create the media resource :)
-	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary , $category )
+(:	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary , $category ) :)
+	let $media-link := atomdb:create-file-backed-media-resource( $request-path-info , $request-media-type , $slug , $summary , $category )
 	
 	(: set location and content-location headers :)
     let $location := $media-link/atom:link[@rel="edit"]/@href cast as xs:string
