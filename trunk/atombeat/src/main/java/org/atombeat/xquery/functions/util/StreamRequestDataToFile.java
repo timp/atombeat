@@ -20,7 +20,7 @@
  *  
  *  $Id: GetData.java 9749 2009-08-09 23:18:12Z ixitar $
  */
-package org.atombeat.xquery.functions.request;
+package org.atombeat.xquery.functions.util;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -49,22 +49,22 @@ import org.exist.xquery.value.Type;
 
 /**
  */
-public class StreamDataToFile extends BasicFunction {
+public class StreamRequestDataToFile extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(StreamDataToFile.class);
+	protected static final Logger logger = Logger.getLogger(StreamRequestDataToFile.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
-				"stream-data-to-file",
-				XRequestModule.NAMESPACE_URI,
-				XRequestModule.PREFIX),
+				"stream-request-data-to-file",
+				AtombeatUtilModule.NAMESPACE_URI,
+				AtombeatUtilModule.PREFIX),
 			"Streams the content of a POST request to a file. Returns true if the operation succeeded, otherwise false.",
 			new SequenceType[] {
 					new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE, "The file system path where the data is to be stored.")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the operation succeeded, false otherwise"));
 		
-	public StreamDataToFile(XQueryContext context) {
+	public StreamRequestDataToFile(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -106,10 +106,11 @@ public class StreamDataToFile extends BasicFunction {
 			String path = args[0].getStringValue();
 			File file = new File(path);
 			FileOutputStream out = new FileOutputStream(file);
-		    byte buf[]=new byte[1024];
+		    byte buf[]=new byte[8*1024];
 		    int len;
 		    while((len=in.read(buf))>0)
 		    	out.write(buf,0,len);
+		    out.flush();
 		    out.close();
 		    in.close();			
 		}

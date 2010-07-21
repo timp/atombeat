@@ -10,6 +10,8 @@ import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
+import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtombeatUtilModule";
+
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
@@ -228,27 +230,35 @@ declare function atom-protocol:op-create-collection(
 {
 
 	let $create-collection := atomdb:create-collection( $request-path-info , $request-data )
-
-	let $feed := atomdb:retrieve-feed( $request-path-info )
-            
-    let $location := $feed/atom:link[@rel="edit"]/@href cast as xs:string
-        	
-	return
 	
-	    <response>
-	        <status>{$CONSTANT:STATUS-SUCCESS-CREATED}</status>
-	        <headers>
-	            <header>
-	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
-	            </header>
-	            <header>
-	                <name>{$CONSTANT:HEADER-LOCATION}</name>
-	                <value>{$location}</value>
-	            </header>
-	        </headers>
-	        <body>{$feed}</body>
-	    </response>
+	return 
+	
+	    if ( exists( $create-collection ) )
+	    
+	    then
+
+        	let $feed := atomdb:retrieve-feed( $request-path-info )
+                    
+            let $location := $feed/atom:link[@rel="edit"]/@href cast as xs:string
+                	
+        	return
+        	
+        	    <response>
+        	        <status>{$CONSTANT:STATUS-SUCCESS-CREATED}</status>
+        	        <headers>
+        	            <header>
+        	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+        	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-FEED}</value>
+        	            </header>
+        	            <header>
+        	                <name>{$CONSTANT:HEADER-LOCATION}</name>
+        	                <value>{$location}</value>
+        	            </header>
+        	        </headers>
+        	        <body>{$feed}</body>
+        	    </response>
+
+        else common-protocol:do-internal-server-error( $request-path-info , "Failed to create collection." )
 
 };
 
@@ -309,7 +319,7 @@ declare function atom-protocol:op-multi-create(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-FEED}</value>
 	            </header>
 	        </headers>
 	        <body>{$feed}</body>
@@ -401,7 +411,7 @@ declare function atom-protocol:op-create-member(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
 	            <header>
 	                <name>{$CONSTANT:HEADER-LOCATION}</name>
@@ -461,6 +471,7 @@ declare function atom-protocol:do-post-media(
         	let $media-type := text:groups( $request-content-type , "^([^;]+)" )[2]
         	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-media" ) , 3 )
 	
+	        (: don't call request:get-data() because we may want to stream media to a file :)
             return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , (: request:get-data() :) () , $media-type )
                         			
 };
@@ -496,8 +507,15 @@ declare function atom-protocol:op-create-media(
 	let $category := request:get-header( "X-Atom-Category" )
 	
 	(: create the media resource :)
-(:	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $slug , $summary , $category ) :)
-	let $media-link := atomdb:create-file-backed-media-resource( $request-path-info , $request-media-type , $slug , $summary , $category )
+	
+	let $media-link :=
+	    if ( $config:media-storage-mode = "DB" ) then
+	        atomdb:create-media-resource( $request-path-info , request:get-data() , $request-media-type , $slug , $summary , $category ) 
+        else if ( $config:media-storage-mode = "FILE" ) then        
+	        atomdb:create-file-backed-media-resource( $request-path-info , $request-media-type , $slug , $summary , $category )
+	    else ()
+	    
+    (: TODO handle case where $media-link is empty? :)    
 	
 	(: set location and content-location headers :)
     let $location := $media-link/atom:link[@rel="edit"]/@href cast as xs:string
@@ -512,7 +530,7 @@ declare function atom-protocol:op-create-media(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
 	            <header>
 	                <name>{$CONSTANT:HEADER-LOCATION}</name>
@@ -637,7 +655,7 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
 	            <header>
 	                <name>{$CONSTANT:HEADER-LOCATION}</name>
@@ -859,7 +877,7 @@ declare function atom-protocol:op-update-collection(
             <headers>
                 <header>
                     <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                    <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                    <value>{$CONSTANT:MEDIA-TYPE-ATOM-FEED}</value>
                 </header>
             </headers>
             <body>{$feed}</body>
@@ -991,7 +1009,7 @@ declare function atom-protocol:op-update-member(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
                 <header>
                     <name>{$CONSTANT:HEADER-ETAG}</name>
@@ -1041,15 +1059,13 @@ declare function atom-protocol:do-put-media(
 			
 				(: here we bottom out at the "update-media" operation :)
 				
-				let $request-data := request:get-data()
-				
 				let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-update-media" ) , 3 )
 				
-				return common-protocol:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , $request-data , $request-content-type )
+				return common-protocol:apply-op( $CONSTANT:OP-UPDATE-MEDIA , $op , $request-path-info , () , $request-content-type )
 				
 };
 
-
+(: TODO check use of "media-type" vs. "content-type" is consistent :)
 
 
 declare function atom-protocol:op-update-media(
@@ -1059,8 +1075,13 @@ declare function atom-protocol:op-update-media(
 ) as element(response)
 {
 	
-	let $media-link := atomdb:update-media-resource( $request-path-info , $request-data , $request-content-type )
-	
+	let $media-link :=
+	    if ( $config:media-storage-mode = "DB" ) then
+	        atomdb:update-media-resource( $request-path-info , request:get-data() , $request-content-type ) 
+        else if ( $config:media-storage-mode = "FILE" ) then        
+	        atomdb:update-file-backed-media-resource( $request-path-info , $request-content-type )
+	    else ()
+
     let $collection-path-info := atomdb:collection-path-info( $media-link )
     
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
@@ -1074,7 +1095,7 @@ declare function atom-protocol:op-update-media(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-LOCATION}</name>
@@ -1219,7 +1240,7 @@ declare function atom-protocol:op-retrieve-member(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
                 <header>
                     <name>{$CONSTANT:HEADER-ETAG}</name>
@@ -1327,7 +1348,7 @@ declare function atom-protocol:op-list-collection(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
 	            </header>
 	        </headers>
 	        <body>{$feed}</body>

@@ -690,8 +690,8 @@
                 uri="http://exist-db.org/xquery/system"/>
 
             <!-- atombeat modules -->
-            <module class="org.atombeat.xquery.functions.request.XRequestModule"
-                uri="http://purl.org/atombeat/xquery/request"/>
+<!--            <module class="org.atombeat.xquery.functions.util.AtombeatUtilModule"
+                uri="http://purl.org/atombeat/xquery/atombeat-util"/> -->
             
             <!-- New Modularized Indexes -->
             <module class="org.exist.xquery.modules.ngram.NGramModule"

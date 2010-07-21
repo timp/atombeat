@@ -10,6 +10,8 @@ import module namespace response = "http://exist-db.org/xquery/response" ;
 import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
+import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtombeatUtilModule";
+
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
@@ -423,12 +425,19 @@ declare function common-protocol:respond( $response as element(response) ) as it
 
     return
     
-        if ( $response/body/@type = "media" )
+        if ( $response/body/@type = "media" and $config:media-storage-mode = "DB" )
         then
             let $binary-doc := atomdb:retrieve-media( $response/body/text() )
             return response:stream-binary( $binary-doc , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
+
+        else if ( $response/body/@type = "media" and $config:media-storage-mode = "FILE" )
+        then
+            let $path := concat( $config:media-storage-dir , $response/body/text() )
+            return atombeat-util:stream-file( $path , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
+
         else if ( $response/body/@type = "text" )
         then $response/body/text()
+
         else $response/body/*
         
 };

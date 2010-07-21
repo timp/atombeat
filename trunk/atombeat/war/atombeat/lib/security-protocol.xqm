@@ -172,7 +172,7 @@ declare function security-protocol:response-with-descriptor(
             <headers>
                 <header>
                     <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                    <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                    <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
                 </header>
             </headers>
             <body>{$entry}</body>

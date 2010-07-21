@@ -162,8 +162,8 @@ declare function history-protocol:op-retrieve-member-history(
 
 		<atom:feed atombeat:exclude-entry-content="true">
 		    <atom:id>{$self-uri}</atom:id>
-		    <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=feed"/>
-		    <atom:link rel="http://purl.org/atombeat/rel/versioned" href="{$versioned-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM};type=entry"/>
+		    <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-FEED}"/>
+		    <atom:link rel="http://purl.org/atombeat/rel/versioned" href="{$versioned-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
 			<atom:title type="text">Version History</atom:title>
 			{
 
@@ -186,7 +186,7 @@ declare function history-protocol:op-retrieve-member-history(
             <headers>
                 <header>
                     <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                    <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                    <value>{$CONSTANT:MEDIA-TYPE-ATOM-FEED}</value>
                 </header>
             </headers>
             <body>{$feed}</body>
@@ -263,7 +263,7 @@ declare function history-protocol:op-retrieve-member-revision(
                     <headers>
                         <header>
                             <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                            <value>{$CONSTANT:MEDIA-TYPE-ATOM}</value>
+                            <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
                         </header>
                     </headers>
                     <body>{$entry-revision}</body>
@@ -350,12 +350,12 @@ declare function history-protocol:construct-member-base-revision(
 				when="{$when}"
 				initial="yes">
 			</ar:revision>
-			<atom:link rel="current-revision" type="application/atom+xml;type=entry" href="{$current-revision-href}"/>
-			<atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="{$initial-revision-href}"/>
-			<atom:link rel="this-revision" type="application/atom+xml;type=entry" href="{$this-revision-href}"/>
+			<atom:link rel="current-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$current-revision-href}"/>
+			<atom:link rel="initial-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$initial-revision-href}"/>
+			<atom:link rel="this-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$this-revision-href}"/>
 		{
 			if ( $next-revision-href ) then
-			<atom:link rel="next-revision" type="application/atom+xml;type=entry" href="{$next-revision-href}"/> 
+			<atom:link rel="next-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$next-revision-href}"/> 
 			else () ,
 			for $ec in $revision/* 
 			return 
@@ -416,15 +416,15 @@ declare function history-protocol:construct-member-specified-revision(
 				when="{$when}"
 				initial="{$initial}">
 			</ar:revision>
-			<atom:link rel="current-revision" type="application/atom+xml;type=entry" href="{$current-revision-href}"/>
-			<atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="{$initial-revision-href}"/>
-			<atom:link rel="this-revision" type="application/atom+xml;type=entry" href="{$this-revision-href}"/>
+			<atom:link rel="current-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$current-revision-href}"/>
+			<atom:link rel="initial-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$initial-revision-href}"/>
+			<atom:link rel="this-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$this-revision-href}"/>
 		{
 			if ( $next-revision-href ) then
-			<atom:link rel="next-revision" type="application/atom+xml;type=entry" href="{$next-revision-href}"/> 
+			<atom:link rel="next-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$next-revision-href}"/> 
 			else () ,
 			if ( $previous-revision-href ) then
-			<atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="{$previous-revision-href}"/> 
+			<atom:link rel="previous-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$previous-revision-href}"/> 
 			else () ,
 			for $ec in $revision/child::* 
 			return 

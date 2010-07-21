@@ -45,7 +45,7 @@ declare function security-plugin:before(
 ) as item()*
 {
 	
-	if ( $config:enable-security )
+	if ( $security-config:enable-security )
 	
 	then
 
@@ -143,7 +143,7 @@ declare function security-plugin:after(
 ) as element(response)
 {
 
-    if ( $config:enable-security )
+    if ( $security-config:enable-security )
 
     then
             
@@ -371,23 +371,29 @@ declare function security-plugin:after-create-collection(
 ) as element(response)
 {
 
-    let $response-data := $response/body/atom:feed
+    if ( $response/status cast as xs:integer = $CONSTANT:STATUS-SUCCESS-CREATED )
+    
+    then
 
-	(: if security is enabled, install default collection ACL :)
-	let $collection-descriptor-installed := security-plugin:install-collection-descriptor( $request-path-info )
-	
-	(: no filtering necessary because no members yet, but adds acl link :)
-	let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data )
-
-	return
-	
-    	<response>
-        {
-            $response/status ,
-            $response/headers
-        }
-            <body>{$response-data}</body>
-        </response>
+        let $response-data := $response/body/atom:feed
+    
+    	(: if security is enabled, install default collection ACL :)
+    	let $collection-descriptor-installed := security-plugin:install-collection-descriptor( $request-path-info )
+    	
+    	(: no filtering necessary because no members yet, but adds acl link :)
+    	let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data )
+    
+    	return
+    	
+        	<response>
+            {
+                $response/status ,
+                $response/headers
+            }
+                <body>{$response-data}</body>
+            </response>
+            
+    else $response
 
 };
 
@@ -509,7 +515,7 @@ declare function security-plugin:augment-entry(
     let $descriptor-link :=     
         if ( $can-update-member-descriptor or $can-retrieve-member-descriptor )
         then 
-            <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="application/atom+xml;type=entry">
+            <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $entry-path-info )}" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}">
             {
                 if ( $can-retrieve-member-descriptor and $expand-descriptors )
                 then 
@@ -535,7 +541,7 @@ declare function security-plugin:augment-entry(
                 then 
                     let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
                     return 
-                        <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="application/atom+xml;type=entry">
+                        <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/media-security-descriptor" href="{$media-descriptor-href}" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}">
                         {
                             if ( $can-retrieve-media-descriptor and $expand-descriptors )
                             then 
@@ -632,7 +638,7 @@ declare function security-plugin:install-member-descriptor(
     $resource-path-info as xs:string
 ) as xs:string?
 {
-    if ( $config:enable-security )
+    if ( $security-config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := security-config:default-member-security-descriptor( $request-path-info , $user )
@@ -649,7 +655,7 @@ declare function security-plugin:install-media-descriptor(
     $resource-path-info as xs:string
 ) as xs:string?
 {
-    if ( $config:enable-security )
+    if ( $security-config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := security-config:default-media-security-descriptor( $request-path-info , $user )
@@ -663,7 +669,7 @@ declare function security-plugin:install-media-descriptor(
 
 declare function security-plugin:install-collection-descriptor( $request-path-info as xs:string ) as xs:string?
 {
-    if ( $config:enable-security )
+    if ( $security-config:enable-security )
     then 
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := security-config:default-collection-security-descriptor( $request-path-info , $user )
@@ -679,7 +685,7 @@ declare function security-plugin:filter-feed-by-permissions(
     $feed as element(atom:feed)
 ) as element(atom:feed)
 {
-    if ( not( $config:enable-security ) )
+    if ( not( $security-config:enable-security ) )
     then $feed
     else
         let $expand-descriptors := xs:boolean( $feed/@atombeat:expand-security-descriptors )
@@ -693,7 +699,7 @@ declare function security-plugin:filter-feed-by-permissions(
         let $descriptor-link :=     
             if ( $can-retrieve-collection-descriptor or $can-update-collection-descriptor )
             then 
-                <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="application/atom+xml;type=entry">
+                <atom:link atombeat:allow="{$allow}" rel="http://purl.org/atombeat/rel/security-descriptor" href="{concat( $config:security-service-url , $request-path-info )}" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}">
                 {
                     if ( $can-retrieve-collection-descriptor and $expand-descriptors )
                     then 

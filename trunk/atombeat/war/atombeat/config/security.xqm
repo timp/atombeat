@@ -13,6 +13,32 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "co
 
 
 (:
+ : Enable or disable the ACL-based security system.
+ :)
+declare variable $security-config:enable-security := true() ;
+
+
+
+(:
+ : The default security decision which will be applied if no ACL rules match 
+ : a request. Either "DENY" or "ALLOW".
+ :)
+declare variable $security-config:default-decision := "DENY" ;
+
+
+
+(:
+ : The order in which to process the relevant access control lists for
+ : any given operation. E.g., if "WORKSPACE" comes before "COLLECTION" then 
+ : ACEs in the workspace ACL will take precedence over ACEs in the collection
+ : ACLs.
+ :)
+declare variable $security-config:priority := ( "WORKSPACE" , "COLLECTION" , "RESOURCE") ;
+(: declare variable $security-config:priority := ( "RESOURCE" , "COLLECTION" , "WORKSPACE") ; :)
+
+
+
+(:
  : A default workspace ACL, customise for your environment.
  :)
 declare variable $security-config:default-workspace-security-descriptor := 
