@@ -12,5 +12,13 @@ declare variable $config-collections:collection-spec :=
             <expand-security-descriptors>true</expand-security-descriptors>
             <recursive>false</recursive>
         </collection>   
+        <collection>
+            <title>Test Collection</title>
+            <path-info>/test</path-info>
+            <enable-history>false</enable-history>
+            <exclude-entry-content>false</exclude-entry-content>
+            <expand-security-descriptors>false</expand-security-descriptors>
+            <recursive>false</recursive>
+        </collection>   
     </spec>
 ;

@@ -259,7 +259,9 @@ declare function common-protocol:apply-op(
 	let $before-advice := common-protocol:apply-before( plugin:before() , $op-name , $request-path-info , $request-data , $request-media-type )
 	
 	let $log := local:debug( "done calling before plugins" )
-	let $log := local:debug( $before-advice )
+	
+	(: logging $before-advice is a bad idea - it is the request data, and could be a large binary file! :)
+(:	let $log := local:debug( $before-advice ) :) 
 	
 	return 
 	 
