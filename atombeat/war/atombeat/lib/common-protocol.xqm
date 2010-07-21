@@ -433,7 +433,7 @@ declare function common-protocol:respond( $response as element(response) ) as it
         else if ( $response/body/@type = "media" and $config:media-storage-mode = "FILE" )
         then
             let $path := concat( $config:media-storage-dir , $response/body/text() )
-            return atombeat-util:stream-file( $path , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
+            return atombeat-util:stream-file-to-response( $path , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
 
         else if ( $response/body/@type = "text" )
         then $response/body/text()

@@ -105,7 +105,7 @@ declare function atom-protocol:do-post(
 		
 		else if ( starts-with( $request-content-type, $CONSTANT:MEDIA-TYPE-MULTIPART-FORM-DATA ) )
 		
-		then atom-protocol:do-post-multipart( $request-path-info )
+		then atom-protocol:do-post-multipart-formdata( $request-path-info )
 		
 		else atom-protocol:do-post-media( $request-path-info , $request-content-type )
 
@@ -301,12 +301,24 @@ declare function atom-protocol:op-multi-create(
                 if ( $local-media-available )
                 then
                     (: media is local, attempt to copy :)
-                    let $media := atomdb:retrieve-media( $media-path-info )
+                    
                     let $media-type := $entry/atom:link[@rel='edit-media']/@type
-                    let $media-link := atomdb:create-media-resource( $collection-path-info , $media , $media-type )
+                    
+                	let $media-link :=
+                	
+                	    if ( $config:media-storage-mode = "DB" ) then
+                	        let $media := atomdb:retrieve-media( $media-path-info )
+                	        return atomdb:create-media-resource( $collection-path-info , $media , $media-type ) 
+                	        
+                        else if ( $config:media-storage-mode = "FILE" ) then        
+                	        atomdb:create-file-backed-media-resource-from-existing-media-resource( $collection-path-info , $media-type , $media-path-info )
+                	    else ()
+                	    
                     let $media-link-path-info := atomdb:edit-path-info( $media-link )
                     let $media-link := atomdb:update-member( $media-link-path-info , $entry )
+                    
                     return $media-link
+                    
                 else atomdb:create-member( $collection-path-info , $entry )
         }
         </atom:feed>
@@ -512,7 +524,7 @@ declare function atom-protocol:op-create-media(
 	    if ( $config:media-storage-mode = "DB" ) then
 	        atomdb:create-media-resource( $request-path-info , request:get-data() , $request-media-type , $slug , $summary , $category ) 
         else if ( $config:media-storage-mode = "FILE" ) then        
-	        atomdb:create-file-backed-media-resource( $request-path-info , $request-media-type , $slug , $summary , $category )
+	        atomdb:create-file-backed-media-resource-from-request-data( $request-path-info , $request-media-type , $slug , $summary , $category )
 	    else ()
 	    
     (: TODO handle case where $media-link is empty? :)    
@@ -558,7 +570,7 @@ declare function atom-protocol:op-create-media(
  :
  : @return depends on the outcome of request processing.
  :)
-declare function atom-protocol:do-post-multipart(
+declare function atom-protocol:do-post-multipart-formdata(
 	$request-path-info as xs:string 
 ) as element(response)
 {
@@ -595,8 +607,6 @@ declare function atom-protocol:do-post-multipart(
 			
 			let $media-type := if ( empty( $media-type ) ) then "application/octet-stream" else $media-type
 			
-			let $request-data := request:get-uploaded-file-data( "media" )
-			
             (: 
              : Here we bottom out at the "CREATE_MEDIA" operation. However, we
              : will use a special implementation to support return of HTML
@@ -605,7 +615,7 @@ declare function atom-protocol:do-post-multipart(
              :)
              
             let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-media-from-multipart-form-data" ) , 3 ) 
-            return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , $request-data , $media-type )
+            return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , () , $media-type )
 
 };
 
@@ -642,8 +652,14 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	(: check for category param :)
 	let $category := request:get-parameter( "category" , "" )
  
-	let $media-link := atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary , $category )
-	
+	let $media-link :=
+	    if ( $config:media-storage-mode = "DB" ) then
+	        let $request-data := request:get-uploaded-file-data( "media" )
+	        return atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary , $category ) 
+        else if ( $config:media-storage-mode = "FILE" ) then        
+	        atomdb:create-file-backed-media-resource-from-upload( $request-path-info , $request-media-type , $file-name , $summary , $category )
+	    else ()
+	    
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
         
     let $location := $media-link/atom:link[@rel="edit"]/@href cast as xs:string

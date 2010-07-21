@@ -23,9 +23,9 @@
 package org.atombeat.xquery.functions.util;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 
 
 import org.apache.log4j.Logger;
@@ -49,22 +49,23 @@ import org.exist.xquery.value.Type;
 
 /**
  */
-public class StreamRequestDataToFile extends BasicFunction {
+public class SaveUploadAs extends BasicFunction {
 
-	protected static final Logger logger = Logger.getLogger(StreamRequestDataToFile.class);
+	protected static final Logger logger = Logger.getLogger(SaveUploadAs.class);
 
 	public final static FunctionSignature signature =
 		new FunctionSignature(
 			new QName(
-				"stream-request-data-to-file",
+				"save-upload-as",
 				AtombeatUtilModule.NAMESPACE_URI,
 				AtombeatUtilModule.PREFIX),
-			"Streams the content of a POST request to a file. Returns true if the operation succeeded, otherwise false.",
+			"Saves an uploaded file to a given path.",
 			new SequenceType[] {
+					new FunctionParameterSequenceType("param-name", Type.STRING, Cardinality.EXACTLY_ONE, "The form part name, i.e., param name for the uploaded file to save."),
 					new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE, "The file system path where the data is to be stored.")},
 			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the operation succeeded, false otherwise"));
 		
-	public StreamRequestDataToFile(XQueryContext context) {
+	public SaveUploadAs(XQueryContext context) {
 		super(context, signature);
 	}
 	
@@ -93,18 +94,14 @@ public class StreamRequestDataToFile extends BasicFunction {
 
 		RequestWrapper request = (RequestWrapper) value.getObject();	
 			
-		// if the content length is unknown, return
-		if (request.getContentLength() == -1)
-		{
-			return BooleanValue.FALSE;
-		}
-			
-		// try to stream request content to file
+		// try to copy upload
 		try
 		{
-			InputStream in = request.getInputStream();
-			String path = args[0].getStringValue();
+			String paramName = args[0].getStringValue();
+			String path = args[1].getStringValue();
+			File upload = request.getFileUploadParam(paramName);
 			File file = new File(path);
+			FileInputStream in = new FileInputStream(upload);
 			FileOutputStream out = new FileOutputStream(file);
 			
 			Stream.copy(in, out);
@@ -115,7 +112,7 @@ public class StreamRequestDataToFile extends BasicFunction {
 //		    	out.write(buf,0,len);
 //		    out.flush();
 //		    out.close();
-//		    in.close();			
+//		    in.close();		
 		    
 		    return BooleanValue.TRUE;
 
@@ -126,4 +123,5 @@ public class StreamRequestDataToFile extends BasicFunction {
 		}
 
 	}
+
 }
