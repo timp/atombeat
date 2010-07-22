@@ -52,7 +52,6 @@
 
                 <!-- NOTE: The XForms engine may place additional scripts and stylesheets here as needed -->
                 <xhtml:link rel="stylesheet" href="/config/theme/orbeon.css" type="text/css" media="all"/>
-                <xhtml:link rel="stylesheet" href="/apps/common/theme/manta.css" type="text/css" media="all"/>
                 
                 <!-- Orbeon Forms version -->
                 <xhtml:meta name="generator" content="Orbeon Forms {$orbeon-forms-version}"/>
