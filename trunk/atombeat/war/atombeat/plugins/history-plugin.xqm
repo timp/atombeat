@@ -320,33 +320,44 @@ declare function history-plugin:after-update-member(
 
 
 declare function history-plugin:after-list-collection(
-	$request-path-info as xs:string ,
+	$collection-path-info as xs:string ,
 	$response as element(response)
 ) as element(response)
 {
 
-    let $response-data := $response/body/atom:feed
+    let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+    let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
     
-	let $response-data := 
-		<atom:feed>
-		{
-			$response-data/attribute::* ,
-			$response-data/child::*[not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI )] ,
-			for $entry in $response-data/atom:entry
-			return history-plugin:append-history-link( $entry )
-		}
-		</atom:feed>
-	
-	return
-	
-    	<response>
-        {
-            $response/status ,
-            $response/headers
-        }
-            <body>{$response-data}</body>
-        </response>
-	
+    (: check whether versioning here, to reduce function calls if not :)
+    
+    return
+
+        if ( $versioning-enabled ) then
+        
+            let $response-data := $response/body/atom:feed
+            
+        	let $response-data := 
+        		<atom:feed>
+        		{
+        			$response-data/attribute::* ,
+        			$response-data/child::*[not( local-name(.) = $CONSTANT:ATOM-ENTRY and namespace-uri(.) = $CONSTANT:ATOM-NSURI )] ,
+        			for $entry in $response-data/atom:entry
+        			return history-plugin:append-history-link( $entry )
+        		}
+        		</atom:feed>
+        	
+        	return
+        	
+            	<response>
+                {
+                    $response/status ,
+                    $response/headers
+                }
+                    <body>{$response-data}</body>
+                </response>
+                
+        else $response        
+    	
 };
 
 

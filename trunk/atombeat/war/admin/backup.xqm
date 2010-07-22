@@ -26,7 +26,7 @@ declare function backup:get-directory() {
     let $home := system:get-exist-home()
     return
         if (ends-with($home, "WEB-INF")) then
-            concat($home, "/data/", $backup:BACKUP_DIR)
+            concat($home, "/exist-data/", $backup:BACKUP_DIR)
         else
             concat($home, "/webapp/WEB-INF/data/", $backup:BACKUP_DIR)
 };

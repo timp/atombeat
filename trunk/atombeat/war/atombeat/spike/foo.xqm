@@ -178,7 +178,7 @@ declare function foo:page() as item()*
     let $set-content-type := response:set-header( "Content-Type" , "text/html" )
     return 
     <html xmlns="http://www.w3.org/1999/xhtml">
-      <head><title></title></head>
+      <head><title>Spike Index Bug</title></head>
         <body>
             <p>
                 This script isolates a bug where the results of an xpath expression are out of date (stale) with respect to the database. 
