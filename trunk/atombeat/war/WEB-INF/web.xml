@@ -401,7 +401,8 @@
     
     <servlet-mapping>
         <servlet-name>orbeon-main-servlet</servlet-name>
-        <url-pattern>/</url-pattern>
+        <!-- use specific mappings to orbeon doesn't take over -->
+        <url-pattern>/spike/*</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
@@ -416,22 +417,22 @@
     
     <servlet-mapping>
         <servlet-name>exist-xmlrpc-servlet</servlet-name>
-        <url-pattern>/exist/xmlrpc</url-pattern>
+        <url-pattern>/xmlrpc</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
         <servlet-name>exist-rest-servlet</servlet-name>
-        <url-pattern>/exist/rest/*</url-pattern>
+        <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
         <servlet-name>exist-webdav-servlet</servlet-name>
-        <url-pattern>/exist/webdav/*</url-pattern>
+        <url-pattern>/webdav/*</url-pattern>
     </servlet-mapping>
     
     <servlet-mapping>
         <servlet-name>exist-atom-servlet</servlet-name>
-        <url-pattern>/exist/atom/*</url-pattern>
+        <url-pattern>/atom/*</url-pattern>
     </servlet-mapping>
     
     <!-- Uncomment this for the SQL examples -->
@@ -532,6 +533,11 @@
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/atombeat/*</url-pattern>
+    </filter-mapping>
+    
+    <filter-mapping>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <url-pattern>/admin/*</url-pattern>
     </filter-mapping>
     
     
