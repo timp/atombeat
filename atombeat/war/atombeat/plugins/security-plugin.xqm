@@ -192,7 +192,7 @@ declare function security-plugin:after-create-member(
 	(: if security is enabled, install default resource ACL :)
 	let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
 	
-    let $response-data := security-plugin:augment-entry( $request-path-info , $response-data )
+    let $response-data := security-plugin:augment-entry( $response-data )
 
 	return
 	
@@ -230,7 +230,7 @@ declare function security-plugin:after-multi-create(
             let $media-descriptor-installed := 
                 if ( exists( $media-path-info ) and $media-path-info != "" ) then security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
                 else () 
-            return security-plugin:augment-entry( $entry-path-info , $entry )
+            return security-plugin:augment-entry( $entry )
         }
         </atom:feed>
     
@@ -256,7 +256,7 @@ declare function security-plugin:after-update-member(
 {
 
     let $response-data := $response/body/atom:entry
-    let $response-data := security-plugin:augment-entry( $request-path-info , $response-data )
+    let $response-data := security-plugin:augment-entry( $response-data )
 
 	return
 	
@@ -295,7 +295,7 @@ declare function security-plugin:after-create-media(
     (: if security is enabled, install default resource ACL :)
     let $media-descriptor-installed := security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
     
-    let $response-data := security-plugin:augment-entry( $entry-path-info , $response-data )
+    let $response-data := security-plugin:augment-entry( $response-data )
 
 	return
 	
@@ -319,7 +319,7 @@ declare function security-plugin:after-update-media(
 
     let $response-data := $response/body/atom:entry
 
-    let $response-data := security-plugin:augment-entry( $request-path-info , $response-data )
+    let $response-data := security-plugin:augment-entry( $response-data )
 
 	return
 	
@@ -429,7 +429,7 @@ declare function security-plugin:after-retrieve-member(
 
     let $response-data := $response/body/atom:entry
     
-    let $response-data := security-plugin:augment-entry( $request-path-info , $response-data )
+    let $response-data := security-plugin:augment-entry( $response-data )
 
 	return
 	
@@ -447,17 +447,15 @@ declare function security-plugin:after-retrieve-member(
 
 
 declare function security-plugin:augment-entry(
-    $request-path-info as xs:string ,
     $response-data as element(atom:entry) 
 ) as element(atom:entry)
 {
-    security-plugin:augment-entry( $request-path-info , $response-data , false() )
+    security-plugin:augment-entry( $response-data , false() )
 };
 
 
 
 declare function security-plugin:augment-entry(
-    $request-path-info as xs:string ,
     $response-data as element(atom:entry) ,
     $expand-descriptors as xs:boolean?
 ) as element(atom:entry)
@@ -551,9 +549,8 @@ declare function security-plugin:decorate-links(
 
     for $link in $links
     return
-        if ( not( starts-with( $link/@href , $config:content-service-url ) ) )
-        then $link
-        else 
+        if ( starts-with( $link/@href , $config:content-service-url ) )
+        then
             let $path-info := substring-after( $link/@href , $config:content-service-url )
             return 
                 if ( atomdb:member-available( $path-info ) )
@@ -594,6 +591,7 @@ declare function security-plugin:decorate-links(
                     ) , ", " )
                     return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
                 else $link
+        else $link        
 
 };
 
@@ -655,14 +653,18 @@ declare function security-plugin:filter-feed-by-permissions(
     if ( not( $security-config:enable-security ) )
     then $feed
     else
+    
         let $expand-descriptors := xs:boolean( $feed/@atombeat:expand-security-descriptors )
 
         let $can-retrieve-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $request-path-info , () )
+        
         let $can-update-collection-descriptor := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION-ACL , $request-path-info , () )
+        
         let $allow := string-join((
             if ( $can-retrieve-collection-descriptor ) then "GET" else () ,
             if ( $can-update-collection-descriptor ) then "PUT" else ()
         ) , ", " )
+        
         let $descriptor-link :=     
             if ( $can-retrieve-collection-descriptor or $can-update-collection-descriptor )
             then 
@@ -677,25 +679,23 @@ declare function security-plugin:filter-feed-by-permissions(
                 }
                 </atom:link>
             else ()
-        let $filtered-feed :=
+            
+        let $filtered-feed := atomsec:filter-feed( $feed )
+        
+        let $augmented-feed :=
             <atom:feed>
                 {
-                    $feed/attribute::* ,
-                    $feed/child::*[ not( . instance of element(atom:entry) ) and not( . instance of element(atom:link) ) ] ,
-                    for $entry in $feed/atom:entry
-                    let $entry-path-info := substring-after( $entry/atom:link[@rel="edit"]/@href , $config:content-service-url )
-                    let $forbidden := atomsec:is-denied( $CONSTANT:OP-RETRIEVE-MEMBER , $entry-path-info , () )
-                    return 
-                        if ( not( $forbidden ) ) 
-                        then security-plugin:augment-entry( $entry-path-info , $entry , $expand-descriptors ) 
-                        else ()
-                    ,
+                    $filtered-feed/attribute::* ,
+                    $filtered-feed/child::*[ not( . instance of element(atom:entry) ) and not( . instance of element(atom:link) ) ] ,
                     (: decorate other links with atombeat:allow :)
-                    security-plugin:decorate-links( $feed/atom:link ) ,
-                    $descriptor-link
+                    security-plugin:decorate-links( $filtered-feed/atom:link ) ,
+                    $descriptor-link ,
+                    for $entry in $filtered-feed/atom:entry
+                    return security-plugin:augment-entry( $entry , $expand-descriptors ) 
                 }
             </atom:feed>
-        return $filtered-feed
+            
+        return $augmented-feed
 };
 
 

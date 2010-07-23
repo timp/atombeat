@@ -270,6 +270,53 @@ declare function atomsec:decide(
 
 
 
+(:~
+ : Optimised function to filter a feed.
+ :)
+declare function atomsec:filter-feed(
+    $feed as element(atom:feed)
+) as element(atom:feed)
+{
+    <atom:feed>
+    {
+        $feed/attribute::* ,
+        $feed/child::*[not( . instance of element(atom:entry) )] ,
+
+        (: the point is, we only want to retrieve the workspace and collection descriptor once, if we can help it :)
+        
+        let $user := request:get-attribute( $config:user-name-request-attribute-key )
+        let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
+    
+        let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
+
+        let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:content-service-url )
+        let $collection-descriptor := atomsec:retrieve-collection-descriptor( $collection-path-info )
+        
+        return
+        
+            for $entry in $feed/atom:entry
+            
+            let $entry-path-info := atomdb:edit-path-info( $entry )
+            
+            let $resource-descriptor := atomsec:retrieve-resource-descriptor( $entry-path-info )
+            
+            (: cope with recursive collections :)
+            let $owner-collection-path-info := atomdb:collection-path-info( $entry )
+            let $owner-collection-descriptor :=
+                if ( $owner-collection-path-info = $collection-path-info )
+                then $collection-descriptor
+                else atomsec:retrieve-collection-descriptor( $owner-collection-path-info )
+                
+            let $decision := atomsec:decide( $user , $roles , $entry-path-info , $CONSTANT:OP-RETRIEVE-MEMBER , () , $resource-descriptor , $owner-collection-descriptor , $workspace-descriptor )
+            
+            return 
+                if ( $decision = $atomsec:decision-allow ) then $entry else ()
+        
+    }    
+    </atom:feed>
+};
+
+
 
 declare function atomsec:decide(
     $user as xs:string? ,
@@ -280,20 +327,30 @@ declare function atomsec:decide(
 ) as xs:string
 {
     
-    (: first we need to find the relevant ACLs :)
-    
-    (: if the request path identifies a atom collection member or media resource
-     : then we need to find the resource ACL first :)
-     
     let $resource-descriptor := atomsec:retrieve-resource-descriptor( $request-path-info )
-    
-    (: we also need the collection ACL :)
     
     let $collection-descriptor := atomsec:retrieve-collection-descriptor( $request-path-info )
     
-    (: we also need the workspace ACL :)
-    
     let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
+    
+    return atomsec:decide( $user , $roles , $request-path-info , $operation , $media-type , $resource-descriptor , $collection-descriptor , $workspace-descriptor )
+    
+};
+
+
+
+
+declare function atomsec:decide(
+    $user as xs:string? ,
+    $roles as xs:string* ,
+    $request-path-info as xs:string ,
+    $operation as xs:string ,
+    $media-type as xs:string? , 
+    $resource-descriptor as element(atombeat:security-descriptor)? ,
+    $collection-descriptor as element(atombeat:security-descriptor)? ,
+    $workspace-descriptor as element(atombeat:security-descriptor)? 
+) as xs:string
+{
     
     (: process ACLs :)
     
@@ -339,7 +396,7 @@ declare function atomsec:apply-acl(
     let $matching-aces := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles, $request-path-info )
     
     let $decision := 
-        if ( exists( $matching-aces ) ) then normalize-space( $matching-aces[1]/atombeat:type/text() ) 
+        if ( exists( $matching-aces ) ) then $matching-aces[1]/atombeat:type/text()
         else ()
     
     return $decision
@@ -360,46 +417,22 @@ declare function atomsec:match-acl(
 
     let $matching-aces :=
     
-        for $ace in $descriptor/atombeat:acl/* 
+        $descriptor/atombeat:acl/atombeat:ace
+            [ (: match operation - TODO index here might improve performance :)
+                atombeat:permission/text() = "*" or atombeat:permission/text() = $operation
+            ]
+            [ (: match recipient :)
+                (: match user :)
+                ( atombeat:recipient[@type="user"]/text() = "*" or atombeat:recipient[@type="user"]/text() = $user )
+                or atomsec:match-role( . , $roles )
+                or atomsec:match-group( . , $user , $descriptor )
+            ]
+            [ atomsec:match-media-range-condition( . , $media-type ) ]
+            [ atomsec:match-request-path-info-condition( . , $request-path-info ) ]
 
-        return
-        
-            if (
-            
-                atomsec:match-operation($ace , $operation)
-            
-                and ( 
-                    atomsec:match-user( $ace , $user ) or    
-                    atomsec:match-role( $ace , $roles ) or
-                    atomsec:match-group( $ace , $user , $descriptor )
-                ) 
-                
-                and atomsec:match-media-range-condition( $ace , $media-type )
-                
-                and atomsec:match-request-path-info-condition( $ace , $request-path-info )
-                
-            ) 
-            
-            then $ace
-            
-            else ()
-            
     return $matching-aces
     
 };
-
-
-
-
-declare function atomsec:match-operation(
-    $ace as element(atombeat:ace) ,
-    $operation as xs:string
-) as xs:boolean
-{
-    let $permission := normalize-space( $ace/atombeat:permission/text() )
-    return ( ( $permission = "*" ) or ( $permission = $operation  ) )
-};
-
 
 
 
@@ -408,7 +441,7 @@ declare function atomsec:match-user(
     $user as xs:string?
 ) as xs:boolean
 {
-    let $ace-user := normalize-space( $ace/atombeat:recipient[@type="user"]/text() )
+    let $ace-user := $ace/atombeat:recipient[@type="user"]/text()
     return ( ( xs:string( $ace-user ) = "*" ) or ( $ace-user = $user  ) )
 };
 
@@ -420,7 +453,7 @@ declare function atomsec:match-role(
     $roles as xs:string*
 ) as xs:boolean
 {
-    let $ace-role := normalize-space( $ace/atombeat:recipient[@type="role"]/text() )
+    let $ace-role := $ace/atombeat:recipient[@type="role"]/text()
     return 
     (
         ( $ace-role = "*" ) or 
@@ -438,7 +471,7 @@ declare function atomsec:match-group(
 ) as xs:boolean
 {
     
-    let $group := normalize-space( $ace/atombeat:recipient[@type="group"]/text() )
+    let $group := $ace/atombeat:recipient[@type="group"]/text()
     
     return 
     
@@ -457,7 +490,7 @@ declare function atomsec:match-group(
                     if ( exists( $src) ) then atomsec:dereference-group( $id , $src )
                     else $group
         
-            let $groups-for-user := $groups[ atombeat:member/normalize-space( text() ) = $user ]/@id
+            let $groups-for-user := $groups[ atombeat:member/text() = $user ]/@id
             
             let $group-has-user := exists( index-of( $groups-for-user , xs:string( $group ) ) )
             
@@ -496,12 +529,12 @@ declare function atomsec:match-media-range-condition(
 ) as xs:boolean
 {
 
-    let $operation := normalize-space( $ace/atombeat:permission/text() )
-    let $expected-range := normalize-space( $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]/text() )
+    let $operation := $ace/atombeat:permission/text()
+    let $expected-range := $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]/text()
     
     return
     
-        (: if operation is not on media, do not attempt to match media type :)
+        (: if operation is not on media, do not attempt to match media type - TODO optimise here with an index, or a different strategy? :)
         if ( not( ends-with( $operation , "MEDIA" ) ) ) then true()
          
         (: if no expectation defined, match any media type :)
@@ -537,7 +570,7 @@ declare function atomsec:match-request-path-info-condition(
 ) as xs:boolean
 {
 
-    let $pattern := normalize-space( $ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"]/text() )
+    let $pattern := $ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"]/text()
     
     return
     
