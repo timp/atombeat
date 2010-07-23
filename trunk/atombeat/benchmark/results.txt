@@ -1,5 +1,5 @@
 **************************************************************************
-* Thu Jul 22 19:31:52 BST 2010
+* Fri Jul 23 18:11:09 BST 2010
 * post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -14,43 +14,43 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
+Document Length:        1294 bytes
 
 Concurrency Level:      2
-Time taken for tests:   0.650 seconds
+Time taken for tests:   17.234 seconds
 Complete requests:      10
-Failed requests:        2
-   (Connect: 0, Receive: 0, Length: 2, Exceptions: 0)
+Failed requests:        9
+   (Connect: 0, Receive: 0, Length: 9, Exceptions: 0)
 Write errors:           0
-Total transferred:      13186 bytes
+Total transferred:      17702 bytes
 Total POSTed:           4300
-HTML transferred:       8456 bytes
-Requests per second:    15.39 [#/sec] (mean)
-Time per request:       129.940 [ms] (mean)
-Time per request:       64.970 [ms] (mean, across all concurrent requests)
-Transfer rate:          19.82 [Kbytes/sec] received
-                        6.46 kb/s sent
-                        26.28 kb/s total
+HTML transferred:       12972 bytes
+Requests per second:    0.58 [#/sec] (mean)
+Time per request:       3446.710 [ms] (mean)
+Time per request:       1723.355 [ms] (mean, across all concurrent requests)
+Transfer rate:          1.00 [Kbytes/sec] received
+                        0.24 kb/s sent
+                        1.25 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    42  120 187.7     57     650
-Waiting:       41  119 187.6     56     649
-Total:         42  120 187.7     57     650
+Connect:        0    1   1.8      1       6
+Processing:  2982 3370 401.2   3290    4282
+Waiting:     2979 3363 399.5   3289    4273
+Total:       2982 3371 402.7   3290    4288
 
 Percentage of the requests served within a certain time (ms)
-  50%     57
-  66%     64
-  75%     72
-  80%    122
-  90%    650
-  95%    650
-  98%    650
-  99%    650
- 100%    650 (longest request)
+  50%   3290
+  66%   3404
+  75%   3566
+  80%   3715
+  90%   4288
+  95%   4288
+  98%   4288
+  99%   4288
+ 100%   4288 (longest request)
 **************************************************************************
-* Thu Jul 22 19:31:53 BST 2010
+* Fri Jul 23 18:11:26 BST 2010
 * list collection
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -65,39 +65,39 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        94581 bytes
+Document Length:        12673 bytes
 
 Concurrency Level:      2
-Time taken for tests:   1.568 seconds
+Time taken for tests:   41.695 seconds
 Complete requests:      10
 Failed requests:        0
 Write errors:           0
-Total transferred:      947870 bytes
-HTML transferred:       945810 bytes
-Requests per second:    6.38 [#/sec] (mean)
-Time per request:       313.682 [ms] (mean)
-Time per request:       156.841 [ms] (mean, across all concurrent requests)
-Transfer rate:          590.19 [Kbytes/sec] received
+Total transferred:      128790 bytes
+HTML transferred:       126730 bytes
+Requests per second:    0.24 [#/sec] (mean)
+Time per request:       8339.035 [ms] (mean)
+Time per request:       4169.517 [ms] (mean, across all concurrent requests)
+Transfer rate:          3.02 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.2      0       1
-Processing:   229  313  70.5    309     436
-Waiting:      229  312  70.5    309     435
-Total:        229  313  70.5    309     436
+Connect:        0    2   6.3      0      20
+Processing:  6447 8328 2990.5   6832   13948
+Waiting:     6446 8321 2982.6   6831   13927
+Total:       6448 8330 2994.8   6833   13949
 
 Percentage of the requests served within a certain time (ms)
-  50%    309
-  66%    311
-  75%    312
-  80%    432
-  90%    436
-  95%    436
-  98%    436
-  99%    436
- 100%    436 (longest request)
+  50%   6833
+  66%   7674
+  75%   7872
+  80%  13931
+  90%  13949
+  95%  13949
+  98%  13949
+  99%  13949
+ 100%  13949 (longest request)
 **************************************************************************
-* Thu Jul 22 19:31:55 BST 2010
+* Fri Jul 23 18:12:08 BST 2010
 * post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -112,43 +112,42 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
+Document Length:        1298 bytes
 
 Concurrency Level:      2
-Time taken for tests:   0.190 seconds
+Time taken for tests:   8.696 seconds
 Complete requests:      10
-Failed requests:        1
-   (Connect: 0, Receive: 0, Length: 1, Exceptions: 0)
+Failed requests:        0
 Write errors:           0
-Total transferred:      13186 bytes
+Total transferred:      17710 bytes
 Total POSTed:           4300
-HTML transferred:       8456 bytes
-Requests per second:    52.65 [#/sec] (mean)
-Time per request:       37.986 [ms] (mean)
-Time per request:       18.993 [ms] (mean, across all concurrent requests)
-Transfer rate:          67.80 [Kbytes/sec] received
-                        22.11 kb/s sent
-                        89.91 kb/s total
+HTML transferred:       12980 bytes
+Requests per second:    1.15 [#/sec] (mean)
+Time per request:       1739.143 [ms] (mean)
+Time per request:       869.571 [ms] (mean, across all concurrent requests)
+Transfer rate:          1.99 [Kbytes/sec] received
+                        0.48 kb/s sent
+                        2.47 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    28   37   6.8     39      49
-Waiting:       28   36   6.8     39      48
-Total:         28   37   6.8     39      49
+Connect:        0    1   1.3      0       4
+Processing:  1312 1719 261.7   1793    2158
+Waiting:     1302 1716 263.3   1791    2157
+Total:       1316 1720 260.9   1794    2158
 
 Percentage of the requests served within a certain time (ms)
-  50%     39
-  66%     40
-  75%     42
-  80%     42
-  90%     49
-  95%     49
-  98%     49
-  99%     49
- 100%     49 (longest request)
+  50%   1794
+  66%   1889
+  75%   1907
+  80%   1922
+  90%   2158
+  95%   2158
+  98%   2158
+  99%   2158
+ 100%   2158 (longest request)
 **************************************************************************
-* Thu Jul 22 19:31:55 BST 2010
+* Fri Jul 23 18:12:17 BST 2010
 * list collection
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -163,39 +162,39 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        103107 bytes
+Document Length:        24323 bytes
 
 Concurrency Level:      2
-Time taken for tests:   1.045 seconds
+Time taken for tests:   53.522 seconds
 Complete requests:      10
 Failed requests:        0
 Write errors:           0
-Total transferred:      1033130 bytes
-HTML transferred:       1031070 bytes
-Requests per second:    9.57 [#/sec] (mean)
-Time per request:       209.007 [ms] (mean)
-Time per request:       104.503 [ms] (mean, across all concurrent requests)
-Transfer rate:          965.44 [Kbytes/sec] received
+Total transferred:      245290 bytes
+HTML transferred:       243230 bytes
+Requests per second:    0.19 [#/sec] (mean)
+Time per request:       10704.456 [ms] (mean)
+Time per request:       5352.228 [ms] (mean, across all concurrent requests)
+Transfer rate:          4.48 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   132  209  63.1    228     298
-Waiting:      131  208  63.1    228     297
-Total:        132  209  63.1    229     298
+Connect:        0    1   2.8      0       9
+Processing:  8049 10695 2038.6  10681   13949
+Waiting:     8045 10687 2038.7  10672   13944
+Total:       8049 10696 2040.4  10681   13958
 
 Percentage of the requests served within a certain time (ms)
-  50%    229
-  66%    234
-  75%    235
-  80%    296
-  90%    298
-  95%    298
-  98%    298
-  99%    298
- 100%    298 (longest request)
+  50%  10681
+  66%  11472
+  75%  11816
+  80%  13633
+  90%  13958
+  95%  13958
+  98%  13958
+  99%  13958
+ 100%  13958 (longest request)
 **************************************************************************
-* Thu Jul 22 19:31:56 BST 2010
+* Fri Jul 23 18:13:10 BST 2010
 * post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -210,382 +209,96 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
+Document Length:        1298 bytes
 
 Concurrency Level:      2
-Time taken for tests:   0.176 seconds
+Time taken for tests:   5.030 seconds
 Complete requests:      10
 Failed requests:        0
 Write errors:           0
-Total transferred:      13190 bytes
+Total transferred:      17710 bytes
 Total POSTed:           4300
-HTML transferred:       8460 bytes
-Requests per second:    56.82 [#/sec] (mean)
-Time per request:       35.198 [ms] (mean)
-Time per request:       17.599 [ms] (mean, across all concurrent requests)
-Transfer rate:          73.19 [Kbytes/sec] received
-                        23.86 kb/s sent
-                        97.05 kb/s total
+HTML transferred:       12980 bytes
+Requests per second:    1.99 [#/sec] (mean)
+Time per request:       1006.055 [ms] (mean)
+Time per request:       503.028 [ms] (mean, across all concurrent requests)
+Transfer rate:          3.44 [Kbytes/sec] received
+                        0.83 kb/s sent
+                        4.27 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.2      0       1
-Processing:    26   34   8.9     30      52
-Waiting:       26   34   8.8     30      52
-Total:         26   34   9.0     30      53
+Connect:        0    2   4.3      0      14
+Processing:   726  973 130.0    967    1121
+Waiting:      723  966 132.3    958    1119
+Total:        726  975 131.6    967    1132
 
 Percentage of the requests served within a certain time (ms)
-  50%     30
-  66%     34
-  75%     40
-  80%     45
-  90%     53
-  95%     53
-  98%     53
-  99%     53
- 100%     53 (longest request)
+  50%    967
+  66%   1077
+  75%   1082
+  80%   1121
+  90%   1132
+  95%   1132
+  98%   1132
+  99%   1132
+ 100%   1132 (longest request)
 **************************************************************************
-* Thu Jul 22 19:31:56 BST 2010
+* Fri Jul 23 18:13:15 BST 2010
 * list collection
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
 
-Benchmarking localhost (be patient).....done
-
+Benchmarking localhost (be patient)...
 
 Server Software:        Apache-Coyote/1.1
 Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        111637 bytes
+Document Length:        35973 bytes
 
 Concurrency Level:      2
-Time taken for tests:   1.203 seconds
-Complete requests:      10
+Time taken for tests:   18.447 seconds
+Complete requests:      2
 Failed requests:        0
 Write errors:           0
-Total transferred:      1118430 bytes
-HTML transferred:       1116370 bytes
-Requests per second:    8.31 [#/sec] (mean)
-Time per request:       240.653 [ms] (mean)
-Time per request:       120.327 [ms] (mean, across all concurrent requests)
-Transfer rate:          907.71 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   172  240  50.4    232     332
-Waiting:      129  210  59.4    230     330
-Total:        172  240  50.4    232     332
-
-Percentage of the requests served within a certain time (ms)
-  50%    232
-  66%    233
-  75%    235
-  80%    319
-  90%    332
-  95%    332
-  98%    332
-  99%    332
- 100%    332 (longest request)
-**************************************************************************
-* Thu Jul 22 19:31:57 BST 2010
-* post 10 entries
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
-
-Concurrency Level:      2
-Time taken for tests:   0.165 seconds
-Complete requests:      10
-Failed requests:        1
-   (Connect: 0, Receive: 0, Length: 1, Exceptions: 0)
-Write errors:           0
-Total transferred:      13188 bytes
-Total POSTed:           4300
-HTML transferred:       8458 bytes
-Requests per second:    60.63 [#/sec] (mean)
-Time per request:       32.985 [ms] (mean)
-Time per request:       16.492 [ms] (mean, across all concurrent requests)
-Transfer rate:          78.09 [Kbytes/sec] received
-                        25.46 kb/s sent
-                        103.55 kb/s total
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.2      0       1
-Processing:    27   32   3.4     33      37
-Waiting:       27   31   3.3     32      36
-Total:         27   32   3.5     34      37
-
-Percentage of the requests served within a certain time (ms)
-  50%     34
-  66%     34
-  75%     35
-  80%     35
-  90%     37
-  95%     37
-  98%     37
-  99%     37
- 100%     37 (longest request)
-**************************************************************************
-* Thu Jul 22 19:31:57 BST 2010
-* list collection
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        120164 bytes
-
-Concurrency Level:      2
-Time taken for tests:   1.773 seconds
-Complete requests:      10
-Failed requests:        0
-Write errors:           0
-Total transferred:      1203700 bytes
-HTML transferred:       1201640 bytes
-Requests per second:    5.64 [#/sec] (mean)
-Time per request:       354.667 [ms] (mean)
-Time per request:       177.333 [ms] (mean, across all concurrent requests)
-Transfer rate:          662.87 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.2      0       1
-Processing:   242  354  79.5    330     440
-Waiting:      241  354  79.5    330     439
-Total:        242  355  79.5    330     440
-
-Percentage of the requests served within a certain time (ms)
-  50%    330
-  66%    438
-  75%    438
-  80%    439
-  90%    440
-  95%    440
-  98%    440
-  99%    440
- 100%    440 (longest request)
-**************************************************************************
-* Thu Jul 22 19:31:59 BST 2010
-* post 10 entries
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
-
-Concurrency Level:      2
-Time taken for tests:   0.133 seconds
-Complete requests:      10
-Failed requests:        0
-Write errors:           0
-Total transferred:      13190 bytes
-Total POSTed:           4300
-HTML transferred:       8460 bytes
-Requests per second:    75.10 [#/sec] (mean)
-Time per request:       26.632 [ms] (mean)
-Time per request:       13.316 [ms] (mean, across all concurrent requests)
-Transfer rate:          96.73 [Kbytes/sec] received
-                        31.53 kb/s sent
-                        128.27 kb/s total
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    22   26   5.1     24      38
-Waiting:       22   26   5.1     24      38
-Total:         22   26   5.1     24      38
-
-Percentage of the requests served within a certain time (ms)
-  50%     24
-  66%     25
-  75%     26
-  80%     33
-  90%     38
-  95%     38
-  98%     38
-  99%     38
- 100%     38 (longest request)
-**************************************************************************
-* Thu Jul 22 19:31:59 BST 2010
-* list collection
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        128695 bytes
-
-Concurrency Level:      2
-Time taken for tests:   1.610 seconds
-Complete requests:      10
-Failed requests:        0
-Write errors:           0
-Total transferred:      1289010 bytes
-HTML transferred:       1286950 bytes
-Requests per second:    6.21 [#/sec] (mean)
-Time per request:       322.057 [ms] (mean)
-Time per request:       161.029 [ms] (mean, across all concurrent requests)
-Transfer rate:          781.72 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   299  322  16.0    327     342
-Waiting:      298  321  15.8    326     341
-Total:        299  322  15.9    327     342
-
-Percentage of the requests served within a certain time (ms)
-  50%    327
-  66%    328
-  75%    334
-  80%    342
-  90%    342
-  95%    342
-  98%    342
-  99%    342
- 100%    342 (longest request)
-**************************************************************************
-* Thu Jul 22 19:32:01 BST 2010
-* post 10 entries
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
-
-Concurrency Level:      2
-Time taken for tests:   0.242 seconds
-Complete requests:      10
-Failed requests:        2
-   (Connect: 0, Receive: 0, Length: 2, Exceptions: 0)
-Write errors:           0
-Total transferred:      13186 bytes
-Total POSTed:           4300
-HTML transferred:       8456 bytes
-Requests per second:    41.33 [#/sec] (mean)
-Time per request:       48.386 [ms] (mean)
-Time per request:       24.193 [ms] (mean, across all concurrent requests)
-Transfer rate:          53.23 [Kbytes/sec] received
-                        17.36 kb/s sent
-                        70.58 kb/s total
+Total transferred:      72358 bytes
+HTML transferred:       71946 bytes
+Requests per second:    0.11 [#/sec] (mean)
+Time per request:       18446.757 [ms] (mean)
+Time per request:       9223.379 [ms] (mean, across all concurrent requests)
+Transfer rate:          3.83 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
 Connect:        0    0   0.1      0       0
-Processing:    21   47  37.4     32     117
-Waiting:       21   46  37.6     31     117
-Total:         21   47  37.5     32     118
+Processing: 14102 14223 171.9  14345   14345
+Waiting:    14086 14211 177.8  14337   14337
+Total:      14102 14223 172.0  14345   14345
 
 Percentage of the requests served within a certain time (ms)
-  50%     32
-  66%     39
-  75%     44
-  80%    116
-  90%    118
-  95%    118
-  98%    118
-  99%    118
- 100%    118 (longest request)
+  50%  14345
+  66%  14345
+  75%  14345
+  80%  14345
+  90%  14345
+  95%  14345
+  98%  14345
+  99%  14345
+ 100%  14345 (longest request)
 **************************************************************************
-* Thu Jul 22 19:32:01 BST 2010
-* list collection
+* Fri Jul 23 18:13:34 BST 2010
+* post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
 Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
 Licensed to The Apache Software Foundation, http://www.apache.org/
 
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        137220 bytes
-
-Concurrency Level:      2
-Time taken for tests:   1.693 seconds
-Complete requests:      10
-Failed requests:        0
-Write errors:           0
-Total transferred:      1374260 bytes
-HTML transferred:       1372200 bytes
-Requests per second:    5.91 [#/sec] (mean)
-Time per request:       338.548 [ms] (mean)
-Time per request:       169.274 [ms] (mean, across all concurrent requests)
-Transfer rate:          792.83 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    1   3.1      0      10
-Processing:   231  337  72.5    326     419
-Waiting:      230  319  73.3    303     419
-Total:        231  338  71.8    326     419
-
-Percentage of the requests served within a certain time (ms)
-  50%    326
-  66%    401
-  75%    415
-  80%    419
-  90%    419
-  95%    419
-  98%    419
-  99%    419
- 100%    419 (longest request)
-**************************************************************************
-* Thu Jul 22 19:32:03 BST 2010
+Benchmarking localhost (be patient)...**************************************************************************
+* Fri Jul 23 22:43:37 BST 2010
 * post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -600,42 +313,43 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
+Document Length:        1298 bytes
 
 Concurrency Level:      2
-Time taken for tests:   0.119 seconds
+Time taken for tests:   7.633 seconds
 Complete requests:      10
-Failed requests:        0
+Failed requests:        1
+   (Connect: 0, Receive: 0, Length: 1, Exceptions: 0)
 Write errors:           0
-Total transferred:      13190 bytes
+Total transferred:      17708 bytes
 Total POSTed:           4300
-HTML transferred:       8460 bytes
-Requests per second:    83.79 [#/sec] (mean)
-Time per request:       23.868 [ms] (mean)
-Time per request:       11.934 [ms] (mean, across all concurrent requests)
-Transfer rate:          107.93 [Kbytes/sec] received
-                        35.19 kb/s sent
-                        143.12 kb/s total
+HTML transferred:       12978 bytes
+Requests per second:    1.31 [#/sec] (mean)
+Time per request:       1526.530 [ms] (mean)
+Time per request:       763.265 [ms] (mean, across all concurrent requests)
+Transfer rate:          2.27 [Kbytes/sec] received
+                        0.55 kb/s sent
+                        2.82 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    22   24   1.5     23      27
-Waiting:       22   23   1.4     23      26
-Total:         22   24   1.5     24      27
+Connect:        0    1   0.9      1       3
+Processing:   569 1473 1866.5    950    6749
+Waiting:      567 1469 1866.9    949    6746
+Total:        570 1474 1867.3    950    6752
 
 Percentage of the requests served within a certain time (ms)
-  50%     24
-  66%     24
-  75%     25
-  80%     25
-  90%     27
-  95%     27
-  98%     27
-  99%     27
- 100%     27 (longest request)
+  50%    950
+  66%    984
+  75%   1055
+  80%   1307
+  90%   6752
+  95%   6752
+  98%   6752
+  99%   6752
+ 100%   6752 (longest request)
 **************************************************************************
-* Thu Jul 22 19:32:03 BST 2010
+* Fri Jul 23 22:43:44 BST 2010
 * list collection
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -650,39 +364,39 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        145751 bytes
+Document Length:        14069 bytes
 
 Concurrency Level:      2
-Time taken for tests:   2.150 seconds
+Time taken for tests:   19.524 seconds
 Complete requests:      10
 Failed requests:        0
 Write errors:           0
-Total transferred:      1459570 bytes
-HTML transferred:       1457510 bytes
-Requests per second:    4.65 [#/sec] (mean)
-Time per request:       430.002 [ms] (mean)
-Time per request:       215.001 [ms] (mean, across all concurrent requests)
-Transfer rate:          662.96 [Kbytes/sec] received
+Total transferred:      142750 bytes
+HTML transferred:       140690 bytes
+Requests per second:    0.51 [#/sec] (mean)
+Time per request:       3904.827 [ms] (mean)
+Time per request:       1952.413 [ms] (mean, across all concurrent requests)
+Transfer rate:          7.14 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   313  430 100.6    435     548
-Waiting:      312  429 100.6    434     548
-Total:        313  430 100.6    435     548
+Connect:        0    0   0.2      0       1
+Processing:  3340 3903 647.2   3794    5159
+Waiting:     3337 3899 646.2   3791    5150
+Total:       3340 3903 647.3   3794    5159
 
 Percentage of the requests served within a certain time (ms)
-  50%    435
-  66%    528
-  75%    529
-  80%    534
-  90%    548
-  95%    548
-  98%    548
-  99%    548
- 100%    548 (longest request)
+  50%   3794
+  66%   3796
+  75%   4104
+  80%   4905
+  90%   5159
+  95%   5159
+  98%   5159
+  99%   5159
+ 100%   5159 (longest request)
 **************************************************************************
-* Thu Jul 22 19:32:05 BST 2010
+* Fri Jul 23 22:44:04 BST 2010
 * post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -697,43 +411,42 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
+Document Length:        1298 bytes
 
 Concurrency Level:      2
-Time taken for tests:   0.168 seconds
+Time taken for tests:   6.226 seconds
 Complete requests:      10
-Failed requests:        2
-   (Connect: 0, Receive: 0, Length: 2, Exceptions: 0)
+Failed requests:        0
 Write errors:           0
-Total transferred:      13184 bytes
+Total transferred:      17710 bytes
 Total POSTed:           4300
-HTML transferred:       8454 bytes
-Requests per second:    59.40 [#/sec] (mean)
-Time per request:       33.671 [ms] (mean)
-Time per request:       16.835 [ms] (mean, across all concurrent requests)
-Transfer rate:          76.48 [Kbytes/sec] received
-                        24.94 kb/s sent
-                        101.42 kb/s total
+HTML transferred:       12980 bytes
+Requests per second:    1.61 [#/sec] (mean)
+Time per request:       1245.260 [ms] (mean)
+Time per request:       622.630 [ms] (mean, across all concurrent requests)
+Transfer rate:          2.78 [Kbytes/sec] received
+                        0.67 kb/s sent
+                        3.45 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    20   33  20.1     24      73
-Waiting:       20   32  20.1     24      73
-Total:         20   33  20.1     24      73
+Connect:        0    1   2.5      0       8
+Processing:  1148 1243  84.2   1235    1401
+Waiting:     1141 1238  84.4   1233    1399
+Total:       1153 1244  83.1   1235    1401
 
 Percentage of the requests served within a certain time (ms)
-  50%     24
-  66%     26
-  75%     28
-  80%     68
-  90%     73
-  95%     73
-  98%     73
-  99%     73
- 100%     73 (longest request)
+  50%   1235
+  66%   1262
+  75%   1290
+  80%   1353
+  90%   1401
+  95%   1401
+  98%   1401
+  99%   1401
+ 100%   1401 (longest request)
 **************************************************************************
-* Thu Jul 22 19:32:05 BST 2010
+* Fri Jul 23 22:44:10 BST 2010
 * list collection
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -748,39 +461,39 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        154275 bytes
+Document Length:        27159 bytes
 
 Concurrency Level:      2
-Time taken for tests:   1.803 seconds
+Time taken for tests:   37.977 seconds
 Complete requests:      10
 Failed requests:        0
 Write errors:           0
-Total transferred:      1544810 bytes
-HTML transferred:       1542750 bytes
-Requests per second:    5.55 [#/sec] (mean)
-Time per request:       360.643 [ms] (mean)
-Time per request:       180.321 [ms] (mean, across all concurrent requests)
-Transfer rate:          836.62 [Kbytes/sec] received
+Total transferred:      273650 bytes
+HTML transferred:       271590 bytes
+Requests per second:    0.26 [#/sec] (mean)
+Time per request:       7595.368 [ms] (mean)
+Time per request:       3797.684 [ms] (mean, across all concurrent requests)
+Transfer rate:          7.04 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   233  360 108.0    411     487
-Waiting:      232  359 106.9    411     480
-Total:        233  360 108.0    411     487
+Connect:        0    2   5.0      0      16
+Processing:  6067 7566 1983.1   6975   11488
+Waiting:     6063 7560 1978.9   6974   11467
+Total:       6067 7568 1986.4   6975   11489
 
 Percentage of the requests served within a certain time (ms)
-  50%    411
-  66%    430
-  75%    432
-  80%    481
-  90%    487
-  95%    487
-  98%    487
-  99%    487
- 100%    487 (longest request)
+  50%   6975
+  66%   7013
+  75%   7274
+  80%  11033
+  90%  11489
+  95%  11489
+  98%  11489
+  99%  11489
+ 100%  11489 (longest request)
 **************************************************************************
-* Thu Jul 22 19:32:07 BST 2010
+* Fri Jul 23 22:44:48 BST 2010
 * post 10 entries
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -795,42 +508,43 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
+Document Length:        1298 bytes
 
 Concurrency Level:      2
-Time taken for tests:   0.226 seconds
+Time taken for tests:   4.010 seconds
 Complete requests:      10
-Failed requests:        0
+Failed requests:        1
+   (Connect: 0, Receive: 0, Length: 1, Exceptions: 0)
 Write errors:           0
-Total transferred:      13190 bytes
+Total transferred:      17708 bytes
 Total POSTed:           4300
-HTML transferred:       8460 bytes
-Requests per second:    44.25 [#/sec] (mean)
-Time per request:       45.200 [ms] (mean)
-Time per request:       22.600 [ms] (mean, across all concurrent requests)
-Transfer rate:          56.99 [Kbytes/sec] received
-                        18.58 kb/s sent
-                        75.57 kb/s total
+HTML transferred:       12978 bytes
+Requests per second:    2.49 [#/sec] (mean)
+Time per request:       802.042 [ms] (mean)
+Time per request:       401.021 [ms] (mean, across all concurrent requests)
+Transfer rate:          4.31 [Kbytes/sec] received
+                        1.05 kb/s sent
+                        5.36 kb/s total
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.4      0       1
-Processing:    18   44  36.3     28     115
-Waiting:       18   43  36.1     28     114
-Total:         18   44  36.5     28     116
+Connect:        0    1   2.4      0       8
+Processing:   609  788 123.3    801     957
+Waiting:      607  784 123.3    800     955
+Total:        610  789 124.3    801     958
 
 Percentage of the requests served within a certain time (ms)
-  50%     28
-  66%     39
-  75%     39
-  80%    108
-  90%    116
-  95%    116
-  98%    116
-  99%    116
- 100%    116 (longest request)
+  50%    801
+  66%    803
+  75%    919
+  80%    953
+  90%    958
+  95%    958
+  98%    958
+  99%    958
+ 100%    958 (longest request)
 **************************************************************************
-* Thu Jul 22 19:32:07 BST 2010
+* Fri Jul 23 22:44:52 BST 2010
 * list collection
 **************************************************************************
 This is ApacheBench, Version 2.3 <$Revision: 655654 $>
@@ -845,132 +559,34 @@ Server Hostname:        localhost
 Server Port:            8080
 
 Document Path:          /atombeat/atombeat/content/test
-Document Length:        162805 bytes
+Document Length:        40247 bytes
 
 Concurrency Level:      2
-Time taken for tests:   1.946 seconds
+Time taken for tests:   49.569 seconds
 Complete requests:      10
 Failed requests:        0
 Write errors:           0
-Total transferred:      1630110 bytes
-HTML transferred:       1628050 bytes
-Requests per second:    5.14 [#/sec] (mean)
-Time per request:       389.120 [ms] (mean)
-Time per request:       194.560 [ms] (mean, across all concurrent requests)
-Transfer rate:          818.21 [Kbytes/sec] received
+Total transferred:      404530 bytes
+HTML transferred:       402470 bytes
+Requests per second:    0.20 [#/sec] (mean)
+Time per request:       9913.845 [ms] (mean)
+Time per request:       4956.922 [ms] (mean, across all concurrent requests)
+Transfer rate:          7.97 [Kbytes/sec] received
 
 Connection Times (ms)
               min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:   321  389  52.5    416     447
-Waiting:      320  388  52.4    415     445
-Total:        321  389  52.5    416     447
+Connect:        0    1   2.1      0       7
+Processing:  9040 9870 1421.0   9315   12656
+Waiting:     9037 9864 1419.5   9300   12645
+Total:       9040 9871 1420.8   9315   12656
 
 Percentage of the requests served within a certain time (ms)
-  50%    416
-  66%    424
-  75%    428
-  80%    444
-  90%    447
-  95%    447
-  98%    447
-  99%    447
- 100%    447 (longest request)
-**************************************************************************
-* Thu Jul 22 19:32:09 BST 2010
-* post 10 entries
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        846 bytes
-
-Concurrency Level:      2
-Time taken for tests:   0.200 seconds
-Complete requests:      10
-Failed requests:        2
-   (Connect: 0, Receive: 0, Length: 2, Exceptions: 0)
-Write errors:           0
-Total transferred:      13186 bytes
-Total POSTed:           4300
-HTML transferred:       8456 bytes
-Requests per second:    49.92 [#/sec] (mean)
-Time per request:       40.066 [ms] (mean)
-Time per request:       20.033 [ms] (mean, across all concurrent requests)
-Transfer rate:          64.28 [Kbytes/sec] received
-                        20.96 kb/s sent
-                        85.24 kb/s total
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.0      0       0
-Processing:    18   39  38.6     22     114
-Waiting:       18   39  38.6     22     114
-Total:         18   39  38.6     22     114
-
-Percentage of the requests served within a certain time (ms)
-  50%     22
-  66%     23
-  75%     23
-  80%    110
-  90%    114
-  95%    114
-  98%    114
-  99%    114
- 100%    114 (longest request)
-**************************************************************************
-* Thu Jul 22 19:32:10 BST 2010
-* list collection
-**************************************************************************
-This is ApacheBench, Version 2.3 <$Revision: 655654 $>
-Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
-Licensed to The Apache Software Foundation, http://www.apache.org/
-
-Benchmarking localhost (be patient).....done
-
-
-Server Software:        Apache-Coyote/1.1
-Server Hostname:        localhost
-Server Port:            8080
-
-Document Path:          /atombeat/atombeat/content/test
-Document Length:        171331 bytes
-
-Concurrency Level:      2
-Time taken for tests:   2.419 seconds
-Complete requests:      10
-Failed requests:        0
-Write errors:           0
-Total transferred:      1715370 bytes
-HTML transferred:       1713310 bytes
-Requests per second:    4.13 [#/sec] (mean)
-Time per request:       483.734 [ms] (mean)
-Time per request:       241.867 [ms] (mean, across all concurrent requests)
-Transfer rate:          692.60 [Kbytes/sec] received
-
-Connection Times (ms)
-              min  mean[+/-sd] median   max
-Connect:        0    0   0.1      0       0
-Processing:   347  484 105.6    445     638
-Waiting:      346  483 105.5    444     637
-Total:        347  484 105.6    445     638
-
-Percentage of the requests served within a certain time (ms)
-  50%    445
-  66%    548
-  75%    550
-  80%    638
-  90%    638
-  95%    638
-  98%    638
-  99%    638
- 100%    638 (longest request)
+  50%   9315
+  66%   9321
+  75%   9324
+  80%  12462
+  90%  12656
+  95%  12656
+  98%  12656
+  99%  12656
+ 100%  12656 (longest request)

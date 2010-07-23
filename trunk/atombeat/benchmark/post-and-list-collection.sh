@@ -18,7 +18,7 @@ list_collection() {
 	ab -n 10 -c 2 -A adam:test $COLLECTIONURI >> $OUTPUT
 }
 
-for i in {1..10}
+for i in {1..3}
 do 
 	create_member
 	list_collection
