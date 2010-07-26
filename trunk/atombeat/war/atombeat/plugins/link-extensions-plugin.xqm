@@ -90,12 +90,14 @@ declare function le-plugin:augment-entry(
     $entry as element(atom:entry)
 ) as element(atom:entry)
 {
-    let $collection-path-info := atomdb:collection-path-info( $entry )
-    let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
-    let $match-entry-rels := tokenize( $feed/atombeat:config-link-extensions/atombeat:extension-attribute[@name="allow" and @namespace="http://purl.org/atombeat/xmlns"]/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
-        
-    return le-plugin:augment-entry( $entry , $match-entry-rels )
+    if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:content-service-url ) ) then
+        let $collection-path-info := atomdb:collection-path-info( $entry )
+        let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
+        let $match-entry-rels := tokenize( $feed/atombeat:config-link-extensions/atombeat:extension-attribute[@name="allow" and @namespace="http://purl.org/atombeat/xmlns"]/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
+            
+        return le-plugin:augment-entry( $entry , $match-entry-rels )
 
+    else $entry
 };
 
 
