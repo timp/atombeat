@@ -44,6 +44,7 @@ public class AtomTestUtils {
 	public static final String BASE_URI = "http://localhost:" + port + "/atombeat/atombeat/";
 	public static final String CONTENT_URI = BASE_URI + "content/";
 	public static final String SECURITY_URI = BASE_URI + "security/";
+	public static final String LIB_URI = BASE_URI + "lib/";
 
 
 	
@@ -340,6 +341,21 @@ public class AtomTestUtils {
 		return o;
 	}
 	
+	
+	
+	public static List<Element> getEntries(Document d) {
+		return getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
+	}
+	
+	
+
+	public static List<Element> getEntries(Element e) {
+		return getChildrenByTagNameNS(e, "http://www.w3.org/2005/Atom", "entry");
+	}
+	
+	
+	
+
 	public static String getEditMediaLocation(Document mediaLinkDoc) {
 		return getLinkHref(mediaLinkDoc, "edit-media");
 	}
@@ -394,33 +410,39 @@ public class AtomTestUtils {
 	
 	
 	
-	public static List<Element> getLinks(Document doc, String rel) {
-		
-		NodeList links = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "link");
-		
-		List<Element> els = new ArrayList<Element>();
-		
-		for (int i=0; i<links.getLength(); i++) {
-			Element e = (Element) links.item(i);
-			String relValue = e.getAttribute("rel");
-			if (relValue.equals(rel)) {
-				els.add(e);
-			}
+	public static Element getLink(Element e, String rel) {
+
+		List<Element> links = getLinks(e, rel);
+		if (links.size() > 0) {
+			return links.get(0);
 		}
 		
-		return els;
+		return null;
+
+	}
+	
+	
+	public static Element getLink(Document d, String rel) {
+
+		return getLink(d.getDocumentElement(), rel);
+
+	}
+	
+	
+	public static List<Element> getLinks(Document doc, String rel) {
+		
+		return getLinks(doc.getDocumentElement(), rel);
 		
 	}
 	
 	
 	public static List<Element> getLinks(Element elm, String rel) {
 		
-		NodeList links = elm.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "link");
+		List<Element> links = getChildrenByTagNameNS(elm, "http://www.w3.org/2005/Atom", "link");
 		
 		List<Element> els = new ArrayList<Element>();
 		
-		for (int i=0; i<links.getLength(); i++) {
-			Element e = (Element) links.item(i);
+		for (Element e : links) {
 			String relValue = e.getAttribute("rel");
 			if (relValue.equals(rel)) {
 				els.add(e);

@@ -105,22 +105,22 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testGetCollectionNoDescriptorLink() {
-
-		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-
-		// retrieve collection feed
-		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "rebecca", "test");
-		assertEquals(200, r);
-		
-		// look for ACL link
-		Document d = getResponseBodyAsDocument(g);
-		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
-		assertNull(descriptorLocation);
-		
-	}
+//	public void testGetCollectionNoDescriptorLink() {
+//
+//		// set up test by creating a collection
+//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+//
+//		// retrieve collection feed
+//		GetMethod g = new GetMethod(collectionUri);
+//		int r = executeMethod(g, "rebecca", "test");
+//		assertEquals(200, r);
+//		
+//		// look for ACL link
+//		Document d = getResponseBodyAsDocument(g);
+//		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+//		assertNull(descriptorLocation);
+//		
+//	}
 	
 	
 	
@@ -167,9 +167,6 @@ public class TestSecurityProtocol extends TestCase {
 		// check atombeat:allow extension attribute
 		Element link = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
 		assertNotNull(link); 
-		String allow = link.getAttributeNS("http://purl.org/atombeat/xmlns", "allow");
-		assertNotNull(allow);
-		assertEquals("GET, PUT", allow);
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
@@ -205,9 +202,6 @@ public class TestSecurityProtocol extends TestCase {
 		// check atombeat:allow extension attribute
 		Element link = getLinks(e, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
 		assertNotNull(link); 
-		String allow = link.getAttributeNS("http://purl.org/atombeat/xmlns", "allow");
-		assertNotNull(allow);
-		assertEquals("GET, PUT", allow);
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
@@ -243,9 +237,6 @@ public class TestSecurityProtocol extends TestCase {
 		// check atombeat:allow extension attribute
 		Element link = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR).get(0);
 		assertNotNull(link); 
-		String allow = link.getAttributeNS("http://purl.org/atombeat/xmlns", "allow");
-		assertNotNull(allow);
-		assertEquals("GET", allow);
 		
 		// make a get request for the descriptor as editor
 		GetMethod h = new GetMethod(descriptorLocation);
@@ -272,23 +263,23 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testGetMemberNoDescriptorLink() {
-
-		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
-
-		// retrieve member entry
-		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "rebecca", "test");
-		assertEquals(200, r);
-		
-		// look for ACL link
-		Document d = getResponseBodyAsDocument(g);
-		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
-		assertNull(descriptorLocation);
-		
-	}
+//	public void testGetMemberNoDescriptorLink() {
+//
+//		// set up test by creating a collection
+//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+//		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+//
+//		// retrieve member entry
+//		GetMethod g = new GetMethod(memberUri);
+//		int r = executeMethod(g, "rebecca", "test");
+//		assertEquals(200, r);
+//		
+//		// look for ACL link
+//		Document d = getResponseBodyAsDocument(g);
+//		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+//		assertNull(descriptorLocation);
+//		
+//	}
 	
 	
 	
@@ -350,23 +341,23 @@ public class TestSecurityProtocol extends TestCase {
 
 	
 	
-	public void testGetMemberDescriptorLinkExcluded() {
-
-		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
-
-		// retrieve member entry
-		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "rebecca", "test");
-		assertEquals(200, r);
-		
-		// look for ACL link
-		Document d = getResponseBodyAsDocument(g);
-		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
-		assertNull(descriptorLocation);
-		
-	}
+//	public void testGetMemberDescriptorLinkExcluded() {
+//
+//		// set up test by creating a collection
+//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+//		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+//
+//		// retrieve member entry
+//		GetMethod g = new GetMethod(memberUri);
+//		int r = executeMethod(g, "rebecca", "test");
+//		assertEquals(200, r);
+//		
+//		// look for ACL link
+//		Document d = getResponseBodyAsDocument(g);
+//		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+//		assertNull(descriptorLocation);
+//		
+//	}
 
 	
 	
@@ -441,22 +432,22 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testGetMediaDescriptorNoDescriptorLink() {
-
-		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
-		String location = getEditLocation(d);
-		
-		// retrieve media link as rebecca
-		GetMethod g = new GetMethod(location);
-		int s = executeMethod(g, "rebecca", "test");
-		assertEquals(200, s);
-		Document e = getResponseBodyAsDocument(g);
-		String mediaDescriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
-		assertNull(mediaDescriptorLocation);
-		
-	}
+//	public void testGetMediaDescriptorNoDescriptorLink() {
+//
+//		// set up test by creating a collection
+//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+//		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
+//		String location = getEditLocation(d);
+//		
+//		// retrieve media link as rebecca
+//		GetMethod g = new GetMethod(location);
+//		int s = executeMethod(g, "rebecca", "test");
+//		assertEquals(200, s);
+//		Document e = getResponseBodyAsDocument(g);
+//		String mediaDescriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+//		assertNull(mediaDescriptorLocation);
+//		
+//	}
 	
 	
 	

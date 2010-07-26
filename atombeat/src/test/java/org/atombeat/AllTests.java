@@ -17,8 +17,10 @@ public class AllTests {
 		suite.addTestSuite(TestExtendedAtomProtocol_MultipartFormdata.class);
 		suite.addTestSuite(TestExtendedAtomProtocol_MultiCreate.class);
 		suite.addTestSuite(TestHistoryProtocol.class);
+		suite.addTestSuite(TestAtomSecurityLibrary.class);
 		suite.addTestSuite(TestDefaultSecurityPolicy.class);
 		suite.addTestSuite(TestSecurityProtocol.class);
+		suite.addTestSuite(TestLinkExtensions_Allow.class);
 		//$JUnit-END$
 		return suite;
 	}

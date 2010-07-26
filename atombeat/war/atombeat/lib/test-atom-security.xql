@@ -1280,6 +1280,8 @@ declare function local:test-whitespace() as item()*
 
     let $output := ( "test-whitespace..." )
     
+    (: to improve efficiency of acl processing, whitespace is no longer allowed :)
+    
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
             <atombeat:acl>
@@ -1305,7 +1307,7 @@ declare function local:test-whitespace() as item()*
     let $user := "alice"
     let $roles := ()
     let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "alice should be allowed to create collections" ) )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "alice should not be allowed to create collections" ) )
     
     return $output
 
