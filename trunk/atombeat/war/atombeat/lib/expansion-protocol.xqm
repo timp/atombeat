@@ -72,9 +72,6 @@ declare function exp:do-get-entry(
 ) as item()*
 {
 
-	let $log := util:log( "debug" , "== exp:do-get-entry() ==" )
-	let $log := util:log( "debug" , $request-path-info )
-
     let $entry := atomdb:retrieve-member( $request-path-info )
     
     return exp:default-expansion( $entry )

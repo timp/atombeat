@@ -20,27 +20,8 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
 
 declare variable $common-protocol:param-request-path-info := "request-path-info" ;
-declare variable $common-protocol:logger-name := "org.atombeat.xquery.lib.common-protocol" ;
 
 
-declare function local:debug(
-    $message as item()*
-) as empty()
-{
-    util:log-app( "debug" , $common-protocol:logger-name , $message )
-};
-
-
-
-
-declare function local:info(
-    $message as item()*
-) as empty()
-{
-    util:log-app( "info" , $common-protocol:logger-name , $message )
-};
-
- 
 
 
 declare function common-protocol:do-not-modified(
@@ -256,33 +237,19 @@ declare function common-protocol:apply-op(
 ) as element(response)
 {
 
-	let $log := local:debug( "call plugin functions before main operation" )
-	
 	let $before-advice := common-protocol:apply-before( plugin:before() , $op-name , $request-path-info , $request-data , $request-media-type )
-	
-	let $log := local:debug( "done calling before plugins" )
-	
-	(: logging $before-advice is a bad idea - it is the request data, and could be a large binary file! :)
-(:	let $log := local:debug( $before-advice ) :) 
 	
 	return 
 	 
 		if ( $before-advice instance of element(response) ) (: interrupt request processing :)
 		
-		then 
-		
-			let $log := local:info( ( "bail out - plugin has overridden default behaviour, status: " , $before-advice/status ) )
-		
-			return $before-advice
+		then $before-advice
 		  
 		else
 		
-			let $log := local:debug( "carry on as normal - execute main operation" )
-			
 			let $request-data := $before-advice (: request data may have been modified by plugins :)
 
 			let $response := util:call( $op , $request-path-info , $request-data , $request-media-type )
-			let $log := local:debug( "call plugin functions after main operation" ) 
 			 
 			let $after-advice := common-protocol:apply-after( plugin:after() , $op-name , $request-path-info , $response )
 			
@@ -409,8 +376,6 @@ declare function common-protocol:respond( $response as element(response) ) as it
 
     let $response := common-protocol:augment-errors( $response )
     
-    let $log := local:debug( $response )
-    
     let $set-headers :=
         for $header in $response/headers/header
         return 
@@ -454,11 +419,6 @@ declare function common-protocol:augment-errors(
     let $content-type := $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text()
 	let $request-path-info := request:get-attribute( $common-protocol:param-request-path-info )
     
-    let $log := util:log( "debug" , "== error-plugin:after ==" )
-    let $log := util:log( "debug" , $status )
-    let $log := util:log( "debug" , $content-type )
-    
-
     return 
 	
         if ( 
