@@ -27,7 +27,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	protected void setUp() throws Exception {
 		super.setUp();
-
+		
 		// need to run install before each test to ensure default workspace descriptor is restored
 		
 		String installUrl = BASE_URI + "admin/setup-for-test.xql";
@@ -195,6 +195,7 @@ public class TestSecurityProtocol extends TestCase {
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
 		Element e = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry").item(0);
+		assertNotNull(e);
 		
 		String descriptorLocation = getLinkHref(e, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertNotNull(descriptorLocation);
@@ -394,6 +395,7 @@ public class TestSecurityProtocol extends TestCase {
 		executeMethod(get, "audrey", "test");
 		Document d = getResponseBodyAsDocument(get);
 		Element e = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry").item(0);
+		assertNotNull(e);
 		
 		// look for ACL link
 		String descriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);

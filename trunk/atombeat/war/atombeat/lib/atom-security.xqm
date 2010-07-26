@@ -41,20 +41,6 @@ declare function atomsec:store-descriptor(
 
 
 
-declare variable $atomsec:collection-config :=
-    <collection 
-        xmlns="http://exist-db.org/collection-config/1.0"
-        xmlns:xs="http://www.w3.org/2001/XMLSchema">
-        <index xmlns:atombeat="http://purl.org/atombeat/xmlns">
-            <create qname="atombeat:permission" type="xs:string"/>
-            <create qname="atombeat:recipient" type="xs:string"/>
-            <create qname="atombeat:type" type="xs:string"/>
-            <create qname="atombeat:condition" type="xs:string"/>
-        </index>
-    </collection>
-;
-
-
 
 declare function atomsec:store-workspace-descriptor(
     $descriptor as element(atombeat:security-descriptor)
@@ -64,10 +50,6 @@ declare function atomsec:store-workspace-descriptor(
     let $base-security-collection-db-path := xutil:get-or-create-collection( $config:base-security-collection-path )
     
     let $workspace-descriptor-doc-db-path := xmldb:store( $base-security-collection-db-path , $atomsec:descriptor-suffix , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
-    
-    (: configure indexes on the base collection :)
-    
-    let $base-security-config-collection-db-path := xutil:store-collection-config( $base-security-collection-db-path , $atomsec:collection-config )
     
     return $workspace-descriptor-doc-db-path
     
@@ -297,23 +279,29 @@ declare function atomsec:filter-feed(
         $feed/attribute::* ,
         $feed/child::*[not( . instance of element(atom:entry) )] ,
 
-        (: the point is, we only want to retrieve the workspace and collection descriptor once, if we can help it :)
-        
         let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    
-        let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
-
         let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:content-service-url )
-        let $collection-descriptor := atomsec:retrieve-collection-descriptor( $collection-path-info )
         
+        (: 
+         : Try to reduce the number of times we apply an ACL.
+         : The idea is, we only want to apply the workspace and collection level
+         : ACLs once, if we can help it.
+         : N.B., beware, this leads to quirks of match-request-path-info condition for
+         : RETRIEVE_MEMBER!
+         :)
+         
+        let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
+        let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $collection-path-info )  
+    
+        let $collection-descriptor := atomsec:retrieve-collection-descriptor( $collection-path-info )
+        let $collection-decision := atomsec:apply-acl( $collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $collection-path-info )  
+            
         return
         
             for $entry in $feed/atom:entry
             
             let $entry-path-info := atomdb:edit-path-info( $entry )
-            
-            let $resource-descriptor := atomsec:retrieve-resource-descriptor( $entry-path-info )
             
             (: cope with recursive collections :)
             let $owner-collection-path-info := atomdb:collection-path-info( $entry )
@@ -321,8 +309,15 @@ declare function atomsec:filter-feed(
                 if ( $owner-collection-path-info = $collection-path-info )
                 then $collection-descriptor
                 else atomsec:retrieve-collection-descriptor( $owner-collection-path-info )
+            let $owner-collection-decision :=            
+                if ( $owner-collection-path-info = $collection-path-info )
+                then $collection-decision
+                else atomsec:apply-acl( $owner-collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
                 
-            let $decision := atomsec:decide( $user , $roles , $entry-path-info , $CONSTANT:OP-RETRIEVE-MEMBER , () , $resource-descriptor , $owner-collection-descriptor , $workspace-descriptor )
+            let $resource-descriptor := atomsec:retrieve-resource-descriptor( $entry-path-info )
+            let $resource-decision := atomsec:apply-acl( $resource-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
+                                            
+            let $decision := atomsec:decide-priority( $resource-decision , $owner-collection-decision ,$workspace-decision )
             
             return 
                 if ( $decision = $atomsec:decision-allow ) then $entry else ()
@@ -374,6 +369,22 @@ declare function atomsec:decide(
     let $collection-decision := atomsec:apply-acl( $collection-descriptor , $operation , $media-type , $user , $roles , $request-path-info )   
 
     let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $operation , $media-type , $user , $roles , $request-path-info )  
+    
+    return atomsec:decide-priority( $resource-decision , $collection-decision , $workspace-decision )
+    
+};
+
+
+
+
+
+
+declare function atomsec:decide-priority(
+    $resource-decision as xs:string? ,
+    $collection-decision as xs:string? ,
+    $workspace-decision as xs:string? 
+) as xs:string
+{
     
     (: order decision :)
     
@@ -432,6 +443,11 @@ declare function atomsec:match-acl(
 
     let $matching-aces :=
     
+        (:
+         : This expression is optimised to improve efficiency and make use of indexes.
+         : N.B. ACL processing is expensive especially on list collection operations.
+         :)
+         
         $descriptor/atombeat:acl/atombeat:ace
             [ (: match operation :)
                 atombeat:permission = "*" or atombeat:permission = $operation
@@ -443,27 +459,16 @@ declare function atomsec:match-acl(
                 or atombeat:recipient[@type="role"] = $roles 
                 or atomsec:match-group( . , $user , $descriptor )
             ]
-            [ atomsec:match-media-range-condition( . , $media-type ) ]
-            [ atomsec:match-request-path-info-condition( . , $request-path-info ) ]
+            [ 
+                empty( atombeat:conditions/atombeat:condition[@type="mediarange"] )
+                or atomsec:match-media-range-condition( . , $media-type ) ]
+            [ 
+                empty( atombeat:conditions/atombeat:condition[@type="match-request-path-info"] )
+                or atomsec:match-request-path-info-condition( . , $request-path-info ) 
+            ]
 
     return $matching-aces
     
-};
-
-
-
-
-declare function atomsec:match-role(
-    $ace as element(atombeat:ace) ,
-    $roles as xs:string*
-) as xs:boolean
-{
-    let $ace-role := $ace/atombeat:recipient[@type="role"]
-    return 
-    (
-        ( $ace-role = "*" ) or 
-        ( exists( $ace-role ) and exists( index-of( $roles , $ace-role ) ) ) 
-    )
 };
 
 
@@ -532,8 +537,8 @@ declare function atomsec:match-media-range-condition(
 ) as xs:boolean
 {
 
-    let $operation := $ace/atombeat:permission/text()
-    let $expected-range := $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]/text()
+    let $operation := $ace/atombeat:permission
+    let $expected-range := $ace/atombeat:conditions/atombeat:condition[@type="mediarange"]
     
     return
     
@@ -573,7 +578,7 @@ declare function atomsec:match-request-path-info-condition(
 ) as xs:boolean
 {
 
-    let $pattern := $ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"]/text()
+    let $pattern := $ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"]
     
     return
     
