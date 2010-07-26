@@ -450,16 +450,6 @@ declare function security-plugin:augment-entry(
     $response-data as element(atom:entry) 
 ) as element(atom:entry)
 {
-    security-plugin:augment-entry( $response-data , false() )
-};
-
-
-
-declare function security-plugin:augment-entry(
-    $response-data as element(atom:entry) ,
-    $expand-descriptors as xs:boolean?
-) as element(atom:entry)
-{
 
     (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
@@ -468,24 +458,12 @@ declare function security-plugin:augment-entry(
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     let $media-path-info := substring-after( $media-uri , $config:content-service-url )
 
-    (: TODO factor out expand security descriptors :)
     let $descriptor-link :=     
         <atom:link 
             rel="http://purl.org/atombeat/rel/security-descriptor" 
             href="{concat( $config:security-service-url , $entry-path-info )}" 
-            type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}">
-        {
-            if ( $expand-descriptors ) then 
-                if ( atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $entry-path-info , () ) ) then
-                    <ae:inline>
-                    { atomsec:wrap-with-entry( $entry-path-info , atomsec:retrieve-descriptor( $entry-path-info ) ) }
-                    </ae:inline>
-                else ()
-            else ()                
-        }
-        </atom:link>
+            type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
         
-    (: TODO factor out expand security descriptors :)
     let $media-descriptor-link :=
         if ( exists( $media-uri ) ) then
             let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
@@ -493,17 +471,7 @@ declare function security-plugin:augment-entry(
                 <atom:link 
                     rel="http://purl.org/atombeat/rel/media-security-descriptor" 
                     href="{$media-descriptor-href}" 
-                    type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}">
-                {
-                    if ( $expand-descriptors ) then
-                        if ( atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $media-path-info , () ) ) then
-                            <ae:inline>
-                            { atomsec:wrap-with-entry( $media-path-info , atomsec:retrieve-descriptor( $media-path-info ) ) }
-                            </ae:inline>
-                        else ()
-                    else ()
-                }
-                </atom:link>
+                    type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
         else ()
         
     let $augmented-entry :=
@@ -581,25 +549,11 @@ declare function security-plugin:filter-feed-by-permissions(
     then $feed
     else
     
-        (: TODO factor out expand security descriptors :)
-        
-        let $expand-descriptors := xs:boolean( $feed/@atombeat:expand-security-descriptors )
-        
         let $descriptor-link :=     
             <atom:link
                 rel="http://purl.org/atombeat/rel/security-descriptor" 
                 href="{concat( $config:security-service-url , $request-path-info )}" 
-                type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}">
-            {
-                if ( $expand-descriptors ) then
-                    if ( atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $request-path-info , () ) ) then
-                        <ae:inline>
-                        { atomsec:wrap-with-entry( $request-path-info , atomsec:retrieve-descriptor( $request-path-info ) ) }
-                        </ae:inline>
-                    else ()
-                else ()                
-            }
-            </atom:link>
+                type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
             
         let $filtered-feed := atomsec:filter-feed( $feed )
         
@@ -610,7 +564,7 @@ declare function security-plugin:filter-feed-by-permissions(
                     $filtered-feed/child::*[ not( . instance of element(atom:entry) ) ] ,
                     $descriptor-link ,
                     for $entry in $filtered-feed/atom:entry
-                    return security-plugin:augment-entry( $entry , $expand-descriptors ) 
+                    return security-plugin:augment-entry( $entry ) 
                 }
             </atom:feed>
             

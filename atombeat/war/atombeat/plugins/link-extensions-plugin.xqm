@@ -1,6 +1,6 @@
 xquery version "1.0";
 
-module namespace le-plugin = "http://purl.org/atombeat/xquery/link-extensions-plugin";
+module namespace link-extensions-plugin = "http://purl.org/atombeat/xquery/link-extensions-plugin";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
@@ -30,7 +30,7 @@ import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security
 
 
 
-declare function le-plugin:after(
+declare function link-extensions-plugin:after(
 	$operation as xs:string ,
 	$request-path-info as xs:string ,
 	$response as element(response)
@@ -41,9 +41,9 @@ declare function le-plugin:after(
     
     let $augmented-response-data :=
         if ( $response-data instance of element(atom:feed) )
-        then le-plugin:augment-feed( $response-data )
+        then link-extensions-plugin:augment-feed( $response-data )
         else if ( $response-data instance of element(atom:entry) )
-        then le-plugin:augment-entry( $response-data )
+        then link-extensions-plugin:augment-entry( $response-data )
         else $response-data
         
     return
@@ -61,7 +61,7 @@ declare function le-plugin:after(
 
 
 
-declare function le-plugin:augment-feed(
+declare function link-extensions-plugin:augment-feed(
     $feed as element(atom:feed)
 ) as element(atom:feed)
 {
@@ -76,9 +76,9 @@ declare function le-plugin:augment-feed(
         {
             $feed/attribute::* ,
             $feed/child::*[ not( . instance of element(atom:link) ) and not( . instance of element(atom:entry) ) ] ,
-            le-plugin:decorate-links( $feed/atom:link , $match-feed-rels ) ,
+            link-extensions-plugin:decorate-links( $feed/atom:link , $match-feed-rels ) ,
             for $entry in $feed/atom:entry
-            return le-plugin:augment-entry( $entry , $match-entry-in-feed-rels )
+            return link-extensions-plugin:augment-entry( $entry , $match-entry-in-feed-rels )
         }        
         </atom:feed>
 
@@ -86,7 +86,7 @@ declare function le-plugin:augment-feed(
 
 
 
-declare function le-plugin:augment-entry(
+declare function link-extensions-plugin:augment-entry(
     $entry as element(atom:entry)
 ) as element(atom:entry)
 {
@@ -95,7 +95,7 @@ declare function le-plugin:augment-entry(
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $match-entry-rels := tokenize( $feed/atombeat:config-link-extensions/atombeat:extension-attribute[@name="allow" and @namespace="http://purl.org/atombeat/xmlns"]/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
             
-        return le-plugin:augment-entry( $entry , $match-entry-rels )
+        return link-extensions-plugin:augment-entry( $entry , $match-entry-rels )
 
     else $entry
 };
@@ -103,7 +103,7 @@ declare function le-plugin:augment-entry(
 
 
 
-declare function le-plugin:augment-entry(
+declare function link-extensions-plugin:augment-entry(
     $entry as element(atom:entry) ,
     $match-rels as xs:string*
 ) as element(atom:entry)
@@ -112,7 +112,7 @@ declare function le-plugin:augment-entry(
     {
         $entry/attribute::* ,
         $entry/child::*[ not( . instance of element(atom:link) ) ] ,
-        le-plugin:decorate-links( $entry/atom:link , $match-rels )
+        link-extensions-plugin:decorate-links( $entry/atom:link , $match-rels )
     }        
     </atom:entry>
 };
@@ -120,7 +120,7 @@ declare function le-plugin:augment-entry(
 
 
 
-declare function le-plugin:decorate-links(
+declare function link-extensions-plugin:decorate-links(
     $links as element(atom:link)* ,
     $match-rels as xs:string*
 ) as element(atom:link)*
