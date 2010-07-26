@@ -410,10 +410,21 @@
             Default index settings. Default settings apply if there's no 
             collection-specific configuration for a collection.
         -->
-        <index>
+        <index 
+            xmlns:atombeat="http://purl.org/atombeat/xmlns"
+            xmlns:atom="http://www.w3.org/2005/Atom">
             <fulltext attributes="false" default="none">
                 <exclude path="/auth"/>
             </fulltext>
+            <create qname="atom:id" type="xs:string"/>
+            <create qname="@rel" type="xs:string"/>
+            <!-- indexes to optimise atombeat ACL processing -->
+            <create qname="atombeat:permission" type="xs:string"/>
+            <create qname="atombeat:recipient" type="xs:string"/>
+            <create qname="atombeat:type" type="xs:string"/>
+            <create qname="atombeat:condition" type="xs:string"/>
+            <create qname="@type" type="xs:string"/>
+            <create qname="@id" type="xs:string"/>
         </index>
     </indexer>
 

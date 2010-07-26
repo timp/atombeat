@@ -24,35 +24,41 @@ public class TestHistoryProtocol extends TestCase {
 	private String collectionUri = null;
 	private String noHistoryCollectionUri = null;
 	
-
+	private boolean setupForTest = false;
+	
 
 	
 	public void setUp() {
-		
-		String installUrl = BASE_URI + "admin/setup-for-test.xql";
-		
-		GetMethod method = new GetMethod(installUrl);
-		
-		int result = executeMethod(method, "adam", "test");
-		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
-
-		Header[] headers = {};
-		
-		String content = 
-			"<atom:feed " +
-				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
-				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
-				"atombeat:enable-versioning=\"true\">" +
-				"<atom:title>Test Collection With Versioning</atom:title>" +
-			"</atom:feed>";
-		collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, content);
-
-		String noHistoryContent = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection (No Versioning)</atom:title></atom:feed>";
-		noHistoryCollectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, noHistoryContent);
 	
+		if ( !setupForTest ) {
+			
+			String installUrl = BASE_URI + "admin/setup-for-test.xql";
+			
+			GetMethod method = new GetMethod(installUrl);
+			
+			int result = executeMethod(method, "adam", "test");
+			
+			if (result != 200) {
+				throw new RuntimeException("installation failed: "+result);
+			}
+
+			Header[] headers = {};
+			
+			String content = 
+				"<atom:feed " +
+					"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+					"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+					"atombeat:enable-versioning=\"true\">" +
+					"<atom:title>Test Collection With Versioning</atom:title>" +
+				"</atom:feed>";
+			collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, content);
+
+			String noHistoryContent = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection (No Versioning)</atom:title></atom:feed>";
+			noHistoryCollectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, noHistoryContent);
+			
+			setupForTest = true;
+			
+		}
 	}
 	
 	

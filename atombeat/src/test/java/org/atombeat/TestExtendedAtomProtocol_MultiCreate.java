@@ -46,25 +46,32 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 
 	
 	
+	private boolean setupForTest = false;
+	
+	
 	
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
-		
-		PostMethod method = new PostMethod(setupUrl);
-		
-		int result = executeMethod(method);
-		
-		if (result != 200) {
-			throw new RuntimeException("setup failed: "+result);
+		if ( !setupForTest ) {
+			
+			String setupUrl = BASE_URI + "admin/setup-for-test.xql";
+			
+			PostMethod method = new PostMethod(setupUrl);
+			
+			int result = executeMethod(method);
+			
+			if (result != 200) {
+				throw new RuntimeException("setup failed: "+result);
+			}
+
+			domImplRegistry = DOMImplementationRegistry.newInstance();
+			domImplLs = (DOMImplementationLS)domImplRegistry.getDOMImplementation("LS");
+			lsWriter = domImplLs.createLSSerializer();
+			lsWriter.getDomConfig().setParameter("xml-declaration", false);
+			setupForTest = true;
+
 		}
-
-		domImplRegistry = DOMImplementationRegistry.newInstance();
-		domImplLs = (DOMImplementationLS)domImplRegistry.getDOMImplementation("LS");
-		lsWriter = domImplLs.createLSSerializer();
-		lsWriter.getDomConfig().setParameter("xml-declaration", false);
-
 	}
 	
 	
