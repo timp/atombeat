@@ -35,7 +35,6 @@ declare function history-plugin:before(
 {
 	
 	let $message := concat( "history plugin, before: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := util:log( "debug" , $message )
 	
 	return
 	
@@ -66,7 +65,6 @@ declare function history-plugin:before-create-collection(
 {
 
 	let $message := concat( "history plugin, before create-collection, request-path-info: " , $request-path-info ) 
-	let $log := util:log( "debug" , $message )
 
 	let $enable-history := xs:boolean( $request-data/@atombeat:enable-versioning )
 	
@@ -95,8 +93,6 @@ declare function history-plugin:before-create-member(
 ) as item()*
 {
 
-    let $log := util:log( "debug" , "history-protocol, before-create-member")
-    
     let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
     let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
 
@@ -112,7 +108,6 @@ declare function history-plugin:before-create-member(
             let $comment := if ( empty( $comment ) or $comment = "" ) then "initial revision" else $comment
             
         	let $prepared-entry := history-plugin:prepare-entry( $request-data , $comment )
-            let $log := util:log( "debug" , $prepared-entry )
         	
         	return $prepared-entry
 
@@ -129,8 +124,6 @@ declare function history-plugin:before-update-member(
 ) as item()*
 {
 
-    let $log := util:log( "debug" , "history-protocol, before-update-member")
-
     let $collection-path-info := text:groups( $request-path-info , "^(.+)/[^/]+$" )[2]
     let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
     let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
@@ -145,7 +138,6 @@ declare function history-plugin:before-update-member(
         	
             let $comment := request:get-header("X-Atom-Revision-Comment")
         	let $prepared-entry := history-plugin:prepare-entry( $request-data , $comment )
-            let $log := util:log( "debug" , $prepared-entry )
         	
         	return $prepared-entry
 
@@ -219,7 +211,6 @@ declare function history-plugin:after(
 {
 
 	let $message := concat( "history plugin, after: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := util:log( "debug" , $message )
 
 	return
 		
@@ -229,9 +220,7 @@ declare function history-plugin:after(
 
 		else if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
 		
-		then 
-			let $log := util:log( "debug" , "found create-member" )
-			return history-plugin:after-create-member( $request-path-info , $response )
+		then history-plugin:after-create-member( $request-path-info , $response )
 
 		else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
 		
@@ -367,9 +356,8 @@ declare function history-plugin:append-history-link (
 	$response-entry as element(atom:entry)
 ) as element(atom:entry)
 {
-	let $log := util:log( "debug" , $response-entry )
-	
-	let $entry-path-info := atomdb:edit-path-info( $response-entry )
+
+    let $entry-path-info := atomdb:edit-path-info( $response-entry )
 	let $collection-path-info := atomdb:collection-path-info( $response-entry )
 	
 	return
@@ -382,7 +370,6 @@ declare function history-plugin:append-history-link (
             let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
             
         	let $history-uri := concat( $config:history-service-url , $entry-path-info )
-        	let $log := util:log( "debug" , $history-uri )
         	
         	let $response-entry :=
         	
@@ -404,7 +391,6 @@ declare function history-plugin:append-history-link (
             		
         		else $response-entry
         
-        	let $log := util:log( "debug" , $response-entry )
         	return $response-entry
         	
         else $response-entry                        

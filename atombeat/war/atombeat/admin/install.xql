@@ -66,18 +66,16 @@ declare function local:content() as item()*
                         <th>Path</th>
                         <th>Enable History</th>
                         <th>Exclude Entry Content in Feed</th>
-                        <th>Expand Security Descriptors</th>
                         <th>Recursive</th>
                         <th>Available</th>
                     </tr>
                     {
                         for $collection in $config-collections:collection-spec/collection
-                        let $title := $collection/title/text()
-                        let $path-info := $collection/path-info/text()
-                        let $enable-history := $collection/enable-history/text()
-                        let $exclude-entry-content := $collection/exclude-entry-content/text()
-                        let $expand-security-descriptors := $collection/expand-security-descriptors/text()
-                        let $recursive := $collection/recursive/text()
+                        let $title := $collection/atom:feed/atom:title/text()
+                        let $path-info := $collection/@path-info cast as xs:string
+                        let $enable-history := $collection/atom:feed/@atombeat:enable-history cast as xs:string
+                        let $exclude-entry-content := $collection/atom:feed/@atombeat:exclude-entry-content cast as xs:string
+                        let $recursive := $collection/atom:feed/@atombeat:recursive cast as xs:string
                         let $available := atomdb:collection-available($path-info)
                         return
                             <tr>
@@ -85,7 +83,6 @@ declare function local:content() as item()*
                                 <td><a href="../content{$path-info}">{$path-info}</a></td>
                                 <td>{$enable-history}</td>
                                 <td>{$exclude-entry-content}</td>
-                                <td>{$expand-security-descriptors}</td>
                                 <td>{$recursive}</td>
                                 <td><strong>{$available}</strong></td>
                             </tr>
@@ -115,20 +112,11 @@ declare function local:do-post() as item()*
     let $collections-installed :=
 
         for $collection in $config-collections:collection-spec/collection
-        let $title := $collection/title/text()
-        let $path-info := $collection/path-info/text()
+        let $path-info := $collection/@path-info cast as xs:string
 
         (: CREATE THE COLLECTION :)
-        let $feed-doc := 
-            <atom:feed 
-                atombeat:exclude-entry-content="{$collection/exclude-entry-content/text()}"
-                atombeat:recursive="{$collection/recursive/text()}"
-                atombeat:enable-versioning="{$collection/enable-history/text()}"
-                atombeat:expand-security-descriptors="{$collection/expand-security-descriptors/text()}">
-                <atom:title>{$title}</atom:title>
-            </atom:feed>
-            
-        let $put-feed-response := atom-protocol:do-put-atom-feed( $path-info , $feed-doc )                                    
+        let $feed := $collection/atom:feed
+        let $put-feed-response := atom-protocol:do-put-atom-feed( $path-info , $feed )                                    
         return $put-feed-response
                 
     (: SEND RESPONSE :)        

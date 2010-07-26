@@ -20,9 +20,6 @@ declare variable $atomsec:descriptor-suffix as xs:string        := ".descriptor"
 
 
 
-declare variable $atomsec:logger-name := "org.atombeat.xquery.lib.atom-security" ;
-
-
 
 declare function atomsec:store-descriptor(
     $request-path-info as xs:string ,
@@ -44,6 +41,20 @@ declare function atomsec:store-descriptor(
 
 
 
+declare variable $atomsec:collection-config :=
+    <collection 
+        xmlns="http://exist-db.org/collection-config/1.0"
+        xmlns:xs="http://www.w3.org/2001/XMLSchema">
+        <index xmlns:atombeat="http://purl.org/atombeat/xmlns">
+            <create qname="atombeat:permission" type="xs:string"/>
+            <create qname="atombeat:recipient" type="xs:string"/>
+            <create qname="atombeat:type" type="xs:string"/>
+            <create qname="atombeat:condition" type="xs:string"/>
+        </index>
+    </collection>
+;
+
+
 
 declare function atomsec:store-workspace-descriptor(
     $descriptor as element(atombeat:security-descriptor)
@@ -53,6 +64,10 @@ declare function atomsec:store-workspace-descriptor(
     let $base-security-collection-db-path := xutil:get-or-create-collection( $config:base-security-collection-path )
     
     let $workspace-descriptor-doc-db-path := xmldb:store( $base-security-collection-db-path , $atomsec:descriptor-suffix , $descriptor , $CONSTANT:MEDIA-TYPE-XML )
+    
+    (: configure indexes on the base collection :)
+    
+    let $base-security-config-collection-db-path := xutil:store-collection-config( $base-security-collection-db-path , $atomsec:collection-config )
     
     return $workspace-descriptor-doc-db-path
     
@@ -418,13 +433,14 @@ declare function atomsec:match-acl(
     let $matching-aces :=
     
         $descriptor/atombeat:acl/atombeat:ace
-            [ (: match operation - TODO index here might improve performance :)
-                atombeat:permission/text() = "*" or atombeat:permission/text() = $operation
+            [ (: match operation :)
+                atombeat:permission = "*" or atombeat:permission = $operation
             ]
             [ (: match recipient :)
                 (: match user :)
-                ( atombeat:recipient[@type="user"]/text() = "*" or atombeat:recipient[@type="user"]/text() = $user )
-                or atomsec:match-role( . , $roles )
+                atombeat:recipient = "*" 
+                or atombeat:recipient[@type="user"] = $user
+                or atombeat:recipient[@type="role"] = $roles 
                 or atomsec:match-group( . , $user , $descriptor )
             ]
             [ atomsec:match-media-range-condition( . , $media-type ) ]
@@ -436,24 +452,13 @@ declare function atomsec:match-acl(
 
 
 
-declare function atomsec:match-user(
-    $ace as element(atombeat:ace) ,
-    $user as xs:string?
-) as xs:boolean
-{
-    let $ace-user := $ace/atombeat:recipient[@type="user"]/text()
-    return ( ( xs:string( $ace-user ) = "*" ) or ( $ace-user = $user  ) )
-};
-
-
-
 
 declare function atomsec:match-role(
     $ace as element(atombeat:ace) ,
     $roles as xs:string*
 ) as xs:boolean
 {
-    let $ace-role := $ace/atombeat:recipient[@type="role"]/text()
+    let $ace-role := $ace/atombeat:recipient[@type="role"]
     return 
     (
         ( $ace-role = "*" ) or 
@@ -471,13 +476,11 @@ declare function atomsec:match-group(
 ) as xs:boolean
 {
     
-    let $group := $ace/atombeat:recipient[@type="group"]/text()
+    let $group := $ace/atombeat:recipient[@type="group"]
     
     return 
     
         if ( empty( $group ) ) then false()
-        
-        else if ( xs:string( $group ) = "*" ) then true()
         
         else
     
@@ -490,9 +493,9 @@ declare function atomsec:match-group(
                     if ( exists( $src) ) then atomsec:dereference-group( $id , $src )
                     else $group
         
-            let $groups-for-user := $groups[ atombeat:member/text() = $user ]/@id
+            let $groups-for-user := $groups[ atombeat:member = $user ]/@id
             
-            let $group-has-user := exists( index-of( $groups-for-user , xs:string( $group ) ) )
+            let $group-has-user := ( $group = $groups-for-user )
             
             return $group-has-user
     

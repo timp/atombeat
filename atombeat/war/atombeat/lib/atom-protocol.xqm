@@ -21,27 +21,6 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
 
 declare variable $atom-protocol:param-request-path-info := "request-path-info" ;
-declare variable $atom-protocol:logger-name := "org.atombeat.xquery.lib.atom-protocol" ;
-
-
-
-
-declare function local:debug(
-    $message as item()*
-) as empty()
-{
-    util:log-app( "debug" , $atom-protocol:logger-name , $message )
-};
-
-
-
-
-declare function local:info(
-    $message as item()*
-) as empty()
-{
-    util:log-app( "info" , $atom-protocol:logger-name , $message )
-};
 
 
 
@@ -127,10 +106,7 @@ declare function atom-protocol:do-post-atom(
 ) as element(response)
 {
 
-	let $log := local:debug( "== do-post-atom ==" )
-
 	let $request-data := request:get-data()
-	let $log := local:debug( $request-data )
 
 	return
 	
@@ -1245,8 +1221,6 @@ declare function atom-protocol:op-retrieve-member(
 
 	let $entry := atomdb:retrieve-member( $request-path-info )
 	
-	let $log := local:debug( $entry )
-
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
     
 	return
