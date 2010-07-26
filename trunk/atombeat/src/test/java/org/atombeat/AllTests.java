@@ -20,7 +20,8 @@ public class AllTests {
 		suite.addTestSuite(TestAtomSecurityLibrary.class);
 		suite.addTestSuite(TestDefaultSecurityPolicy.class);
 		suite.addTestSuite(TestSecurityProtocol.class);
-		suite.addTestSuite(TestLinkExtensions_Allow.class);
+		suite.addTestSuite(TestLinkExtensionsPlugin_Allow.class);
+		suite.addTestSuite(TestLinkExpansionPlugin.class);
 		//$JUnit-END$
 		return suite;
 	}

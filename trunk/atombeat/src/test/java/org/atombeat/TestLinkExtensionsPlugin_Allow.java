@@ -14,7 +14,7 @@ import static org.atombeat.AtomTestUtils.*;
 
 
 
-public class TestLinkExtensions_Allow extends TestCase {
+public class TestLinkExtensionsPlugin_Allow extends TestCase {
 
 	
 	
