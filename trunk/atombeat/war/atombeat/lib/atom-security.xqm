@@ -274,56 +274,60 @@ declare function atomsec:filter-feed(
     $feed as element(atom:feed)
 ) as element(atom:feed)
 {
-    <atom:feed>
-    {
-        $feed/attribute::* ,
-        $feed/child::*[not( . instance of element(atom:entry) )] ,
 
-        let $user := request:get-attribute( $config:user-name-request-attribute-key )
-        let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-        let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:content-service-url )
-        
-        (: 
-         : Try to reduce the number of times we apply an ACL.
-         : The idea is, we only want to apply the workspace and collection level
-         : ACLs once, if we can help it.
-         : N.B., beware, this leads to quirks of match-request-path-info condition for
-         : RETRIEVE_MEMBER!
-         :)
-         
-        let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
-        let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $collection-path-info )  
+    let $user := request:get-attribute( $config:user-name-request-attribute-key )
+    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
+    let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:content-service-url )
     
-        let $collection-descriptor := atomsec:retrieve-collection-descriptor( $collection-path-info )
-        let $collection-decision := atomsec:apply-acl( $collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $collection-path-info )  
+    (: 
+     : Try to reduce the number of times we apply an ACL.
+     : The idea is, we only want to apply the workspace and collection level
+     : ACLs once, if we can help it.
+     : N.B., beware, this leads to quirks of match-request-path-info condition for
+     : RETRIEVE_MEMBER!
+     :)
+     
+    let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
+    let $workspace-decision := atomsec:apply-acl( $workspace-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $collection-path-info )  
+
+    let $collection-descriptor := atomsec:retrieve-collection-descriptor( $collection-path-info )
+    let $collection-decision := atomsec:apply-acl( $collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $collection-path-info )  
+
+    return
+        <atom:feed>
+        {
+            $feed/attribute::* ,
+            for $child in $feed/child::*
+    
+            return
             
-        return
-        
-            for $entry in $feed/atom:entry
-            
-            let $entry-path-info := atomdb:edit-path-info( $entry )
-            
-            (: cope with recursive collections :)
-            let $owner-collection-path-info := atomdb:collection-path-info( $entry )
-            let $owner-collection-descriptor :=
-                if ( $owner-collection-path-info = $collection-path-info )
-                then $collection-descriptor
-                else atomsec:retrieve-collection-descriptor( $owner-collection-path-info )
-            let $owner-collection-decision :=            
-                if ( $owner-collection-path-info = $collection-path-info )
-                then $collection-decision
-                else atomsec:apply-acl( $owner-collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
+                if ( $child instance of element(atom:entry) ) then
                 
-            let $resource-descriptor := atomsec:retrieve-resource-descriptor( $entry-path-info )
-            let $resource-decision := atomsec:apply-acl( $resource-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
-                                            
-            let $decision := atomsec:decide-priority( $resource-decision , $owner-collection-decision ,$workspace-decision )
-            
-            return 
-                if ( $decision = $atomsec:decision-allow ) then $entry else ()
-        
-    }    
-    </atom:feed>
+                    let $child-path-info := atomdb:edit-path-info( $child )
+                    
+                    (: cope with recursive collections :)
+                    let $owner-collection-path-info := atomdb:collection-path-info( $child )
+                    let $owner-collection-descriptor :=
+                        if ( $owner-collection-path-info = $collection-path-info )
+                        then $collection-descriptor
+                        else atomsec:retrieve-collection-descriptor( $owner-collection-path-info )
+                    let $owner-collection-decision :=            
+                        if ( $owner-collection-path-info = $collection-path-info )
+                        then $collection-decision
+                        else atomsec:apply-acl( $owner-collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
+                        
+                    let $resource-descriptor := atomsec:retrieve-resource-descriptor( $child-path-info )
+                    let $resource-decision := atomsec:apply-acl( $resource-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
+                                                    
+                    let $decision := atomsec:decide-priority( $resource-decision , $owner-collection-decision ,$workspace-decision )
+                    
+                    return 
+                        if ( $decision = $atomsec:decision-allow ) then $child else ()
+
+                else $child
+                
+        }    
+        </atom:feed>
 };
 
 
