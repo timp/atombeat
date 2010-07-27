@@ -255,6 +255,22 @@ declare function atomsec:retrieve-resource-descriptor(
 
 
 
+declare function atomsec:retrieve-resource-descriptor-nocheck(
+    $request-path-info as xs:string
+) as element(atombeat:security-descriptor)?
+{
+
+    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , $atomsec:descriptor-suffix )
+
+    let $descriptor-doc := doc( $descriptor-doc-db-path )
+    
+    return $descriptor-doc/atombeat:security-descriptor
+    
+};
+
+
+
+
 declare function atomsec:decide(
     $user as xs:string? ,
     $roles as xs:string* ,
@@ -316,7 +332,7 @@ declare function atomsec:filter-feed(
                         then $collection-decision
                         else atomsec:apply-acl( $owner-collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
                         
-                    let $resource-descriptor := atomsec:retrieve-resource-descriptor( $child-path-info )
+                    let $resource-descriptor := atomsec:retrieve-resource-descriptor-nocheck( $child-path-info )
                     let $resource-decision := atomsec:apply-acl( $resource-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
                                                     
                     let $decision := atomsec:decide-priority( $resource-decision , $owner-collection-decision ,$workspace-decision )
