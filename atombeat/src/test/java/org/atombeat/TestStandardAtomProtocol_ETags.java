@@ -34,29 +34,20 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 	
 	
 	
-	private boolean setupForTest = false;
-	
-	
-	
 	
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		if ( !setupForTest ) {
-			
-			String setupUrl = BASE_URI + "admin/setup-for-test.xql";
-			
-			PostMethod method = new PostMethod(setupUrl);
-			
-			int result = executeMethod(method);
-			
-			if (result != 200) {
-				throw new RuntimeException("setup failed: "+result);
-			}
-
-			setupForTest = true;
-			
+		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
+		
+		PostMethod method = new PostMethod(setupUrl);
+		
+		int result = executeMethod(method);
+		
+		if (result != 200) {
+			throw new RuntimeException("setup failed: "+result);
 		}
+
 	}
 	
 	
