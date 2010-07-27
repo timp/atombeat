@@ -28,7 +28,6 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	private String testCollectionUri = null;
-	private boolean setupForTest = false;
 	
 	
 	
@@ -36,22 +35,18 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		if ( !setupForTest ) {
-			
-			String installUrl = BASE_URI + "admin/setup-for-test.xql";
-			
-			GetMethod method = new GetMethod(installUrl);
-			
-			int result = executeMethod(method, "adam", "test");
-			
-			if (result != 200) {
-				throw new RuntimeException("installation failed: "+result);
-			}
+		String installUrl = BASE_URI + "admin/setup-for-test.xql";
 		
-			testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-			setupForTest = true;
-			
+		GetMethod method = new GetMethod(installUrl);
+		
+		int result = executeMethod(method, "adam", "test");
+		
+		if (result != 200) {
+			throw new RuntimeException("installation failed: "+result);
 		}
+	
+		testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+
 	}
 	
 	

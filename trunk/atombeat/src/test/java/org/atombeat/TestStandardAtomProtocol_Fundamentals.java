@@ -42,32 +42,19 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	
 	
 	
-	
-	
-	private boolean setupForTest = false;
-	
-	
-	
-	
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		if ( !setupForTest) {
-			
-			String installUrl = BASE_URI + "admin/setup-for-test.xql";
-			
-			GetMethod method = new GetMethod(installUrl);
-			
-			int result = executeMethod(method);
-			
-			if (result != 200) {
-				throw new RuntimeException("installation failed: "+result);
-			}
-			
-			setupForTest = true;
-			
+		String installUrl = BASE_URI + "admin/setup-for-test.xql";
+		
+		GetMethod method = new GetMethod(installUrl);
+		
+		int result = executeMethod(method);
+		
+		if (result != 200) {
+			throw new RuntimeException("installation failed: "+result);
 		}
-	
+			
 	}
 	
 	
