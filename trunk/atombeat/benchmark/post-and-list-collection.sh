@@ -7,9 +7,9 @@ OUTPUT=results.txt
 create_member() {
 	echo "**************************************************************************" >> results.txt
 	echo "* "`date` >> results.txt
-	echo "* create 50 members ($1)" >> results.txt
+	echo "* create 100 members ($1)" >> results.txt
 	echo "**************************************************************************" >> results.txt
-	ab -n 50 -c 2 -p entry.atom -T application/atom+xml -A adam:test $COLLECTIONURI >> $OUTPUT
+	ab -n 100 -c 2 -p entry.atom -T application/atom+xml -A adam:test $COLLECTIONURI >> $OUTPUT
 }
 
 list_collection() {
@@ -17,12 +17,12 @@ list_collection() {
 	echo "* "`date` >> results.txt
 	echo "* list collection ($1)" >> results.txt
 	echo "**************************************************************************" >> results.txt
-	ab -n 5 -c 1 -A adam:test $COLLECTIONURI >> $OUTPUT
+	ab -n 10 -c 1 -A adam:test $COLLECTIONURI >> $OUTPUT
 }
 
 list_collection "0"
 
-for i in {1..4}
+for i in {1..10}
 do 
 	create_member "$i"
 	list_collection "$i"
