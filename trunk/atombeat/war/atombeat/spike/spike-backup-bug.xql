@@ -72,7 +72,9 @@ declare function local:isolate() as item()*
      </parameters>
     let $backup := system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", $params)
     
-    return ()
+    (: expose another problem - xpath queries don't work against the base revision unless you use wildcards :)
+    
+    return doc( "/db/system/versions/db/test/foo.xml.base" )/* (: try -- doc( "/db/system/versions/db/test/foo.xml.base" )/foo -- instead :)
     
 };
 
@@ -86,7 +88,7 @@ declare function local:do-service() as item()*
     else if (request:get-method() = "POST")
     then 
         let $isolate := local:isolate()
-        return local:page()
+        return $isolate
     
     else ()
 
