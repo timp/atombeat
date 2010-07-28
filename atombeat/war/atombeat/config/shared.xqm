@@ -71,13 +71,13 @@ declare variable $config:user-name-is-email as xs:boolean := false() ;
  : The base collection within which to store Atom collections and resources.
  : All paths will be relative to this base collection path.
  :)
-declare variable $config:base-collection-path as xs:string := "/db/atom/content" ;
+declare variable $config:base-collection-path as xs:string := "/db/atombeat/content" ;
 
 
 (:
  : The base collection within which to store access control lists.
  :)
-declare variable $config:base-security-collection-path as xs:string := "/db/atom/security" ;
+declare variable $config:base-security-collection-path as xs:string := "/db/atombeat/security" ;
 
 
 (: 
