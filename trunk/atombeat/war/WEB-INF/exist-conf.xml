@@ -116,7 +116,8 @@
         
         Increase the buffer settings for elements_buffers and words_buffers if 
         you have some more memory to waste. If you deal with lots of 
-        collections, you can also increase the collectionCacheSize value 
+        collections, you can also increase the collectionCacheSize value.
+        
     -->
     <db-connection cacheSize="48M" collectionCache="24M" database="native"
         files="exist-data" pageSize="4096" nodesBuffer="-1">
@@ -509,17 +510,18 @@
                 backup  Set to "yes" to create a backup whenever the job runs, not just
                         when it detects errors.
         -->
-        <!--
+        
+        <!-- see also http://exist.sourceforge.net/scheduler.html -->
         <job type="system" name="check1" 
             class="org.exist.storage.ConsistencyCheckTask"
-        	cron-trigger="0 0 * * * ?">
+        	cron-trigger="0 0 * * * ?"> <!-- once an hour -->
 			<parameter name="output" value="export"/>
     		<parameter name="backup" value="yes"/>
 		    <parameter name="incremental" value="no"/>
 			<parameter name="incremental-check" value="no"/>
 			<parameter name="max" value="2"/>
         </job>
-        -->
+        
         
         <!-- 
             Automatically creates a copy of the database .dbx files every 2 minutes

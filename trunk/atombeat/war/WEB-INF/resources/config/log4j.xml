@@ -113,6 +113,14 @@
     </category>
     -->
 
+    <category name="org.exist">
+        <priority value="debug"/>
+    </category>
+    
+    <category name="org.atombeat.versioning">
+        <priority value="debug"/>
+    </category>
+    
     <category name="org.exist.storage">
         <priority value="debug"/>
     </category>
@@ -176,9 +184,9 @@
     <!-- You decide here which one of the loggers listed above you want to use. -->
     <root>
         <priority value="warn"/>
-        <!--<appender-ref ref="ConsoleAppender"/>-->
+        <appender-ref ref="ConsoleAppender"/>
         <!--<appender-ref ref="ChainsawAppender"/>-->
-        <appender-ref ref="SingleFileAppender"/>
+        <!--<appender-ref ref="SingleFileAppender"/>-->
         <!--<appender-ref ref="RollingFileAppender"/>-->
     </root>
 

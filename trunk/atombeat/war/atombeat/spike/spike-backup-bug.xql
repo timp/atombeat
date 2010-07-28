@@ -32,17 +32,20 @@ declare function local:isolate() as item()*
     let $collection-path := "/db/test"
     let $config-collection-path := concat( "/db/system/config" , "/db/test" )
     let $versions-collection-path := concat( "/db/system/versions" , "/db/test" )
-    
+
+
     let $clean :=
         for $p in ( $collection-path , $config-collection-path , $versions-collection-path )
         return
             if (xmldb:collection-available( $p )) then xmldb:remove( $p ) else ()
-            
+
+    let $collection-created := xmldb:create-collection( "/db" , "test" )
+    
     let $collection-config :=
 
         <collection xmlns="http://exist-db.org/collection-config/1.0">
             <triggers>
-                <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
+                <trigger event="store,remove,update" class="org.atombeat.versioning.VersioningTrigger">
                     <parameter name="overwrite" value="yes"/>
                 </trigger>
             </triggers>
@@ -51,14 +54,13 @@ declare function local:isolate() as item()*
     let $base-config-collection-created := xmldb:create-collection( "/db/system/config" , "db" )
     let $config-collection-created := xmldb:create-collection( "/db/system/config/db" , "test" )
     let $config-stored := xmldb:store( $config-collection-path , "collection.xconf" , $collection-config , "application/xml" )
-    
-    let $collection-created := xmldb:create-collection( "/db" , "test" )
-    
+
     let $doc :=
         <foo><bar>baz</bar></foo>
         
     let $stored := xmldb:store( "/db/test" , "foo.xml" , $doc )   
     
+
     let $doc2 := 
         <foo><bar>spong</bar></foo>
 
@@ -68,13 +70,13 @@ declare function local:isolate() as item()*
      <parameters>
        <param name="output" value="export"/>
         <param name="backup" value="yes"/>
-        <param name="incremental" value="yes"/>
+        <param name="incremental" value="no"/>
      </parameters>
     let $backup := system:trigger-system-task("org.exist.storage.ConsistencyCheckTask", $params)
     
     (: expose another problem - xpath queries don't work against the base revision unless you use wildcards :)
     
-    return doc( "/db/system/versions/db/test/foo.xml.base" )/* (: try -- doc( "/db/system/versions/db/test/foo.xml.base" )/foo -- instead :)
+    return doc( "/db/system/versions/db/test/foo.xml.base" )/foo (: try -- doc( "/db/system/versions/db/test/foo.xml.base" )/* -- instead :)
     
 };
 

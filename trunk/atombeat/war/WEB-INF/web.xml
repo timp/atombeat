@@ -61,7 +61,7 @@
     
     <filter-mapping>
         <filter-name>springSecurityFilterChain</filter-name>
-        <url-pattern>/*</url-pattern>
+        <url-pattern>/atombeat/*</url-pattern>
     </filter-mapping>
     
     
