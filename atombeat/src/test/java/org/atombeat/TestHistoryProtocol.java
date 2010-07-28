@@ -305,7 +305,9 @@ public class TestHistoryProtocol extends TestCase {
 		
 		for (int i=0; i<entryNodes.getLength(); i++) {
 			Element entry = (Element) entryNodes.item(i);
-			verifyRevisionMetadata(entry, i+1);
+			assertEquals(1, entry.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "id").getLength());
+			assertEquals(1, entry.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").getLength());
+			verifyRevisionMetadata(entry, i+1); 
 		}
 
 	}

@@ -272,7 +272,7 @@ declare function history-protocol:construct-member-revision(
      
     if ( $revision-index = 1 )
     
-    then history-protocol:construct-member-base-revision( $request-path-info , $revision-numbers , $exclude-content )
+    then history-protocol:construct-member-base-revision( $request-path-info , $entry-doc , $revision-numbers , $exclude-content )
     
     else history-protocol:construct-member-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
     
@@ -283,6 +283,7 @@ declare function history-protocol:construct-member-revision(
 
 declare function history-protocol:construct-member-base-revision(
 	$request-path-info as xs:string ,
+	$entry-doc as node() ,
 	$revision-numbers as xs:integer* ,
 	$exclude-content as xs:boolean?
 ) as element(atom:entry)
@@ -292,18 +293,11 @@ declare function history-protocol:construct-member-base-revision(
      : N.B. if no updates on the doc yet, then base revision won't have been
      : created by eXist versioning module, so we'll just grab the head.
      :)
-    
-    let $base-revision-db-path := 
-        if ( empty( $revision-numbers) ) 
-        then atomdb:request-path-info-to-db-path( $request-path-info )
-        else concat( "/db/system/versions" , atomdb:request-path-info-to-db-path( $request-path-info ) , ".base" )
-        
-    let $base-revision-doc := doc( $base-revision-db-path ) 
-        
-    (: N.B. need to copy because, for some reason, xpath queries on base revision don't work :)
-    
-	let $revision := xutil:copy( $base-revision-doc/* )
-    
+
+	let $revision := 
+	    if ( empty( $revision-numbers ) ) then $entry-doc/atom:entry
+	    else v:doc( $entry-doc , () )/atom:entry (: N.B. this only works with the AtomBeat patch to the versioning trigger :)
+
     let $when := $revision/atom:updated
 
 	let $this-revision-href :=

@@ -61,17 +61,34 @@ declare function xutil:enable-versioning(
 ) as xs:string? 
 {
 
-    let $collection-config :=
-
-        <collection xmlns="http://exist-db.org/collection-config/1.0">
-            <triggers>
-                <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
-                    <parameter name="overwrite" value="yes"/>
-                </trigger>
-            </triggers>
-        </collection>
+    let $config := xutil:retrieve-collection-config( $collection-db-path )
+    let $is-versioned := xutil:has-versioning-trigger( $config )
+    
+    return 
+        if ( not( $is-versioned ) )
+        then 
         
-    return xutil:store-collection-config( $collection-db-path , $collection-config )
+            let $new-trigger :=
+                <collection-config:trigger event="store,remove,update" class="org.atombeat.versioning.VersioningTrigger">
+                    <collection-config:parameter name="overwrite" value="yes"/>
+                </collection-config:trigger>
+            
+            let $new-config :=
+
+                <collection-config:collection>
+                {
+                    $config/attribute::* ,
+                    $config/child::*[ not( . instance of element(collection-config:triggers) ) ] ,
+                    if ( empty($config/collection-config:triggers) ) then
+                        <collection-config:triggers>{$new-trigger}</collection-config:triggers>
+                    else 
+                        xutil:append-child( $config/collection-config:triggers , $new-trigger )
+                }
+                </collection-config:collection>
+        
+            return xutil:store-collection-config( $collection-db-path , $new-config )
+            
+        else ()        
     
 };
 
@@ -95,29 +112,42 @@ declare function xutil:store-collection-config(
 
 
 
+declare function xutil:retrieve-collection-config(
+    $collection-db-path as xs:string 
+) as element(collection-config:collection)?
+{
+    let $config-resource-db-path := concat( "/db/system/config" , $collection-db-path , "/collection.xconf" )
+    let $config := doc( $config-resource-db-path )/collection-config:collection
+    return $config
+};
+
+
+
 
 declare function xutil:is-versioning-enabled(
     $collection-db-path as xs:string 
 ) as xs:boolean 
 {
-
-    let $collection-config :=
-
-        <collection xmlns="http://exist-db.org/collection-config/1.0">
-            <triggers>
-                <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
-                    <parameter name="overwrite" value="yes"/>
-                </trigger>
-            </triggers>
-        </collection>
         
-    let $config-resource-db-path := concat( "/db/system/config" , $collection-db-path , "/collection.xconf" )
-    let $config := doc( $config-resource-db-path )
+    let $config := xutil:retrieve-collection-config( $collection-db-path )
     
-    return exists( $config//collection-config:trigger[@event="store,remove,update" and @class="org.exist.versioning.VersioningTrigger" and exists(collection-config:parameter[@name="overwrite" and @value="yes"])] )
+    let $enabled := xutil:has-versioning-trigger( $config )
+
+    return $enabled
     
 };
 
+
+
+
+declare function xutil:has-versioning-trigger(
+    $config as element(collection-config:collection)?
+) as xs:boolean
+{
+    exists( 
+        $config//collection-config:trigger[@class="org.atombeat.versioning.VersioningTrigger"] 
+    )
+};
 
 
 declare function xutil:lpad(

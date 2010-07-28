@@ -10,6 +10,15 @@ import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 
 
+
+(:~
+ : The eXist user to run the AtomBeat queries as. Will require privileges to
+ : create collections.
+ :)
+declare variable $config:exist-user as xs:string := "admin" ;
+declare variable $config:exist-password as xs:string := "" ;
+
+
 declare variable $config:service-url-base as xs:string := "http://localhost:8081/atombeat/atombeat" ;
 
 
