@@ -128,7 +128,7 @@ declare function foo:do-bootstrap-with-versioning() as item()*
 
         <collection xmlns="http://exist-db.org/collection-config/1.0">
             <triggers>
-                <trigger event="store,remove,update" class="org.exist.versioning.VersioningTrigger">
+                <trigger event="store,remove,update" class="org.exist.atombeat.VersioningTrigger">
                     <parameter name="overwrite" value="yes"/>
                 </trigger>
             </triggers>
