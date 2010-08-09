@@ -64,8 +64,7 @@ declare function local:content() as item()*
                     <tr>
                         <th>Title</th>
                         <th>Path</th>
-                        <th>Enable History</th>
-                        <th>Exclude Entry Content in Feed</th>
+                        <th>Versioned</th>
                         <th>Recursive</th>
                         <th>Available</th>
                     </tr>
@@ -73,7 +72,7 @@ declare function local:content() as item()*
                         for $collection in $config-collections:collection-spec/collection
                         let $title := $collection/atom:feed/atom:title/text()
                         let $path-info := $collection/@path-info cast as xs:string
-                        let $enable-history := $collection/atom:feed/@atombeat:enable-history cast as xs:string
+                        let $enable-versioning := $collection/atom:feed/@atombeat:enable-versioning cast as xs:string
                         let $exclude-entry-content := $collection/atom:feed/@atombeat:exclude-entry-content cast as xs:string
                         let $recursive := $collection/atom:feed/@atombeat:recursive cast as xs:string
                         let $available := atomdb:collection-available($path-info)
@@ -81,8 +80,7 @@ declare function local:content() as item()*
                             <tr>
                                 <td>{$title}</td>
                                 <td><a href="../content{$path-info}">{$path-info}</a></td>
-                                <td>{$enable-history}</td>
-                                <td>{$exclude-entry-content}</td>
+                                <td>{$enable-versioning}</td>
                                 <td>{$recursive}</td>
                                 <td><strong>{$available}</strong></td>
                             </tr>
