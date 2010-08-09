@@ -5,31 +5,6 @@ module namespace config-collections = "http://purl.org/atombeat/xquery/config-co
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
-(:
-declare variable $config-collections:collection-spec := 
-    <spec>
-        <collection>
-            <title>Foo Collection</title>
-            <path-info>/foo</path-info>
-            <enable-history>true</enable-history>
-            <exclude-entry-content>true</exclude-entry-content>
-            <expand-security-descriptors>true</expand-security-descriptors>
-            <recursive>false</recursive>
-        </collection>   
-        <collection>
-            <title>Test Collection</title>
-            <path-info>/test</path-info>
-            <enable-history>false</enable-history>
-            <exclude-entry-content>false</exclude-entry-content>
-            <expand-security-descriptors>false</expand-security-descriptors>
-            <recursive>false</recursive>
-        </collection>   
-    </spec>
-;
-:)
-
-
-
 declare variable $config-collections:collection-spec := 
     <spec>
         <collection path-info="/foo">
