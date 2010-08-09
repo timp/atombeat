@@ -9,7 +9,7 @@ declare variable $config-collections:collection-spec :=
     <spec>
         <collection path-info="/foo">
             <atom:feed
-                atombeat:enable-history="true"
+                atombeat:enable-versioning="true"
                 atombeat:exclude-entry-content="true"
                 atombeat:recursive="true">
                 <atom:title type="text">Foo Collection</atom:title>
@@ -43,7 +43,7 @@ declare variable $config-collections:collection-spec :=
         </collection>
         <collection path-info="/test">
             <atom:feed
-                atombeat:enable-history="false"
+                atombeat:enable-versioning="false"
                 atombeat:exclude-entry-content="false"
                 atombeat:recursive="false">
                 <atom:title type="text">Test Collection</atom:title>

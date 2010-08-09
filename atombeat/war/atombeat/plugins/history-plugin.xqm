@@ -66,11 +66,11 @@ declare function history-plugin:before-create-collection(
 
 	let $message := concat( "history plugin, before create-collection, request-path-info: " , $request-path-info ) 
 
-	let $enable-history := xs:boolean( $request-data/@atombeat:enable-versioning )
+	let $enable-versioning := xs:boolean( $request-data/@atombeat:enable-versioning )
 	
 	let $history-enabled :=
 		
-		if ( $enable-history )
+		if ( $enable-versioning )
 		
 		then
 		
