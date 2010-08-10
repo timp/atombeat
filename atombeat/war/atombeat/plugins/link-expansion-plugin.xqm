@@ -37,23 +37,23 @@ declare function link-expansion-plugin:after(
 ) as element(response)
 {
     
-    let $response-data := $response/body/*
+    let $body := $response/body
     
-    let $augmented-response-data :=
-        if ( $response-data instance of element(atom:feed) )
-        then link-expansion-plugin:augment-feed( $response-data )
-        else if ( $response-data instance of element(atom:entry) )
-        then link-expansion-plugin:augment-entry( $response-data )
-        else $response-data
+    let $augmented-body :=
+        if ( $body/atom:feed )
+        then <body>{link-expansion-plugin:augment-feed( $body/atom:feed )}</body>
+        else if ( $body/atom:entry )
+        then <body>{link-expansion-plugin:augment-entry( $body/atom:entry )}</body>
+        else $body
         
     return
     
         <response>
         {
             $response/status ,
-            $response/headers
+            $response/headers ,
+            $augmented-body
         }
-            <body>{$augmented-response-data}</body>
         </response>
             
 }; 

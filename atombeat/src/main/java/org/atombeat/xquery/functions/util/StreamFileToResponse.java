@@ -93,7 +93,7 @@ public class StreamFileToResponse extends BasicFunction {
         
 		String path = args[0].getStringValue();
 		String contentType = args[1].getStringValue();
-		response.setHeader("Content-Type", contentType);
+		response.setContentType(contentType);
 		
 		try {
 			
