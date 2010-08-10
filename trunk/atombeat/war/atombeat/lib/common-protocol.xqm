@@ -392,7 +392,8 @@ declare function common-protocol:respond( $response as element(response) ) as it
     
         if ( $response/body/@type = "media" and $config:media-storage-mode = "DB" )
         then
-            let $binary-doc := atomdb:retrieve-media( $response/body/text() )
+            let $path := $response/body/text()
+            let $binary-doc := atomdb:retrieve-media( $path )
             return response:stream-binary( $binary-doc , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
 
         else if ( $response/body/@type = "media" and $config:media-storage-mode = "FILE" )

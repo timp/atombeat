@@ -1,5 +1,6 @@
 package org.atombeat;
 
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -277,7 +278,7 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	
 	
 	
-	public void testGetMedia() {
+	public void testGetMedia_Text() throws IOException {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -300,6 +301,48 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		String responseContentType = method.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
 		assertTrue(responseContentType.trim().startsWith("text/plain"));
+		
+		// test response body
+		String responseContent = method.getResponseBodyAsString();
+		assertEquals("This is a test.", responseContent);
+
+	}
+	
+	
+	
+
+	public void testGetMedia_Binary() throws IOException {
+
+		// create a new media resource by POSTing media to the collection URI
+		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
+		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
+		String contentType = "application/vnd.ms-excel";
+		setInputStreamRequestEntity(post, content, contentType);
+		int result = executeMethod(post);
+		assertEquals(201, result);
+		Document mediaLinkDoc = getResponseBodyAsDocument(post);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+
+		// now try get on media location
+		GetMethod get = new GetMethod(mediaLocation);
+		result = executeMethod(get);
+		
+		// expect the status code is 200 OK
+		assertEquals(200, result);
+
+		// expect no Location header 
+		Header locationHeader = get.getResponseHeader("Location");
+		assertNull(locationHeader);
+		
+		// expect Content-Type header 
+		String responseContentType = get.getResponseHeader("Content-Type").getValue();
+		assertNotNull(responseContentType);
+		assertTrue(responseContentType.trim().startsWith("application/vnd.ms-excel"));
+		
+		// test response body
+		String responseContent = get.getResponseBodyAsString();
+		assertNotNull(responseContent);
+		assertFalse(responseContent.isEmpty());
 
 	}
 	
