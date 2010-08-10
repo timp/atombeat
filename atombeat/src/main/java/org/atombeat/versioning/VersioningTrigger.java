@@ -41,7 +41,6 @@ import java.util.Properties;
 import java.util.Date;
 import java.util.Map;
 import org.exist.dom.BinaryDocument;
-import org.jfree.util.Log;
 
 public class VersioningTrigger extends FilteringTrigger {
 
