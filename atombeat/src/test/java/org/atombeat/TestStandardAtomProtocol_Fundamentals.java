@@ -80,7 +80,7 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	
 	public void testPostEntry() {
 		
-		// create a new member by POSTing and atom entry document to the
+		// create a new member by POSTing an atom entry document to the
 		// collection URI
 		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
 		String content = 
