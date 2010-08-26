@@ -168,7 +168,22 @@ public class TestLinkExtensionsPlugin_Allow extends TestCase {
 		assertTrue(a.contains("PUT"));
 		assertFalse(a.contains("DELETE"));
 		
-}
+		// create another member - check if atombeat:allow attributes are 
+		// stripped prior to member creation (if not, should cause errors)
+		
+		String anotherEntry = 
+			"<atom:entry \n" +
+			"	xmlns:atombeat='http://purl.org/atombeat/xmlns'\n" +
+			"	xmlns:atom='http://www.w3.org/2005/Atom'>\n" +
+			"	<atom:title type='text'>Member Testing @allow Link Extensions</atom:title>\n" +
+			"	<atom:link rel='foo' href='"+memberUri+"' atombeat:allow='GET'/>\n" +
+			"</atom:entry>";
+		PostMethod anotherPost = new PostMethod(collectionUri);
+		setAtomRequestEntity(anotherPost, anotherEntry);
+		int anotherPostResult = executeMethod(anotherPost, "adam", "test");
+		assertEquals(201, anotherPostResult);
+		
+	}
 	
 	
 	
