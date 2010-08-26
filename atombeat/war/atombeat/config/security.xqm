@@ -200,6 +200,11 @@ declare function security-config:default-collection-security-descriptor(
                 <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
                 <atombeat:permission>LIST_COLLECTION</atombeat:permission>
             </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="role">ROLE_AUTHOR</atombeat:recipient>
+                <atombeat:permission>MULTI_CREATE</atombeat:permission>
+            </atombeat:ace>
             
             <!--
             Editors can list the collection, retrieve and update any member.
