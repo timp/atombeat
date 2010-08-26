@@ -27,6 +27,83 @@ import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security
 
 
 
+declare function link-expansion-plugin:before(
+	$operation as xs:string ,
+	$request-path-info as xs:string ,
+	$request-data as item()* ,
+	$request-media-type as xs:string?
+) as item()*
+{
+	
+	if ( $request-data instance of element(atom:entry) )
+	
+	then link-expansion-plugin:filter-entry( $request-data )
+	
+	else if ( $request-data instance of element(atom:feed) )
+	
+	then link-expansion-plugin:filter-feed( $request-data )
+	
+	else
+
+		$request-data
+
+};
+
+
+
+
+declare function link-expansion-plugin:filter-entry(
+    $entry as element(atom:entry)
+) as element(atom:entry)
+{ 
+    <atom:entry>
+    { 
+        $entry/attribute::* ,
+        for $child in $entry/child::* 
+        return
+            if ( $child instance of element(atom:link) )
+            then link-expansion-plugin:unexpand-link( $child )
+            else $child
+    }
+    </atom:entry>
+};
+
+
+
+
+declare function link-expansion-plugin:filter-feed(
+    $feed as element(atom:feed)
+) as element(atom:feed)
+{ 
+    <atom:feed>
+    { 
+        $feed/attribute::* ,
+        for $child in $feed/child::* 
+        return
+            if ( $child instance of element(atom:link) )
+            then link-expansion-plugin:unexpand-link( $child )
+            else if ( $child instance of element(atom:entry) )
+            then link-expansion-plugin:filter-entry( $child )
+            else $child
+    }
+    </atom:feed>
+};
+
+
+
+
+declare function link-expansion-plugin:unexpand-link(
+    $link as element(atom:link)
+) as element(atom:link)
+{
+    <atom:link>
+    { 
+        $link/attribute::* ,
+        $link/child::*[not( . instance of element(ae:inline) )]
+    }
+    </atom:link>
+};
+
 
 
 

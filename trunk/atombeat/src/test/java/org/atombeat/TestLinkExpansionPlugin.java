@@ -97,7 +97,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 			"	<atom:title type='text'>Collection Testing Link Expansion</atom:title>\n" +
 			"	<atombeat:config-link-expansion>\n" +
 			"		<atombeat:config context='entry'>\n" +
-			"			<atombeat:param name='match-rels' value='self http://purl.org/atombeat/rel/security-descriptor'/>\n" +
+			"			<atombeat:param name='match-rels' value='self http://purl.org/atombeat/rel/security-descriptor foo'/>\n" +
 			"		</atombeat:config>\n" +
 			"	</atombeat:config-link-expansion>" +
 			"</atom:feed>";
@@ -142,7 +142,27 @@ public class TestLinkExpansionPlugin extends TestCase {
 		// look for inline content
 		c = getChildrenByTagNameNS(l, "http://purl.org/atom/ext/", "inline");
 		assertEquals(1, c.size());
+
+		// create another member - check if expanded links are properly filtered
 		
+		String anotherEntry = 
+			"<atom:entry \n" +
+			"	xmlns:ae='http://purl.org/atom/ext/'\n" +
+			"	xmlns:atom='http://www.w3.org/2005/Atom'>\n" +
+			"	<atom:title type='text'>Member Testing Link Expansions are Removed</atom:title>\n" +
+			"	<atom:link rel='foo' href='"+memberUri+"'><ae:inline><atom:entry><atom:title>Spoof!</atom:title></atom:entry></ae:inline></atom:link>\n" +
+			"</atom:entry>";
+		PostMethod anotherPost = new PostMethod(collectionUri);
+		setAtomRequestEntity(anotherPost, anotherEntry);
+		int anotherPostResult = executeMethod(anotherPost, "adam", "test");
+		assertEquals(201, anotherPostResult);
+		
+		Document d2 = getResponseBodyAsDocument(anotherPost);
+		l = getLink(d2, "foo"); assertNotNull(l);
+		// look for inline content
+		c = getChildrenByTagNameNS(l, "http://purl.org/atom/ext/", "inline");
+		assertEquals(1, c.size());
+
 	}
 	
 	
