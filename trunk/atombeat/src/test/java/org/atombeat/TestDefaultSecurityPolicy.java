@@ -1,6 +1,7 @@
 package org.atombeat;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -13,6 +14,9 @@ import org.apache.commons.httpclient.methods.multipart.Part;
 import org.apache.commons.httpclient.methods.multipart.StringPart;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.bootstrap.DOMImplementationRegistry;
+import org.w3c.dom.ls.DOMImplementationLS;
+import org.w3c.dom.ls.LSSerializer;
 
 import static org.atombeat.AtomTestUtils.*;
 
@@ -28,6 +32,13 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	private String testCollectionUri = null;
+	
+	private DOMImplementationRegistry domImplRegistry;
+	private DOMImplementationLS domImplLs;
+	private LSSerializer lsWriter;
+
+	
+
 	
 	
 	
@@ -46,6 +57,11 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		}
 	
 		testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+
+		domImplRegistry = DOMImplementationRegistry.newInstance();
+		domImplLs = (DOMImplementationLS)domImplRegistry.getDOMImplementation("LS");
+		lsWriter = domImplLs.createLSSerializer();
+		lsWriter.getDomConfig().setParameter("xml-declaration", false);
 
 	}
 	
@@ -1063,6 +1079,64 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		assertEquals(403, get4result);
 		
 	}
+
+	
+	
+	
+	public void testAuthorCannotStealAnotherAuthorsMediaResourcesViaMultiCreate() throws IOException {
+		
+		// setup test
+		
+		// create media resource as Audrey
+		PostMethod method = new PostMethod(testCollectionUri);
+		String media = "This is a secret message.";
+		setTextPlainRequestEntity(method, media);
+		executeMethod(method, "audrey", "test");
+		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
+		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
+		
+		// list collection as Audrey
+		GetMethod get1 = new GetMethod(testCollectionUri);
+		executeMethod(get1, "audrey", "test");
+		Document d1 = getResponseBodyAsDocument(get1);
+		List<Element> entries = getEntries(d1);
+		assertEquals(1, entries.size());
+		
+		// list collection as Austin
+		GetMethod get2 = new GetMethod(testCollectionUri);
+		executeMethod(get2, "austin", "test");
+		Document d2 = getResponseBodyAsDocument(get2);
+		entries = getEntries(d2);
+		assertEquals(0, entries.size());
+
+		// try to multi-create as Austin using Audrey's feed
+		String feed = lsWriter.writeToString(d1);
+		PostMethod post2 = new PostMethod(testCollectionUri);
+		setAtomRequestEntity(post2, feed);
+		int post2Result = executeMethod(post2, "austin", "test");
+		assertEquals(200, post2Result); // should succeed, but have no effect
+		
+		// list collection as Austin
+		GetMethod get3 = new GetMethod(testCollectionUri);
+		executeMethod(get3, "austin", "test");
+		Document d3 = getResponseBodyAsDocument(get3);
+		entries = getEntries(d3); assertEquals(1, entries.size());
+		
+		String newMediaLocation = getEditMediaLocation(entries.get(0));
+		
+		// GET media location as Austin
+		GetMethod get4 = new GetMethod(newMediaLocation);
+		int get4result = executeMethod(get4, "austin", "test");
+
+		assertFalse("This is a secret message.".equals(get4.getResponseBodyAsString().trim()));
+		assertEquals(403, get4result);
+		assertEquals(mediaLocation, newMediaLocation); // should be same, i.e., media not copied
+
+	}
+	
+	
+	
+	
 
 	
 	
