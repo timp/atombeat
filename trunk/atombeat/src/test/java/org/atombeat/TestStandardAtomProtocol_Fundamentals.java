@@ -66,18 +66,6 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	
 	
 	
-	/** Test that the directory held in $config:media-storage-dir is writable */
-	public void testDataDirectoryWriteable() throws Exception { 
-		File collectionsDir = new File("/data/atombeat/toBeDeleted");
-		assertTrue("Collections directory /data/atombeat/toBeDeleted could not be created", collectionsDir.mkdir());
-		File tempFile = new File(collectionsDir,"temp");
-		assertTrue("Collections directory /data/atombeat/toBeDeleted could not be created", tempFile.createNewFile());
-		assertTrue(tempFile.delete());
-		assertTrue(collectionsDir.delete());
-	}
-	
-	
-	
 	public void testPostEntry() {
 		
 		// create a new member by POSTing an atom entry document to the
