@@ -1084,8 +1084,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	public void testAuthorCannotStealAnotherAuthorsMediaResourcesViaMultiCreate() throws IOException {
-		
-		// setup test
+
+		// this test exposes a security flaw involving the atombeat "multicreate" 
+		// protocol extension - when posting a feed containing a media-link
+		// entry, atombeat will copy the entry and the associated media resource
+		// to the new collection, but should check that the requesting user
+		// has permission to retrieve the media resource first, otherwise
+		// the user could steal a media resource they do not have access to, 
+		// given the media resource URI
 		
 		// create media resource as Audrey
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -1094,6 +1100,11 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		executeMethod(method, "audrey", "test");
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
+		
+		// double check Austin is not allowed to retrieve the media resource
+		GetMethod get0 = new GetMethod(mediaLocation);
+		int get0result = executeMethod(get0, "austin", "test");
+		assertEquals(403, get0result);
 		
 		// list collection as Audrey
 		GetMethod get1 = new GetMethod(testCollectionUri);
@@ -1114,7 +1125,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod post2 = new PostMethod(testCollectionUri);
 		setAtomRequestEntity(post2, feed);
 		int post2Result = executeMethod(post2, "austin", "test");
-		assertEquals(200, post2Result); // should succeed, but have no effect
+		assertEquals(200, post2Result); // should succeed, but should not copy media resources
 		
 		// list collection as Austin
 		GetMethod get3 = new GetMethod(testCollectionUri);
@@ -1123,14 +1134,17 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		entries = getEntries(d3); assertEquals(1, entries.size());
 		
 		String newMediaLocation = getEditMediaLocation(entries.get(0));
+		assertNull(newMediaLocation); // edit-media link should have been stripped
 		
-		// GET media location as Austin
-		GetMethod get4 = new GetMethod(newMediaLocation);
+		String contentLocation = getContent(d3).getAttribute("src"); // content element should remain tho, pointing to original media resource
+ 		
+		// try to GET Audrey's media resource as Austin
+		GetMethod get4 = new GetMethod(contentLocation);
 		int get4result = executeMethod(get4, "austin", "test");
 
 		assertFalse("This is a secret message.".equals(get4.getResponseBodyAsString().trim()));
 		assertEquals(403, get4result);
-		assertEquals(mediaLocation, newMediaLocation); // should be same, i.e., media not copied
+		assertEquals(mediaLocation, contentLocation); // should be same, i.e., media not copied to new location
 
 	}
 	
