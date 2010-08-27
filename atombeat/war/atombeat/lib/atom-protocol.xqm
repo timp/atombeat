@@ -573,28 +573,36 @@ declare function atom-protocol:do-post-multipart-formdata(
 			
 			let $file-name := request:get-uploaded-file-name( "media" )
 			
-			(:
-			 : Unfortunately eXist's function library doesn't give us any way
-			 : to retrieve the content type for the uploaded file, so we'll
-			 : work around by using a mapping from file name extensions to
-			 : mime types.
-			 :)
-			 
-			let $extension := text:groups( $file-name , "\.([^.]+)$" )[2]
-			 
-			let $media-type := $mime:mappings//mime-mapping[extension=$extension]/mime-type
+			return
 			
-			let $media-type := if ( empty( $media-type ) ) then "application/octet-stream" else $media-type
+			    if ( empty( $file-name ) )
+			    
+			    then common-protocol:do-bad-request( $request-path-info , "Requests with content type 'multipart/form-data' must have a 'media' part." )
+			    
+			    else
 			
-            (: 
-             : Here we bottom out at the "CREATE_MEDIA" operation. However, we
-             : will use a special implementation to support return of HTML
-             : response to requests from HTML forms for compatibility with forms
-             : submitted via JavaScript.
-             :)
-             
-            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-media-from-multipart-form-data" ) , 3 ) 
-            return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , () , $media-type )
+        			(:
+        			 : Unfortunately eXist's function library doesn't give us any way
+        			 : to retrieve the content type for the uploaded file, so we'll
+        			 : work around by using a mapping from file name extensions to
+        			 : mime types.
+        			 :)
+        			 
+        			let $extension := text:groups( $file-name , "\.([^.]+)$" )[2]
+        			 
+        			let $media-type := $mime:mappings//mime-mapping[extension=$extension]/mime-type
+        			
+        			let $media-type := if ( empty( $media-type ) ) then "application/octet-stream" else $media-type
+        			
+                    (: 
+                     : Here we bottom out at the "CREATE_MEDIA" operation. However, we
+                     : will use a special implementation to support return of HTML
+                     : response to requests from HTML forms for compatibility with forms
+                     : submitted via JavaScript.
+                     :)
+                     
+                    let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-media-from-multipart-form-data" ) , 3 ) 
+                    return common-protocol:apply-op( $CONSTANT:OP-CREATE-MEDIA , $op , $request-path-info , () , $media-type )
 
 };
 

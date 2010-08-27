@@ -78,7 +78,6 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 		setMultipartRequestEntity(post, parts);
 		int result = executeMethod(post);
 		
-		// expect the status code is 200 OK
 		assertEquals(201, result);
 
 		// expect the Location header is set with an absolute URI
@@ -114,6 +113,26 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 
 	
 	
+	public void testBadMultipartRequest() {
+		
+		// now create a new media resource by POSTing multipart/form-data to the collection URI
+		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
+		File file = new File(this.getClass().getClassLoader().getResource("spreadsheet1.xls").getFile());
+		FilePart fp = createFilePart(file, "spreadsheet1.xls", "application/vnd.ms-excel", "media-oops"); // should be "media"
+		StringPart sp1 = new StringPart("summary", "this is a great spreadsheet");
+		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
+		Part[] parts = { fp , sp1 , sp2 };
+		setMultipartRequestEntity(post, parts);
+		int result = executeMethod(post);
+		
+		assertEquals(400, result);
+
+		// expect Content-Type header 
+		String responseContentType = post.getResponseHeader("Content-Type").getValue();
+		assertNotNull(responseContentType);
+		assertTrue(responseContentType.trim().startsWith("application/xml"));
+
+	}
 
 	
 	
