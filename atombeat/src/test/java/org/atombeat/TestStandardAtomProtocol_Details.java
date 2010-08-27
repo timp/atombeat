@@ -593,6 +593,33 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 	
 	
 	
+
+	public void testPostNotWellFormedEntryIsClientError() {
+		
+		// create a new member by POSTing an atom entry document to the
+		// collection URI
+		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
+		String content = 
+			"<atom:entry>" + // not well-formed because forgot namespace declaration
+				"<atom:title>Test Member - not well-formed because forgot namespace declaration</atom:title>" +
+				"<atom:summary>This is a summary.</atom:summary>" +
+			"</atom:entry>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method);
+		
+		assertEquals(400, result);
+
+		// expect Content-Type header 
+		String responseContentType = method.getResponseHeader("Content-Type").getValue();
+		assertNotNull(responseContentType);
+		assertTrue(responseContentType.trim().startsWith("application/xml"));
+		
+	}
+
+
+
+	
+	
 	
 	
 }

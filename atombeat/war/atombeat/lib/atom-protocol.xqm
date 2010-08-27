@@ -111,21 +111,15 @@ declare function atom-protocol:do-post-atom(
 
 	return
 	
-		if (
-			local-name( $request-data ) = $CONSTANT:ATOM-FEED and 
-			namespace-uri( $request-data ) = $CONSTANT:ATOM-NSURI
-		)
+		if ( $request-data instance of element(atom:feed) )
 		
 		then atom-protocol:do-post-atom-feed( $request-path-info , $request-data )
 
-		else if (
-			local-name( $request-data ) = $CONSTANT:ATOM-ENTRY and 
-			namespace-uri( $request-data ) = $CONSTANT:ATOM-NSURI
-		)
+		else if ( $request-data instance of element(atom:entry) )
 		
 		then atom-protocol:do-post-atom-entry( $request-path-info , $request-data )
 		
-		else common-protocol:do-bad-request( $request-path-info , "Request entity must be either atom feed or atom entry." )
+		else common-protocol:do-bad-request( $request-path-info , "Request entity must be well-formed XML and the root element must be either an Atom feed element or an Atom entry element." )
 
 };
 
