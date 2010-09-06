@@ -71,13 +71,13 @@ function create_collection {
 
 
 create_collection ${NVC_URL} ${DATA_DIR}/non-versioned-collection.feed.xml
-for i in {1..10}
+for i in {1..3}
 do 
 	populate_collection ${NVC_URL}
 done
 
 create_collection ${VC_URL} ${DATA_DIR}/versioned-collection.feed.xml
-for i in {1..10}
+for i in {1..3}
 do 
 	populate_collection ${VC_URL}
 done
