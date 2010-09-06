@@ -2,7 +2,7 @@
 
 CRAWL_DIR=$1
 
-test -z $CRAWL_DIR && { echo "missing required argument crawl directory" ; exit 1 ; }
+test -z $CRAWL_DIR && { echo "missing required arguments: [1] crawl directory" ; exit 1 ; }
 
 CONTENT_DIR=${CRAWL_DIR}/content
 HISTORY_DIR=${CRAWL_DIR}/history
@@ -26,18 +26,25 @@ mkdir ${HISTORY_DIR}
 function crawl_collection {
 
 	local COLLECTION_URL=$1
-	local COL_DIR=$2
+	local COLLECTION_DIR=$2
+	local REL=$3
 	
-	mkdir $COL_DIR
+	# default to following 'edit' links in feed entries
+	test -z $REL && REL=edit
+	echo $REL
+	
+	mkdir $COLLECTION_DIR
 
-	curl --basic --fail --user ${USER} --output ${COL_DIR}/feed.xml ${COLLECTION_URL}
+	curl --basic --fail --user ${USER} --output ${COLLECTION_DIR}/feed.xml ${COLLECTION_URL}
 	
-	local ENTRIES=`xmlstarlet sel -N atom=http://www.w3.org/2005/Atom --indent --template --match /atom:feed/atom:entry/atom:link[@rel=\'edit\'] --nl --value-of ./@href ${COL_DIR}/feed.xml`
+	local ENTRIES=`xmlstarlet sel -N atom=http://www.w3.org/2005/Atom --indent --template --match /atom:feed/atom:entry/atom:link[@rel=\'${REL}\'] --nl --value-of ./@href ${COLLECTION_DIR}/feed.xml`
+	
+	echo $ENTRIES
 
 	for e in $ENTRIES 
 	do 
 		f=`expr match "$e" '.*/\([^/]*\)'`
-		o=${COL_DIR}/${f}.xml
+		o=${COLLECTION_DIR}/${f}.xml
 		curl --basic --fail --user ${USER} --output $o $e
 	done
 
@@ -48,28 +55,28 @@ function crawl_collection {
 function crawl_versioned_collection {
 
 	local COLLECTION_URL=$1
-	local COL_DIR=$2
-	local COL_HIST_DIR=$3
+	local COLLECTION_DIR=$2
+	local COLLECTION_HISTORY_DIR=$3
 	
-	mkdir $COL_DIR
-	mkdir $COL_HIST_DIR
+	mkdir $COLLECTION_DIR
+	mkdir $COLLECTION_HISTORY_DIR
 
-	curl --basic --fail --user ${USER} --output ${COL_DIR}/feed.xml ${COLLECTION_URL}
+	curl --basic --fail --user ${USER} --output ${COLLECTION_DIR}/feed.xml ${COLLECTION_URL}
 	
-	local ENTRIES=`xmlstarlet sel -N atom=http://www.w3.org/2005/Atom --indent --template --match /atom:feed/atom:entry/atom:link[@rel=\'edit\'] --nl --value-of ./@href ${COL_DIR}/feed.xml`
+	local ENTRIES=`xmlstarlet sel -N atom=http://www.w3.org/2005/Atom --indent --template --match /atom:feed/atom:entry/atom:link[@rel=\'edit\'] --nl --value-of ./@href ${COLLECTION_DIR}/feed.xml`
 
 	for e in $ENTRIES 
 	do 
 
 		f=`expr match "$e" '.*/\([^/]*\)'`
-		o=${COL_DIR}/${f}.xml
+		o=${COLLECTION_DIR}/${f}.xml
 		curl --basic --fail --user ${USER} --output $o $e
 
-		# need to retrieve history feed and crawl
+		# need to retrieve history feed and crawl 'this-revision' links
 		hurl=`xmlstarlet sel -N atom=http://www.w3.org/2005/Atom --indent --template --value-of /atom:entry/atom:link[@rel=\'history\']/@href ${o}`
 		echo "history - $hurl"
-		hdir=${COL_HIST_DIR}/$f
-		crawl_collection $hurl $hdir
+		hdir=${COLLECTION_HISTORY_DIR}/$f
+		crawl_collection $hurl $hdir this-revision
 
 	done
 
@@ -79,19 +86,19 @@ function crawl_versioned_collection {
 
 # crawl the non-versioned collection
 
-COL_DIR=${CONTENT_DIR}/non-versioned-collection
+COLLECTION_DIR=${CONTENT_DIR}/non-versioned-collection
 COLLECTION_URL=${NVC_URL}
 
-crawl_collection $COLLECTION_URL $COL_DIR
+crawl_collection $COLLECTION_URL $COLLECTION_DIR
 
 
 
 # crawl the versioned collection
 
-COL_DIR=${CONTENT_DIR}/versioned-collection
-COL_HIST_DIR=${HISTORY_DIR}/versioned-collection
+COLLECTION_DIR=${CONTENT_DIR}/versioned-collection
+COLLECTION_HISTORY_DIR=${HISTORY_DIR}/versioned-collection
 COLLECTION_URL=${VC_URL}
 
-crawl_versioned_collection $COLLECTION_URL $COL_DIR $COL_HIST_DIR
+crawl_versioned_collection $COLLECTION_URL $COLLECTION_DIR $COLLECTION_HISTORY_DIR
 
 
