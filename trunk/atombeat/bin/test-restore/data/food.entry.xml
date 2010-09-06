@@ -1,0 +1,42 @@
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+	<atom:title type="text">Plant Catalog (has been modified)</atom:title>
+	<atom:summary type="text">Duis sed ipsum sem, non tincidunt risus. Sed a felis eget nibh lacinia tincidunt non sit amet lacus. Nunc a odio velit, id fringilla nulla. Cras accumsan sollicitudin lacus. Nullam faucibus lectus elit. Nunc et urna magna. Sed vitae tellus et augue venenatis dapibus. In mattis enim ut elit placerat sodales. Integer sit amet augue tellus. Curabitur facilisis orci eu nunc varius vestibulum. Vivamus sed aliquam orci. Nulla ornare mi sed est consequat sed facilisis lectus gravida. Morbi ornare, sapien sit amet tempus pharetra, velit erat dictum augue, vitae tempor lectus nisl a odio. Curabitur venenatis, dolor a iaculis porta, metus risus tincidunt nibh, et pretium leo sapien sollicitudin lectus. Praesent sit amet sem magna, eu molestie felis.</atom:summary>
+	<atom:content type="application/xml">
+		<breakfast_menu>
+			<food>
+				<name>Belgian Waffles</name>
+				<price>$5.95</price>
+				<description>two of our famous Belgian Waffles with plenty of real maple syrup</description>
+				<calories>650</calories>
+
+			</food>
+			<food>
+				<name>Strawberry Belgian Waffles</name>
+				<price>$7.95</price>
+				<description>light Belgian waffles covered with strawberries and whipped cream</description>
+				<calories>900</calories>
+			</food>
+
+			<food>
+				<name>Berry-Berry Belgian Waffles</name>
+				<price>$8.95</price>
+				<description>light Belgian waffles covered with an assortment of fresh berries and whipped cream</description>
+				<calories>900</calories>
+			</food>
+			<food>
+
+				<name>French Toast</name>
+				<price>$4.50</price>
+				<description>thick slices made from our homemade sourdough bread</description>
+				<calories>600</calories>
+			</food>
+			<food>
+				<name>Homestyle Breakfast</name>
+
+				<price>$6.95</price>
+				<description>two eggs, bacon or sausage, toast, and our ever-popular hash browns</description>
+				<calories>950</calories>
+			</food>
+		</breakfast_menu>
+	</atom:content>
+</atom:entry>
