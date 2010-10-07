@@ -115,6 +115,6 @@ I've checked this example into the AtomBeat SVN repository at: http://atombeat.g
 
 You should be able to check out that and the example-maven-webapp projects, import them both into eclipse, add them both to tomcat, and test out what I said above.
 
-
+If you know a better way to do this, drop a comment on this page, or [mailto:alimanfoo@gmail.com email me] - I'd be very grateful.
 
 

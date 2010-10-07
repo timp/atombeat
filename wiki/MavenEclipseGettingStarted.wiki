@@ -321,6 +321,8 @@ Then I regenerated the eclipse project files from the command line and did Maven
 
 That should be it for getting started. Next step is [MavenEclipseOverlays configuring war overlays with instant gratification...]
 
+If you know a better way to do this, drop a comment on this page, or [mailto:alimanfoo@gmail.com email me] - I'd be very grateful.
+
 == Epilogue ==
 
 I've checked this project into the AtomBeat SVN repository, so you should be able to use it as a template to create new projects. E.g.:
