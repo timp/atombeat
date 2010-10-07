@@ -1,0 +1,5 @@
+#summary Configuring maven war overlays with eclipse for instant gratification.
+
+= Maven, Eclipse and Web Applications - WAR Overlays and Instant Gratification =
+
+Here's my notes on setting up multiple web application projects with dependencies using the maven war overlay method, and still getting instant gratification in eclipse.
