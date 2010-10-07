@@ -227,6 +227,8 @@ If you installed tomcat as a service on your machine as well, you'll need to mak
 
 Once tomcat has started, go to http://localhost:8080/example-webapp/ - you should see "Hello World" if it has all worked.
 
+You can check that instant gratification is working (i.e., the webapp is auto-reloaded on any changes you make to the source) by editing the index.jsp file in the src/main/webapp folder. When you save the changes, you should shortly thereafter see a message in the eclipse console that the context is reloading, then refreshing your browser should show the changes.
+
 == Creating an Example Servlet ==
 
 I added a new source folder in Eclipse by right clicking the project and doing:
