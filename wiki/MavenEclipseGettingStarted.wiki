@@ -1,6 +1,6 @@
 = Getting Started with Maven, Eclipse and Web Applications =
 
-Here are my notes on setting up and using maven with eclipse to develop web applications, as of 6 October 2010.
+Here are my notes on setting up and using maven with eclipse to develop web applications.
 
 == Install Eclipse with Web Tools ==
 
@@ -75,7 +75,7 @@ Again, I'm on ubuntu, so I do:
 sudo apt-get install maven2
 }}}
 
-== Install M2Eclipse ==
+== Install !M2Eclipse ==
 
 This is the maven-eclipse plugin. To install:
 
