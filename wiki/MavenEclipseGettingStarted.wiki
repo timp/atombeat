@@ -132,10 +132,10 @@ At this stage I get an error reported that the "Java compiler level does not mat
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.example.webapp</groupId>
-  <artifactId>example-webapp</artifactId>
+  <artifactId>example-maven-webapp</artifactId>
   <packaging>war</packaging>
   <version>1.0-SNAPSHOT</version>
-  <name>example-webapp Maven Webapp</name>
+  <name>Example Maven Webapp</name>
   <url>http://maven.apache.org</url>
   <dependencies>
     <dependency>
@@ -144,19 +144,25 @@ At this stage I get an error reported that the "Java compiler level does not mat
       <version>3.8.1</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+    	<groupId>javax.servlet</groupId>
+    	<artifactId>servlet-api</artifactId>
+    	<version>2.5</version>
+    	<scope>provided</scope>
+    </dependency>
   </dependencies>
   <build>
-    <finalName>example-webapp</finalName>
+    <finalName>example-maven-webapp</finalName>
     <plugins>
-	    <plugin>
-	      <groupId>org.apache.maven.plugins</groupId>
-	      <artifactId>maven-compiler-plugin</artifactId>
-	      <version>2.3.2</version>
-	      <configuration>
-	        <source>1.6</source>
-	        <target>1.6</target>
-	      </configuration>
-	    </plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<version>2.3.2</version>
+				<configuration>
+					<source>1.6</source>
+					<target>1.6</target>
+				</configuration>
+			</plugin>
     </plugins>
   </build>
 </project>
@@ -265,19 +271,15 @@ The web.xml file created by the maven webapp archetype uses the version 2.3 DTD.
 
 {{{
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app 
-	xmlns="http://java.sun.com/xml/ns/javaee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-	version="2.5">
-  <display-name>Archetype Created Web Application</display-name>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xmlns:web="http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+  <display-name>Example Web Application with Maven</display-name>
   <servlet>
-  	<servlet-name>ExampleServlet</servlet-name>
-  	<servlet-class>example.ExampleServlet</servlet-class>
+    <servlet-name>ExampleServlet</servlet-name>
+    <servlet-class>example.ExampleServlet</servlet-class>
   </servlet>
   <servlet-mapping>
-  	<servlet-name>ExampleServlet</servlet-name>
-  	<url-pattern>/ExampleServlet</url-pattern>
+    <servlet-name>ExampleServlet</servlet-name>
+    <url-pattern>/ExampleServlet</url-pattern>
   </servlet-mapping>
 </web-app>
 }}}
@@ -301,11 +303,12 @@ N.B. if you try modifying the Dynamic Web Module Project Facet to version 2.5 by
 I noticed that the org.eclipse.wst.common.component settings file (found under .settings folder) had some duplicate `<wb-resource/>` entries, although this doesn't seem to cause any problems. I edited by hand to:
 
 {{{
-<project-modules id="moduleCoreId" project-version="2.0">
-  <wb-module deploy-name="example-webapp">
-    <property name="context-root" value="example-webapp"/>
-    <wb-resource deploy-path="/" source-path="src/main/webapp"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<project-modules id="moduleCoreId" project-version="1.5.0">
+  <wb-module deploy-name="example-maven-webapp">
     <property name="java-output-path" value="/target/classes"/>
+        <property name="context-root" value="example-maven-webapp"/>
+    <wb-resource deploy-path="/" source-path="src/main/webapp"/>
     <wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/java"/>
     <wb-resource deploy-path="/WEB-INF/classes" source-path="src/main/resources"/>
   </wb-module>
@@ -318,6 +321,17 @@ Then I regenerated the eclipse project files from the command line and did Maven
 
 That should be it for getting started. Next step is [MavenEclipseOverlays configuring war overlays with instant gratification...]
 
+== Epilogue ==
 
+I've checked this project into the AtomBeat SVN repository, so you should be able to use it as a template to create new projects. E.g.:
+
+{{{
+cd ~/workspace
+svn export http://atombeat.googlecode.com/svn/trunk/base/example-maven-webapp my-new-project
+}}}
+
+...then, in Eclipse, import the project into your workspace.
+
+You probably also want to edit the .project file with the new project name, edit the .settings/org.eclipse.wst.common.component file with a new deploy-name, and change the context root (right click the project, click Properties, then see under Web Project Settings), before adding the project to your tomcat server in eclipse.
 
 
