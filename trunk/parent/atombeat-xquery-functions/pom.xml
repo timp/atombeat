@@ -48,12 +48,6 @@
     </dependency>
     
     <dependency>
-    	<groupId>org.springframework.security</groupId>
-    	<artifactId>spring-security-core</artifactId>
-    	<version>2.0.5.RELEASE</version>
-    </dependency>
-
-    <dependency>
       <groupId>org.exist-db</groupId>
       <artifactId>exist-xmldb</artifactId>
       <version>1.4.0</version>
@@ -74,6 +68,32 @@
     	<scope>provided</scope>
     </dependency>
     
+    <dependency>
+    	<groupId>org.exist-db</groupId>
+    	<artifactId>exist-versioning</artifactId>
+    	<version>1.4.0</version>
+    	<scope>provided</scope>
+    </dependency>
+    
+    <dependency>
+    	<groupId>commons-pool</groupId>
+    	<artifactId>commons-pool</artifactId>
+    	<version>1.5.1</version>
+    	<scope>compile</scope>
+    </dependency>
+    
+    <dependency>
+    	<groupId>log4j</groupId>
+    	<artifactId>log4j</artifactId>
+    	<version>1.2.15</version>
+    	<scope>compile</scope>
+    </dependency>
+    
+    <dependency>
+    	<groupId>commons-logging</groupId>
+    	<artifactId>commons-logging</artifactId>
+    	<version>1.1.1</version>
+    </dependency>
   </dependencies>
   
 </project>
