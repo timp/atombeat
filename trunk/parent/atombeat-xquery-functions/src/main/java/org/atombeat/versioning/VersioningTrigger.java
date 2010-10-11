@@ -79,7 +79,8 @@ public class VersioningTrigger extends FilteringTrigger {
     private String documentRev = null;
     private boolean checkForConflicts = false;
 
-    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
+    @SuppressWarnings("unchecked")
+	public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         if (parameters != null) {
             String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
@@ -323,7 +324,8 @@ public class VersioningTrigger extends FilteringTrigger {
         return properties;
     }
 
-    public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
+    @SuppressWarnings("unchecked")
+	public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
         receiver.startElement(PROPERTIES_ELEMENT, null);
         for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
             String key = (String) i.next();
