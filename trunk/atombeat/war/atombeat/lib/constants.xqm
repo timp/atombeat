@@ -38,7 +38,9 @@ declare variable $CONSTANT:MEDIA-TYPE-XML as xs:string					:= "application/xml" 
 declare variable $CONSTANT:MEDIA-TYPE-ATOM as xs:string					:= "application/atom+xml" ;
 declare variable $CONSTANT:MEDIA-TYPE-ATOM-FEED as xs:string			:= "application/atom+xml;type=feed" ;
 declare variable $CONSTANT:MEDIA-TYPE-ATOM-ENTRY as xs:string			:= "application/atom+xml;type=entry" ;
-declare variable $CONSTANT:MEDIA-TYPE-TEXT as xs:string					:= "text/plain" ;
+declare variable $CONSTANT:MEDIA-TYPE-TEXT as xs:string         := "text/plain" ;
+declare variable $CONSTANT:MEDIA-TYPE-HTML as xs:string         := "text/html" ;
+
 
 declare variable $CONSTANT:ATOM-NSURI 						:= "http://www.w3.org/2005/Atom" ;
 declare variable $CONSTANT:ATOM-FEED as xs:string 			:= "feed" ;
