@@ -7,4 +7,5 @@ mvn install:install-file -Dfile="$EXIST_HOME/lib/extensions/exist-modules.jar" -
 mvn install:install-file -Dfile="$EXIST_HOME/lib/extensions/exist-ngram-module.jar" -DpomFile=exist-ngram-module-pom.xml
 mvn install:install-file -Dfile="$EXIST_HOME/lib/extensions/exist-lucene-module.jar" -DpomFile=exist-lucene-module-pom.xml
 mvn install:install-file -Dfile="$EXIST_HOME/lib/extensions/exist-versioning.jar" -DpomFile=exist-versioning-module-pom.xml
+mvn install:install-file -Dfile="$EXIST_HOME/dist/exist-1.4.0-rev10440.war" -DgroupId=org.exist-db -DartifactId=exist-webapp -Dversion=1.4.0 -Dpackaging=war
 
