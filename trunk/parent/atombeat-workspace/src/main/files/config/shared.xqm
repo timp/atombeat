@@ -19,7 +19,10 @@ declare variable $config:exist-user as xs:string := "admin" ;
 declare variable $config:exist-password as xs:string := "" ;
 
 
-declare variable $config:service-url-base as xs:string := "http://localhost:8081/atombeat/atombeat" ;
+(:~
+ : The base URL for this workspace service, used in atom IDs and edit link URIs.
+ :)
+declare variable $config:service-url-base as xs:string := concat( "http://localhost:8080" , request:get-context-path() , "/workspace" ) ;
 
 
 (:

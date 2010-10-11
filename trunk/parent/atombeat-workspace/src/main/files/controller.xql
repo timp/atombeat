@@ -7,13 +7,14 @@ import module namespace xmldb = "http://exist-db.org/xquery/xmldb";
 let $groups := text:groups( $exist:path , "^/([^/]+)(.*)$" )
 let $module := $groups[2]
 let $request-path-info := $groups[3]
+let $workspace-path := "/workspace"
 
 return
 
 	if ( $module = "content" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atombeat/content.xql">
+		    <forward url="{$workspace-path}/content.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>
@@ -21,7 +22,7 @@ return
 	else if ( $module = "history" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atombeat/history.xql">
+		    <forward url="{$workspace-path}/history.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>
@@ -29,7 +30,7 @@ return
 	else if ( $module = "security" ) then
 
 		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
-		    <forward url="/atombeat/security.xql">
+		    <forward url="{$workspace-path}/security.xql">
 		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
 		    </forward>
 		</dispatch>
