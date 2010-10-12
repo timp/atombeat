@@ -1,6 +1,5 @@
 package org.atombeat;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -75,6 +74,7 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Member</atom:title>" +
 				"<atom:summary>This is a summary.</atom:summary>" +
+				"<atom:content><meat>This is the meat.</meat></atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method);
