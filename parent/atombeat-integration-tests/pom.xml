@@ -43,7 +43,9 @@
           <skip>true</skip>
         </configuration>
         <executions>
+        
           <execution>
+            <id>test-atombeat-exist-full</id>
             <phase>integration-test</phase>
             <goals>
               <goal>test</goal>
@@ -68,8 +70,46 @@
                   <value>/workspace/</value>
                 </property>
               </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-exist-full -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
             </configuration>
           </execution>
+          
+          <execution>
+            <id>test-atombeat-exist-full-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-full-secure</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
         </executions>
       </plugin>
       
@@ -97,6 +137,16 @@
                   <overWrite>true</overWrite>
                   <destFileName>atombeat-exist-full.war</destFileName>
                 </artifactItem>
+                <!-- 
+                <artifactItem>
+                  <groupId>org.atombeat</groupId>
+                  <artifactId>atombeat-exist-full-secure</artifactId>
+                  <version>0.1-SNAPSHOT</version>
+                  <type>war</type>
+                  <overWrite>true</overWrite>
+                  <destFileName>atombeat-exist-full-secure.war</destFileName>
+                </artifactItem>
+                -->
               </artifactItems>
               <outputDirectory>
                 ${project.build.directory}/war
@@ -134,21 +184,24 @@
             <id>start-jetty</id>
             <phase>pre-integration-test</phase>
             <goals>
-              <goal>deploy-war</goal>
+              <goal>run</goal>
             </goals>
             <configuration>
               <daemon>true</daemon>
               <reload>manual</reload>
-              <webApp>${project.build.directory}/war/atombeat-exist-full.war</webApp>
-              <contextPath>/atombeat-exist-full</contextPath>
-              <!-- 
+              <!-- dummy webapp (would get rid of if I could) -->
+              <webApp>${project.build.directory}/target</webApp>
+              <!-- additional webapps (the ones we actually want to test) -->
 		          <contextHandlers>            
-		            <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-		              <war>${project.build.directory}/war/atombeat-exist-full.war</war>
-		              <contextPath>/atombeat-exist-full</contextPath>
-		            </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${project.build.directory}/war/atombeat-exist-full.war</war>
+                  <contextPath>/atombeat-exist-full</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${project.build.directory}/war/atombeat-exist-full.war</war> <!-- TODO point to real war location -->
+                  <contextPath>/atombeat-exist-full-secure</contextPath>
+                </contextHandler>
 		          </contextHandlers>  
-		          -->
             </configuration>
           </execution>
           

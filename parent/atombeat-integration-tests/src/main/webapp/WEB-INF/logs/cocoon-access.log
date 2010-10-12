@@ -1,0 +1,2 @@
+FATAL_E (2010-10-12) 18:29.29:363   [access] (Unknown-URI) Unknown-thread/CocoonServlet: Unable to get 'Cocoon-Libs' attribute from the Manifest
+INFO    (2010-10-12) 18:29.29:365   [access] (Unknown-URI) Unknown-thread/CocoonServlet: Reloading from: jar:file:/home/aliman/.m2/repository/org/atombeat/atombeat-exist-full/0.1-SNAPSHOT/atombeat-exist-full-0.1-SNAPSHOT.war!/WEB-INF/cocoon.xconf
