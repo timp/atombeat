@@ -2,7 +2,7 @@
 
 DATA_DIR=data
 TMP_DIR=tmp
-BASE_URL=http://localhost:8081/atombeat/atombeat/content
+BASE_URL=http://localhost:8080/atombeat/atombeat/content
 NVC_URL=${BASE_URL}/non-versioned-collection
 VC_URL=${BASE_URL}/versioned-collection
 USER=adam:test
