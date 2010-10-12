@@ -19,7 +19,7 @@ declare variable $config:exist-user as xs:string := "admin" ;
 declare variable $config:exist-password as xs:string := "" ;
 
 
-declare variable $config:service-url-base as xs:string := "http://localhost:8081/atombeat/atombeat" ;
+declare variable $config:service-url-base as xs:string := "http://localhost:8080/atombeat/atombeat" ;
 
 
 (:
