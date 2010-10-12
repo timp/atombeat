@@ -37,6 +37,7 @@
       <groupId>org.exist</groupId>
       <artifactId>exist</artifactId>
       <version>1.4.0</version>
+      <classifier>orbeon_20100330</classifier>
     </dependency>
     <dependency>
       <groupId>xerces</groupId>
@@ -67,6 +68,12 @@
       <groupId>org.exist</groupId>
       <artifactId>exist-optional</artifactId>
       <version>1.4.0</version>
+    </dependency>
+    <dependency>
+      <groupId>org.exist</groupId>
+      <artifactId>exist-versioning</artifactId>
+      <version>1.4.0</version>
+      <classifier>orbeon_20100330</classifier>
     </dependency>
     <dependency>
       <groupId>org.exist</groupId>
