@@ -190,7 +190,7 @@ Modify catalina.sh if running tomcat as local user :
                     <groupId>${project.groupId}</groupId>
                     <artifactId>${project.artifactId}</artifactId>
                     <properties>
-                      <context>/</context>
+                      <context>/atombeat</context>
                     </properties>
                     <type>war</type>
                   </deployable>
