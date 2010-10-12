@@ -40,7 +40,7 @@ import static junit.framework.TestCase.fail;
 
 public class AtomTestUtils {
 
-	public static final String port ="8081";
+	public static final String port ="8080";
 	public static final String BASE_URI = "http://localhost:" + port + "/atombeat/atombeat/";
 	public static final String CONTENT_URI = BASE_URI + "content/";
 	public static final String SECURITY_URI = BASE_URI + "security/";
@@ -80,7 +80,6 @@ public class AtomTestUtils {
 
 	public static void authenticate(HttpMethod method, String user, String pass) {
 		try {
-			
 			String authorization = basic.authenticate(new UsernamePasswordCredentials(user, pass), method);
 			method.setRequestHeader("Authorization", authorization);
 			
