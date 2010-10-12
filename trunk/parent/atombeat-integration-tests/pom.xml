@@ -12,6 +12,10 @@
   <packaging>jar</packaging>
   <name>atombeat-integration-tests</name>
   
+  <properties>
+    <jetty.port>8888</jetty.port>
+  </properties>
+
   <build>
   
     <plugins>
@@ -53,7 +57,7 @@
                 </property>
                 <property>
                   <name>org.atombeat.it.port</name>
-                  <value>8888</value>
+                  <value>${jetty.port}</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -111,12 +115,13 @@
       -->
       <plugin>
         <groupId>org.mortbay.jetty</groupId>
-        <artifactId>jetty-maven-plugin</artifactId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        
         <configuration>
-          <port>8888</port>
           <stopPort>9991</stopPort>
           <stopKey>test</stopKey>
         </configuration>
+        
         <executions>
         
           <execution>
@@ -126,11 +131,19 @@
               <goal>run-war</goal>
             </goals>
             <configuration>
-              <contextPath>atombeat-exist-full</contextPath>
               <daemon>true</daemon>
-              <webApp>
-                ${project.build.directory}/war/atombeat-exist-full.war
-              </webApp>
+		          <systemProperties>
+		            <property>
+		              <name>jetty.port</name>
+		              <value>8888</value>
+		            </property>
+		          </systemProperties>
+		          <contextHandlers>            
+		            <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+		              <war>${project.build.directory}/war/atombeat-exist-full.war</war>
+		              <contextPath>/atombeat-exist-full</contextPath>
+		            </contextHandler>
+		          </contextHandlers>  
             </configuration>
           </execution>
           
