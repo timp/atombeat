@@ -78,7 +78,11 @@ public class VersioningTrigger extends FilteringTrigger {
     private String documentRev = null;
     private boolean checkForConflicts = false;
 
-    public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
+    /* (non-Javadoc)
+     * @see org.exist.collections.triggers.FilteringTrigger#configure(org.exist.storage.DBBroker, org.exist.collections.Collection, java.util.Map)
+     */
+    @SuppressWarnings("unchecked")
+	public void configure(DBBroker broker, Collection parent, Map parameters) throws CollectionConfigurationException {
         super.configure(broker, parent, parameters);
         if (parameters != null) {
             String allowOverwrite = (String) parameters.get(PARAM_OVERWRITE);
@@ -324,7 +328,7 @@ public class VersioningTrigger extends FilteringTrigger {
 
     public static void writeProperties(Receiver receiver, Properties properties) throws SAXException {
         receiver.startElement(PROPERTIES_ELEMENT, null);
-        for (Iterator i = properties.keySet().iterator(); i.hasNext();) {
+        for (Iterator<Object> i = properties.keySet().iterator(); i.hasNext();) {
             String key = (String) i.next();
             QName qn = new QName(key, StandardDiff.NAMESPACE, StandardDiff.PREFIX);
             receiver.startElement(qn, null);
