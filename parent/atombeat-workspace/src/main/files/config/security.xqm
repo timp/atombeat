@@ -15,7 +15,7 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "co
 (:
  : Enable or disable the ACL-based security system.
  :)
-declare variable $security-config:enable-security := true() ;
+declare variable $security-config:enable-security := false() ;
 
 
 
