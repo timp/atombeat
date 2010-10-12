@@ -120,6 +120,12 @@
         <configuration>
           <stopPort>9991</stopPort>
           <stopKey>test</stopKey>
+          <systemProperties>
+            <systemProperty>
+              <name>jetty.port</name>
+              <value>${jetty.port}</value>
+            </systemProperty>
+          </systemProperties>
         </configuration>
         
         <executions>
@@ -128,22 +134,21 @@
             <id>start-jetty</id>
             <phase>pre-integration-test</phase>
             <goals>
-              <goal>run-war</goal>
+              <goal>deploy-war</goal>
             </goals>
             <configuration>
               <daemon>true</daemon>
-		          <systemProperties>
-		            <property>
-		              <name>jetty.port</name>
-		              <value>8888</value>
-		            </property>
-		          </systemProperties>
+              <reload>manual</reload>
+              <webApp>${project.build.directory}/war/atombeat-exist-full.war</webApp>
+              <contextPath>/atombeat-exist-full</contextPath>
+              <!-- 
 		          <contextHandlers>            
 		            <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
 		              <war>${project.build.directory}/war/atombeat-exist-full.war</war>
 		              <contextPath>/atombeat-exist-full</contextPath>
 		            </contextHandler>
 		          </contextHandlers>  
+		          -->
             </configuration>
           </execution>
           
