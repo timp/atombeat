@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://localhost:8081/manta/atombeat/content/drafts/d8369a83-4bb0-450b-ab73-5d44f588b689.atom</atom:id>
+    <atom:id>http://localhost:8080/manta/atombeat/content/drafts/d8369a83-4bb0-450b-ab73-5d44f588b689.atom</atom:id>
     <atom:published>2010-05-28T11:09:12.829+01:00</atom:published>
     <atom:updated>2010-05-28T11:09:12.829+01:00</atom:updated>
-    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8081/manta/atombeat/content/drafts/d8369a83-4bb0-450b-ab73-5d44f588b689.atom"/>
-    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8081/manta/atombeat/content/drafts/d8369a83-4bb0-450b-ab73-5d44f588b689.atom"/>
+    <atom:link rel="self" type="application/atom+xml" href="http://localhost:8080/manta/atombeat/content/drafts/d8369a83-4bb0-450b-ab73-5d44f588b689.atom"/>
+    <atom:link xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:allow="GET, PUT, DELETE" rel="edit" type="application/atom+xml" href="http://localhost:8080/manta/atombeat/content/drafts/d8369a83-4bb0-450b-ab73-5d44f588b689.atom"/>
     <atom:author>
         <atom:email>suki@example.org</atom:email>
     </atom:author>
