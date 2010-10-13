@@ -12,6 +12,11 @@
   
     <http-basic/>
 
+    <!-- don't apply security to these, rely on eXist authentication -->
+    <intercept-url pattern="/rest/**" filters="none"/>
+    <intercept-url pattern="/webdav/**" filters="none"/>
+    <intercept-url pattern="/xmlrpc" filters="none"/>
+    
     <!-- restrict access to AtomBeat workspace administrative scripts -->
     <intercept-url pattern="/workspace/admin/**" access="ROLE_ADMINISTRATOR" />
     
@@ -19,9 +24,6 @@
     access control decisions to AtomBeat -->
     <intercept-url pattern="/workspace/**" access="ROLE_USER" />
 
-    <!-- don't apply security to anything else, rely on eXist authentication -->
-    <intercept-url pattern="/**" filters="none"/>
-        
   </http>
   
   <authentication-provider>
