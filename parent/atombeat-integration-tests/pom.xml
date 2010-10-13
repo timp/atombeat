@@ -41,6 +41,20 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skip>true</skip>
+          <systemProperties>
+            <property>
+              <name>org.atombeat.it.host</name>
+              <value>localhost</value>
+            </property>
+            <property>
+              <name>org.atombeat.it.port</name>
+              <value>${jetty.port}</value>
+            </property>
+            <property>
+              <name>org.atombeat.it.workspacePath</name>
+              <value>/workspace/</value>
+            </property>
+          </systemProperties>
         </configuration>
         <executions>
         
@@ -54,20 +68,8 @@
               <skip>false</skip>
               <systemProperties>
                 <property>
-                  <name>org.atombeat.it.host</name>
-                  <value>localhost</value>
-                </property>
-                <property>
-                  <name>org.atombeat.it.port</name>
-                  <value>${jetty.port}</value>
-                </property>
-                <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full</value>
-                </property>
-                <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
                 </property>
               </systemProperties>
               <!-- exclude tests that require security - security is disabled in atombeat-exist-full -->
@@ -91,72 +93,14 @@
               <skip>false</skip>
               <systemProperties>
                 <property>
-                  <name>org.atombeat.it.host</name>
-                  <value>localhost</value>
-                </property>
-                <property>
-                  <name>org.atombeat.it.port</name>
-                  <value>${jetty.port}</value>
-                </property>
-                <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full-secure</value>
-                </property>
-                <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
                 </property>
               </systemProperties>
             </configuration>
           </execution>
           
         </executions>
-      </plugin>
-      
-      <!-- 
-        Configure the dependency plugin to copy the web applications ready for
-        deployment to jetty.
-      -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-dependency-plugin</artifactId>
-        <executions>
-          <execution>
-            <id>copy</id>
-            <phase>package</phase>
-            <goals>
-              <goal>copy</goal>
-            </goals>
-            <configuration>
-              <artifactItems>
-                <artifactItem>
-                  <groupId>org.atombeat</groupId>
-                  <artifactId>atombeat-exist-full</artifactId>
-                  <version>0.1-SNAPSHOT</version>
-                  <type>war</type>
-                  <overWrite>true</overWrite>
-                  <destFileName>atombeat-exist-full.war</destFileName>
-                </artifactItem>
-                <!-- 
-                <artifactItem>
-                  <groupId>org.atombeat</groupId>
-                  <artifactId>atombeat-exist-full-secure</artifactId>
-                  <version>0.1-SNAPSHOT</version>
-                  <type>war</type>
-                  <overWrite>true</overWrite>
-                  <destFileName>atombeat-exist-full-secure.war</destFileName>
-                </artifactItem>
-                -->
-              </artifactItems>
-              <outputDirectory>
-                ${project.build.directory}/war
-              </outputDirectory>
-              <overWriteReleases>true</overWriteReleases>
-              <overWriteSnapshots>true</overWriteSnapshots>
-            </configuration>
-          </execution>
-        </executions>
-
       </plugin>
       
       <!-- 
@@ -189,16 +133,16 @@
             <configuration>
               <daemon>true</daemon>
               <reload>manual</reload>
-              <!-- dummy webapp (would get rid of if I could) -->
-              <webApp>${project.build.directory}/target</webApp>
               <!-- additional webapps (the ones we actually want to test) -->
 		          <contextHandlers>            
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-                  <war>${project.build.directory}/war/atombeat-exist-full.war</war>
+                  <!-- assume directory structure and already built -->
+                  <war>../atombeat-exist-full/target/atombeat-exist-full.war</war>
                   <contextPath>/atombeat-exist-full</contextPath>
                 </contextHandler>
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-                  <war>${project.build.directory}/war/atombeat-exist-full.war</war> <!-- TODO point to real war location -->
+                  <!-- assume directory structure and already built -->
+                  <war>../atombeat-exist-full/target/atombeat-exist-full.war</war>
                   <contextPath>/atombeat-exist-full-secure</contextPath>
                 </contextHandler>
 		          </contextHandlers>  
@@ -236,17 +180,6 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- 
-      The atombeat-exist-full web application is a dependency, to be deployed
-      and tested.
-    -->
-    <dependency>
-      <groupId>org.atombeat</groupId>
-      <artifactId>atombeat-exist-full</artifactId>
-      <version>0.1-SNAPSHOT</version>
-      <type>war</type>
-    </dependency>
-  
   </dependencies>
 
 </project>
