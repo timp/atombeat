@@ -16,7 +16,6 @@ import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" a
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
-(: import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "atom-security.xqm" ; :) (: <-- shouldn't be imported here, security is not part of core protocol, should be handled in plugin :)
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
@@ -268,7 +267,6 @@ declare function atom-protocol:op-multi-create(
             let $local-media-available := ( 
                 exists( $media-path-info ) 
                 and atomdb:media-resource-available( $media-path-info )
-                (: and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () ) :) (: <-- shouldn't be here, should be done in security plugin :)
             )
             return 
                 if ( $local-media-available )

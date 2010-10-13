@@ -79,13 +79,11 @@ declare function security-plugin:before(
             
             then 
 
-                (: TODO check permissions to retrieve media locally :)
-                
                 let $request-data := 
                     <atom:feed>
                     {
                         for $entry in $request-data/atom:entry
-                        return security-plugin:strip-descriptor-links( $entry )
+                        return security-plugin:filter-entry-before-multi-create( $entry )
                     }
                     </atom:feed>
 
@@ -116,8 +114,47 @@ declare function security-plugin:strip-descriptor-links(
     let $filtered := atomdb:filter( $request-data , $reserved )
     
     return $filtered
+
 };
 
+
+
+
+declare function security-plugin:filter-entry-before-multi-create(
+    $entry as element(atom:entry)
+) as element()
+{
+
+    let $media-path-info := atomdb:edit-media-path-info( $entry )
+    
+    (: need to check if local media is available and user can retrieve...
+     : if so, retain edit-media link and allow copy of media
+     : if not, strip edit-media link
+     :)
+    let $local-media-available := ( 
+        exists( $media-path-info ) 
+        and atomdb:media-resource-available( $media-path-info )
+        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () ) 
+    )
+            
+    let $reserved :=
+        <reserved>
+            <atom-links>
+                <link rel="http://purl.org/atombeat/rel/security-descriptor"/>
+                <link rel="http://purl.org/atombeat/rel/media-security-descriptor"/>
+                {
+                    if ( $local-media-available )
+                    then ()
+                    else <link rel="edit-media"/>
+                }
+            </atom-links>
+        </reserved>
+        
+    let $filtered := atomdb:filter( $entry , $reserved )
+    
+    return $filtered
+
+};
 
 
 
