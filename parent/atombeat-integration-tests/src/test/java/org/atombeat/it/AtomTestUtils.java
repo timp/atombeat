@@ -42,7 +42,7 @@ public class AtomTestUtils {
 
 	public static final String PORT = (System.getProperty("org.atombeat.it.port") != null) ? System.getProperty("org.atombeat.it.port") : "8081";
 	public static final String HOST = (System.getProperty("org.atombeat.it.host") != null) ? System.getProperty("org.atombeat.it.host") : "localhost";
-	public static final String CONTEXTPATH = (System.getProperty("org.atombeat.it.contextPath") != null) ? System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-full-secure";
+	public static final String CONTEXTPATH = (System.getProperty("org.atombeat.it.contextPath") != null) ? System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-minimal-secure";
 	public static final String WORKSPACEPATH = (System.getProperty("org.atombeat.it.workspacePath") != null) ? System.getProperty("org.atombeat.it.workspacePath") : "/workspace/";
 	
 	public static final String BASE_URI = "http://" + HOST + ":" + PORT + CONTEXTPATH + WORKSPACEPATH;
