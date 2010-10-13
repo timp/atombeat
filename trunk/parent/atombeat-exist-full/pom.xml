@@ -10,7 +10,7 @@
 
   <artifactId>atombeat-exist-full</artifactId>
   <packaging>war</packaging>
-  <name>atombeat-exist-full</name>
+  <name>${artifactId}</name>
   <description>AtomBeat with eXist (Full)</description>
   
   <dependencies>
@@ -45,7 +45,7 @@
   </dependencies>
   
   <build>
-    <finalName>atombeat-exist-full</finalName>
+    <finalName>${artifactId}</finalName>
     <plugins>
     	<plugin>
     		<groupId>org.apache.maven.plugins</groupId>
