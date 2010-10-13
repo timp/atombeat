@@ -38,6 +38,78 @@
     </servlet>
 
 
+    <!--+
+        |
+        | HTTP Method Override Filter
+        | ***************************
+        |
+        | (N.B. put this before spring security, so security is applied to value of
+        | method override if given)
+        |
+        +-->
+    
+    
+    <filter>
+        <filter-name>HttpMethodOverrideFilter</filter-name>
+        <filter-class>org.atombeat.http.HttpMethodOverrideFilter</filter-class>
+        <init-param>
+            <param-name>allowedOverrides</param-name>
+            <param-value>PUT DELETE</param-value>
+        </init-param>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>HttpMethodOverrideFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    <!--+
+        | Spring Security Configuration
+        | *****************************
+        | 
+        +-->
+    
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            WEB-INF/security-example.xml
+        </param-value>
+    </context-param>
+    
+    
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+    
+    <!-- store username in request attribute so it can be accessed easily in xqueries -->
+    
+    <filter>
+        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+        <filter-class>org.atombeat.http.SpringSecuritySetUserRequestAttributesFilter</filter-class>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
     <!--
         RpcServlet provides XML-RPC access to eXist
     -->
