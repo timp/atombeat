@@ -41,20 +41,6 @@
         <artifactId>maven-surefire-plugin</artifactId>
         <configuration>
           <skip>true</skip>
-          <systemProperties>
-            <property>
-              <name>org.atombeat.it.host</name>
-              <value>localhost</value>
-            </property>
-            <property>
-              <name>org.atombeat.it.port</name>
-              <value>${jetty.port}</value>
-            </property>
-            <property>
-              <name>org.atombeat.it.workspacePath</name>
-              <value>/workspace/</value>
-            </property>
-          </systemProperties>
         </configuration>
         <executions>
         
@@ -67,6 +53,18 @@
             <configuration>
               <skip>false</skip>
               <systemProperties>
+		            <property>
+		              <name>org.atombeat.it.host</name>
+		              <value>localhost</value>
+		            </property>
+		            <property>
+		              <name>org.atombeat.it.port</name>
+		              <value>${jetty.port}</value>
+		            </property>
+		            <property>
+		              <name>org.atombeat.it.workspacePath</name>
+		              <value>/workspace/</value>
+		            </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full</value>
@@ -92,6 +90,18 @@
             <configuration>
               <skip>false</skip>
               <systemProperties>
+		            <property>
+		              <name>org.atombeat.it.host</name>
+		              <value>localhost</value>
+		            </property>
+		            <property>
+		              <name>org.atombeat.it.port</name>
+		              <value>${jetty.port}</value>
+		            </property>
+		            <property>
+		              <name>org.atombeat.it.workspacePath</name>
+		              <value>/workspace/</value>
+		            </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full-secure</value>
@@ -137,12 +147,12 @@
 		          <contextHandlers>            
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
                   <!-- assume directory structure and already built -->
-                  <war>../atombeat-exist-full/target/atombeat-exist-full.war</war>
+                  <war>${basedir}/../atombeat-exist-full/target/atombeat-exist-full.war</war>
                   <contextPath>/atombeat-exist-full</contextPath>
                 </contextHandler>
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
                   <!-- assume directory structure and already built -->
-                  <war>../atombeat-exist-full/target/atombeat-exist-full.war</war>
+                  <war>${basedir}/../atombeat-exist-full/target/atombeat-exist-full.war</war>
                   <contextPath>/atombeat-exist-full-secure</contextPath>
                 </contextHandler>
 		          </contextHandlers>  
