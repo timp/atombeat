@@ -15,4 +15,9 @@
     <module>atombeat-exist-minimal-secure</module>
     <module>atombeat-integration-tests</module>
   </modules>
+  <scm>
+    <connection>scm:svn:https://atombeat.googlecode.com/svn/trunk</connection>
+    <developerConnection>scm:svn:https://atombeat.googlecode.com/svn/trunk</developerConnection>
+    <url>scm:svn:https://atombeat.googlecode.com/svn/trunk</url>
+  </scm>  
 </project>
