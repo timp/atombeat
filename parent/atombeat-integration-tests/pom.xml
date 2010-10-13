@@ -118,7 +118,6 @@
             </configuration>
           </execution>
           
-          <!-- 
           <execution>
             <id>test-atombeat-exist-full-secure</id>
             <phase>integration-test</phase>
@@ -147,7 +146,6 @@
               </systemProperties>
             </configuration>
           </execution>
-          -->
           
         </executions>
       </plugin>
@@ -192,12 +190,10 @@
                   <war>${basedir}/../atombeat-exist-minimal/target/atombeat-exist-minimal.war</war>
                   <contextPath>/atombeat-exist-minimal</contextPath>
                 </contextHandler>
-                <!-- 
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
                   <war>${basedir}/../atombeat-exist-full-secure/target/atombeat-exist-full-secure.war</war>
                   <contextPath>/atombeat-exist-full-secure</contextPath>
                 </contextHandler>
-                -->
 		          </contextHandlers>  
             </configuration>
           </execution>
