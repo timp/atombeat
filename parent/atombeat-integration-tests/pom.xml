@@ -53,18 +53,18 @@
             <configuration>
               <skip>false</skip>
               <systemProperties>
-		            <property>
-		              <name>org.atombeat.it.host</name>
-		              <value>localhost</value>
-		            </property>
-		            <property>
-		              <name>org.atombeat.it.port</name>
-		              <value>${jetty.port}</value>
-		            </property>
-		            <property>
-		              <name>org.atombeat.it.workspacePath</name>
-		              <value>/workspace/</value>
-		            </property>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full</value>
@@ -81,6 +81,44 @@
             </configuration>
           </execution>
           
+          <execution>
+            <id>test-atombeat-exist-minimal</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-minimal</value>
+                </property>
+              </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-exist-minimal -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          
+          <!-- 
           <execution>
             <id>test-atombeat-exist-full-secure</id>
             <phase>integration-test</phase>
@@ -109,6 +147,7 @@
               </systemProperties>
             </configuration>
           </execution>
+          -->
           
         </executions>
       </plugin>
@@ -144,17 +183,21 @@
               <daemon>true</daemon>
               <reload>manual</reload>
               <!-- additional webapps (the ones we actually want to test) -->
-		          <contextHandlers>            
+		          <contextHandlers>
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-                  <!-- assume directory structure and already built -->
                   <war>${basedir}/../atombeat-exist-full/target/atombeat-exist-full.war</war>
                   <contextPath>/atombeat-exist-full</contextPath>
                 </contextHandler>
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-                  <!-- assume directory structure and already built -->
-                  <war>${basedir}/../atombeat-exist-full/target/atombeat-exist-full.war</war>
+                  <war>${basedir}/../atombeat-exist-minimal/target/atombeat-exist-minimal.war</war>
+                  <contextPath>/atombeat-exist-minimal</contextPath>
+                </contextHandler>
+                <!-- 
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-exist-full-secure/target/atombeat-exist-full-secure.war</war>
                   <contextPath>/atombeat-exist-full-secure</contextPath>
                 </contextHandler>
+                -->
 		          </contextHandlers>  
             </configuration>
           </execution>

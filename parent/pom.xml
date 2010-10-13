@@ -10,6 +10,7 @@
     <module>atombeat-servlet-filters</module>
     <module>atombeat-workspace</module>
     <module>atombeat-exist-full</module>
+    <module>atombeat-exist-minimal</module>
     <module>atombeat-integration-tests</module>
   </modules>
 </project>
