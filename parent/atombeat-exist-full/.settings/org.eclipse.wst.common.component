@@ -3,7 +3,7 @@
   <wb-module deploy-name="atombeat-exist-full">
     <property name="context-root" value="atombeat-exist-full"/>
     <wb-resource deploy-path="/" source-path="src/main/webapp"/>
-    <wb-resource deploy-path="/" source-path="target/atombeat-exist-full-0.1-SNAPSHOT"/>
+    <wb-resource deploy-path="/" source-path="target/atombeat-exist-full"/>
     <property name="java-output-path" value="/target/classes"/>
     <dependent-module archiveName="atombeat-xquery-functions.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/atombeat-xquery-functions/atombeat-xquery-functions">
       <dependency-type>uses</dependency-type>
