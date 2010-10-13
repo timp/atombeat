@@ -127,21 +127,50 @@
             <configuration>
               <skip>false</skip>
               <systemProperties>
-		            <property>
-		              <name>org.atombeat.it.host</name>
-		              <value>localhost</value>
-		            </property>
-		            <property>
-		              <name>org.atombeat.it.port</name>
-		              <value>${jetty.port}</value>
-		            </property>
-		            <property>
-		              <name>org.atombeat.it.workspacePath</name>
-		              <value>/workspace/</value>
-		            </property>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full-secure</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-exist-minimal-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-minimal-secure</value>
                 </property>
               </systemProperties>
             </configuration>
@@ -175,6 +204,7 @@
             <id>start-jetty</id>
             <phase>pre-integration-test</phase>
             <goals>
+              <goal>stop</goal>
               <goal>run</goal>
             </goals>
             <configuration>
@@ -193,6 +223,10 @@
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
                   <war>${basedir}/../atombeat-exist-full-secure/target/atombeat-exist-full-secure.war</war>
                   <contextPath>/atombeat-exist-full-secure</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-exist-minimal-secure/target/atombeat-exist-minimal-secure.war</war>
+                  <contextPath>/atombeat-exist-minimal-secure</contextPath>
                 </contextHandler>
 		          </contextHandlers>  
             </configuration>
