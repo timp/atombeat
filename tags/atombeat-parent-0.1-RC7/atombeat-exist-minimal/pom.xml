@@ -1,0 +1,86 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+  	<groupId>org.atombeat</groupId>
+  	<artifactId>atombeat-parent</artifactId>
+  	<version>0.1-RC7</version>
+  </parent>
+
+  <artifactId>atombeat-exist-minimal</artifactId>
+  <packaging>war</packaging>
+  <name>${project.artifactId}</name>
+  <description>AtomBeat with eXist (Minimal)</description>
+  
+  <dependencies>
+  
+    <!-- the core AtomBeat Java library -->
+    <dependency>
+      <groupId>org.atombeat</groupId>
+      <artifactId>atombeat-xquery-functions</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>runtime</scope>
+    </dependency>
+    
+    <!-- overlay eXist -->
+    <dependency>
+    	<groupId>org.exist-db</groupId>
+    	<artifactId>exist-webapp</artifactId>
+    	<version>1.4.0</version>
+  		<type>war</type>
+  		<scope>runtime</scope>
+    </dependency>
+    
+    <!-- overlay an AtomBeat workspace -->
+    <dependency>
+      <groupId>org.atombeat</groupId>
+      <artifactId>atombeat-workspace</artifactId>
+      <version>${project.version}</version>
+      <type>zip</type>
+      <scope>runtime</scope>
+    </dependency>
+    
+  </dependencies>
+  
+  <build>
+    <plugins>
+    	<plugin>
+    		<groupId>org.apache.maven.plugins</groupId>
+    		<artifactId>maven-compiler-plugin</artifactId>
+		    <configuration>
+		        <source>1.6</source>
+		        <target>1.6</target>
+		    </configuration>
+    	</plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+        	<failOnMissingWebXml>false</failOnMissingWebXml>
+          <warName>${project.build.finalName}</warName>
+          <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+	        <overlays>
+	          <!-- overlay an AtomBeat workspace -->
+		        <overlay>
+		          <groupId>org.atombeat</groupId>
+		          <artifactId>atombeat-workspace</artifactId>
+		          <type>zip</type>
+		          <targetPath>workspace</targetPath>
+		        </overlay>
+		        <!-- overlay selected parts of eXist -->
+		        <overlay>
+		          <groupId>org.exist-db</groupId>
+		          <artifactId>exist-webapp</artifactId>
+		          <includes>
+		             <include>admin/**</include>
+		              <include>WEB-INF/**</include>
+		          </includes>
+		        </overlay>
+	        </overlays>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

@@ -1,0 +1,27 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.atombeat</groupId>
+  <artifactId>atombeat-parent</artifactId>
+  <version>0.1-RC7</version>
+  <packaging>pom</packaging>
+  <name>atombeat-parent</name>
+  <modules>
+    <module>atombeat-xquery-functions</module>
+    <module>atombeat-servlet-filters</module>
+    <module>atombeat-workspace</module>
+    <module>atombeat-exist-full</module>
+    <module>atombeat-exist-minimal</module>
+    <module>atombeat-exist-full-secure</module>
+    <module>atombeat-exist-minimal-secure</module>
+    <module>atombeat-orbeon-full</module>
+    <module>atombeat-orbeon-minimal</module>
+    <module>atombeat-orbeon-full-secure</module>
+    <module>atombeat-orbeon-minimal-secure</module>
+    <module>atombeat-integration-tests</module>
+  </modules>
+  <scm>
+    <connection>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.1-RC7</connection>
+    <developerConnection>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.1-RC7</developerConnection>
+    <url>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.1-RC7</url>
+  </scm>  
+</project>
