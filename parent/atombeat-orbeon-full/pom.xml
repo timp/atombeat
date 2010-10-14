@@ -10,7 +10,7 @@
 
   <artifactId>atombeat-orbeon-full</artifactId>
   <packaging>war</packaging>
-  <name>${artifactId}</name>
+  <name>${project.artifactId}</name>
   <description>AtomBeat with Orbeon (Full)</description>
   
   <dependencies>
@@ -19,9 +19,24 @@
     <dependency>
       <groupId>org.atombeat</groupId>
       <artifactId>atombeat-xquery-functions</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
       <type>jar</type>
       <scope>runtime</scope>
+    </dependency>
+    
+    <!-- the eXist versioning module -->
+    <dependency>
+      <groupId>org.exist-db</groupId>
+      <artifactId>exist-versioning-module</artifactId>
+      <version>1.4.0</version>
+      <type>jar</type>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.exist-db</groupId>
+          <artifactId>exist</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
     
     <!-- overlay Orbeon -->
@@ -37,7 +52,7 @@
     <dependency>
       <groupId>org.atombeat</groupId>
       <artifactId>atombeat-workspace</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
       <type>zip</type>
       <scope>runtime</scope>
     </dependency>
@@ -45,7 +60,6 @@
   </dependencies>
   
   <build>
-    <finalName>${artifactId}</finalName>
     <plugins>
     	<plugin>
     	<groupId>org.apache.maven.plugins</groupId>
@@ -59,21 +73,23 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
-       	<failOnMissingWebXml>false</failOnMissingWebXml>
-        <overlays>
-         <!-- overlay an AtomBeat workspace -->
-         <overlay>
-           <groupId>org.atombeat</groupId>
-           <artifactId>atombeat-workspace</artifactId>
-           <type>zip</type>
-           <targetPath>workspace</targetPath>
-         </overlay>
-         <!-- overlay the whole of Orbeon -->
-         <overlay>
-           <groupId>com.orbeon</groupId>
-           <artifactId>orbeon</artifactId>
-         </overlay>
-        </overlays>
+	       	<failOnMissingWebXml>false</failOnMissingWebXml>
+	       	<warName>${project.build.finalName}</warName>
+	       	<webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+	        <overlays>
+	         <!-- overlay an AtomBeat workspace -->
+	         <overlay>
+	           <groupId>org.atombeat</groupId>
+	           <artifactId>atombeat-workspace</artifactId>
+	           <type>zip</type>
+	           <targetPath>workspace</targetPath>
+	         </overlay>
+	         <!-- overlay the whole of Orbeon -->
+	         <overlay>
+	           <groupId>com.orbeon</groupId>
+	           <artifactId>orbeon</artifactId>
+	         </overlay>
+	        </overlays>
         </configuration>
       </plugin>
     </plugins>

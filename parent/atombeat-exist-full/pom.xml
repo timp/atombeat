@@ -10,7 +10,7 @@
 
   <artifactId>atombeat-exist-full</artifactId>
   <packaging>war</packaging>
-  <name>${artifactId}</name>
+  <name>${project.artifactId}</name>
   <description>AtomBeat with eXist (Full)</description>
   
   <dependencies>
@@ -19,7 +19,7 @@
     <dependency>
       <groupId>org.atombeat</groupId>
       <artifactId>atombeat-xquery-functions</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
       <type>jar</type>
       <scope>runtime</scope>
     </dependency>
@@ -37,7 +37,7 @@
     <dependency>
       <groupId>org.atombeat</groupId>
       <artifactId>atombeat-workspace</artifactId>
-      <version>${version}</version>
+      <version>${project.version}</version>
       <type>zip</type>
       <scope>runtime</scope>
     </dependency>
@@ -45,7 +45,6 @@
   </dependencies>
   
   <build>
-    <finalName>${artifactId}</finalName>
     <plugins>
     	<plugin>
     		<groupId>org.apache.maven.plugins</groupId>
@@ -60,20 +59,22 @@
         <artifactId>maven-war-plugin</artifactId>
         <configuration>
         	<failOnMissingWebXml>false</failOnMissingWebXml>
-	         <overlays>
-	           <!-- overlay an AtomBeat workspace -->
-		         <overlay>
-		           <groupId>org.atombeat</groupId>
-		           <artifactId>atombeat-workspace</artifactId>
-		           <type>zip</type>
-		           <targetPath>workspace</targetPath>
-		         </overlay>
-		         <!-- overlay the whole of eXist -->
-		         <overlay>
-		           <groupId>org.exist-db</groupId>
-		           <artifactId>exist-webapp</artifactId>
-		         </overlay>
-	        </overlays>
+          <warName>${project.build.finalName}</warName>
+          <webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+	        <overlays>
+	          <!-- overlay an AtomBeat workspace -->
+	         <overlay>
+	           <groupId>org.atombeat</groupId>
+	           <artifactId>atombeat-workspace</artifactId>
+	           <type>zip</type>
+	           <targetPath>workspace</targetPath>
+	         </overlay>
+	         <!-- overlay the whole of eXist -->
+	         <overlay>
+	           <groupId>org.exist-db</groupId>
+	           <artifactId>exist-webapp</artifactId>
+	         </overlay>
+	       </overlays>
         </configuration>
       </plugin>
     </plugins>
