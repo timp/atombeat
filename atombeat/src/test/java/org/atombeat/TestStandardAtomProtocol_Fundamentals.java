@@ -80,7 +80,7 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		int result = executeMethod(method);
 		
 		// expect the status code is 201 Created
-		assertEquals(201, result);
+		assertEquals("Does the webserver have write access to /data/atombeat", 201, result);
 
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
