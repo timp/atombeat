@@ -51,7 +51,7 @@ $ sudo chown -R tomcat6:tomcat6 /opt/atombeat-exist-minimal-0.1-RC7
 $ sudo service tomcat6 restart
 }}}
 
-The rest of the tutorial assumes you have deployed the AtomBeat web application at the context path */atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from atombeat-exist-minimal-0.1-RC7.war to atombeat.war before you do, to make sure it gets deployed to the right context path.
+The rest of the tutorial assumes you have deployed the AtomBeat web application at the context path */atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from `atombeat-exist-minimal-0.1-RC7.war` to `atombeat.war` before you do, to make sure it gets deployed to the right context path.
 
 Once you've done this, restart your servlet container, and point your browser to http://localhost:8080/atombeat/ - you should see a web page saying, "It works!" 
 
@@ -63,7 +63,7 @@ $ tcpwatch-httpproxy -h -L 8081:8080 &
 
 Once the TCP proxy is running, point your browser to http://localhost:8081/atombeat/ - you should see the same "It works!" message. Have a look at the TCP communication to check you can see the HTTP requests and responses.
 
-= Creating an Atom Collection and Retrieving an Atom Feed =
+= Collections and Feeds =
 
 There are several different ways to create an Atom collection in AtomBeat. In this tutorial, we're going to use an administration utility that comes with AtomBeat to create a pre-configured Atom collection. For more information on managing Atom collections, see TODO.
 
@@ -80,7 +80,7 @@ If you are using Firefox, you should see the default Firefox feed reader offerin
 Let's do the same thing - retrieve an Atom feed from the Test collection - using cURL:
 
 {{{
-$ curl http://localhost:8081/atombeat/workspace/content/test
+$ curl --verbose http://localhost:8081/atombeat/workspace/content/test
 }}}
 
 You should see the raw Atom XML representation of the feed document output in your console.
@@ -114,6 +114,110 @@ Date: Thu, 14 Oct 2010 17:01:02 GMT
 </atom:feed>
 }}}
 
+= Collection Members =
 
+== Create a Member ==
+
+You can create new members in an Atom collection by POSTing an Atom entry document to the collection URI. 
+
+To do this, first create a file in your current directory called "entry1.xml", with the following content:
+
+{{{
+<?xml version="1.0"?>
+<entry xmlns="http://www.w3.org/2005/Atom">
+  <title>Atom-Powered Robots Run Amok</title>
+  <content>Some text.</content>
+</entry>
+}}}
+
+Next, use cURL to send an HTTP POST request, e.g.:
+
+{{{
+$ curl --verbose --header "Content-Type: application/atom+xml" --data-binary @entry1.xml http://localhost:8081/atombeat/workspace/content/test
+}}}
+
+You should see an Atom entry document returned to you, representing the newly created collection member.
+
+The TCP communication trace should look something like:
+
+{{{
+POST /atombeat/workspace/content/test HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+Content-Type: application/atom+xml
+Content-Length: 188
+
+<?xml version="1.0"?>
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+  <atom:title>Atom-Powered Robots Run Amok</atom:title>
+  <atom:content>Some text.</atom:content>
+</atom:entry>
+
+
+HTTP/1.1 201 Created
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Location: http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+Content-Location: http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+ETag: "0e95efe893e345c34ab1f79c757c719f"
+Content-Type: application/atom+xml;type=entry;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 14 Oct 2010 17:29:48 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
+    <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+    <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
+    <atom:author>
+        <atom:name/>
+    </atom:author>
+    <atom:title>Atom-Powered Robots Run Amok</atom:title>
+    <atom:content>Some text.</atom:content>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+</atom:entry>
+}}}
+
+Once you've done this, try retrieving a feed from the collection again. E.g., go to http://localhost:8081/atombeat/workspace/content/test in your browser again, or do:
+
+{{{
+$ curl --verbose http://localhost:8081/atombeat/workspace/content/test
+}}}
+
+You should see the new member appearing in the feed.
+
+== Retrieve a Member ==
+
+To retrieve a collection member, you need the member URI. You can find the member URI either from the value of the `Location` header sent back when you created the member, or from the `@href` attribute on the `atom:link` with `@rel="edit"` (I'll call this the "edit link" from now on). In the example above, the member URI is http://localhost:8081/atombeat/workspace/content/test/2faba9cd-b2f7-4ad0-a9ef-46009822046c.atom - but it will be different for you, because AtomBeat generates a new URI for every new member.
+
+Once you've found the member URI, send a GET request to the URI, e.g.:
+
+{{{
+$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/2faba9cd-b2f7-4ad0-a9ef-46009822046c.atom
+}}}
+
+You should see an Atom entry document returned.
+
+== Update a Member ==
+
+TODO
+
+== Delete a Member ==
+
+TODO
+
+= Media Resources =
+
+TODO
+
+= Further Reading =
+
+Further tutorials available for AtomBeat:
+
+  * TODO
+
+Also highly recommended are the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Protocol Specification] and the [http://www.atomenabled.org/developers/syndication/atom-format-spec.php Atom Format Specification].
 
 
