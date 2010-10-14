@@ -13,6 +13,8 @@
     <http-basic/>
 
     <!-- don't apply security to these, rely on eXist authentication -->
+    <!-- n.B. In production you may want to disable or otherwise limit access to 
+      these endpoints, as they are potential vulnerabilities -->
     <intercept-url pattern="/rest/**" filters="none"/>
     <intercept-url pattern="/webdav/**" filters="none"/>
     <intercept-url pattern="/xmlrpc" filters="none"/>
