@@ -25,22 +25,95 @@ OPTIONAL: You might also like to install a TCP proxy so you can observe the comm
 
 {{{
 $ sudo apt-get install tcpwatch-httpproxy
-$ tcpwatch-httpproxy -L 8081:8080 &
+$ tcpwatch-httpproxy -h -L 8081:8080 &
 }}}
 
 This tutorial assumes you have your servlet container installed and listening on port 8080.
 
-This tutorial also assumes you have a TCP proxy installed and running, listening on port 8081 and forwarding to port 8080. If you are doing this tutorial without a TCP proxy, replace "8081" with "8080" wherever you see it below.
+This tutorial also assumes you have a TCP proxy installed and running, listening on port 8081 and forwarding to port 8080. If you are doing this tutorial *without* a TCP proxy, replace "8081" with "8080" wherever you see it below.
 
 = Downloading and Installing AtomBeat =
 
-We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-full* WAR package. This package is exactly as the eXist 1.4 web application, but with the AtomBeat web services overlaid. For more information on the different packages available, see TODO.
+We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal* WAR package. This package is a web application containing an AtomBeat workspace, overlaid with a cut-down version of the eXist web application. For more information on the different AtomBeat packages available, see TODO.
 
-Go to the [http://code.google.com/p/atombeat/downloads/list AtomBeat downloads page] in your browser, click on the latest version of atombeat-exist-full and download it to your computer. Or, from the command line, e.g.:
+Go to the [http://code.google.com/p/atombeat/downloads/list AtomBeat downloads page] in your browser, click on the latest version of atombeat-exist-minimal and download it to your computer. Or, from the command line, e.g.:
 
 {{{
-$ wget http://atombeat.googlecode.com/files/atombeat-exist-full-0.1-RC7.war
+$ wget http://atombeat.googlecode.com/files/atombeat-exist-minimal-0.1-RC7.war
 }}}
+
+Once the war file is downloaded, deploy it to your servlet container. There are usually several options for deploying a war file, e.g., on Tomcat you can usually copy the war file to the webapps directory and restart Tomcat, and the war will automatically be exploded and deployed. Alternatively, you can do something a bit more manual, e.g.:
+
+{{{
+$ sudo unzip atombeat-exist-minimal-0.1-RC7.war -d /opt/atombeat-exist-minimal-0.1-RC7
+$ sudo ln -s /opt/atombeat-exist-minimal-0.1-RC7 /var/lib/tomcat6/webapps/atombeat
+$ sudo chown -R tomcat6:tomcat6 /opt/atombeat-exist-minimal-0.1-RC7
+$ sudo service tomcat6 restart
+}}}
+
+The rest of the tutorial assumes you have deployed the AtomBeat web application at the context path */atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from atombeat-exist-minimal-0.1-RC7.war to atombeat.war before you do, to make sure it gets deployed to the right context path.
+
+Once you've done this, restart your servlet container, and point your browser to http://localhost:8080/atombeat/ - you should see a web page saying, "It works!" 
+
+OPTIONAL: If you are going to use a TCP proxy, start it now, forwarding from 8081 to 8080, e.g.:
+
+{{{
+$ tcpwatch-httpproxy -h -L 8081:8080 &
+}}}
+
+Once the TCP proxy is running, point your browser to http://localhost:8081/atombeat/ - you should see the same "It works!" message. Have a look at the TCP communication to check you can see the HTTP requests and responses.
+
+= Creating an Atom Collection and Retrieving an Atom Feed =
+
+There are several different ways to create an Atom collection in AtomBeat. In this tutorial, we're going to use an administration utility that comes with AtomBeat to create a pre-configured Atom collection. For more information on managing Atom collections, see TODO.
+
+Go to the following link in your browser: http://localhost:8081/atombeat/workspace/admin/install.xql
+
+You should see a page entitled "Atom Collections" and a table listing two collections.
+
+Click the "Install" button. You should see the "Available" column change from "false" to "true". You have just created two Atom collections.
+
+To retrieve an Atom feed from the Test Collection, click on the [http://localhost:8081/atombeat/workspace/content/test /test] link, or go to the following URL: http://localhost:8081/atombeat/workspace/content/test
+
+If you are using Firefox, you should see the default Firefox feed reader offering to subscribe to the feed, and below that the title of the collection: "Test Collection". What you see in other browsers will vary.
+
+Let's do the same thing - retrieve an Atom feed from the Test collection - using cURL:
+
+{{{
+$ curl http://localhost:8081/atombeat/workspace/content/test
+}}}
+
+You should see the raw Atom XML representation of the feed document output in your console.
+
+Finally, check the TCP proxy, you should see something like this in the most recent traffic:
+
+{{{
+GET /atombeat/workspace/content/test HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;type=entry;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 14 Oct 2010 17:01:02 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:enable-versioning="false" atombeat:exclude-entry-content="false" atombeat:recursive="false">
+    <atom:id>http://localhost:8081/atombeat/workspace/content/test</atom:id>
+    <atom:updated>2010-10-14T17:55:42.208+01:00</atom:updated>
+    <atom:author>
+        <atom:name/>
+    </atom:author>
+    <atom:title type="text">Test Collection</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
+</atom:feed>
+}}}
+
 
 
 
