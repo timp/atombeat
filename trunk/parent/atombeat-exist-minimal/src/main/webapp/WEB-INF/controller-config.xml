@@ -9,7 +9,7 @@
     <!-- XMLRPC servlet -->
 	<forward pattern="/xmlrpc" servlet="org.exist.xmlrpc.RpcServlet"/>
     <!-- REST interface -->
-<!--	<forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>-->
+	<forward pattern="/(rest|servlet)/" servlet="EXistServlet"/>
     <!-- WebDAV interface -->
 <!--	<forward pattern="/webdav/" servlet="WebDAVServlet"/>-->
     <!-- Atom Publishing Protocol -->
