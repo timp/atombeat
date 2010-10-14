@@ -13,6 +13,8 @@
     <module>atombeat-exist-minimal</module>
     <module>atombeat-exist-full-secure</module>
     <module>atombeat-exist-minimal-secure</module>
+    <module>atombeat-orbeon-full</module>
+    <module>atombeat-orbeon-minimal</module>
     <module>atombeat-integration-tests</module>
   </modules>
   <scm>
