@@ -9,6 +9,8 @@ This tutorial covers the following topics:
   * creating, retrieving, updating and deleting Atom collection members
   * creating, retrieving, updating and deleting media resources  
 
+<wiki:toc/>
+
 = Prerequisites =
 
 You will need to have a servlet container like [http://tomcat.apache.org/download-60.cgi Tomcat] or [http://docs.codehaus.org/display/JETTY/Downloading+Jetty Jetty] installed on your computer, and you will need to know how to deploy a WAR file. AtomBeat 0.1 has been tested with Tomcat 6.0 and Jetty 6.1.
