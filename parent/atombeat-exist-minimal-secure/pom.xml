@@ -5,7 +5,7 @@
   <parent>
   	<groupId>org.atombeat</groupId>
   	<artifactId>atombeat-parent</artifactId>
-  	<version>0.1-SNAPSHOT</version>
+  	<version>0.1-RC7</version>
   </parent>
 
   <artifactId>atombeat-exist-minimal-secure</artifactId>
