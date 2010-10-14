@@ -250,6 +250,64 @@
             </configuration>
           </execution>
           
+          <execution>
+            <id>test-atombeat-orbeon-full-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-full-secure</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-orbeon-minimal-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-minimal-secure</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
         </executions>
       </plugin>
       
@@ -309,6 +367,14 @@
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
                   <war>${basedir}/../atombeat-orbeon-minimal/target/atombeat-orbeon-minimal-${project.version}.war</war>
                   <contextPath>/atombeat-orbeon-minimal</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-full/target/atombeat-orbeon-full-secure-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-full-secure</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-minimal/target/atombeat-orbeon-minimal-secure-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-minimal-secure</contextPath>
                 </contextHandler>
 		          </contextHandlers>  
             </configuration>
