@@ -1,0 +1,46 @@
+#summary A tutorial on getting started with AtomBeat.
+
+= Introduction =
+
+This tutorial covers the following topics:
+
+  * downloading and installing AtomBeat
+  * creating an Atom collection and retrieving an Atom feed
+  * creating, retrieving, updating and deleting Atom collection members
+  * creating, retrieving, updating and deleting media resources  
+
+= Prerequisites =
+
+You will need to have a servlet container like [http://tomcat.apache.org/download-60.cgi Tomcat] or [http://docs.codehaus.org/display/JETTY/Downloading+Jetty Jetty] installed on your computer, and you will need to know how to deploy a WAR file. AtomBeat 0.1 has been tested with Tomcat 6.0 and Jetty 6.1.
+
+You will need to have the cURL HTTP command-line utility installed on your computer. If you're on a Linux computer, you probably already have curl installed, or can install it via a software repository, e.g.:
+
+{{{
+$ sudo apt-get install curl
+}}}
+
+If you are on a Windows or Mac computer, you can [http://curl.haxx.se/download.html download cURL] and install it manually.
+
+OPTIONAL: You might also like to install a TCP proxy so you can observe the communication between the client (cURL) and server (AtomBeat). There are a couple of options here. You can download and install [https://tcpmon.dev.java.net/ tcpmon] on any operating system. You can also install a very simple utility called [http://hathawaymix.org/Software/TCPWatch tcpwatch], e.g.:
+
+{{{
+$ sudo apt-get install tcpwatch-httpproxy
+$ tcpwatch-httpproxy -L 8081:8080 &
+}}}
+
+This tutorial assumes you have your servlet container installed and listening on port 8080.
+
+This tutorial also assumes you have a TCP proxy installed and running, listening on port 8081 and forwarding to port 8080. If you are doing this tutorial without a TCP proxy, replace "8081" with "8080" wherever you see it below.
+
+= Downloading and Installing AtomBeat =
+
+We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-full* WAR package. This package is exactly as the eXist 1.4 web application, but with the AtomBeat web services overlaid. For more information on the different packages available, see TODO.
+
+Go to the [http://code.google.com/p/atombeat/downloads/list AtomBeat downloads page] in your browser, click on the latest version of atombeat-exist-full and download it to your computer. Or, from the command line, e.g.:
+
+{{{
+$ wget http://atombeat.googlecode.com/files/atombeat-exist-full-0.1-RC7.war
+}}}
+
+
+
