@@ -6,6 +6,7 @@ declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 
 import module namespace util = "http://exist-db.org/xquery/util" ;
+import module namespace system = "http://exist-db.org/xquery/system" ;
 
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 
@@ -118,8 +119,15 @@ declare variable $config:media-storage-mode as xs:string := "FILE" (: "DB" :) ;
  : media files will be stored. N.B. the process running AtomBeat MUST have 
  : permission to create this directory and any child directories.
  :)
-declare variable $config:media-storage-dir as xs:string := "/data/atombeat/media" ; 
- 
+(: declare variable $config:media-storage-dir as xs:string := "/srv/atombeat/media" ; :)
+declare variable $config:media-storage-dir as xs:string :=
+    let $home := system:get-exist-home()
+    return
+        if (ends-with($home, "WEB-INF")) then
+            concat($home, "/media" ) 
+        else
+            concat($home, "/webapp/WEB-INF/media" )
+; 
 
 (:~
  : The function that generates an identifier token to use when constructing the
