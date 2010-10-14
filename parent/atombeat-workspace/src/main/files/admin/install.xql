@@ -58,8 +58,9 @@ declare function local:content() as item()*
             </style>
         </head>
         <body>
-            <h1>AtomBeat Installation</h1>
-            <h2>Atom Collections</h2>
+            <h1>Atom Collections</h1>
+            <p>This page is a utility for managing pre-configured Atom collections.</p>
+            <p>Note this page <strong>does not</strong> show all Atom collections available in the current workspace, only those declared in the workspace/admin/collections.xqm file.</p>
                 <table>
                     <tr>
                         <th>Title</th>

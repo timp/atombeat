@@ -213,6 +213,43 @@
             </configuration>
           </execution>
           
+          <execution>
+            <id>test-atombeat-orbeon-minimal</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.workspacePath</name>
+                  <value>/workspace/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-minimal</value>
+                </property>
+              </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-orbeon-minimal -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          
         </executions>
       </plugin>
       
@@ -268,6 +305,10 @@
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
                   <war>${basedir}/../atombeat-orbeon-full/target/atombeat-orbeon-full-${project.version}.war</war>
                   <contextPath>/atombeat-orbeon-full</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-minimal/target/atombeat-orbeon-minimal-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-minimal</contextPath>
                 </contextHandler>
 		          </contextHandlers>  
             </configuration>
