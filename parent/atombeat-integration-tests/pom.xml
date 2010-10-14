@@ -369,11 +369,11 @@
                   <contextPath>/atombeat-orbeon-minimal</contextPath>
                 </contextHandler>
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-                  <war>${basedir}/../atombeat-orbeon-full/target/atombeat-orbeon-full-secure-${project.version}.war</war>
+                  <war>${basedir}/../atombeat-orbeon-full-secure/target/atombeat-orbeon-full-secure-${project.version}.war</war>
                   <contextPath>/atombeat-orbeon-full-secure</contextPath>
                 </contextHandler>
                 <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
-                  <war>${basedir}/../atombeat-orbeon-minimal/target/atombeat-orbeon-minimal-secure-${project.version}.war</war>
+                  <war>${basedir}/../atombeat-orbeon-minimal-secure/target/atombeat-orbeon-minimal-secure-${project.version}.war</war>
                   <contextPath>/atombeat-orbeon-minimal-secure</contextPath>
                 </contextHandler>
 		          </contextHandlers>  
