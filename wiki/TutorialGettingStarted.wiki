@@ -186,16 +186,55 @@ Once you've done this, try retrieving a feed from the collection again. E.g., go
 $ curl --verbose http://localhost:8081/atombeat/workspace/content/test
 }}}
 
-You should see the new member appearing in the feed.
+You should see the new member appearing in the feed, e.g.:
+
+{{{
+GET /atombeat/workspace/content/test HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;type=entry;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Thu, 14 Oct 2010 17:33:36 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:enable-versioning="false" atombeat:exclude-entry-content="false" atombeat:recursive="false">
+    <atom:id>http://localhost:8081/atombeat/workspace/content/test</atom:id>
+    <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
+    <atom:author>
+        <atom:name/>
+    </atom:author>
+    <atom:title type="text">Test Collection</atom:title>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
+    <atom:entry>
+        <atom:id>http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
+        <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+        <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
+        <atom:author>
+            <atom:name/>
+        </atom:author>
+        <atom:title>Atom-Powered Robots Run Amok</atom:title>
+        <atom:content>Some text.</atom:content>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    </atom:entry>
+</atom:feed>
+}}}
 
 == Retrieve a Member ==
 
-To retrieve a collection member, you need the member URI. You can find the member URI either from the value of the `Location` header sent back when you created the member, or from the `@href` attribute on the `atom:link` with `@rel="edit"` (I'll call this the "edit link" from now on). In the example above, the member URI is http://localhost:8081/atombeat/workspace/content/test/2faba9cd-b2f7-4ad0-a9ef-46009822046c.atom - but it will be different for you, because AtomBeat generates a new URI for every new member.
+To retrieve a collection member, you need the member URI. You can find the member URI either from the value of the `Location` header sent back when you created the member, or from the `@href` attribute on the `atom:link` with `@rel="edit"` (I'll call this the "edit link" from now on). In the example above, the member URI is http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom - but it will be different for you, because AtomBeat generates a new URI for every new member.
 
 Once you've found the member URI, send a GET request to the URI, e.g.:
 
 {{{
-$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/2faba9cd-b2f7-4ad0-a9ef-46009822046c.atom
+$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
 }}}
 
 You should see an Atom entry document returned.
