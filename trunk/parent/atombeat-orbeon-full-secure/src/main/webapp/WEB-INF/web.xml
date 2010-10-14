@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee">
     
-    <display-name>atombeat-orbeon-full</display-name>
+    <display-name>atombeat-orbeon-full-secure</display-name>
     <description>
-        AtomBeat with Orbeon (Full)
+        AtomBeat with Orbeon (Full) and Spring Security
     </description>
     
     
@@ -116,6 +116,80 @@
         <param-value>oxf:/apps/context/session-destroyed.xpl</param-value>
     </context-param>-->
     <!-- End session listener processors -->
+    
+    
+    <!--+
+        |
+        | HTTP Method Override Filter
+        | ***************************
+        |
+        | (N.B. put this before spring security, so security is applied to value of
+        | method override if given)
+        |
+        +-->
+    
+    
+    <filter>
+        <filter-name>HttpMethodOverrideFilter</filter-name>
+        <filter-class>org.atombeat.http.HttpMethodOverrideFilter</filter-class>
+        <init-param>
+            <param-name>allowedOverrides</param-name>
+            <param-value>PUT DELETE</param-value>
+        </init-param>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>HttpMethodOverrideFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    <!--+
+        | Spring Security Configuration
+        | *****************************
+        | 
+        +-->
+    
+    <context-param>
+        <param-name>contextConfigLocation</param-name>
+        <param-value>
+            WEB-INF/security-example.xml
+        </param-value>
+    </context-param>
+    
+    
+    <filter>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <filter-class>org.springframework.web.filter.DelegatingFilterProxy</filter-class>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>springSecurityFilterChain</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping>
+    
+    
+    <listener>
+        <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+    </listener>
+    
+    
+    <!-- store username in request attribute so it can be accessed easily in xqueries -->
+    
+    <filter>
+        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+        <filter-class>org.atombeat.http.SpringSecuritySetUserRequestAttributesFilter</filter-class>
+    </filter>
+    
+    
+    <filter-mapping>
+        <filter-name>SpringSecurityRequestAttributeFilter</filter-name>
+        <url-pattern>/*</url-pattern>
+    </filter-mapping> 
+    
+    
     <!--All JSP files under /xforms-jsp go through the XForms filter-->
     <filter>
         <filter-name>orbeon-xforms-filter</filter-name>
