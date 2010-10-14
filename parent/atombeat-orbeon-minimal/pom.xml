@@ -44,10 +44,19 @@
     	<groupId>com.orbeon</groupId>
     	<artifactId>orbeon</artifactId>
     	<version>3.8.0-CE-exist-1.4.0</version>
-  	<type>war</type>
-  	<scope>runtime</scope>
+	  	<type>war</type>
+	  	<scope>runtime</scope>
     </dependency>
-    
+
+    <!-- overlay a few parts of eXist -->
+    <dependency>
+      <groupId>org.exist-db</groupId>
+      <artifactId>exist-webapp</artifactId>
+      <version>1.4.0</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
+        
     <!-- overlay an AtomBeat workspace -->
     <dependency>
       <groupId>org.atombeat</groupId>
@@ -88,7 +97,23 @@
 	         <overlay>
 	           <groupId>com.orbeon</groupId>
 	           <artifactId>orbeon</artifactId>
+             <includes>
+               <include>xforms-jsp/guess-the-number/**</include>
+               <include>WEB-INF/exist-data/**</include>
+               <include>WEB-INF/lib/**</include>
+               <include>WEB-INF/resources/page-flow.xml</include>
+               <include>WEB-INF/resources/config/**</include>
+               <include>WEB-INF/resources/apps/xforms-hello/**</include>
+             </includes>
 	         </overlay>
+            <!-- overlay selected parts of eXist -->
+            <overlay>
+              <groupId>org.exist-db</groupId>
+              <artifactId>exist-webapp</artifactId>
+              <includes>
+                 <include>admin/**</include>
+              </includes>
+            </overlay>
 	        </overlays>
         </configuration>
       </plugin>

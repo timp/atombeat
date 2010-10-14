@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <web-app version="2.4" xsi:schemaLocation="http://java.sun.com/xml/ns/j2ee http://java.sun.com/xml/ns/j2ee/web-app_2_4.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/j2ee">
     
-    <display-name>atombeat-orbeon-full</display-name>
+    <display-name>atombeat-orbeon-minimal</display-name>
     <description>
-        AtomBeat with Orbeon (Full)
+        AtomBeat with Orbeon (Minimal)
     </description>
     
     
@@ -273,6 +273,7 @@
             <param-value>basic</param-value>
         </init-param>
     </servlet>
+    <!--
     <servlet>
         <servlet-name>exist-atom-servlet</servlet-name>
         <servlet-class>org.exist.atom.http.AtomServlet</servlet-class>
@@ -281,6 +282,7 @@
             <param-value>basic</param-value>
         </init-param>
     </servlet>
+    -->
     <!-- Uncomment this for the SQL examples -->
     <!--
     <servlet>
@@ -293,10 +295,13 @@
         <load-on-startup>4</load-on-startup>
     </servlet>-->
     <!-- End SQL examples -->
+    
+    <!-- only allow orbeon to control specific parts of the URL space -->
     <servlet-mapping>
         <servlet-name>orbeon-main-servlet</servlet-name>
-        <url-pattern>/</url-pattern>
+        <url-pattern>/xforms-hello/*</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>orbeon-xforms-server-servlet</servlet-name>
         <url-pattern>/xforms-server/*</url-pattern>
@@ -309,18 +314,26 @@
         <servlet-name>exist-xmlrpc-servlet</servlet-name>
         <url-pattern>/exist/xmlrpc</url-pattern>
     </servlet-mapping>
+    
     <servlet-mapping>
         <servlet-name>exist-rest-servlet</servlet-name>
-        <url-pattern>/exist/rest/*</url-pattern>
+        <url-pattern>/rest/*</url-pattern>
     </servlet-mapping>
+    
+    <!--
     <servlet-mapping>
         <servlet-name>exist-webdav-servlet</servlet-name>
         <url-pattern>/exist/webdav/*</url-pattern>
     </servlet-mapping>
+    -->
+    
+    <!--
     <servlet-mapping>
         <servlet-name>exist-atom-servlet</servlet-name>
         <url-pattern>/exist/atom/*</url-pattern>
     </servlet-mapping>
+    -->
+    
     <!-- Uncomment this for the SQL examples -->
     <!--
     <servlet-mapping>
@@ -416,6 +429,11 @@
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
         <url-pattern>/workspace/*</url-pattern>
+    </filter-mapping>
+    
+    <filter-mapping>
+        <filter-name>XQueryURLRewrite</filter-name>
+        <url-pattern>/admin/*</url-pattern>
     </filter-mapping>
     
 </web-app>
