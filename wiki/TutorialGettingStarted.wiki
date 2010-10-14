@@ -1,5 +1,7 @@
 #summary A tutorial on getting started with AtomBeat.
 
+<wiki:toc/>
+
 = Introduction =
 
 This tutorial covers the following topics:
@@ -8,8 +10,6 @@ This tutorial covers the following topics:
   * creating an Atom collection and retrieving an Atom feed
   * creating, retrieving, updating and deleting Atom collection members
   * creating, retrieving, updating and deleting media resources  
-
-<wiki:toc/>
 
 = Prerequisites =
 
