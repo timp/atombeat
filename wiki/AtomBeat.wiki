@@ -1,4 +1,4 @@
-#summary AtomBeat - an Atom protocol implementation for eXist
+#summary AtomBeat - wiki home page
 
 = Introduction =
 
