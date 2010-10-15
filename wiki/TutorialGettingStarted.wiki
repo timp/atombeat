@@ -36,15 +36,15 @@ This tutorial also assumes you have a TCP proxy installed and running, listening
 
 = Downloading and Installing AtomBeat =
 
-We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal* WAR package. This package is a web application containing an AtomBeat workspace, overlaid with a cut-down version of the eXist web application. For more information on the different AtomBeat packages available, see TODO.
+We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal* WAR package. This package is a web application containing an AtomBeat workspace, overlaid with a cut-down version of the [http://exist.sourceforge.net/ eXist] web application. For more information on the different AtomBeat packages available, see TODO.
 
-Go to the [http://code.google.com/p/atombeat/downloads/list AtomBeat downloads page] in your browser, click on the latest version of atombeat-exist-minimal and download it to your computer. Or, from the command line, e.g.:
+Go to the [http://code.google.com/p/atombeat/downloads/list AtomBeat downloads page] in your browser, click on the latest version of *atombeat-exist-minimal* and download it to your computer. Or, from the command line, e.g.:
 
 {{{
 $ wget http://atombeat.googlecode.com/files/atombeat-exist-minimal-0.1-RC7.war
 }}}
 
-Once the war file is downloaded, deploy it to your servlet container. There are usually several options for deploying a war file, e.g., on Tomcat you can usually copy the war file to the webapps directory and restart Tomcat, and the war will automatically be exploded and deployed. Alternatively, you can do something a bit more manual, e.g.:
+Once the war file is downloaded, deploy it to your servlet container. There are usually several options for deploying a war file, e.g., on Tomcat you can usually copy the war file to the `webapps` directory and restart Tomcat, and the war will automatically be exploded and deployed. Alternatively, you can do something a bit more manual, e.g.:
 
 {{{
 $ sudo unzip atombeat-exist-minimal-0.1-RC7.war -d /opt/atombeat-exist-minimal-0.1-RC7
@@ -273,7 +273,7 @@ Date: Thu, 14 Oct 2010 17:28:29 GMT
 
 == Update a Member ==
  
-To update a collection member, sent a PUT request to the member URI with an Atom entry document containing the updated data.
+To update a collection member, send a PUT request to the member URI with an Atom entry document containing the updated data.
 
 E.g., create a new file `entry1-updated.xml` in your current directory containing the following:
 
@@ -505,11 +505,156 @@ This is some not-very-exciting media content.
 
 == Updating a Media Resource ==
 
-TODO
+To update a media resource, send a PUT request to the media resource URI with the updated media content as the request body.
+
+E.g., create a new file `media1-updated.txt` in your current directory containing the following:
+
+{{{
+This is some not-very-exciting media content - updated with some more content.  
+}}}
+
+(...or whatever you want to write.)
+
+Then, send a PUT request using cURL, e.g.:
+
+{{{
+$ curl --verbose --header "Content-Type: text/plain" --upload-file media1-updated.txt http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+}}}
+
+You should see a response with the media-link entry corresponding to the media resource you just updated. Notice that the `atom:updated` element should have changed to reflect your recent update to the media resource. E.g.:
+
+{{{
+PUT /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+Content-Type: text/plain
+Content-Length: 79
+
+This is some not-very-exciting media content - updated with some more content.
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Location: http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
+Content-Type: application/atom+xml;type=entry;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Fri, 15 Oct 2010 12:08:47 GMT
+
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom</atom:id>
+    <atom:published>2010-10-14T19:05:18.652+01:00</atom:published>
+    <atom:updated>2010-10-15T13:08:47.661+01:00</atom:updated>
+    <atom:content type="text/plain" src="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media"/>
+    <atom:title type="text">media1.txt</atom:title>
+    <atom:summary type="text">media resource</atom:summary>
+    <atom:author>
+        <atom:name/>
+    </atom:author>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
+    <atom:link rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" length="79"/>
+</atom:entry>
+}}}
+
+A subsequent GET request to the media resource URI should return your updated content, e.g.:
+
+{{{
+$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+}}}
+
+...should give you something like:
+
+{{{
+GET /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+
+
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Disposition: attachment; filename="media1.txt"
+Content-Type: text/plain;charset=UTF-8
+Content-Length: 79
+Date: Fri, 15 Oct 2010 12:14:05 GMT
+
+This is some not-very-exciting media content - updated with some more content.
+}}}
 
 == Deleting a Media Resource ==
 
-TODO
+To delete a media resource, send a DELETE request to the media resource URI. E.g.:
+
+{{{
+$ curl --verbose --request DELETE http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+}}}
+
+If successful, you should receive a 204 response without any content, e.g.: 
+
+{{{
+DELETE /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+
+
+HTTP/1.1 204 No Content
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Date: Fri, 15 Oct 2010 12:21:11 GMT
+}}}
+
+Any subsequent GET request to the media resource URI should return a 404, e.g.:
+
+{{{
+GET /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+Host: localhost:8081
+Accept: */*
+
+
+HTTP/1.1 404 Not Found
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/xml;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Fri, 15 Oct 2010 12:21:21 GMT
+
+<error>
+    <status>404</status>
+    <message>The server has not found anything matching the Request-URI.</message>
+    <request>
+        <method>GET</method>
+        <path-info>/test/c5695f1c-af7d-4d18-b21c-96940636209e.media</path-info>
+        <parameters/>
+        <headers>
+            <header>
+                <name>user-agent</name>
+                <value>curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15</value>
+            </header>
+            <header>
+                <name>host</name>
+                <value>localhost:8081</value>
+            </header>
+            <header>
+                <name>accept</name>
+                <value>*/*</value>
+            </header>
+        </headers>
+        <user/>
+        <roles/>
+    </request>
+</error>
+}}}
+
+*Note that the media-link collection member corresponding to the media resource will also have been deleted. Note also that a DELETE request sent to the media-link URI will have exactly the same effect, i.e., both the media resource and the corresponding media-link member will be deleted.*
 
 = Further Reading =
 
