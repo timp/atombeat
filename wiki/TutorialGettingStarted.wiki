@@ -662,7 +662,7 @@ Date: Fri, 15 Oct 2010 12:21:21 GMT
 
 = Further Reading =
 
-For a list of other AtomBeat tutorials available, see TutorialsList.
+For a list of other AtomBeat tutorials available, see the [AtomBeat AtomBeat wiki home page].
 
 The [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Protocol Specification] and the [http://www.atomenabled.org/developers/syndication/atom-format-spec.php Atom Format Specification] are recommended reading.
 

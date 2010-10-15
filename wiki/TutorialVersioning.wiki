@@ -527,7 +527,7 @@ Note also that AtomBeat will *not* allow arbitrary insertion or modification of 
 
 = Further Reading =
 
-For a list of other AtomBeat tutorials available, see TutorialsList.
+For a list of other AtomBeat tutorials available, see the [AtomBeat AtomBeat wiki home page].
 
 The AtomBeat versioning implementation tries to stick as closely as possible to [http://tools.ietf.org/html/draft-snell-atompub-revision-00 James Snell's 2006 IETF draft].
 
