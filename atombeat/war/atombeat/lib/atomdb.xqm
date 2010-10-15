@@ -207,16 +207,22 @@ declare function atomdb:feed-doc-db-path(
 
 
 
-
+(: return one of 
+     the created collection db path,
+     the existing collection db path,
+     an error element
+:)  
+    
 declare function atomdb:create-collection(
 	$request-path-info as xs:string ,
 	$request-data as element(atom:feed) 
-) as xs:string?
+) as item()?
 {
-
-	if ( atomdb:collection-available( $request-path-info ) )
-	
-	then ()
+  let $db-collection-path := atomdb:request-path-info-to-db-path( $request-path-info )
+  let $feed-doc-db-path := atomdb:feed-doc-db-path( $db-collection-path )
+  return 
+	if ( xmldb:collection-available( $db-collection-path ) and exists( doc( $feed-doc-db-path ) ) )
+	then  $feed-doc-db-path
 	
 	else
 		
@@ -225,12 +231,12 @@ declare function atomdb:create-collection(
 		        let $path := concat( $config:media-storage-dir , $request-path-info )
 		        let $created := atombeat-util:mkdirs( $path )
                 return $created	            
-            else false()	 
+        else false()	 
 
-        return 
+    return 
             
-            if ( $config:media-storage-mode = "FILE" and not( $media-dir-created) ) then ()
-            
+            if ( $config:media-storage-mode = "FILE" and not( $media-dir-created) ) then 
+              <error>Directory could not be created for {$request-path-info}</error>
             else
             
         		(:
@@ -254,8 +260,11 @@ declare function atomdb:create-collection(
         		
         		let $feed-doc-db-path := xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
         		
-        		return $feed-doc-db-path
-        			
+        		return 
+        		   if (empty($feed-doc-db-path)) 
+        		   then <error>Feed creation failed at {$request-path-info}</error>
+        		   else
+        		     $feed-doc-db-path
 };
 
 
