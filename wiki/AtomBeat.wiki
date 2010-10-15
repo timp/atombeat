@@ -1,10 +1,10 @@
 #summary AtomBeat - wiki home page
 
-= Introduction =
+= About =
 
 AtomBeat is an implementation of the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Publishing Protocol] with a number of extended features. 
 
-== Tutorials ==
+= Tutorials =
 
 To find out more, see the following tutorials:
 
