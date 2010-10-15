@@ -2,9 +2,10 @@
 
 = Introduction =
 
-AtomBeat is an implementation of the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Publishing Protocol] with a number of extended features. To get started, see the following tutorials:
+AtomBeat is an implementation of the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Publishing Protocol] with a number of extended features. To find out more, see the following tutorials:
 
   * TutorialGettingStarted - download and install AtomBeat; create a collection and retrieve a feed; create, retrieve, updated and delete collection members; create, retrieve, update and delete media resources 
+  * TutorialVersioning - TODO
 
 = Feature Summary =
 
