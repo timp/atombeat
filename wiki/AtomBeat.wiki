@@ -8,9 +8,9 @@ AtomBeat is an implementation of the [http://www.atomenabled.org/developers/prot
 
 To find out more, see the following tutorials:
 
-  * TutorialGettingStarted - download and install AtomBeat; create a collection and retrieve a feed; create, retrieve, updated and delete collection members; create, retrieve, update and delete media resources 
+  * TutorialGettingStarted - download and install AtomBeat; create a collection and retrieve an Atom feed; create, retrieve, updated and delete collection members; create, retrieve, update and delete media resources 
 
-  * TutorialVersioning - TODO
+  * TutorialVersioning - create a versioned collection; retrieve a member history feed; retrieve member revisions; submit a revision comment
 
 = Feature Summary =
 
