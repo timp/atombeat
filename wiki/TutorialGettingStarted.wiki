@@ -433,6 +433,8 @@ Next, use cURL to send an HTTP POST request, e.g.:
 $ curl --verbose --header "Content-Type: text/plain" --header "Slug: media1.txt" --data-binary @media1.txt http://localhost:8081/atombeat/workspace/content/test
 }}}
 
+If you are using something other than a text file, remember to set the correct Content-Type header in the request. E.g., for a jpeg file, use `--header "Content-Type: image/jpeg"`. You can find a [http://www.iana.org/assignments/media-types/ list of registered media types at IANA].
+
 You should see an Atom entry document returned to - this is called the "media-link entry", and it contains metadata about your newly created media resource, e.g.:
 
 {{{
