@@ -15,8 +15,21 @@ let $delete-test-collection := atomdb:delete-collection( "/test" , true() )
 
 let $create-test-collection := atomdb:create-collection( "/test" , <atom:feed><atom:title>Test Collection</atom:title></atom:feed> )
 
-let $status-set := response:set-status-code( 200 )
+
+let $status-set := 
+   if ($create-test-collection instance of element(error))
+   then 
+     response:set-status-code( 500 )      
+   else  
+     response:set-status-code( 200 ) 
 
 let $response-content-type-set := response:set-header( "Content-Type" , "text/plain" )
 
-return "OK" 
+return 
+   if ($create-test-collection instance of element(error))
+   then 
+     $create-test-collection/text()
+   else  
+     $create-test-collection
+     
+       
