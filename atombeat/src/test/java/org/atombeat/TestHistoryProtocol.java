@@ -32,12 +32,8 @@ public class TestHistoryProtocol extends TestCase {
 		
 		GetMethod method = new GetMethod(installUrl);
 		
-		int result = executeMethod(method, "adam", "test");
+		executeMethod(method, "adam", "test", 200);
 		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
-
 		Header[] headers = {};
 		
 		String content = 
@@ -281,11 +277,9 @@ public class TestHistoryProtocol extends TestCase {
 	private static void verifyHistory(String historyLocation, int expectedRevisions) {
 		
 		GetMethod get = new GetMethod(historyLocation);
-		int result = executeMethod(get, USER, PASS);
+    // expect the status code is 200 OK
+		executeMethod(get, USER, PASS, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
-
 		// expect Content-Type header 
 		String responseContentType = get.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
@@ -361,15 +355,12 @@ public class TestHistoryProtocol extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, USER, PASS);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, USER, PASS, 200);
 
 		// now get
 		GetMethod get = new GetMethod(location);
-		int getResult = executeMethod(get, USER, PASS);
-		assertEquals(200, getResult);
+		executeMethod(get, USER, PASS, 200);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(get);
 		Element title = (Element) doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
 		assertEquals("Test Member - Updated", title.getTextContent());
@@ -383,15 +374,12 @@ public class TestHistoryProtocol extends TestCase {
 			"</atom:entry>";
 		
 		setAtomRequestEntity(method2, content2);
-		int result2 = executeMethod(method2, USER, PASS);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result2);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method2, USER, PASS, 200);
 
 		// now get again
 		GetMethod get2 = new GetMethod(location);
-		int getResult2 = executeMethod(get2, USER, PASS);
-		assertEquals(200, getResult2);
+		executeMethod(get2, USER, PASS, 200);
 		Document doc2 = AtomTestUtils.getResponseBodyAsDocument(get2);
 		Element title2 = (Element) doc2.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
 		assertEquals("Test Member - Updated Again", title2.getTextContent());

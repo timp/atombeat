@@ -30,10 +30,9 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 	private static final String TEST_COLLECTION_URI = CONTENT_URI + "test";
 	
 	
-	
-	private static Integer executeMethod(HttpMethod method) {
+	private static void executeMethod(HttpMethod method, int expectedStatus) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		AtomTestUtils.executeMethod(method, USER, PASS, expectedStatus);
 
 	}
 
@@ -48,12 +47,8 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 		
 		PostMethod method = new PostMethod(setupUrl);
 		
-		int result = executeMethod(method);
+		executeMethod(method, 200);
 		
-		if (result != 200) {
-			throw new RuntimeException("setup failed: "+result);
-		}
-
 	}
 	
 	
@@ -76,10 +71,8 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
 		Part[] parts = { fp , sp1 , sp2 };
 		setMultipartRequestEntity(post, parts);
-		int result = executeMethod(post);
+		executeMethod(post, 201);
 		
-		assertEquals(201, result);
-
 		// expect the Location header is set with an absolute URI
 		String responseLocation = post.getResponseHeader("Location").getValue();
 		assertNotNull(responseLocation);
@@ -123,10 +116,8 @@ public class TestExtendedAtomProtocol_MultipartFormdata extends TestCase {
 		StringPart sp2 = new StringPart("category", "scheme=\"foo\"; term=\"bar\"; label=\"baz\"");
 		Part[] parts = { fp , sp1 , sp2 };
 		setMultipartRequestEntity(post, parts);
-		int result = executeMethod(post);
+		executeMethod(post, 400);
 		
-		assertEquals(400, result);
-
 		// expect Content-Type header 
 		String responseContentType = post.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);

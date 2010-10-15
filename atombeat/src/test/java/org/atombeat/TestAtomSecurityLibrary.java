@@ -22,14 +22,12 @@ public class TestAtomSecurityLibrary extends TestCase {
 		
 		String testUrl = LIB_URI + "test-atom-security.xql";
 		GetMethod get = new GetMethod(testUrl);
-		int result = executeMethod(get, "adam", "test");
-		assertEquals(200, result);
+		executeMethod(get, "adam", "test", 200);
 		
 		BufferedReader reader = new BufferedReader(new InputStreamReader(get.getResponseBodyAsStream()));
 		String currentTest = null;
 		
 		for (String line = reader.readLine(); line != null; line = reader.readLine()) {
-		
 			if (line.startsWith("test"))
 				currentTest = line;
 			else {

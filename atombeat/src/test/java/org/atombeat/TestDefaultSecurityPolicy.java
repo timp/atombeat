@@ -50,12 +50,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		GetMethod method = new GetMethod(installUrl);
 		
-		int result = executeMethod(method, "adam", "test");
+		executeMethod(method, "adam", "test", 200);
 		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
-	
 		testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
 
 		domImplRegistry = DOMImplementationRegistry.newInstance();
@@ -90,10 +86,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "adam" to be defined in the example
 		// security config to be assigned the ROLE_ADMINISTRATOR role
 		
-		int result = executeMethod(method, "adam", "test");
+		executeMethod(method, "adam", "test", 201);
 		
-		assertEquals(201, result);
-
 	}
 	
 	
@@ -114,10 +108,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "adam" to be defined in the example
 		// security config to be assigned the ROLE_ADMINISTRATOR role
 		
-		int result = executeMethod(method, "adam", "test");
+		executeMethod(method, "adam", "test", 200);
 		
-		assertEquals(200, result);
-
 	}
 	
 	
@@ -138,9 +130,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "rebecca" to be defined in the example
 		// security config but NOT to be assigned the ROLE_ADMINISTRATOR role
 		
-		int result = executeMethod(method, "rebecca", "test");
-		
-		assertEquals(403, result);
+		executeMethod(method, "rebecca", "test", 403);
 
 	}
 	
@@ -162,10 +152,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "rebecca" to be defined in the example
 		// security config but NOT to be assigned the ROLE_ADMINISTRATOR role
 		
-		int result = executeMethod(method, "rebecca", "test");
+		executeMethod(method, "rebecca", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -186,10 +174,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "adam" to be defined in the example
 		// security config to be assigned the ROLE_ADMINISTRATOR role
 		
-		int result = executeMethod(method, "adam", "test");
-		
-		assertEquals(201, result);
-
+		executeMethod(method, "adam", "test", 201);
 	}
 	
 	
@@ -211,10 +196,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "rebecca" to be defined in the example
 		// security config *not* to be assigned the ROLE_ADMINISTRATOR role
 		
-		int result = executeMethod(method, "rebecca", "test");
+		executeMethod(method, "rebecca", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -235,9 +218,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "austin" to be defined in the example
 		// security config to be assigned the ROLE_AUTHOR role
 		
-		int result = executeMethod(method, "austin", "test");
-		
-		assertEquals(201, result);
+		executeMethod(method, "austin", "test", 201);
 		
 	}
 	
@@ -257,9 +238,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "rebecca" to be defined in the example
 		// security config but NOT to be assigned the ROLE_AUTHOR role
 		
-		int result = executeMethod(method, "rebecca", "test");
-		
-		assertEquals(403, result);
+		executeMethod(method, "rebecca", "test", 403);
 		
 	}
 	
@@ -281,10 +260,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "edwina" to be defined in the example
 		// security config to be assigned the ROLE_EDITOR role
 		
-		int result = executeMethod(method, "edwina", "test");
+		executeMethod(method, "edwina", "test",200);
 		
-		assertEquals(200, result);
-
 	}
 	
 	
@@ -305,9 +282,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the user "rebecca" to be defined in the example
 		// security config but NOT to be assigned the ROLE_EDITOR role
 		
-		int result = executeMethod(method, "rebecca", "test");
+		executeMethod(method, "rebecca", "test", 403);
 		
-		assertEquals(403, result);
 
 	}
 	
@@ -327,10 +303,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default resource ACL to allow users to update entries
 		// they created
 
-		int result = executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 200);
 		
-		assertEquals(200, result);
-
 	}
 
 
@@ -349,10 +323,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default resource ACL to allow users to update entries
 		// they created, but not to allow them to update other authors' entries
 
-		int result = executeMethod(method, "austin", "test");
+		executeMethod(method, "austin", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -364,9 +336,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// list collection, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method = new GetMethod(testCollectionUri);
-		int result = executeMethod(method, "rebecca", "test");
-		
-		assertEquals(200, result);
+		executeMethod(method, "rebecca", "test", 200);
 		
 	}
 	
@@ -379,9 +349,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// list collection, expecting user "ursula" not to be in role ROLE_READER
 		GetMethod method = new GetMethod(testCollectionUri);
-		int result = executeMethod(method, "ursula", "test");
-		
-		assertEquals(403, result);
+		executeMethod(method, "ursula", "test", 403);
 		
 	}
 	
@@ -395,9 +363,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// retrieve entry, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method = new GetMethod(entryUri);
-		int result = executeMethod(method, "rebecca", "test");
+		executeMethod(method, "rebecca", "test", 200);
 		
-		assertEquals(200, result);
 	}
 	
 	
@@ -409,10 +376,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// list collection, expecting user "ursula" not to be in role ROLE_READER
 		GetMethod method = new GetMethod(entryUri);
-		int result = executeMethod(method, "ursula", "test");
+		executeMethod(method, "ursula", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -422,13 +387,11 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		int result = executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		
 		// we expect the user "audrey" to be defined in the example
 		// security config to be assigned the ROLE_AUTHOR role
 		
-		assertEquals(201, result);
-
 	}
 
 
@@ -438,12 +401,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		int result = executeMethod(method, "rebecca", "test");
+		executeMethod(method, "rebecca", "test", 403);
 		
 		// we expect the user "rebecca" to be defined in the example
 		// security config to not be assigned the ROLE_AUTHOR role
-		
-		assertEquals(403, result);
 
 	}
 
@@ -455,12 +416,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(method, content, contentType);
-		int result = executeMethod(method, "daniel", "test");
+		executeMethod(method, "daniel", "test", 201);
 		
 		// we expect the user "daniel" to be defined in the example
 		// security config to be assigned the ROLE_DATA_AUTHOR role
-		
-		assertEquals(201, result);
 
 	}
 
@@ -471,13 +430,11 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		int result = executeMethod(method, "daniel", "test");
+		executeMethod(method, "daniel", "test", 403);
 		
 		// we expect the user "daniel" to be defined in the example
 		// security config to be assigned the ROLE_DATA_AUTHOR role
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -488,14 +445,12 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		String entryUri = method.getResponseHeader("Location").getValue();
 		
 		// retrieve entry, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method2 = new GetMethod(entryUri);
-		int result = executeMethod(method2, "rebecca", "test");
-		
-		assertEquals(200, result);
+		executeMethod(method2, "rebecca", "test", 200);
 
 	}
 	
@@ -507,15 +462,13 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		String entryUri = method.getResponseHeader("Location").getValue();
 		
 		// retrieve entry, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method2 = new GetMethod(entryUri);
-		int result = executeMethod(method2, "ursula", "test");
+		executeMethod(method2, "ursula", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -526,16 +479,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 		
 		// retrieve media resource, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method2 = new GetMethod(mediaLocation);
-		int result = executeMethod(method2, "rebecca", "test");
+		executeMethod(method2, "rebecca", "test", 200);
 		
-		assertEquals(200, result);
-
 	}
 	
 	
@@ -546,16 +497,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 		
 		// retrieve media resource, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method2 = new GetMethod(mediaLocation);
-		int result = executeMethod(method2, "ursula", "test");
+		executeMethod(method2, "ursula", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -566,7 +515,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 
@@ -574,9 +523,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PutMethod method2 = new PutMethod(mediaLocation);
 		String media2 = "This is a test - updated.";
 		setTextPlainRequestEntity(method2, media2);
-		int result = executeMethod(method2, "melanie", "test");
-		
-		assertEquals(200, result);
+		executeMethod(method2, "melanie", "test", 200);
 
 	}
 	
@@ -589,7 +536,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 
@@ -597,9 +544,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PutMethod method2 = new PutMethod(mediaLocation);
 		String media2 = "This is a test - updated.";
 		setTextPlainRequestEntity(method2, media2);
-		int result = executeMethod(method2, "rebecca", "test");
+		executeMethod(method2, "rebecca", "test", 403);
 		
-		assertEquals(403, result);
 
 	}
 	
@@ -616,10 +562,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default resource ACL to allow users to retrieve entries
 		// they created
 
-		int result = executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 200);
 		
-		assertEquals(200, result);
-
 	}
 
 
@@ -633,9 +577,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default resource ACL to allow users to retrieve entries
 		// they created, but not to allow them to retrieve other authors' entries
 
-		int result = executeMethod(method, "austin", "test");
-		
-		assertEquals(403, result);
+		executeMethod(method, "austin", "test", 403);
 
 	}
 	
@@ -647,20 +589,16 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		createTestEntryAndReturnLocation(testCollectionUri, "austin", "test");
 		
 		GetMethod method = new GetMethod(testCollectionUri);
-		int result = executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 200);
 		
-		assertEquals(200, result);
-
 		Document feedDoc = getResponseBodyAsDocument(method);
 		
 		List<Element> entries = getChildrenByTagNameNS(feedDoc, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(1, entries.size());
 		
 		method = new GetMethod(testCollectionUri);
-		result = executeMethod(method, "austin", "test");
+		executeMethod(method, "austin", "test", 200);
 		
-		assertEquals(200, result);
-
 		feedDoc = getResponseBodyAsDocument(method);
 		
 		entries = getChildrenByTagNameNS(feedDoc, "http://www.w3.org/2005/Atom", "entry");
@@ -669,10 +607,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// but readers should be able to retrieve all entries
 		
 		method = new GetMethod(testCollectionUri);
-		result = executeMethod(method, "rebecca", "test");
+		executeMethod(method, "rebecca", "test", 200);
 		
-		assertEquals(200, result);
-
 		feedDoc = getResponseBodyAsDocument(method);
 		
 		entries = getChildrenByTagNameNS(feedDoc, "http://www.w3.org/2005/Atom", "entry");
@@ -688,16 +624,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 
 		// try to retrieve media resource
 		GetMethod method2 = new GetMethod(mediaLocation);
-		int result = executeMethod(method2, "audrey", "test");
+		executeMethod(method2, "audrey", "test", 200);
 		
-		assertEquals(200, result);
-
 	}
 
 	
@@ -709,16 +643,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 
 		// try to retrieve media resource
 		GetMethod method2 = new GetMethod(mediaLocation);
-		int result = executeMethod(method2, "austin", "test");
+		executeMethod(method2, "austin", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 
 	
@@ -729,7 +661,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 
@@ -737,10 +669,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PutMethod method2 = new PutMethod(mediaLocation);
 		String media2 = "This is a test - updated.";
 		setTextPlainRequestEntity(method2, media2);
-		int result = executeMethod(method2, "audrey", "test");
+		executeMethod(method2, "audrey", "test", 200);
 		
-		assertEquals(200, result);
-
 	}
 	
 	
@@ -752,7 +682,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 
@@ -760,10 +690,8 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PutMethod method2 = new PutMethod(mediaLocation);
 		String media2 = "This is a test - updated.";
 		setTextPlainRequestEntity(method2, media2);
-		int result = executeMethod(method2, "austin", "test");
+		executeMethod(method2, "austin", "test", 403);
 		
-		assertEquals(403, result);
-
 	}
 	
 	
@@ -775,20 +703,18 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		String location = method.getResponseHeader("Location").getValue();
 		
 		// try to update media link entry
 		PutMethod method2 = new PutMethod(location);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry - Edited</atom:title><atom:summary>this is a test, edited</atom:summary></atom:entry>";
 		setAtomRequestEntity(method2, content);
-		int result = executeMethod(method2, "audrey", "test");
+		executeMethod(method2, "audrey", "test", 200);
 
 		// we expect the default resource ACL to allow users to update media
 		// link entries they created
 		
-		assertEquals(200, result);
-
 	}
 	
 	
@@ -800,16 +726,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		String location = method.getResponseHeader("Location").getValue();
 		
 		// try to update media link entry
 		PutMethod method2 = new PutMethod(location);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry - Edited</atom:title><atom:summary>this is a test, edited</atom:summary></atom:entry>";
 		setAtomRequestEntity(method2, content);
-		int result = executeMethod(method2, "austin", "test");
-
-		assertEquals(403, result);
+		executeMethod(method2, "austin", "test", 403);
 
 	}
 	
@@ -822,16 +746,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		String location = method.getResponseHeader("Location").getValue();
 		
 		// try to update media link entry
 		PutMethod method2 = new PutMethod(location);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry - Edited</atom:title><atom:summary>this is a test, edited</atom:summary></atom:entry>";
 		setAtomRequestEntity(method2, content);
-		int result = executeMethod(method2, "edwina", "test");
-
-		assertEquals(200, result);
+		executeMethod(method2, "edwina", "test", 200);
 
 	}
 	
@@ -843,16 +765,14 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		String location = method.getResponseHeader("Location").getValue();
 		
 		// try to update media link entry
 		PutMethod method2 = new PutMethod(location);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry - Edited</atom:title><atom:summary>this is a test, edited</atom:summary></atom:entry>";
 		setAtomRequestEntity(method2, content);
-		int result = executeMethod(method2, "rebecca", "test");
-
-		assertEquals(403, result);
+		executeMethod(method2, "rebecca", "test", 403);
 
 	}
 	
@@ -861,8 +781,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	public void testUserWithAuthorRoleCanCreateMediaWithMultipartRequest() {
 		
 		PostMethod method = createMultipartRequest(testCollectionUri);
-		int result = executeMethod(method, "audrey", "test");
-		assertEquals(201, result);
+		executeMethod(method, "audrey", "test", 201);
 		
 	}
 	
@@ -871,8 +790,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	public void testUserWithoutAuthorRoleCannotCreateMediaWithMultipartRequest() {
 		
 		PostMethod method = createMultipartRequest(testCollectionUri);
-		int result = executeMethod(method, "rebecca", "test");
-		assertEquals(403, result);
+		executeMethod(method, "rebecca", "test", 403);
 		
 	}
 	
@@ -904,28 +822,23 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
-		int resultGet1 = executeMethod(get1, "rebecca", "test");
-		assertEquals(200, resultGet1);
+		executeMethod(get1, "rebecca", "test", 200);
 		
 		// now try to get media link
 		GetMethod get2 = new GetMethod(mediaLinkLocation);
-		int resultGet2 = executeMethod(get2, "rebecca", "test");
-		assertEquals(200, resultGet2);
+		executeMethod(get2, "rebecca", "test", 200);
 		
 		// now try delete on media location
 		DeleteMethod delete = new DeleteMethod(mediaLocation);
-		int result = executeMethod(delete, "melanie", "test");
-		assertEquals(204, result);
+		executeMethod(delete, "melanie", "test", 204);
 		
 		// now try to get media again
 		GetMethod get3 = new GetMethod(mediaLocation);
-		int resultGet3 = executeMethod(get3, "rebecca", "test");
-		assertEquals(404, resultGet3);
+		executeMethod(get3, "rebecca", "test", 404);
 		
 		// now try to get media link again
 		GetMethod get4 = new GetMethod(mediaLinkLocation);
-		int resultGet4 = executeMethod(get4, "rebecca", "test");
-		assertEquals(404, resultGet4);
+		executeMethod(get4, "rebecca", "test", 404);
 		
 	}
 
@@ -942,28 +855,23 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
-		int resultGet1 = executeMethod(get1, "rebecca", "test");
-		assertEquals(200, resultGet1);
+		executeMethod(get1, "rebecca", "test", 200);
 		
 		// now try to get media link
 		GetMethod get2 = new GetMethod(mediaLinkLocation);
-		int resultGet2 = executeMethod(get2, "rebecca", "test");
-		assertEquals(200, resultGet2);
+		executeMethod(get2, "rebecca", "test", 200);
 		
 		// now try delete on media location
 		DeleteMethod delete = new DeleteMethod(mediaLocation);
-		int result = executeMethod(delete, "edwina", "test");
-		assertEquals(403, result);
+		executeMethod(delete, "edwina", "test", 403);
 		
 		// now try to get media again
 		GetMethod get3 = new GetMethod(mediaLocation);
-		int resultGet3 = executeMethod(get3, "rebecca", "test");
-		assertEquals(200, resultGet3);
+		executeMethod(get3, "rebecca", "test", 200);
 		
 		// now try to get media link again
 		GetMethod get4 = new GetMethod(mediaLinkLocation);
-		int resultGet4 = executeMethod(get4, "rebecca", "test");
-		assertEquals(200, resultGet4);
+		executeMethod(get4, "rebecca", "test", 200);
 		
 }
 
@@ -980,28 +888,23 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
-		int resultGet1 = executeMethod(get1, "rebecca", "test");
-		assertEquals(200, resultGet1);
+		executeMethod(get1, "rebecca", "test", 200);
 		
 		// now try to get media link
 		GetMethod get2 = new GetMethod(mediaLinkLocation);
-		int resultGet2 = executeMethod(get2, "rebecca", "test");
-		assertEquals(200, resultGet2);
+		executeMethod(get2, "rebecca", "test", 200);
 		
 		// now try delete on media location
 		DeleteMethod delete = new DeleteMethod(mediaLinkLocation);
-		int result = executeMethod(delete, "melanie", "test");
-		assertEquals(204, result);
+		executeMethod(delete, "melanie", "test", 204);
 		
 		// now try to get media again
 		GetMethod get3 = new GetMethod(mediaLocation);
-		int resultGet3 = executeMethod(get3, "rebecca", "test");
-		assertEquals(404, resultGet3);
+		executeMethod(get3, "rebecca", "test", 404);
 		
 		// now try to get media link again
 		GetMethod get4 = new GetMethod(mediaLinkLocation);
-		int resultGet4 = executeMethod(get4, "rebecca", "test");
-		assertEquals(404, resultGet4);
+	  executeMethod(get4, "rebecca", "test", 404);
 		
 	}
 
@@ -1018,28 +921,23 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
-		int resultGet1 = executeMethod(get1, "rebecca", "test");
-		assertEquals(200, resultGet1);
+		executeMethod(get1, "rebecca", "test", 200);
 		
 		// now try to get media link
 		GetMethod get2 = new GetMethod(mediaLinkLocation);
-		int resultGet2 = executeMethod(get2, "rebecca", "test");
-		assertEquals(200, resultGet2);
+		executeMethod(get2, "rebecca", "test", 200);
 		
 		// now try delete on media location
 		DeleteMethod delete = new DeleteMethod(mediaLinkLocation);
-		int result = executeMethod(delete, "edwina", "test");
-		assertEquals(403, result);
+		executeMethod(delete, "edwina", "test", 403);
 		
 		// now try to get media again
 		GetMethod get3 = new GetMethod(mediaLocation);
-		int resultGet3 = executeMethod(get3, "rebecca", "test");
-		assertEquals(200, resultGet3);
+		executeMethod(get3, "rebecca", "test", 200);
 		
 		// now try to get media link again
 		GetMethod get4 = new GetMethod(mediaLinkLocation);
-		int resultGet4 = executeMethod(get4, "rebecca", "test");
-		assertEquals(200, resultGet4);
+    executeMethod(get4, "rebecca", "test", 200);
 		
 	}
 
@@ -1054,8 +952,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// try to retrieve history as reader
 		GetMethod get1 = new GetMethod(historyLocation);
-		int get1result = executeMethod(get1, "rebecca", "test");
-		assertEquals(200, get1result);
+		executeMethod(get1, "rebecca", "test", 200);
 		
 		// pick out revision from history feed
 		Document historyFeedDoc = getResponseBodyAsDocument(get1);
@@ -1065,18 +962,15 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		
 		// try to retrieve history as user
 		GetMethod get2 = new GetMethod(historyLocation);
-		int get2result = executeMethod(get2, "ursula", "test");
-		assertEquals(403, get2result);
+		executeMethod(get2, "ursula", "test", 403);
 		
 		// retrieve revision as reader
 		GetMethod get3 = new GetMethod(revLocation);
-		int get3result = executeMethod(get3, "rebecca", "test");
-		assertEquals(200, get3result);
+		executeMethod(get3, "rebecca", "test", 200);
 		
 		// retrieve revision as user
 		GetMethod get4 = new GetMethod(revLocation);
-		int get4result = executeMethod(get4, "ursula", "test");
-		assertEquals(403, get4result);
+		executeMethod(get4, "ursula", "test", 403);
 		
 	}
 
@@ -1097,25 +991,24 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		PostMethod method = new PostMethod(testCollectionUri);
 		String media = "This is a secret message.";
 		setTextPlainRequestEntity(method, media);
-		executeMethod(method, "audrey", "test");
+		executeMethod(method, "audrey", "test", 201);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(method);
 		String mediaLocation = AtomTestUtils.getEditMediaLocation(doc);
 		
 		// double check Austin is not allowed to retrieve the media resource
 		GetMethod get0 = new GetMethod(mediaLocation);
-		int get0result = executeMethod(get0, "austin", "test");
-		assertEquals(403, get0result);
+		executeMethod(get0, "austin", "test", 403);
 		
 		// list collection as Audrey
 		GetMethod get1 = new GetMethod(testCollectionUri);
-		executeMethod(get1, "audrey", "test");
+		executeMethod(get1, "audrey", "test", 200);
 		Document d1 = getResponseBodyAsDocument(get1);
 		List<Element> entries = getEntries(d1);
 		assertEquals(1, entries.size());
 		
 		// list collection as Austin
 		GetMethod get2 = new GetMethod(testCollectionUri);
-		executeMethod(get2, "austin", "test");
+		executeMethod(get2, "austin", "test", 200);
 		Document d2 = getResponseBodyAsDocument(get2);
 		entries = getEntries(d2);
 		assertEquals(0, entries.size());
@@ -1124,12 +1017,12 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		String feed = lsWriter.writeToString(d1);
 		PostMethod post2 = new PostMethod(testCollectionUri);
 		setAtomRequestEntity(post2, feed);
-		int post2Result = executeMethod(post2, "austin", "test");
-		assertEquals(200, post2Result); // should succeed, but should not copy media resources
+	  // should succeed, but should not copy media resources
+		executeMethod(post2, "austin", "test", 200);
 		
 		// list collection as Austin
 		GetMethod get3 = new GetMethod(testCollectionUri);
-		executeMethod(get3, "austin", "test");
+		executeMethod(get3, "austin", "test", 200);
 		Document d3 = getResponseBodyAsDocument(get3);
 		entries = getEntries(d3); assertEquals(1, entries.size());
 		
@@ -1140,10 +1033,9 @@ public class TestDefaultSecurityPolicy extends TestCase {
  		
 		// try to GET Audrey's media resource as Austin
 		GetMethod get4 = new GetMethod(contentLocation);
-		int get4result = executeMethod(get4, "austin", "test");
+		executeMethod(get4, "austin", "test", 403);
 
 		assertFalse("This is a secret message.".equals(get4.getResponseBodyAsString().trim()));
-		assertEquals(403, get4result);
 		assertEquals(mediaLocation, contentLocation); // should be same, i.e., media not copied to new location
 
 	}

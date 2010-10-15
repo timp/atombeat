@@ -15,9 +15,9 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
-import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
+import org.apache.commons.httpclient.auth.AuthenticationException;
 import org.apache.commons.httpclient.auth.BasicScheme;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
 import org.apache.commons.httpclient.methods.InputStreamRequestEntity;
@@ -32,10 +32,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
-
-import static junit.framework.TestCase.fail;
-
 
 
 public class AtomTestUtils {
@@ -65,7 +61,7 @@ public class AtomTestUtils {
 			
 		} catch (ParserConfigurationException e) {
 
-			e.printStackTrace();
+		  throw new RuntimeException(e);
 
 		} 
 
@@ -78,51 +74,32 @@ public class AtomTestUtils {
 	
 	
 
-	public static void authenticate(HttpMethod method, String user, String pass) {
-		try {
-			String authorization = basic.authenticate(new UsernamePasswordCredentials(user, pass), method);
-			method.setRequestHeader("Authorization", authorization);
-			
-		} 
-		catch (Throwable t) {
-			
-			t.printStackTrace();
-			fail(t.getLocalizedMessage());
-			
-		}
+  public static void authenticate(HttpMethod method, String user, String pass) {
+		String authorization;
+      try {
+        authorization = basic.authenticate(new UsernamePasswordCredentials(user, pass), method);
+      } catch (AuthenticationException e) {
+        throw new RuntimeException(e);
+      }
+    method.setRequestHeader("Authorization", authorization);
 	}
 
 	
 	
 	
-	public static Integer executeMethod(HttpMethod method) {
-		
-		Integer result = null;
-		
+	public static Integer executeMethod(HttpMethod method)  {
 		try {
-
-			result = client.executeMethod(method);
-
-		} catch (HttpException e) {
-
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-
-		}
-		
-		return result;
-		
+      return client.executeMethod(method);
+    } catch (IOException e) {
+      throw new RuntimeException(e);
+    }
 	}
 	
 	
 	
-
-	
+/**   
+ * @deprecated Use executeMethod(HttpMethod method, String user, String pass, int expectedStatus) 
+ */
 	public static Integer executeMethod(HttpMethod method, String user, String pass) {
 		
 		authenticate(method, user, pass);
@@ -132,6 +109,11 @@ public class AtomTestUtils {
 	}
 	
 	
+  public static void executeMethod(HttpMethod method, String user, String pass, int expectedStatus) {
+    Integer result = executeMethod(method, user, pass);
+    if (!result.equals(new Integer(expectedStatus)))
+        throw new RuntimeException("Expected status " + expectedStatus + " but got " + result); 
+  }
 	
 
 	public static void setAtomRequestEntity(EntityEnclosingMethod method, String xml) {
@@ -146,8 +128,7 @@ public class AtomTestUtils {
 
 		} catch (UnsupportedEncodingException e) {
 
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
+	      throw new RuntimeException (e);
 
 		}
 		
@@ -165,10 +146,9 @@ public class AtomTestUtils {
 			
 			content = new ByteArrayInputStream(text.getBytes("utf-8"));
 
-		} catch (UnsupportedEncodingException e1) {
+		} catch (UnsupportedEncodingException e) {
 
-			e1.printStackTrace();
-			fail(e1.getLocalizedMessage());
+	      throw new RuntimeException (e);
 
 		}
 		
@@ -191,8 +171,7 @@ public class AtomTestUtils {
 
 		} catch (IOException e) {
 
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
+	      throw new RuntimeException (e);
 
 		}
 		
@@ -257,10 +236,8 @@ public class AtomTestUtils {
 		}
 		setAtomRequestEntity(method, content);
 		
-		int result = executeMethod(method, user, pass);
+		executeMethod(method, user, pass, 201);
 		
-		if (result != 201)
-			return null;
 		
 		return collectionUri;
 
@@ -269,33 +246,36 @@ public class AtomTestUtils {
 	
 	
 	
+	
+  public static PostMethod executePost(String collectionUri, String user,
+          String pass, String content) {
+    PostMethod method = new PostMethod(collectionUri);
+    setAtomRequestEntity(method, content);
+    executeMethod(method, user, pass, 201);
+
+    return method;
+  }
+
 	public static String createTestEntryAndReturnLocation(String collectionUri, String user, String pass) {
 
-		PostMethod method = new PostMethod(collectionUri);
-		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
-		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, user, pass);
-
-		if (result != 201)
-			return null;
+    String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
+    PostMethod method = executePost(collectionUri, user, pass, content);
 		
 		Header locationHeader = method.getResponseHeader("Location");
 		
 		return locationHeader.getValue();
 
 	}
-	
+
+
+
+
 	
 	
 	public static Document createTestEntryAndReturnDocument(String collectionUri, String user, String pass) {
 
-		PostMethod method = new PostMethod(collectionUri);
-		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
-		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, user, pass);
-
-		if (result != 201)
-			return null;
+    String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
+    PostMethod method = executePost(collectionUri, user, pass, content);
 		
 		return getResponseBodyAsDocument(method);
 
@@ -310,15 +290,14 @@ public class AtomTestUtils {
 		setTextPlainRequestEntity(method, media);
 		int result = executeMethod(method, user, pass);
 		
-		if (result != 201)
-			return null;
+    if (result != 201)
+        throw new RuntimeException("Expected status 201, created, got " + result); 
 
 		Document doc = getResponseBodyAsDocument(method);
 		
 		return doc;
 		
 	}
-	
 	
 	
 	public static List<Element> getChildrenByTagNameNS(Document d, String nsuri, String tagName) {
@@ -496,8 +475,7 @@ public class AtomTestUtils {
 
 		} catch (FileNotFoundException e) {
 
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
+        throw new RuntimeException(e);
 
 		}
 		
@@ -572,18 +550,11 @@ public class AtomTestUtils {
 		
 			doc = builder.parse(method.getResponseBodyAsStream());
 			
-		} catch (SAXException e) {
+		} catch (Exception e) {
 	
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-	
-		} catch (IOException e) {
-	
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-	
+			throw new RuntimeException(e); 
 		}
-	
+		
 		return doc;
 
 	}

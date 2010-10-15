@@ -34,11 +34,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		GetMethod method = new GetMethod(installUrl);
 		
-		int result = executeMethod(method, "adam", "test");
-		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
+		executeMethod(method, "adam", "test", 200);
 		
 	}
 	
@@ -54,10 +50,8 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetWorkspaceDescriptor() {
 		
 		GetMethod g = new GetMethod(SECURITY_URI);
-		int r = executeMethod(g, "adam", "test");
+		executeMethod(g, "adam", "test", 200);
 
-		assertEquals(200, r);
-		
 		verifyAtomResponse(g);
 		
 		Document d = getResponseBodyAsDocument(g);
@@ -69,10 +63,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	public void testGetWorkspaceDescriptorDenied() {
 
-		GetMethod g = new GetMethod(SECURITY_URI);
-		int r = executeMethod(g, "rebecca", "test");
-
-		assertEquals(403, r);
+		executeMethod(new GetMethod(SECURITY_URI), "rebecca", "test", 403);
 
 	}
 	
@@ -85,8 +76,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(g, "adam", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -95,8 +85,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a second get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "adam", "test");
-		assertEquals(200, s);
+		executeMethod(h, "adam", "test", 200);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
@@ -104,23 +93,22 @@ public class TestSecurityProtocol extends TestCase {
 	}
 	
 	
-	
-//	public void testGetCollectionNoDescriptorLink() {
-//
-//		// set up test by creating a collection
-//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-//
-//		// retrieve collection feed
-//		GetMethod g = new GetMethod(collectionUri);
-//		int r = executeMethod(g, "rebecca", "test");
-//		assertEquals(200, r);
-//		
-//		// look for ACL link
-//		Document d = getResponseBodyAsDocument(g);
-//		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
-//		assertNull(descriptorLocation);
-//		
-//	}
+	/** FIXME Failing test */
+	public void FAILtestGetCollectionNoDescriptorLink() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+
+		// retrieve collection feed
+		GetMethod g = new GetMethod(collectionUri);
+		executeMethod(g, "rebecca", "test", 200);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNull(descriptorLocation);
+		
+	}
 	
 	
 	
@@ -131,8 +119,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(g, "adam", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -141,8 +128,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a second get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "rebecca", "test");
-		assertEquals(403, s);
+		executeMethod(h, "rebecca", "test", 403);
 
 	}
 	
@@ -156,8 +142,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -170,8 +155,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "adam", "test");
-		assertEquals(200, s);
+		executeMethod(h, "adam", "test", 200);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
@@ -189,8 +173,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve collection
 		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -206,8 +189,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "adam", "test");
-		assertEquals(200, s);
+		executeMethod(h, "adam", "test", 200);
 		verifyAtomResponse(h);
 		Document f = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(f);
@@ -227,8 +209,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "edwina", "test");
-		assertEquals(200, r);
+		executeMethod(g, "edwina", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -241,8 +222,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor as editor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "edwina", "test");
-		assertEquals(200, s);
+		executeMethod(h, "edwina", "test", 200);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
@@ -256,31 +236,29 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int t = executeMethod(p, "edwina", "test");
-		assertEquals(403, t);
+		executeMethod(p, "edwina", "test", 403);
 
 	}
 	
 	
 	
+/** FIXME FAILing test */
+	public void FAILINGtestGetMemberNoDescriptorLink() {
 
-//	public void testGetMemberNoDescriptorLink() {
-//
-//		// set up test by creating a collection
-//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-//		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
-//
-//		// retrieve member entry
-//		GetMethod g = new GetMethod(memberUri);
-//		int r = executeMethod(g, "rebecca", "test");
-//		assertEquals(200, r);
-//		
-//		// look for ACL link
-//		Document d = getResponseBodyAsDocument(g);
-//		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
-//		assertNull(descriptorLocation);
-//		
-//	}
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+
+		// retrieve member entry
+		GetMethod g = new GetMethod(memberUri);
+		executeMethod(g, "rebecca", "test", 200);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNull(descriptorLocation);
+		
+	}
 	
 	
 	
@@ -292,8 +270,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(g, "adam", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -325,8 +302,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -335,30 +311,28 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "rebecca", "test");
-		assertEquals(403, s);
+		executeMethod(h, "rebecca", "test", 403);
 
 	}
 
 	
-	
-//	public void testGetMemberDescriptorLinkExcluded() {
-//
-//		// set up test by creating a collection
-//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-//		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
-//
-//		// retrieve member entry
-//		GetMethod g = new GetMethod(memberUri);
-//		int r = executeMethod(g, "rebecca", "test");
-//		assertEquals(200, r);
-//		
-//		// look for ACL link
-//		Document d = getResponseBodyAsDocument(g);
-//		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
-//		assertNull(descriptorLocation);
-//		
-//	}
+/** FIXME Failing test */	
+	public void FAILINGtestGetMemberDescriptorLinkExcluded() {
+
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+
+		// retrieve member entry
+		GetMethod g = new GetMethod(memberUri);
+		executeMethod(g, "rebecca", "test", 200);
+		
+		// look for ACL link
+		Document d = getResponseBodyAsDocument(g);
+		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
+		assertNull(descriptorLocation);
+		
+	}
 
 	
 	
@@ -374,8 +348,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "audrey", "test");
-		assertEquals(200, s);
+		executeMethod(h, "audrey", "test", 200);
 		verifyAtomResponse(h);
 		Document e = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
@@ -392,7 +365,7 @@ public class TestSecurityProtocol extends TestCase {
 		createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		GetMethod get = new GetMethod(collectionUri);
-		executeMethod(get, "audrey", "test");
+		executeMethod(get, "audrey", "test", 200);
 		Document d = getResponseBodyAsDocument(get);
 		Element e = (Element) d.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "entry").item(0);
 		assertNotNull(e);
@@ -403,8 +376,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "audrey", "test");
-		assertEquals(200, s);
+		executeMethod(h, "audrey", "test", 200);
 		verifyAtomResponse(h);
 		Document f = getResponseBodyAsDocument(h);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(f);
@@ -426,30 +398,28 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// make a get request for the descriptor
 		GetMethod h = new GetMethod(descriptorLocation);
-		int s = executeMethod(h, "rebecca", "test");
-		assertEquals(403, s);
+		executeMethod(h, "rebecca", "test", 403);
 
 	}
 	
 	
 	
+/** FIXME Failing test */
+	public void FAILINGtestGetMediaDescriptorNoDescriptorLink() {
 
-//	public void testGetMediaDescriptorNoDescriptorLink() {
-//
-//		// set up test by creating a collection
-//		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-//		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
-//		String location = getEditLocation(d);
-//		
-//		// retrieve media link as rebecca
-//		GetMethod g = new GetMethod(location);
-//		int s = executeMethod(g, "rebecca", "test");
-//		assertEquals(200, s);
-//		Document e = getResponseBodyAsDocument(g);
-//		String mediaDescriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
-//		assertNull(mediaDescriptorLocation);
-//		
-//	}
+		// set up test by creating a collection
+		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
+		String location = getEditLocation(d);
+		
+		// retrieve media link as rebecca
+		GetMethod g = new GetMethod(location);
+		executeMethod(g, "rebecca", "test", 200);
+		Document e = getResponseBodyAsDocument(g);
+		String mediaDescriptorLocation = getLinkHref(e, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
+		assertNull(mediaDescriptorLocation);
+		
+	}
 	
 	
 	
@@ -473,15 +443,17 @@ public class TestSecurityProtocol extends TestCase {
 		
 		PutMethod p = new PutMethod(SECURITY_URI);
 		setAtomRequestEntity(p, content);
-		int r = executeMethod(p, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(p, "adam", "test", 200);
 		verifyAtomResponse(p);
 		Document e = getResponseBodyAsDocument(p);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 		
 		// now try to create a collection
-		String v = createTestCollection(CONTENT_URI, "adam", "test");
-		assertNull(v);
+		try { 
+		  createTestCollection(CONTENT_URI, "adam", "test");
+		} catch (RuntimeException e1) { 
+		    assertEquals("Expected status 201 but got 403", e1.getMessage());
+		}
 		 
 	}
 	
@@ -499,8 +471,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		PutMethod p = new PutMethod(SECURITY_URI);
 		setAtomRequestEntity(p, content);
-		int r = executeMethod(p, "rebecca", "test");
-		assertEquals(403, r);
+		executeMethod(p, "rebecca", "test", 403);
 		
 	}
 	
@@ -513,14 +484,12 @@ public class TestSecurityProtocol extends TestCase {
  
 		// try to retrieve collection feed as rebecca (reader) to check allowed
 		GetMethod f = new GetMethod(collectionUri);
-		int q = executeMethod(f, "rebecca", "test");
-		assertEquals(200, q);
+		executeMethod(f, "rebecca", "test", 200);
 		
 
 		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(g, "adam", "test", 200);
 		Document d = getResponseBodyAsDocument(g);
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertNotNull(descriptorLocation);
@@ -534,16 +503,14 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int s = executeMethod(p, "adam", "test");
-		assertEquals(200, s);
+		executeMethod(p, "adam", "test", 200);
 		verifyAtomResponse(p);
 		Document e = getResponseBodyAsDocument(p);
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 
 		// try to retrieve collection feed again as rebecca to check forbidden
 		GetMethod h = new GetMethod(collectionUri);
-		int t = executeMethod(h, "rebecca", "test");
-		assertEquals(403, t);
+		executeMethod(h, "rebecca", "test", 403);
 		
 	}
 	
@@ -556,8 +523,7 @@ public class TestSecurityProtocol extends TestCase {
  
 		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(g, "adam", "test", 200);
 		Document d = getResponseBodyAsDocument(g);
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertNotNull(descriptorLocation);
@@ -571,8 +537,7 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int s = executeMethod(p, "rebecca", "test");
-		assertEquals(403, s);
+		executeMethod(p, "rebecca", "test", 403);
 		
 	}
 	
@@ -585,8 +550,7 @@ public class TestSecurityProtocol extends TestCase {
  
 		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
-		int r = executeMethod(g, "adam", "test");
-		assertEquals(200, r);
+		executeMethod(g, "adam", "test", 200);
 		Document d = getResponseBodyAsDocument(g);
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertNotNull(descriptorLocation);
@@ -600,8 +564,7 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int s = executeMethod(p, "adam", "test");
-		assertEquals(400, s);
+		executeMethod(p, "adam", "test", 400);
 
 	}
 	
@@ -616,8 +579,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -633,13 +595,11 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int s = executeMethod(p, "audrey", "test");
-		assertEquals(200, s);
+		executeMethod(p, "audrey", "test", 200);
 
 		// try retrieve member entry again
 		GetMethod h = new GetMethod(memberUri);
-		int t = executeMethod(h, "audrey", "test");
-		assertEquals(403, t);
+		executeMethod(h, "audrey", "test", 403);
 
 	}
 	
@@ -654,8 +614,7 @@ public class TestSecurityProtocol extends TestCase {
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 		
 		// look for ACL link
 		Document d = getResponseBodyAsDocument(g);
@@ -671,13 +630,11 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int s = executeMethod(p, "rebecca", "test");
-		assertEquals(403, s);
+		executeMethod(p, "rebecca", "test", 403);
 
 		// try retrieve member entry again
 		GetMethod h = new GetMethod(memberUri);
-		int t = executeMethod(h, "audrey", "test");
-		assertEquals(200, t);
+		executeMethod(h, "audrey", "test", 200);
 
 	}
 	
@@ -692,8 +649,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// retrieve media resource
 		GetMethod g = new GetMethod(mediaLocation);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 
 		// look for ACL link
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
@@ -708,13 +664,11 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int t = executeMethod(p, "audrey", "test");
-		assertEquals(200, t);
+		executeMethod(p, "audrey", "test", 200);
 
 		// try retrieve media resource again
 		GetMethod i = new GetMethod(mediaLocation);
-		int u = executeMethod(i, "audrey", "test");
-		assertEquals(403, u);
+		executeMethod(i, "audrey", "test", 403);
 
 	}
 	
@@ -730,8 +684,7 @@ public class TestSecurityProtocol extends TestCase {
 		
 		// retrieve media resource
 		GetMethod g = new GetMethod(mediaLocation);
-		int r = executeMethod(g, "audrey", "test");
-		assertEquals(200, r);
+		executeMethod(g, "audrey", "test", 200);
 
 		// look for ACL link
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_MEDIA_SECURITY_DESCRIPTOR);
@@ -746,13 +699,11 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		setAtomRequestEntity(p, content);
-		int t = executeMethod(p, "rebecca", "test");
-		assertEquals(403, t);
+		executeMethod(p, "rebecca", "test", 403);
 
 		// try retrieve media resource again
 		GetMethod i = new GetMethod(mediaLocation);
-		int u = executeMethod(i, "audrey", "test");
-		assertEquals(200, u);
+		executeMethod(i, "audrey", "test", 200);
 
 	}
 	
@@ -769,11 +720,9 @@ public class TestSecurityProtocol extends TestCase {
 				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, "adam", "test");
+    // expect the status code is 201 CREATED
+		executeMethod(method, "adam", "test", 201);
 
-		// expect the status code is 201 CREATED
-		assertEquals(201, result);
-		
 		Document d = getResponseBodyAsDocument(method);
 		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertEquals(1, links.size());
@@ -795,10 +744,8 @@ public class TestSecurityProtocol extends TestCase {
 				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, "adam", "test");
-		
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, "adam", "test", 200);
 		
 		Document d = getResponseBodyAsDocument(method);
 		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
@@ -823,11 +770,9 @@ public class TestSecurityProtocol extends TestCase {
 				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, "adam", "test");
+    // expect the status code is 201 Created
+		executeMethod(method, "adam", "test", 201);
 		
-		// expect the status code is 201 Created
-		assertEquals(201, result);
-
 		Document d = getResponseBodyAsDocument(method);
 		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertEquals(1, links.size());
@@ -850,10 +795,8 @@ public class TestSecurityProtocol extends TestCase {
 				"<atom:link rel=\""+AtomBeat.REL_SECURITY_DESCRIPTOR+"\" href=\"http://foo.bar/spong\"/>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method, "adam", "test");
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, "adam", "test", 200);
 
 		Document d = getResponseBodyAsDocument(method);
 		List<Element> links = getLinks(d, AtomBeat.REL_SECURITY_DESCRIPTOR);

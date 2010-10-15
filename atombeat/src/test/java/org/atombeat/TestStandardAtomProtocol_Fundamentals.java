@@ -33,9 +33,9 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 	
 	
 	
-	private static Integer executeMethod(HttpMethod method) {
+	private static void executeMethod(HttpMethod method, int expectedStatus) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		AtomTestUtils.executeMethod(method, USER, PASS, expectedStatus);
 
 	}
 
@@ -50,12 +50,8 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		
 		GetMethod method = new GetMethod(installUrl);
 		
-		int result = executeMethod(method);
+		executeMethod(method, 200);
 		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
-			
 	}
 	
 	
@@ -70,17 +66,12 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		// create a new member by POSTing an atom entry document to the
 		// collection URI
 		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
-		String content = 
-			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
-				"<atom:title>Test Member</atom:title>" +
-				"<atom:summary>This is a summary.</atom:summary>" +
-				"<atom:content><meat>This is the meat.</meat></atom:content>" +
-			"</atom:entry>";
+		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Member</atom:title><atom:summary>This is a summary.</atom:summary><atom:content><meat>This is the meat.</meat></atom:content></atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+    // expect the status code is 201 Created
+    // Does the webserver have write access to /data/atombeat
+		executeMethod(method, 201);
 		
-		// expect the status code is 201 Created
-		assertEquals("Does the webserver have write access to /data/atombeat", 201, result);
 
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
@@ -110,10 +101,8 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// now try GET to member URI
 		GetMethod method = new GetMethod(location);
-		int result = executeMethod(method);
-		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
+    // expect the status code is 200 OK
+		executeMethod(method, 200);
 
 		// expect no Location header 
 		Header locationHeader = method.getResponseHeader("Location");
@@ -142,10 +131,8 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
+    // expect the status code is 200 OK - we just did an update, no creation
+    executeMethod(method, 200);
 
 		// expect no Location header 
 		Header responseLocationHeader = method.getResponseHeader("Location");
@@ -168,18 +155,15 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// check we can GET the entry
 		GetMethod get1 = new GetMethod(location);
-		int get1Result = executeMethod(get1);
-		assertEquals(get1Result, 200);
+		executeMethod(get1, 200);
 		
 		// now try DELETE the entry
 		DeleteMethod delete = new DeleteMethod(location);
-		int deleteResult = executeMethod(delete);
-		assertEquals(204, deleteResult);
+		executeMethod(delete, 204);
 		
 		// now try to GET the entry
 		GetMethod get2 = new GetMethod(location);
-		int get2Result = executeMethod(get2);
-		assertEquals(404, get2Result);
+		executeMethod(get2, 404);
 
 	}
 
@@ -190,10 +174,9 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// try GET to collection URI
 		GetMethod get1 = new GetMethod(TEST_COLLECTION_URI);
-		int result1 = executeMethod(get1);
+    // expect the status code is 200 OK
+		executeMethod(get1, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result1);
 
 		// check content
 		Document d1 = getResponseBodyAsDocument(get1);
@@ -215,11 +198,9 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// try GET to collection URI
 		GetMethod get2 = new GetMethod(TEST_COLLECTION_URI);
-		int result2 = executeMethod(get2);
+    // expect the status code is 200 OK
+		executeMethod(get2, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result2);
-
 		// check content
 		Document d2 = getResponseBodyAsDocument(get2);
 		List<Element> entries2 = getChildrenByTagNameNS(d2, "http://www.w3.org/2005/Atom", "entry");
@@ -230,11 +211,9 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 
 		// try GET to collection URI
 		GetMethod get3 = new GetMethod(TEST_COLLECTION_URI);
-		int result3 = executeMethod(get3);
+    // expect the status code is 200 OK
+		executeMethod(get3, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result3);
-
 		// check content
 		Document d3 = getResponseBodyAsDocument(get3);
 		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
@@ -251,9 +230,10 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
-		int result = executeMethod(method);
-		
-		verifyPostMediaResponse(result, method);
+    // expect the status code is 201 Created
+    executeMethod(method, 201);
+    
+    verifyPostMediaResponse(method);
 		
 	}
 
@@ -268,9 +248,10 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(method, content, contentType);
-		int result = executeMethod(method);
-		
-		verifyPostMediaResponse(result, method);
+    // expect the status code is 201 Created
+    executeMethod(method, 201);
+    
+    verifyPostMediaResponse(method);
 
 	}
 	
@@ -287,11 +268,9 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		
 		// now try get on media location
 		GetMethod method = new GetMethod(mediaLocation);
-		int result = executeMethod(method);
+    // expect the status code is 200 OK
+		executeMethod(method, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
-
 		// expect no Location header 
 		Header locationHeader = method.getResponseHeader("Location");
 		assertNull(locationHeader);
@@ -317,17 +296,14 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(post, content, contentType);
-		int result = executeMethod(post);
-		assertEquals(201, result);
+		executeMethod(post, 201);
 		Document mediaLinkDoc = getResponseBodyAsDocument(post);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 
 		// now try get on media location
 		GetMethod get = new GetMethod(mediaLocation);
-		result = executeMethod(get);
-		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
+    // expect the status code is 200 OK
+		executeMethod(get, 200);
 
 		// expect no Location header 
 		Header locationHeader = get.getResponseHeader("Location");
@@ -360,11 +336,9 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		PutMethod method = new PutMethod(mediaLocation);
 		String media = "This is a test - updated.";
 		setTextPlainRequestEntity(method, media);
-		int result = executeMethod(method);
+    // expect the status code is 200 OK
+		executeMethod(method, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
-
 		// expect no Location header 
 		Header locationHeader = method.getResponseHeader("Location");
 		assertNull(locationHeader);
@@ -392,28 +366,23 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
-		int resultGet1 = executeMethod(get1);
-		assertEquals(200, resultGet1);
+		executeMethod(get1, 200);
 		
 		// now try to get media link
 		GetMethod get2 = new GetMethod(mediaLinkLocation);
-		int resultGet2 = executeMethod(get2);
-		assertEquals(200, resultGet2);
+		executeMethod(get2, 200);
 		
 		// now try delete on media location
 		DeleteMethod delete = new DeleteMethod(mediaLocation);
-		int result = executeMethod(delete);
-		assertEquals(204, result);
+		executeMethod(delete, 204);
 		
 		// now try to get media again
 		GetMethod get3 = new GetMethod(mediaLocation);
-		int resultGet3 = executeMethod(get3);
-		assertEquals(404, resultGet3);
+		executeMethod(get3, 404);
 		
 		// now try to get media link again
 		GetMethod get4 = new GetMethod(mediaLinkLocation);
-		int resultGet4 = executeMethod(get4);
-		assertEquals(404, resultGet4);
+		executeMethod(get4, 404);
 
 	}
 
@@ -429,39 +398,31 @@ public class TestStandardAtomProtocol_Fundamentals extends TestCase {
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
-		int resultGet1 = executeMethod(get1);
-		assertEquals(200, resultGet1);
+		executeMethod(get1, 200);
 		
 		// now try to get media link
 		GetMethod get2 = new GetMethod(mediaLinkLocation);
-		int resultGet2 = executeMethod(get2);
-		assertEquals(200, resultGet2);
+		executeMethod(get2, 200);
 		
 		// now try delete on media link location
 		DeleteMethod delete = new DeleteMethod(mediaLinkLocation);
-		int result = executeMethod(delete);
-		assertEquals(204, result);
+		executeMethod(delete, 204);
 		
 		// now try to get media again
 		GetMethod get3 = new GetMethod(mediaLocation);
-		int resultGet3 = executeMethod(get3);
-		assertEquals(404, resultGet3);
+		executeMethod(get3, 404);
 		
 		// now try to get media link again
 		GetMethod get4 = new GetMethod(mediaLinkLocation);
-		int resultGet4 = executeMethod(get4);
-		assertEquals(404, resultGet4);
+		executeMethod(get4, 404);
 
 	}
 
 	
 	
 	
-	private static void verifyPostMediaResponse(int result, PostMethod method) {
+	private static void verifyPostMediaResponse(PostMethod method) {
 		
-		// expect the status code is 201 Created
-		assertEquals(201, result);
-
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
 		assertNotNull(responseLocation);
