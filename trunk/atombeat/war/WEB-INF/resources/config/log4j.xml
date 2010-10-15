@@ -140,6 +140,10 @@
     <category name="org.exist.util">
         <priority value="debug"/>
     </category>
+
+    <category name="org.exist.storage">
+        <priority value="warn"/>
+    </category>
     
     <category name="org.quartz">
         <priority value="warn"/>
