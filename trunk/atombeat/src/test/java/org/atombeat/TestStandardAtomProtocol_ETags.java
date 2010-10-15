@@ -25,9 +25,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 	
 	
 	
-	private static Integer executeMethod(HttpMethod method) {
+	private static void executeMethod(HttpMethod method, int expectedStatus) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		AtomTestUtils.executeMethod(method, USER, PASS, expectedStatus);
 
 	}
 
@@ -42,12 +42,8 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 		
 		PostMethod method = new PostMethod(setupUrl);
 		
-		int result = executeMethod(method);
+		executeMethod(method, 200);
 		
-		if (result != 200) {
-			throw new RuntimeException("setup failed: "+result);
-		}
-
 	}
 	
 	
@@ -68,11 +64,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 
 		// now try GET to member URI
 		GetMethod method = new GetMethod(location);
-		int result = executeMethod(method);
+    // expect the status code is 200 OK
+		executeMethod(method, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, result);
-
 		// expect etag header
 		assertNotNull(method.getResponseHeader("ETag"));
 		
@@ -91,10 +85,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 				"<atom:summary>This is a summary.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+    // expect the status code is 201 Created
+		executeMethod(method, 201);
 		
-		// expect the status code is 201 Created
-		assertEquals(201, result);
 		assertNotNull(method.getResponseHeader("ETag"));
 		
 	}
@@ -114,10 +107,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, 200);
 
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
 		assertNotNull(method.getResponseHeader("ETag"));
 		
 	}
@@ -131,11 +123,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 
 		// now try GET to member URI
 		GetMethod get1 = new GetMethod(location);
-		int get1Result = executeMethod(get1);
+    // expect the status code is 200 OK
+		executeMethod(get1, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, get1Result);
-
 		// expect etag header
 		assertNotNull(get1.getResponseHeader("ETag"));
 		
@@ -150,17 +140,14 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(put, content);
-		int putResult = executeMethod(put);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(put, 200);
 
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, putResult);
 
 		// now try GET to member URI again
 		GetMethod get2 = new GetMethod(location);
-		int get2Result = executeMethod(get2);
-		
-		// expect the status code is 200 OK
-		assertEquals(200, get2Result);
+    // expect the status code is 200 OK
+		executeMethod(get2, 200);
 
 		// expect etag header
 		assertNotNull(get2.getResponseHeader("ETag"));
@@ -181,11 +168,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 
 		// now try GET to member URI
 		GetMethod get1 = new GetMethod(location);
-		int get1Result = executeMethod(get1);
+    // expect the status code is 200 OK
+		executeMethod(get1, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, get1Result);
-
 		// expect etag header
 		assertNotNull(get1.getResponseHeader("ETag"));
 		
@@ -195,18 +180,15 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 		// now try conditional GET to member URI 
 		GetMethod get2 = new GetMethod(location);
 		get2.setRequestHeader("If-None-Match" , etag);
-		int get2Result = executeMethod(get2);
+    // expect the status code is 304 Not Modified
+		executeMethod(get2, 304);
 		
-		// expect the status code is 304 Not Modified
-		assertEquals(304, get2Result);
-
 		// now try conditional GET to member URI with different etag
 		GetMethod get3 = new GetMethod(location);
 		get3.setRequestHeader("If-None-Match" , "\"foo\"");
-		int get3Result = executeMethod(get3);
+    // expect the status code is 200
+		executeMethod(get3, 200);
 		
-		// expect the status code is 200
-		assertEquals(200, get3Result);
 
 	}
 	
@@ -219,11 +201,9 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 
 		// now try GET to member URI
 		GetMethod get1 = new GetMethod(location);
-		int get1Result = executeMethod(get1);
+    // expect the status code is 200 OK
+		executeMethod(get1, 200);
 		
-		// expect the status code is 200 OK
-		assertEquals(200, get1Result);
-
 		// expect etag header
 		assertNotNull(get1.getResponseHeader("ETag"));
 		
@@ -240,19 +220,15 @@ public class TestStandardAtomProtocol_ETags extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(put1, content);
-		int put1Result = executeMethod(put1);
+    // expect the status code is 412 Precondition Failed 
+		executeMethod(put1, 412);
 
-		// expect the status code is 412 Precondition Failed 
-		assertEquals(412, put1Result);
-		
 		// now put an updated entry document using a PUT request
 		PutMethod put2 = new PutMethod(location);
 		put2.setRequestHeader("If-Match", etag);
 		setAtomRequestEntity(put2, content);
-		int put2Result = executeMethod(put2);
-
-		// expect the status code is 200 OK 
-		assertEquals(200, put2Result);
+    // expect the status code is 200 OK 
+		executeMethod(put2, 200);
 		
 	}
 	

@@ -28,11 +28,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 		
 		GetMethod method = new GetMethod(installUrl);
 		
-		int result = executeMethod(method, "adam", "test");
-		
-		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
-		}
+		executeMethod(method, "adam", "test", 200);
 		
 	}
 	
@@ -65,14 +61,12 @@ public class TestLinkExpansionPlugin extends TestCase {
 		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		PutMethod put = new PutMethod(collectionUri);
 		setAtomRequestEntity(put, feed);
-		int putResult = executeMethod(put, "adam", "test");
-		assertEquals(201, putResult);
+		executeMethod(put, "adam", "test", 201);
 		
 		// list the collection
 		
 		GetMethod get1 = new GetMethod(collectionUri);
-		int get1Result = executeMethod(get1, "adam", "test");
-		assertEquals(200, get1Result);
+		executeMethod(get1, "adam", "test", 200);
 		Document feedDoc = getResponseBodyAsDocument(get1);
 		
 		// test feed context
@@ -107,8 +101,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		PutMethod put = new PutMethod(collectionUri);
 		setAtomRequestEntity(put, feed);
-		int putResult = executeMethod(put, "adam", "test");
-		assertEquals(201, putResult);
+		executeMethod(put, "adam", "test", 201);
 		
 		// create a member
 		
@@ -119,15 +112,13 @@ public class TestLinkExpansionPlugin extends TestCase {
 			"</atom:entry>";
 		PostMethod post = new PostMethod(collectionUri);
 		setAtomRequestEntity(post, entry);
-		int postResult = executeMethod(post, "adam", "test");
-		assertEquals(201, postResult);
+		executeMethod(post, "adam", "test", 201);
 		String memberUri = post.getResponseHeader("Location").getValue();
 		
 		// retrieve member
 		
 		GetMethod get2 = new GetMethod(memberUri);
-		int get2Result = executeMethod(get2, "adam", "test");
-		assertEquals(200, get2Result);
+		executeMethod(get2, "adam", "test", 200);
 		Document d = getResponseBodyAsDocument(get2);
 		
 		// test entry context
@@ -154,8 +145,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 			"</atom:entry>";
 		PostMethod anotherPost = new PostMethod(collectionUri);
 		setAtomRequestEntity(anotherPost, anotherEntry);
-		int anotherPostResult = executeMethod(anotherPost, "adam", "test");
-		assertEquals(201, anotherPostResult);
+		executeMethod(anotherPost, "adam", "test", 201);
 		
 		Document d2 = getResponseBodyAsDocument(anotherPost);
 		l = getLink(d2, "foo"); assertNotNull(l);
@@ -189,8 +179,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		PutMethod put = new PutMethod(collectionUri);
 		setAtomRequestEntity(put, feed);
-		int putResult = executeMethod(put, "adam", "test");
-		assertEquals(201, putResult);
+		executeMethod(put, "adam", "test", 201);
 		
 		// create a member
 		
@@ -201,15 +190,13 @@ public class TestLinkExpansionPlugin extends TestCase {
 			"</atom:entry>";
 		PostMethod post = new PostMethod(collectionUri);
 		setAtomRequestEntity(post, entry);
-		int postResult = executeMethod(post, "adam", "test");
-		assertEquals(201, postResult);
+		executeMethod(post, "adam", "test", 201);
 		String memberUri = post.getResponseHeader("Location").getValue();
 		
 		// retrieve member
 		
 		GetMethod get2 = new GetMethod(memberUri);
-		int get2Result = executeMethod(get2, "adam", "test");
-		assertEquals(200, get2Result);
+		executeMethod(get2, "adam", "test", 200);
 		Document d = getResponseBodyAsDocument(get2);
 		
 		// test entry context
@@ -222,8 +209,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 		// list the collection
 		
 		GetMethod get1 = new GetMethod(collectionUri);
-		int get1Result = executeMethod(get1, "adam", "test");
-		assertEquals(200, get1Result);
+		executeMethod(get1, "adam", "test", 200);
 		Document feedDoc = getResponseBodyAsDocument(get1);
 		
 		// test feed context

@@ -1,5 +1,6 @@
 package org.atombeat;
 
+import java.io.IOException;
 import java.io.InputStream;
 
 import org.apache.commons.httpclient.Header;
@@ -30,9 +31,9 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 	
 	
 	
-	private static Integer executeMethod(HttpMethod method) {
+	private static void executeMethod(HttpMethod method, int expectedStatus) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		AtomTestUtils.executeMethod(method, USER, PASS, expectedStatus);
 
 	}
 
@@ -45,13 +46,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 
 		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
 		
-		PostMethod method = new PostMethod(setupUrl);
-		
-		int result = executeMethod(method);
-		
-		if (result != 200) {
-			throw new RuntimeException("setup failed: "+result);
-		}
+		executeMethod(new PostMethod(setupUrl), 200);
 		
 	}
 	
@@ -76,10 +71,9 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+    // expect the status code is 400 bad request
+		executeMethod(method, 400);
 		
-		// expect the status code is 400 bad request
-		assertEquals(400, result);
 	}
 	
 	
@@ -98,10 +92,8 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, 200);
 
 		// expect no Location header 
 		Header responseLocationHeader = method.getResponseHeader("Location");
@@ -125,10 +117,9 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 			"</atom:entry>";
 		
 		setAtomRequestEntity(method2, content2);
-		int result2 = executeMethod(method2);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method2, 200);
 
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result2);
 
 		// expect no Location header 
 		Header responseLocationHeader2 = method2.getResponseHeader("Location");
@@ -160,15 +151,12 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, 200);
 
 		// now get
 		GetMethod get = new GetMethod(location);
-		int getResult = executeMethod(get);
-		assertEquals(200, getResult);
+		executeMethod(get, 200);
 		Document doc = AtomTestUtils.getResponseBodyAsDocument(get);
 		Element title = (Element) doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
 		assertEquals("Test Member - Updated", title.getTextContent());
@@ -182,15 +170,12 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 			"</atom:entry>";
 		
 		setAtomRequestEntity(method2, content2);
-		int result2 = executeMethod(method2);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result2);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method2, 200);
 
 		// now get again
 		GetMethod get2 = new GetMethod(location);
-		int getResult2 = executeMethod(get2);
-		assertEquals(200, getResult2);
+		executeMethod(get2, 200);
 		Document doc2 = AtomTestUtils.getResponseBodyAsDocument(get2);
 		Element title2 = (Element) doc2.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "title").item(0);
 		assertEquals("Test Member - Updated Again", title2.getTextContent());
@@ -207,13 +192,13 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
 		method.setRequestHeader("Slug", "foo bar.txt");
-		executeMethod(method);
+		executeMethod(method, 201);
 		
 		Document mediaLinkDoc = getResponseBodyAsDocument(method);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		
 		GetMethod get = new GetMethod(mediaLocation);
-		executeMethod(get);
+		executeMethod(get, 200);
 		
 		String contentDisposition = get.getResponseHeader("Content-Disposition").getValue();
 		assertNotNull(contentDisposition);
@@ -232,7 +217,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(post, media);
-		executeMethod(post); 
+		executeMethod(post, 201); 
 		
 		Document mediaLinkDoc = getResponseBodyAsDocument(post);
 		String location = getEditLocation(mediaLinkDoc);
@@ -248,7 +233,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		
 		// check get on media resource has correct content type
 		GetMethod getMedia = new GetMethod(mediaLocation);
-		executeMethod(getMedia);
+		executeMethod(getMedia, 200);
 		assertTrue(getMedia.getResponseHeader("Content-Type").getValue().startsWith("text/plain"));
 		
 		// update the media resource with a different media type
@@ -256,14 +241,11 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(put, content, contentType);
-		int putResult = executeMethod(put);
-		
-		// check ok
-		assertEquals(200, putResult);
+		executeMethod(put, 200);
 		
 		// retrieve media link entry to check type is updated
 		GetMethod get = new GetMethod(location);
-		executeMethod(get);
+		executeMethod(get, 200);
 		
 		mediaLinkDoc = getResponseBodyAsDocument(get);
 		
@@ -276,7 +258,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		
 		// check get on media resource has correct content type
 		GetMethod getMedia2 = new GetMethod(mediaLocation);
-		executeMethod(getMedia2);
+		executeMethod(getMedia2, 200);
 		assertTrue(getMedia2.getResponseHeader("Content-Type").getValue().startsWith("application/vnd.ms-excel"));
 		
 	}
@@ -293,11 +275,8 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(put, content, contentType);
-		int putResult = executeMethod(put);
+		executeMethod(put, 415);
 		
-		// check result
-		assertEquals(415, putResult);
-
 	}
 
 	
@@ -310,9 +289,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		PutMethod method = new PutMethod(location);
 		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection - Updated</atom:title></atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-		
-		assertEquals(400, result);
+		executeMethod(method, 400);
 
 	}
 	
@@ -324,11 +301,8 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(put, content, contentType);
-		int putResult = executeMethod(put);
+		executeMethod(put, 415);
 		
-		// check result
-		assertEquals(415, putResult);
-
 	}
 	
 	
@@ -347,9 +321,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-
-		assertEquals(415, result);
+		executeMethod(method, 415);
 
 	}
 	
@@ -368,9 +340,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:title>Test Collection</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-
-		assertEquals(415, result);
+		executeMethod(method, 415);
 
 	}
 	
@@ -383,18 +353,17 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "foo/bar";
 		setInputStreamRequestEntity(method, content, contentType);
-		int result = executeMethod(method);
+    // expect the status code is 201 Created
+		executeMethod(method, 201);
 		
-		verifyPostMediaResponse(result, method);
+		verifyPostMediaResponse(method);
 
 	}
 	
 	
 	
-	private static void verifyPostMediaResponse(int result, PostMethod method) {
+	private static void verifyPostMediaResponse(PostMethod method) {
 		
-		// expect the status code is 201 Created
-		assertEquals(201, result);
 
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
@@ -422,8 +391,7 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 
 		// now try GET to collection URI
 		GetMethod get1 = new GetMethod(TEST_COLLECTION_URI);
-		int get1Result = executeMethod(get1);
-		assertEquals(200, get1Result);
+		executeMethod(get1, 200);
 
 		// check content
 		Document d = getResponseBodyAsDocument(get1);
@@ -438,14 +406,12 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(post, content);
-		int postResult = executeMethod(post);
+		executeMethod(post, 201);
 		String location = post.getResponseHeader("Location").getValue();
-		assertEquals(201, postResult);
 		
 		// now try GET to collection URI again
 		GetMethod get2 = new GetMethod(TEST_COLLECTION_URI);
-		int get2Result = executeMethod(get2);
-		assertEquals(200, get2Result);
+		executeMethod(get2, 200);
 
 		// check content
 		d = getResponseBodyAsDocument(get2);
@@ -462,13 +428,11 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(put, content);
-		int putResult = executeMethod(put);
-		assertEquals(200, putResult);
+		executeMethod(put, 200);
 
 		// now try GET to collection URI again
 		GetMethod get3 = new GetMethod(TEST_COLLECTION_URI);
-		int get3Result = executeMethod(get3);
-		assertEquals(200, get3Result);
+		executeMethod(get3, 200);
 
 		// check content
 		d = getResponseBodyAsDocument(get3);
@@ -516,13 +480,11 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		PutMethod put = new PutMethod(mediaLocation);
 		String media = "This is a test - updated.";
 		setTextPlainRequestEntity(put, media);
-		int putResult = executeMethod(put);
-		assertEquals(200, putResult);
+		executeMethod(put, 200);
 		
 		// now retrieve media link entry
 		GetMethod get = new GetMethod(mediaLinkLocation);
-		int getResult = executeMethod(get);
-		assertEquals(200, getResult);
+		executeMethod(get, 200);
 		mediaLinkDoc = getResponseBodyAsDocument(get);
 
 		// compared updated
@@ -551,21 +513,17 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		InputStream content1 = this.getClass().getClassLoader().getResourceAsStream("entry1.xml");
 		String contentType = "application/atom+xml";
 		setInputStreamRequestEntity(put1, content1, contentType);
-		int result1 = executeMethod(put1);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(put1, 200);
 
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result1);
-		
 		Document d1 = getResponseBodyAsDocument(put1);
 
 		// now put an updated entry document using a PUT request
 		PutMethod put2 = new PutMethod(location);
 		InputStream content2 = this.getClass().getClassLoader().getResourceAsStream("entry1.xml");
 		setInputStreamRequestEntity(put2, content2, contentType);
-		int result2 = executeMethod(put2);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result2);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(put2, 200);
 
 		Document d2 = getResponseBodyAsDocument(put2);
 		
@@ -575,19 +533,14 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		PutMethod put3 = new PutMethod(location);
 		InputStream content3 = this.getClass().getClassLoader().getResourceAsStream("entry1.xml");
 		setInputStreamRequestEntity(put3, content3, contentType);
-		int result3 = executeMethod(put3);
-
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result3);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(put3, 200);
 
 		Document d3 = getResponseBodyAsDocument(put3);
 		
 		assertEquals( d1.getDocumentElement().getChildNodes().getLength(), d3.getDocumentElement().getChildNodes().getLength());
 		assertEquals( d2.getDocumentElement().getChildNodes().getLength(), d3.getDocumentElement().getChildNodes().getLength());
 		
-		
-		
-
 	}
 
 	
@@ -605,10 +558,8 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 				"<atom:summary>This is a summary.</atom:summary>" +
 			"</atom:entry>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+		executeMethod(method, 400);
 		
-		assertEquals(400, result);
-
 		// expect Content-Type header 
 		String responseContentType = method.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
@@ -616,9 +567,66 @@ public class TestStandardAtomProtocol_Details extends TestCase {
 		
 	}
 
+  private String getResponse(String content) throws IOException { 
+      PostMethod postMethod = executePost(TEST_COLLECTION_URI, USER, PASS, content);
+      Header locationHeader = postMethod.getResponseHeader("Location");
+      GetMethod get = new GetMethod(locationHeader.getValue() );
+      executeMethod(get, 200);
+      
+      return get.getResponseBodyAsString();
+  }
+
+  public void testRoundTrippingIsIdempotent() throws Exception { 
+      // create test member
+      String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" + 
+                       "<atom:title>Test Entry</atom:title>" + 
+                       "<atom:summary>this is a test</atom:summary>" + 
+                       "</atom:entry>";
+
+      String responseBody = getResponse(content);
+      String responseBodyInvariant = makeInvariant(responseBody);
+      
+      String expectedResponse = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">\n" +
+                                "    <atom:id></atom:id>\n" + 
+                                "    <atom:published></atom:published>\n" + 
+                                "    <atom:updated></atom:updated>\n" + 
+                                "    <atom:author>\n" +
+                                "        <atom:name>adam</atom:name>\n" + 
+                                "    </atom:author>\n" + 
+                                "    <atom:title>Test Entry</atom:title>\n" +
+                                "    <atom:summary>this is a test</atom:summary>\n" + 
+                                "    <atom:link rel=\"self\" type=\"application/atom+xml;type=entry\" href=\"\"/>\n" + 
+                                "    <atom:link rel=\"edit\" type=\"application/atom+xml;type=entry\" href=\"\"/>\n" + 
+                                "    <atom:link rel=\"http://purl.org/atombeat/rel/security-descriptor\" href=\"\" type=\"application/atom+xml;type=entry\"/>\n" + 
+                                "</atom:entry>\n";
+      assertEquals(expectedResponse, responseBodyInvariant);
+      
+      
+      // save it back to data store
+      
+      String responseBody2 = getResponse(responseBody);
+      String responseBodyInvariant2 = makeInvariant(responseBody2);
+      
+      // get it again, check that it is unchanged. 
+      assertEquals(responseBodyInvariant, responseBodyInvariant2);
+      
+  }
 
 
-	
+
+
+
+/**
+ * @param responseBody
+ * @return
+ */
+private String makeInvariant(String responseBody) {
+    String responseBodyInvariant = responseBody.replaceAll(":id>[^<]+</atom:id>", ":id></atom:id>");
+      responseBodyInvariant = responseBodyInvariant.replaceAll(":updated>[^<]+</atom", ":updated></atom");
+      responseBodyInvariant = responseBodyInvariant.replaceAll(":published>[^<]+</atom", ":published></atom");
+      responseBodyInvariant = responseBodyInvariant.replaceAll("href=\"http[^\"]+\"", "href=\"\"");
+    return responseBodyInvariant;
+}
 	
 	
 	

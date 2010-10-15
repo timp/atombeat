@@ -29,9 +29,9 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 	
 	
 	
-	private static Integer executeMethod(HttpMethod method) {
+  private static void executeMethod(HttpMethod method, int expectedStatus) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		AtomTestUtils.executeMethod(method, USER, PASS, expectedStatus);
 
 	}
 
@@ -43,13 +43,7 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 
 		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
 		
-		PostMethod method = new PostMethod(setupUrl);
-		
-		int result = executeMethod(method);
-		
-		if (result != 200) {
-			throw new RuntimeException("setup failed: "+result);
-		}
+		executeMethod(new PostMethod(setupUrl), 200);
 		
 	}
 	
@@ -106,10 +100,8 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 		PutMethod method = new PutMethod(collectionUri);
 		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection</atom:title></atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
-
-		// expect the status code is 201 CREATED
-		assertEquals(201, result);
+    // expect the status code is 201 CREATED
+		executeMethod(method, 201);
 
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
@@ -139,11 +131,9 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 		PutMethod method = new PutMethod(collectionUri);
 		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection - Updated</atom:title></atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+    // expect the status code is 200 OK - we just did an update, no creation
+		executeMethod(method, 200);
 		
-		// expect the status code is 200 OK - we just did an update, no creation
-		assertEquals(200, result);
-
 		// expect no Location header 
 		Header responseLocationHeader = method.getResponseHeader("Location");
 		assertNull(responseLocationHeader);
@@ -178,11 +168,9 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 		PostMethod method = new PostMethod(collectionUri);
 		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection</atom:title></atom:feed>";
 		setAtomRequestEntity(method, content);
-		int result = executeMethod(method);
+    // expect the status code is 201 No Content
+		executeMethod(method, 201);
 		
-		// expect the status code is 201 No Content
-		assertEquals(201, result);
-
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
 		assertNotNull(responseLocation);
@@ -211,8 +199,7 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 				"<atom:title>Test Collection (Recursive)</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(put1, content1);
-		int result1 = executeMethod(put1);
-		assertEquals(201, result1);
+		executeMethod(put1, 201);
 
 		createTestEntryAndReturnLocation(col1, USER, PASS);
 
@@ -223,21 +210,18 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 				"<atom:title>Test Sub-Collection</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(put2, content2);
-		int result2 = executeMethod(put2);
-		assertEquals(201, result2);
+		executeMethod(put2, 201);
 
 		createTestEntryAndReturnLocation(col2, USER, PASS);
 
 		GetMethod get3 = new GetMethod(col1);
-		int result3 = executeMethod(get3);
-		assertEquals(200, result3);
+		executeMethod(get3, 200);
 		Document d3 = getResponseBodyAsDocument(get3);
 		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(2, entries3.size()); // should be 2 because 1 is included via recursion into sub-collection
 		
 		GetMethod get4 = new GetMethod(col2);
-		int result4 = executeMethod(get4);
-		assertEquals(200, result4);
+		executeMethod(get4, 200);
 		Document d4 = getResponseBodyAsDocument(get4);
 		List<Element> entries4 = getChildrenByTagNameNS(d4, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(1, entries4.size());
@@ -259,8 +243,7 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 				"<atom:title>Test Collection (Recursive)</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(put1, content1);
-		int result1 = executeMethod(put1);
-		assertEquals(201, result1);
+		executeMethod(put1, 201);
 
 		createTestEntryAndReturnLocation(col1, USER, PASS);
 
@@ -271,21 +254,18 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 				"<atom:title>Test Sub-Collection</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(put2, content2);
-		int result2 = executeMethod(put2);
-		assertEquals(201, result2);
+		executeMethod(put2, 201);
 
 		createTestEntryAndReturnLocation(col2, USER, PASS);
 
 		GetMethod get3 = new GetMethod(col1);
-		int result3 = executeMethod(get3);
-		assertEquals(200, result3);
+		executeMethod(get3, 200);
 		Document d3 = getResponseBodyAsDocument(get3);
 		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(1, entries3.size()); // should be 1 because not recursive
 		
 		GetMethod get4 = new GetMethod(col2);
-		int result4 = executeMethod(get4);
-		assertEquals(200, result4);
+		executeMethod(get4, 200);
 		Document d4 = getResponseBodyAsDocument(get4);
 		List<Element> entries4 = getChildrenByTagNameNS(d4, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(1, entries4.size());
@@ -306,8 +286,7 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 				"<atom:title>Test Collection (Recursive)</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(put1, content1);
-		int result1 = executeMethod(put1);
-		assertEquals(201, result1);
+		executeMethod(put1, 201);
 
 		createTestEntryAndReturnLocation(col1, USER, PASS);
 
@@ -318,21 +297,18 @@ public class TestExtendedAtomProtocol_Collections extends TestCase {
 				"<atom:title>Test Sub-Collection</atom:title>" +
 			"</atom:feed>";
 		setAtomRequestEntity(put2, content2);
-		int result2 = executeMethod(put2);
-		assertEquals(201, result2);
+		executeMethod(put2, 201);
 
 		createTestEntryAndReturnLocation(col2, USER, PASS);
 
 		GetMethod get3 = new GetMethod(col1);
-		int result3 = executeMethod(get3);
-		assertEquals(200, result3);
+		executeMethod(get3, 200);
 		Document d3 = getResponseBodyAsDocument(get3);
 		List<Element> entries3 = getChildrenByTagNameNS(d3, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(1, entries3.size()); // should be 1 because not recursive by default
 		
 		GetMethod get4 = new GetMethod(col2);
-		int result4 = executeMethod(get4);
-		assertEquals(200, result4);
+		executeMethod(get4, 200);
 		Document d4 = getResponseBodyAsDocument(get4);
 		List<Element> entries4 = getChildrenByTagNameNS(d4, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(1, entries4.size());

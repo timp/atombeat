@@ -38,9 +38,9 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 	
 
 	
-	private static Integer executeMethod(HttpMethod method) {
+  private static void executeMethod(HttpMethod method, int expectedStatus) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		AtomTestUtils.executeMethod(method, USER, PASS, expectedStatus);
 
 	}
 
@@ -52,14 +52,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 
 		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
 		
-		PostMethod method = new PostMethod(setupUrl);
+		executeMethod(new PostMethod(setupUrl), 200);
 		
-		int result = executeMethod(method);
-		
-		if (result != 200) {
-			throw new RuntimeException("setup failed: "+result);
-		}
-
 		domImplRegistry = DOMImplementationRegistry.newInstance();
 		domImplLs = (DOMImplementationLS)domImplRegistry.getDOMImplementation("LS");
 		lsWriter = domImplLs.createLSSerializer();
@@ -82,8 +76,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		String collectionUri;
 		GetMethod get1, get2;
 		PostMethod post;
-		int get1Result, get2Result, postResult;
-		Document d; List<Element> l; 
+		Document d; 
+		List<Element> l; 
 		
 		// create a collection to run test against
 		
@@ -92,9 +86,8 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		// do initial get on collection uri, expect to find no members
 		
 		get1 = new GetMethod(collectionUri);
-		get1Result = executeMethod(get1);
+		executeMethod(get1, 200);
 
-		assertEquals(200, get1Result);
 		d = getResponseBodyAsDocument(get1);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(0, l.size());
@@ -115,8 +108,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 				"</atom:entry>" +
 			"</atom:feed>";
 		setAtomRequestEntity(post, content);
-		postResult = executeMethod(post); 
-		assertEquals(200, postResult);
+		executeMethod(post, 200); 
 		d = getResponseBodyAsDocument(post);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(2, l.size());
@@ -124,8 +116,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		// do a second get on the collection uri, expect to find 2 members
 		
 		get2 = new GetMethod(collectionUri);
-		get2Result = executeMethod(get2);
-		assertEquals(200, get2Result);
+		executeMethod(get2, 200);
 		d = getResponseBodyAsDocument(get2);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(2, l.size());
@@ -139,7 +130,6 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		String col1Uri, col2Uri;
 		GetMethod get1, get2, get3;
 		PostMethod post1, post2, post3;
-		int get1Result, get2Result, get3Result, post1Result, post2Result, post3Result;
 		Document d; List<Element> l;
 		
 		// set up two test collections
@@ -151,21 +141,18 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 
 		post1 = new PostMethod(col1Uri);
 		setTextPlainRequestEntity(post1, "This is a test.");
-		post1Result = executeMethod(post1);
-		assertEquals(201, post1Result);
+		executeMethod(post1, 201);
 
 		post2 = new PostMethod(col1Uri);
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(post2, content, contentType);
-		post2Result = executeMethod(post2);
-		assertEquals(201, post2Result);
+		executeMethod(post2, 201);
 		
 		// check second collection is empty
 		
 		get1 = new GetMethod(col2Uri);
-		get1Result = executeMethod(get1);
-		assertEquals(200, get1Result);
+		executeMethod(get1, 200);
 		d = getResponseBodyAsDocument(get1);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(0, l.size());
@@ -173,8 +160,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		// get feed from first collection
 		
 		get2 = new GetMethod(col1Uri);
-		get2Result = executeMethod(get2);
-		assertEquals(200, get2Result);
+		executeMethod(get2, 200);
 		d = getResponseBodyAsDocument(get2);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(2, l.size());
@@ -185,8 +171,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 
 		String str = lsWriter.writeToString(d);
 		setAtomRequestEntity(post3, str);
-		post3Result = executeMethod(post3);
-		assertEquals(200, post3Result);
+		executeMethod(post3, 200);
 		d = getResponseBodyAsDocument(post3);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(2, l.size());
@@ -194,8 +179,7 @@ public class TestExtendedAtomProtocol_MultiCreate extends TestCase {
 		// get second collection to see change
 		
 		get3 = new GetMethod(col2Uri);
-		get3Result = executeMethod(get3);
-		assertEquals(200, get3Result);
+		executeMethod(get3, 200);
 		d = getResponseBodyAsDocument(get3);
 		l = getChildrenByTagNameNS(d, "http://www.w3.org/2005/Atom", "entry");
 		assertEquals(2, l.size());
