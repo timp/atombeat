@@ -4,7 +4,7 @@
 
 = Introduction =
 
-This tutorial provides an introduction to the features for versioning collection members in AtomBeat. 
+This tutorial provides an introduction to AtomBeat's support for versioning Atom collection members. 
 
 Note that there is currently no support in AtomBeat for versioning media resources.
 
@@ -12,9 +12,9 @@ Note that there is currently no support in AtomBeat for versioning media resourc
 
 This tutorial assumes that you have completed the [TutorialGettingStarted Getting Started Tutorial]. In short, it assumes that you have:
 
-  * the latest version of the *atombeat-exist-minimal* web application deployed at the context path /atombeat on a servlet container running on port 8080
+  * the latest version of the *atombeat-exist-minimal* web application deployed at the context path */atombeat* on a servlet container running on port 8080
   * cURL installed on your computer
-  * [OPTIONAL] a TCP proxy listening on port 8081 and forwarding to port 8080
+  * OPTIONAL: a TCP proxy listening on port 8081 and forwarding to port 8080
 
 If you are doing this tutorial without a TCP proxy, replace "8081" with "8080" wherever you see it below.
 
@@ -317,9 +317,9 @@ Notice also that each entry has several new links:
 
 ...these provide a way to navigate between revisions.
 
-Finally, notice that the `atom:content` elements on each revision are empty. AtomBeat assumes that you will store most of your data for each member within the `atom:content` element (although this is not a hard restriction, you are free to add foreign markup anywhere within an Atom entry document. AtomBeat also assumes that this data could be fairly sizeable, and that retrieving a feed containing a complete representation of every single revision of a member could be a costly operation, so it strips out any children of the `atom:content` element when generating a history feed, to provide a useful and relatively efficient summary of available revisions for that member - but don't worry, you can still retrieve a complete representation of each revision...
+Finally, notice that the `atom:content` elements on each revision are empty. AtomBeat assumes that you will store most of your data for each member within the `atom:content` element (although this is not a hard restriction, you are free to add foreign markup anywhere within an Atom entry document, and AtomBeat will store it). AtomBeat also assumes that this data could be fairly sizeable, and that retrieving a feed containing a complete representation of every single revision of a member could be a costly operation, especially in terms of the amount of data sent between client and server, so it strips out any children of the `atom:content` element when generating a history feed, to provide a useful and relatively efficient summary of available revisions for that member - but don't worry, you can still retrieve a complete representation of each revision...
 
-= Retrieving a Member Revision =
+= Retrieving Member Revisions =
 
 To retrieve a complete representation of a revision, use the URI given in the "this-revision" link. For example, using the history feed above, to retrieve a representation of the first (initial) revision of the member, do:
 
@@ -370,7 +370,7 @@ Date: Fri, 15 Oct 2010 15:51:57 GMT
 </atom:entry>
 }}}
 
-Notice that the `atom:content` element is not empty.
+Notice that the `atom:content` element is not empty, i.e., this is a complete representation of that revision.
 
 To retrieve a representation of the next revision, we could follow the "next-revision" link, and do:
 
@@ -431,7 +431,7 @@ Again, notice that the `atom:content` element is fully populated.
 
 = Submitting a Revision Comment =
 
-You've probably noticed the `ar:comment` element that appears in the Atom entries above. These elements provide a means of communicating *who* performed each revision, and also any comments they submitted when making the revision. 
+You've probably noticed the `ar:comment` element that appears in the Atom entries above. These elements provide a means of communicating who performed each revision, and also any comments they submitted when making the revision. 
 
 To submit a revision comment when updating a member, use the `X-Atom-Revision-Comment` request header. 
 
@@ -452,7 +452,7 @@ E.g., create a file "entry1-updated-again.xml" in your current directory contain
 
 (...or whatever you want to write.)
 
-Then update the member, e.g.:
+Then update the member, providing a comment request header, e.g.:
 
 {{{
 $ curl --verbose --header "Content-Type: application/atom+xml" --header "X-Atom-Revision-Comment: updated a second time" --upload-file entry1-updated-again.xml http://localhost:8081/atombeat/workspace/content/my-versioned-collection/e056b4fa-fb39-442f-8d94-3838537f10d1.atom
@@ -527,8 +527,7 @@ Note also that AtomBeat will *not* allow arbitrary insertion or modification of 
 
 = Further Reading =
 
-Othe tutorials available:
+For a list of other AtomBeat tutorials available, see TutorialsList.
 
-  * TODO
-
+The AtomBeat versioning implementation tries to stick as closely as possible to [http://tools.ietf.org/html/draft-snell-atompub-revision-00 James Snell's 2006 IETF draft].
 
