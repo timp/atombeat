@@ -40,7 +40,7 @@ AtomBeat is being developed as part of work on scientific data repositories at t
 
 = eXist already has an Atom Protocol implementation, why do another? =
 
-AtomBeat uses eXist as the underlying data storage engine. There are a couple of reasons why we've rolled our own Atom Protocol implementation in XQuery, rather than just using the Atom servlet that comes bundled with eXist...
+AtomBeat uses [http://exist.sourceforge.net/ eXist] as the underlying data storage engine. There are a couple of reasons why we've rolled our own Atom Protocol implementation in XQuery, rather than just using the Atom servlet that comes bundled with eXist...
 
   * We wanted to experiment with new features, like versioning and access control, and we found it quicker to do that by starting from scratch and working entirely in XQuery, rather than working with the existing Java servlet code.
 
