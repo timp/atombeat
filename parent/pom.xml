@@ -24,4 +24,11 @@
     <developerConnection>scm:svn:https://atombeat.googlecode.com/svn/trunk</developerConnection>
     <url>scm:svn:https://atombeat.googlecode.com/svn/trunk</url>
   </scm>  
+  <repositories>
+    <repository>
+      <id>AtomBeat</id>
+      <url>http://atombeat.googlecode.com/svn/repository</url>
+    </repository>
+  </repositories>
 </project>
+
