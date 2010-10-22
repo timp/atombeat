@@ -1,4 +1,5 @@
 #summary AtomBeat - wiki home page
+#labels Featured
 
 = About =
 
