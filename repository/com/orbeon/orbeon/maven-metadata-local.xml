@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.orbeon</groupId>
+  <artifactId>orbeon</artifactId>
+  <version>3.8.0-CE-exist-1.4.0</version>
+  <versioning>
+    <versions>
+      <version>3.8.0-CE-exist-1.4.0</version>
+    </versions>
+    <lastUpdated>20101013170717</lastUpdated>
+  </versioning>
+</metadata>
