@@ -1,4 +1,5 @@
 #summary A tutorial on getting started with AtomBeat.
+#labels Featured
 
 <wiki:toc/>
 
@@ -665,5 +666,3 @@ Date: Fri, 15 Oct 2010 12:21:21 GMT
 For a list of other AtomBeat tutorials available, see the [AtomBeat AtomBeat wiki home page].
 
 The [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Protocol Specification] and the [http://www.atomenabled.org/developers/syndication/atom-format-spec.php Atom Format Specification] are recommended reading.
-
-
