@@ -50,7 +50,7 @@ public class AtomTestUtils {
 		
 	public static final String CONTEXTPATH = 
 		(System.getProperty("org.atombeat.it.contextPath") != null) ? 
-				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-orbeon-minimal-secure";
+				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-minimal-secure";
 
 	public static final String WORKSPACEPATH = 
 		(System.getProperty("org.atombeat.it.workspacePath") != null) ? 
