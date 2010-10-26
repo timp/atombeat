@@ -1,4 +1,6 @@
-# design document for implementing tombstones
+#summary design document for implementing tombstones
+
+Notes on implementing http://tools.ietf.org/html/draft-snell-atompub-tombstones-11
 
 = Enabling Tombstones =
 
@@ -48,4 +50,176 @@ HTTP/1.1 200 OK
 }}}
 
 In both cases, subsequent to the request, tombstones will be enabled on the collection /foo.
+
+= Deleting Collection Members =
+
+Assume that a collection member already exists at /foo/xyz.atom, with the following representation:
+
+{{{
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
+    <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+    <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
+    <atom:author>
+        <atom:name>audrey</atom:name>
+    </atom:author>
+    <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
+    <atom:summary type="text">Some text.</atom:summary>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+</atom:entry>
+}}}
+
+Assume that this is the only member of the collection at /foo.
+
+== Delete Member Operation Expectations ==
+
+The collection member can be deleted with the request:
+
+{{{
+DELETE /atombeat/workspace/content/foo/xyz.atom HTTP/1.1
+Host: example.org
+}}}
+
+If tombstones are *not* enabled on the collection, then this request expects:
+
+{{{
+HTTP/1.1 204 No Content
+}}}
+
+If tombstones *are* enabled on the collection, then this request expects:
+
+{{{
+HTTP/1.1 200 OK
+Content-Type: application/atomdeleted+xml
+
+<at:deleted-entry
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
+  xmlns:at="http://purl.org/atompub/tombstones/1.0"
+  ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+  when="2010-10-26T18:29:48.687+01:00">
+  <at:by>
+    <email>jdoe@example.org</email>
+  </at:by>
+  <at:comment>Removed comment spam</at:comment>
+  <atombeat:ghost>
+    <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
+    <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+    <atom:author>
+        <atom:name>audrey</atom:name>
+    </atom:author>
+    <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
+    <atom:summary type="text">Some text.</atom:summary>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+  </atombeat:ghost>
+</at:deleted-entry>
+}}}
+
+By default, the following elements will be copied from the Atom entry prior to deletion to the atombeat:ghost element in the deleted entry: atom:id, atom:title, atom:rights, atom:source, atom:summary, atom:published, atom:author, atom:contributor, atom:category, atom:link.
+
+== Retrieve Member Expectations After Delete Member ==
+
+If tombstones are *not* enabled, a subsequent request to retrieve the member:
+
+{{{
+GET /atombeat/workspace/content/foo/xyz.atom HTTP/1.1
+Host: example.org
+}}}
+
+...expects:
+
+{{{
+HTTP/1.1 404 Not Found
+}}}
+
+If tombstones *are* enabled, a subsequent request to retrieve the member expects:
+
+{{{
+HTTP/1.1 410 Gone
+Content-Type: application/atomdeleted+xml
+
+<at:deleted-entry
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
+  xmlns:at="http://purl.org/atompub/tombstones/1.0"
+  ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+  when="2010-10-26T18:29:48.687+01:00">
+  <at:by>
+    <email>jdoe@example.org</email>
+  </at:by>
+  <at:comment>Removed comment spam</at:comment>
+  <atombeat:ghost>
+    <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
+    <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+    <atom:author>
+        <atom:name>audrey</atom:name>
+    </atom:author>
+    <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
+    <atom:summary type="text">Some text.</atom:summary>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+  </atombeat:ghost>
+</at:deleted-entry>
+}}}
+
+== List Collection Expectations After Delete Member ==
+
+If tombstones are *not* enabled, a subsequent request to list the collection:
+
+{{{
+GET /atombeat/workspace/content/foo HTTP/1.1
+Host: example.org
+}}}
+
+...expects:
+
+{{{
+HTTP/1.1 200 OK
+Content-Type: application/atom+xml
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns">
+    <atom:id>http://example.org/atombeat/workspace/content/foo</atom:id>
+    <atom:updated>2010-10-26T18:29:48.687+01:00</atom:updated>
+    <atom:title type="text">Test Collection</atom:title>
+    <atom:link rel="self" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
+</atom:feed>
+}}}
+
+If tombstones *are* enabled, a subsequent request to list the collection expects:
+
+{{{
+HTTP/1.1 200 OK
+Content-Type: application/atom+xml
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:tombstones-enabled="true">
+    <atom:id>http://example.org/atombeat/workspace/content/foo</atom:id>
+    <atom:updated>2010-10-26T18:29:48.687+01:00</atom:updated>
+    <atom:title type="text">Test Collection</atom:title>
+    <atom:link rel="self" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
+    <at:deleted-entry xmlns:at="http://purl.org/atompub/tombstones/1.0"
+      ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+      when="2010-10-26T18:29:48.687+01:00">
+      <at:by>
+        <email>jdoe@example.org</email>
+      </at:by>
+      <at:comment>Removed comment spam</at:comment>
+      <atombeat:ghost>
+        <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
+        <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+        <atom:author>
+            <atom:name>audrey</atom:name>
+        </atom:author>
+        <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
+        <atom:summary type="text">Some text.</atom:summary>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+      </atombeat:ghost>
+    </at:deleted-entry>
+</atom:feed>
+}}}
+
 
