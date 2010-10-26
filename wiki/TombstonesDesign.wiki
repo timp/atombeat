@@ -247,6 +247,33 @@ Content-Type: application/atom+xml
 
 By default, the following elements will be copied from the Atom entry prior to deletion to the atombeat:ghost element in the deleted entry: atom:id, atom:title, atom:rights, atom:source, atom:summary, atom:published, atom:author, atom:contributor, atom:category, atom:link.
 
+= Deleting Media Resources =
+
+Assume a collection at /foo with a member at /foo/xyz.atom that is a media link for the media resource at /foo/xyz.media.
+
+Assume the member is then deleted (i.e., a DELETE request is sent to the member URI, /foo/xyz.atom). A side-effect of deleting the member is that the associated media resource is also deleted (this is standard Atom protocol behaviour).
+
+A subsequent request to retrieve the member will behave as for deletion of normal (non-media-link) collection members as described above.
+
+A subsequent request to list the collection will behave as for deletion of normal (non-media-link) collection members as described above.
+
+A subsequent request to retrieve the media resource:
+
+{{{
+GET /atombeat/workspace/content/foo/xyz.media HTTP/1.1
+Host: example.org
+}}}
+
+...expects:
+
+{{{
+HTTP/1.1 404 Not Found
+}}}
+
+...whether or not tombstones are enabled on the collection.
+
+N.B., in AtomBeat, a DELETE request sent to a media resource URI is equivalent to a DELETE request sent to the member URI for the associated media-link. I.e., nothing above would be different if the DELETE request were sent to the media resource URI instead of the member URI.
+
 = Interaction with History/Versioning Plugin =
 
 Assume a collection at /my-versioned-collection with versioning enabled.
