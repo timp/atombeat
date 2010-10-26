@@ -224,4 +224,146 @@ Content-Type: application/atom+xml
 </atom:feed>
 }}}
 
+= Configuring Tombstones =
+
+The behaviour of the tombstones implementation w.r.t. the atombeat:ghost element within at:deleted-entry elements can be configured on a per-collection basis. To configure the elements to be copied from the entry being deleted into the ghost, update the collection feed document, e.g.:
+
+{{{
+PUT /atombeat/workspace/content/foo HTTP/1.1
+Host: example.org
+Content-Type: application/atom+xml
+
+<atom:feed 
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
+  atombeat:enable-tombstones="true">
+  <atom:title type="text">Example Collection with Tombstones</atom:title>
+  <atombeat:config-tombstones>
+    <atombeat:config>
+      <atombeat:param name="ghost-atom-elements" value="title author"/>
+    </atombeat:config>
+  </atombeat:config-tombstones>
+</atom:feed>
+}}}
+
+= Interaction with History/Versioning Plugin =
+
+Assume a collection at /my-versioned-collection with versioning enabled.
+
+Assume a collection member has been created and then updated as described in the [TutorialVersioning#Retrieving_a_Member_History_Feed versioning tutorial].
+
+Assume the member is then deleted.
+
+If tombstones are *not* enabled on the collection, then a subsequent request to the history link URI for the member:
+
+{{{
+GET /atombeat/workspace/history/my-versioned-collection/xyz.atom HTTP/1.1
+Host: example.org
+}}}
+
+...expects:
+
+{{{
+HTTP/1.1 404 Not Found
+}}}
+
+If tombstones *are* enabled on the collection, then a subsequent request to the history link URI expects:
+
+{{{
+HTTP/1.1 200 OK
+Server: Apache-Coyote/1.1
+pragma: no-cache
+Cache-Control: no-cache
+Content-Type: application/atom+xml;type=feed;charset=UTF-8
+Transfer-Encoding: chunked
+Date: Fri, 15 Oct 2010 15:42:07 GMT
+
+<atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:exclude-entry-content="true">
+    <atom:id>http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom</atom:id>
+    <atom:title type="text">Version History</atom:title>
+    <atom:updated>2010-10-15T16:39:35.649+01:00</atom:updated>
+    <atom:link rel="self" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom" type="application/atom+xml;type=feed"/>
+    <atom:link rel="http://purl.org/atombeat/rel/versioned" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom" type="application/atom+xml;type=entry"/>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="1" when="2010-10-15T16:34:32.897+01:00" initial="yes"/>
+        <atom:id>http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom</atom:id>
+        <atom:published>2010-10-15T16:34:32.897+01:00</atom:published>
+        <atom:updated>2010-10-15T16:34:32.897+01:00</atom:updated>
+        <atom:author>
+            <atom:name>audrey</atom:name>
+        </atom:author>
+        <atom:title>Atom-Powered Robots Run Amok</atom:title>
+        <atom:content/>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>audrey</atom:name>
+            </atom:author>
+            <atom:updated>2010-10-15T16:34:32.897+01:00</atom:updated>
+            <atom:summary>initial revision</atom:summary>
+        </ar:comment>
+        <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="next-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+    </atom:entry>
+    <atom:entry>
+        <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="2" when="2010-10-15T16:39:35.649+01:00" initial="no"/>
+        <atom:id>http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom</atom:id>
+        <atom:published>2010-10-15T16:34:32.897+01:00</atom:published>
+        <atom:updated>2010-10-15T16:39:35.649+01:00</atom:updated>
+        <atom:author>
+            <atom:name>audrey</atom:name>
+        </atom:author>
+        <atom:title>Atom-Powered Robots Run Amok</atom:title>
+        <atom:content type="xhtml"/>
+        <ar:comment xmlns:ar="http://purl.org/atompub/revision/1.0">
+            <atom:author>
+                <atom:name>audrey</atom:name>
+            </atom:author>
+            <atom:updated>2010-10-15T16:39:35.649+01:00</atom:updated>
+            <atom:summary/>
+        </ar:comment>
+        <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
+        <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="next-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=3"/>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+    </atom:entry>
+    <at:deleted-entry
+      xmlns:at="http://purl.org/atompub/tombstones/1.0"
+      ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+      when="2010-10-26T18:29:48.687+01:00">
+      <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="3" when="2010-10-26T18:29:48.687+01:00" initial="no" final="yes" significant="yes"/>
+      <at:by>
+        <name>jdoe</name>
+      </at:by>
+      <at:comment>Removed comment spam</at:comment>
+      <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+      <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
+      <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=3"/>
+      <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
+      <atombeat:ghost>
+        <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
+        <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
+        <atom:author>
+            <atom:name>audrey</atom:name>
+        </atom:author>
+        <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+      </atombeat:ghost>
+    </at:deleted-entry>
+</atom:feed>
+}}}
+
+Note the presence of the ar:revision element within the at:deleted-entry element. Note also the use of the @final and @significant attributes.
+
+Note that the ar:comment element is *not* present within the deleted entry. This would be redundant, as the same information is given in the @when, at:by and at:comment elements. 
+
+This is a bit of a mish-mash, which reflects the fact that the atompub-revision draft [1] is much older than the atompub-tombstones draft [2], and they overlap in scope.
+
 
