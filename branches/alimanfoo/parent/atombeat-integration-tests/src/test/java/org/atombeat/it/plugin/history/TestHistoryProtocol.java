@@ -57,7 +57,7 @@ public class TestHistoryProtocol extends TestCase {
 	
 	
 	
-	public void testNoHistoryLinkIfHistoryNotEnabled() {
+	public void testNoHistoryLinkIfHistoryNotEnabled() throws Exception {
 		
 		// the request body - an atom entry document
 		String entryDoc = 
@@ -76,7 +76,7 @@ public class TestHistoryProtocol extends TestCase {
 	}
 	
 
-	public void testEntryWithNoRevisions() {
+	public void testEntryWithNoRevisions() throws Exception {
 		
 		// the request body - an atom entry document
 		String entryDoc = 
@@ -102,7 +102,7 @@ public class TestHistoryProtocol extends TestCase {
 
 	
 	
-	public void testEntryWithOneRevision() {
+	public void testEntryWithOneRevision() throws Exception {
 		
 		// create an atom entry
 		
@@ -145,7 +145,7 @@ public class TestHistoryProtocol extends TestCase {
 
 
 
-	public void testEntryWithTwoRevisions() {
+	public void testEntryWithTwoRevisions() throws Exception {
 		
 		// create an atom entry
 		
@@ -204,7 +204,7 @@ public class TestHistoryProtocol extends TestCase {
 
 
 
-	public void testEntryWithThreeRevisions() {
+	public void testEntryWithThreeRevisions() throws Exception {
 		
 		// create an atom entry
 		
@@ -279,7 +279,7 @@ public class TestHistoryProtocol extends TestCase {
 
 
 
-	private static void verifyHistory(String historyLocation, int expectedRevisions) {
+	private static void verifyHistory(String historyLocation, int expectedRevisions) throws Exception {
 		
 		GetMethod get = new GetMethod(historyLocation);
 		int result = executeMethod(get, USER, PASS);
@@ -348,11 +348,12 @@ public class TestHistoryProtocol extends TestCase {
 	/**
 	 * Test the standard atom operation to update a member of a collection by
 	 * a PUT request with an atom entry document as the request entity.
+	 * @throws Exception 
 	 */
-	public void testPutAndGetEntry() {
+	public void testPutAndGetEntry() throws Exception {
 
 		// setup test
-		String location = createTestEntryAndReturnLocation(collectionUri, USER, PASS);
+		String location = createTestMemberAndReturnLocation(collectionUri, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);

@@ -1,6 +1,5 @@
 package org.atombeat.it.content.standard;
 
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -107,10 +106,10 @@ public class TestFundamentals extends TestCase {
 
 
 	
-	public void testGetEntry() {
+	public void testGetEntry() throws Exception {
 
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now try GET to member URI
 		GetMethod method = new GetMethod(location);
@@ -135,10 +134,10 @@ public class TestFundamentals extends TestCase {
 	
 	
 
-	public void testPutEntry() {
+	public void testPutEntry() throws Exception {
 
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);
@@ -169,10 +168,10 @@ public class TestFundamentals extends TestCase {
 	
 	
 
-	public void testDeleteEntry() {
+	public void testDeleteEntry() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// check we can GET the entry
 		GetMethod get1 = new GetMethod(location);
@@ -196,7 +195,7 @@ public class TestFundamentals extends TestCase {
 	
 	
 	
-	public void testGetFeed() {
+	public void testGetFeed() throws Exception {
 
 		// try GET to collection URI
 		GetMethod get1 = new GetMethod(TEST_COLLECTION_URI);
@@ -221,7 +220,7 @@ public class TestFundamentals extends TestCase {
 		assertEquals(0, entries1.size());
 
 		// add a member
-		createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// try GET to collection URI
 		GetMethod get2 = new GetMethod(TEST_COLLECTION_URI);
@@ -236,7 +235,7 @@ public class TestFundamentals extends TestCase {
 		assertEquals(1, entries2.size());
 
 		// add a member
-		createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// try GET to collection URI
 		GetMethod get3 = new GetMethod(TEST_COLLECTION_URI);
@@ -293,7 +292,7 @@ public class TestFundamentals extends TestCase {
 	
 	
 	
-	public void testGetMedia_Text() throws IOException {
+	public void testGetMedia_Text() throws Exception {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -328,7 +327,7 @@ public class TestFundamentals extends TestCase {
 	
 	
 
-	public void testGetMedia_Binary() throws IOException {
+	public void testGetMedia_Binary() throws Exception {
 
 		// create a new media resource by POSTing media to the collection URI
 		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
@@ -368,7 +367,7 @@ public class TestFundamentals extends TestCase {
 	
 	
 
-	public void testPutMedia_Text() {
+	public void testPutMedia_Text() throws Exception {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -405,7 +404,7 @@ public class TestFundamentals extends TestCase {
 	
 	
 	
-	public void testDeleteMedia() {
+	public void testDeleteMedia() throws Exception {
 		
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -444,7 +443,7 @@ public class TestFundamentals extends TestCase {
 	
 	
 	
-	public void testDeleteMediaLinkEntry() {
+	public void testDeleteMediaLinkEntry() throws Exception {
 		
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);

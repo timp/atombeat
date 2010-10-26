@@ -1,7 +1,5 @@
 package org.atombeat.it.plugin.linkextensions;
 
-import java.io.IOException;
-
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -45,7 +43,7 @@ public class TestLinkExtensionsPlugin_Allow extends TestCase {
 	
 
 
-	public void testAllowAttribute() throws IOException {
+	public void testAllowAttribute() throws Exception {
 		
 		String feed = 
 			"<atom:feed \n" +
