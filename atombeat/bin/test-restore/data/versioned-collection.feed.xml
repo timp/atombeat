@@ -1,9 +1,0 @@
-<atom:feed
-	xmlns:atom="http://www.w3.org/2005/Atom"
-	xmlns:atombeat="http://purl.org/atombeat/xmlns"
-	atombeat:enable-versioning="true"
-	atombeat:exclude-entry-content="false"
-	atombeat:recursive="false">
-	<atom:title type="text">Versioned Collection</atom:title>
-</atom:feed>        
-
