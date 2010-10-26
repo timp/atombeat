@@ -2,6 +2,8 @@
 
 Notes on implementing http://tools.ietf.org/html/draft-snell-atompub-tombstones-11
 
+<wiki:toc/>
+
 = Enabling Tombstones =
 
 Tombstones are enabled on a per-collection basis. By default, tombstones are not enabled. Tombstones are enabled via an attribute on the root element of the collection feed document. 
