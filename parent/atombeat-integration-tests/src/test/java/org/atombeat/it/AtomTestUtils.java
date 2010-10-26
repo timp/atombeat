@@ -32,7 +32,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import static junit.framework.TestCase.fail;
 
@@ -287,7 +286,7 @@ public class AtomTestUtils {
 	
 	
 	
-	public static String createTestEntryAndReturnLocation(String collectionUri, String user, String pass) {
+	public static String createTestMemberAndReturnLocation(String collectionUri, String user, String pass) throws Exception {
 
 		PostMethod method = new PostMethod(collectionUri);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
@@ -304,13 +303,17 @@ public class AtomTestUtils {
 		
 		method.releaseConnection();
 		
+		if (location == null) {
+			throw new Exception("Could not create member.");
+		}
+		
 		return location;
 
 	}
 	
 	
 	
-	public static Document createTestEntryAndReturnDocument(String collectionUri, String user, String pass) {
+	public static Document createTestMemberAndReturnDocument(String collectionUri, String user, String pass) throws Exception {
 
 		PostMethod method = new PostMethod(collectionUri);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
@@ -324,13 +327,16 @@ public class AtomTestUtils {
 		
 		method.releaseConnection();
 		
+		if (doc == null) 
+			throw new Exception("Could not create member.");
+		
 		return doc;
 
 	}
 	
 	
 	
-	public static Document createTestMediaResourceAndReturnMediaLinkEntry(String collectionUri, String user, String pass) {
+	public static Document createTestMediaResourceAndReturnMediaLinkEntry(String collectionUri, String user, String pass) throws Exception {
 		
 		PostMethod method = new PostMethod(collectionUri);
 		String media = "This is a test.";
@@ -343,6 +349,9 @@ public class AtomTestUtils {
 			doc = getResponseBodyAsDocument(method);
 
 		method.releaseConnection();
+		
+		if (doc == null)
+			throw new Exception("Could not create media resource.");
 		
 		return doc;
 		
@@ -369,6 +378,18 @@ public class AtomTestUtils {
 		return o;
 	}
 	
+	
+	public static Element getFirstChildByTagNameNS(Document d, String nsuri, String tagName) {
+		return getFirstChildByTagNameNS(d.getDocumentElement(), nsuri, tagName);
+	}
+
+	
+	
+	public static Element getFirstChildByTagNameNS(Element e, String nsuri, String tagName) {
+		List<Element> l = getChildrenByTagNameNS(e, nsuri, tagName);
+		if (l.size()>0) return l.get(0);
+		else return null;
+	}
 	
 	
 	public static List<Element> getEntries(Document d) {
@@ -482,6 +503,16 @@ public class AtomTestUtils {
 	}
 	
 	
+	
+	public static String getAtomId(Document doc) {
+		
+		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "id");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+
+	}
+	
+	
 	public static String getUpdated(Document doc) {
 		
 		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated");
@@ -545,7 +576,7 @@ public class AtomTestUtils {
 	
 	
 	
-	public static Document postEntry(String collectionUri, String entryDoc, Header[] headers, String user, String pass) {
+	public static Document postEntry(String collectionUri, String entryDoc, Header[] headers, String user, String pass) throws Exception {
 		
 		// setup a new POST request
 		PostMethod method = new PostMethod(collectionUri);
@@ -562,7 +593,7 @@ public class AtomTestUtils {
 		Document doc = null;
 
 		if (result == 201) {
-			doc = getResponseBodyAsDocument(method);
+			doc =  getResponseBodyAsDocument(method);
 		}
 
 		method.releaseConnection();
@@ -574,7 +605,7 @@ public class AtomTestUtils {
 
 	
 	
-	public static Document putEntry(String uri, String entryDoc, Header[] headers, String user, String pass) {
+	public static Document putEntry(String uri, String entryDoc, Header[] headers, String user, String pass) throws Exception {
 	
 		// setup a new POST request
 		PutMethod method = new PutMethod(uri);
@@ -598,26 +629,10 @@ public class AtomTestUtils {
 
 	
 	
-	public static Document getResponseBodyAsDocument(HttpMethod method) {
+	public static Document getResponseBodyAsDocument(HttpMethod method) throws Exception {
 		
-		Document doc = null;
+		Document doc = builder.parse(method.getResponseBodyAsStream());
 		
-		try {
-		
-			doc = builder.parse(method.getResponseBodyAsStream());
-			
-		} catch (SAXException e) {
-	
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-	
-		} catch (IOException e) {
-	
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-	
-		}
-	
 		return doc;
 
 	}

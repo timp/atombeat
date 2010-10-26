@@ -64,10 +64,10 @@ public class TestETags extends TestCase {
 	
 	
 
-	public void testGetEntryResponseHasEtagHeader() {
+	public void testGetEntryResponseHasEtagHeader() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now try GET to member URI
 		GetMethod method = new GetMethod(location);
@@ -108,10 +108,10 @@ public class TestETags extends TestCase {
 	
 	
 	
-	public void testPutEntryResponseHasEtagHeader() {
+	public void testPutEntryResponseHasEtagHeader() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);
@@ -133,10 +133,10 @@ public class TestETags extends TestCase {
 	
 	
 	
-	public void testEtagsChangeAfterUpdate() {
+	public void testEtagsChangeAfterUpdate() throws Exception {
 		 
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now try GET to member URI
 		GetMethod get1 = new GetMethod(location);
@@ -185,10 +185,10 @@ public class TestETags extends TestCase {
 	
 	
 	
-	public void testConditionalGet() {
+	public void testConditionalGet() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now try GET to member URI
 		GetMethod get1 = new GetMethod(location);
@@ -225,10 +225,10 @@ public class TestETags extends TestCase {
 	
 	
 	
-	public void testConditionalPut() {
+	public void testConditionalPut() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now try GET to member URI
 		GetMethod get1 = new GetMethod(location);

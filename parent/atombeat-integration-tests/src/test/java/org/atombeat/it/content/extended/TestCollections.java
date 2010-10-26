@@ -200,7 +200,7 @@ public class TestCollections extends TestCase {
 	
 
 	
-	public void testRecursiveCollection() {
+	public void testRecursiveCollection() throws Exception {
 
 		String col1 = CONTENT_URI + Double.toString(Math.random());
 		PutMethod put1 = new PutMethod(col1);
@@ -215,7 +215,7 @@ public class TestCollections extends TestCase {
 		int result1 = executeMethod(put1);
 		assertEquals(201, result1);
 
-		createTestEntryAndReturnLocation(col1, USER, PASS);
+		createTestMemberAndReturnLocation(col1, USER, PASS);
 
 		String col2 = col1 + "/" + Double.toString(Math.random());
 		PutMethod put2 = new PutMethod(col2);
@@ -227,7 +227,7 @@ public class TestCollections extends TestCase {
 		int result2 = executeMethod(put2);
 		assertEquals(201, result2);
 
-		createTestEntryAndReturnLocation(col2, USER, PASS);
+		createTestMemberAndReturnLocation(col2, USER, PASS);
 
 		GetMethod get3 = new GetMethod(col1);
 		int result3 = executeMethod(get3);
@@ -248,7 +248,7 @@ public class TestCollections extends TestCase {
 
 
 
-	public void testExplicitlyNotRecursiveCollection() {
+	public void testExplicitlyNotRecursiveCollection() throws Exception {
 
 		String col1 = CONTENT_URI + Double.toString(Math.random());
 		PutMethod put1 = new PutMethod(col1);
@@ -263,7 +263,7 @@ public class TestCollections extends TestCase {
 		int result1 = executeMethod(put1);
 		assertEquals(201, result1);
 
-		createTestEntryAndReturnLocation(col1, USER, PASS);
+		createTestMemberAndReturnLocation(col1, USER, PASS);
 
 		String col2 = col1 + "/" + Double.toString(Math.random());
 		PutMethod put2 = new PutMethod(col2);
@@ -275,7 +275,7 @@ public class TestCollections extends TestCase {
 		int result2 = executeMethod(put2);
 		assertEquals(201, result2);
 
-		createTestEntryAndReturnLocation(col2, USER, PASS);
+		createTestMemberAndReturnLocation(col2, USER, PASS);
 
 		GetMethod get3 = new GetMethod(col1);
 		int result3 = executeMethod(get3);
@@ -296,7 +296,7 @@ public class TestCollections extends TestCase {
 
 
 
-	public void testImplicitlyNotRecursiveCollection() {
+	public void testImplicitlyNotRecursiveCollection() throws Exception {
 
 		String col1 = CONTENT_URI + Double.toString(Math.random());
 		PutMethod put1 = new PutMethod(col1);
@@ -310,7 +310,7 @@ public class TestCollections extends TestCase {
 		int result1 = executeMethod(put1);
 		assertEquals(201, result1);
 
-		createTestEntryAndReturnLocation(col1, USER, PASS);
+		createTestMemberAndReturnLocation(col1, USER, PASS);
 
 		String col2 = col1 + "/" + Double.toString(Math.random());
 		PutMethod put2 = new PutMethod(col2);
@@ -322,7 +322,7 @@ public class TestCollections extends TestCase {
 		int result2 = executeMethod(put2);
 		assertEquals(201, result2);
 
-		createTestEntryAndReturnLocation(col2, USER, PASS);
+		createTestMemberAndReturnLocation(col2, USER, PASS);
 
 		GetMethod get3 = new GetMethod(col1);
 		int result3 = executeMethod(get3);
