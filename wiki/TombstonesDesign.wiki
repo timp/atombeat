@@ -249,7 +249,7 @@ By default, the following elements will be copied from the Atom entry prior to d
 
 = Deleting Media Resources =
 
-Assume a collection at /foo with a member at /foo/xyz.atom that is a media link for the media resource at /foo/xyz.media.
+Assume a collection at /foo with a member at /foo/xyz.atom that is the media link for the media resource at /foo/xyz.media.
 
 Assume the member is then deleted (i.e., a DELETE request is sent to the member URI, /foo/xyz.atom). A side-effect of deleting the member is that the associated media resource is also deleted (this is standard Atom protocol behaviour).
 
