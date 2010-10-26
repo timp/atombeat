@@ -1,0 +1,51 @@
+# design document for implementing tombstones
+
+= Enabling Tombstones =
+
+Tombstones are enabled on a per-collection basis. By default, tombstones are not enabled. Tombstones are enabled via an attribute on the root element of the collection feed document. 
+
+E.g., if the collection /foo does not already exist, the request:
+
+{{{
+PUT /atombeat/workspace/content/foo HTTP/1.1
+Host: example.org
+Content-Type: application/atom+xml
+
+<atom:feed 
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
+  atombeat:enable-tombstones="true">
+  <atom:title type="text">Example Collection with Tombstones</atom:title>
+</atom:feed>
+}}}
+
+...expects...
+
+{{{
+HTTP/1.1 201 Created
+Location: http://example.org/atombeat/workspace/content/foo
+}}}
+
+E.g., if the collection /foo already exists, the request:
+
+{{{
+PUT /atombeat/workspace/content/foo HTTP/1.1
+Host: example.org
+Content-Type: application/atom+xml
+
+<atom:feed 
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
+  atombeat:enable-tombstones="true">
+  <atom:title type="text">Example Collection with Tombstones</atom:title>
+</atom:feed>
+}}}
+
+...expects...
+
+{{{
+HTTP/1.1 200 OK
+}}}
+
+In both cases, subsequent to the request, tombstones will be enabled on the collection /foo.
+
