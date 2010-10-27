@@ -10,7 +10,7 @@ $ svn copy https://atombeat.googlecode.com/svn/trunk/parent https://atombeat.goo
 $ svn checkout https://atombeat.googlecode.com/svn/branches/[yourname]/parent my-atombeat
 }}}
 
-*Do not merge changes from your personal branch into the trunk.* If you think your changes are ready to be merged into the trunk, contact alimanfoo@googlemail.com who will review the code and carry out the merge (sorry, I'm a control freak, but quality and consistency is a top priority for this project, so I want to be conservative).
+*Do not merge changes from your personal branch into the trunk.* If you think your changes are ready to be merged into the trunk, contact [mailto:alimanfoo@gmail.com me] and I'll review the code and carry out the merge (sorry, I'm a control freak).
 
 If you already have a personal branch checked out, merge changes from the trunk into your branch:
 
@@ -96,5 +96,3 @@ This is slow if you're making lots of small changes, so there is a workaround to
 Let's say you want to work on the lib/atomdb.xqm file in atombeat-workspace. Create a folder at src/main/webapp/workspace/lib in the atombeat-exist-minimal-secure project, and copy the file into this directory. Make whatever changes you like to the file at this new location. Any changes will get automatically published to Tomcat by Eclipse. When you're done working on the file, copy the modified file back to the atombeat-workspace project and overwrite the original file, then commit your changes there. Delete the src/main/webapp/workspace/lib in the atombeat-exist-minimal-secure project (don't commit it!).
 
 Finally, note that if you use this workaround, although changes to the XQuery files *will* get automatically published to Tomcat by Eclipse, the eXist XQuery compiler may not detect the changes and recompile the queries. This is a known issue in eXist where there are multiple XQuery import levels. To force eXist to recompile the XQueries, you can either restart Tomcat, or you can make a trivial change to the target/atombeat-exist-minimal-secure/workspace/content.xql file and save it (or whichever XQuery is the root of the import graph) - eXist will notice the change and recompile the query, without needing a Tomcat restart.
-
-
