@@ -1,10 +1,5 @@
 package org.atombeat.it.tombstones;
 
-import static org.atombeat.it.AtomTestUtils.BASE_URI;
-import static org.atombeat.it.AtomTestUtils.CONTENT_URI;
-import static org.atombeat.it.AtomTestUtils.createTestMediaResourceAndReturnMediaLinkEntry;
-import static org.atombeat.it.AtomTestUtils.getEditMediaLocation;
-
 import java.util.List;
 
 import org.apache.commons.httpclient.Header;
@@ -480,46 +475,156 @@ public class TestTombstones extends TestCase {
 
 	
 	
-	public void testInteractionWithHistoryPluginNoTombstones() {
+	public void testInteractionWithHistoryPluginNoTombstones() throws Exception {
 		
-		// TODO create versioned collection, tombstones disabled
+		// create versioned collection, tombstones disabled
+		String content = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:enable-tombstones=\"false\" " +
+				"atombeat:enable-versioning=\"true\">" +
+				"<atom:title>Test Collection with Versioning but no Tombstones</atom:title>" +
+			"</atom:feed>";
+		String collectionUri = createTombstoneEnabledCollection(content);
 		
-		// TODO create and update a member
+		// create and update a member
+		String location = createTestMemberAndReturnLocation(collectionUri, USER, PASS);
+		String entryDoc = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Updated</atom:title>" +
+				"<atom:summary>This is a summary, updated.</atom:summary>" +
+			"</atom:entry>";
+		Header[] headers = { new Header("X-Atom-Revision-Comment", "second draft") };
+		Document updatedEntryDoc = putEntry(location, entryDoc, headers, USER, PASS);
+		String historyLocation = getHistoryLocation(updatedEntryDoc);
+		assertNotNull(historyLocation);
 		
-		// TODO retrieve history feed, verify response prior to deletion
+		// retrieve history feed, verify response prior to deletion
+		GetMethod get = new GetMethod(historyLocation);
+		int result = executeMethod(get);
+		assertEquals(200, result);
+		Document historyFeedDoc = getResponseBodyAsDocument(get);
+		List<Element> entries = getEntries(historyFeedDoc);
+		assertEquals(2, entries.size());
+		List<Element> deletedEntries = getChildrenByTagNameNS(historyFeedDoc, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(0, deletedEntries.size());
 		
-		// TODO retrieve revisions, verify response prior to deletion
+		// retrieve revisions, verify response prior to deletion
+		for (Element e : entries) {
+			String revloc = getLinkHref(e, "this-revision");
+			GetMethod getrev = new GetMethod(revloc);
+			int getrevres = executeMethod(getrev);
+			assertEquals(200, getrevres);
+		}
 		
-		// TODO delete member
+		// delete member
+		DeleteMethod delete = new DeleteMethod(location);
+		delete.setRequestHeader("X-Atom-Tombstone-Comment", "remove versioned resource");
+		int delresult = executeMethod(delete);
+		assertEquals(204, delresult);
 		
-		// TODO retrieve history feed, verify response after deletion
+		// retrieve history feed, verify response after deletion
+		GetMethod gethist2 = new GetMethod(historyLocation);
+		int gethist2result = executeMethod(gethist2);
+		assertEquals(404, gethist2result);
 		
-		// TODO retrieve revisions, verify response after deletion
-		
-		fail("TODO");
+		// retrieve revisions, verify response after deletion
+		for (Element e : entries) {
+			String revloc = getLinkHref(e, "this-revision");
+			GetMethod getrev = new GetMethod(revloc);
+			int getrevres = executeMethod(getrev);
+			assertEquals(404, getrevres);
+		}
 		
 	}
 
 
 
 
-	public void testInteractionWithHistoryPlugin() {
+	public void testInteractionWithHistoryPlugin() throws Exception {
 		
-		// TODO create versioned collection, tombstones enabled
+		// create versioned collection, tombstones disabled
+		String content = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:enable-tombstones=\"true\" " +
+				"atombeat:enable-versioning=\"true\">" +
+				"<atom:title>Test Collection with Versioning but no Tombstones</atom:title>" +
+			"</atom:feed>";
+		String collectionUri = createTombstoneEnabledCollection(content);
 		
-		// TODO create and update a member
+		// create and update a member
+		String location = createTestMemberAndReturnLocation(collectionUri, USER, PASS);
+		String entryDoc = 
+			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
+				"<atom:title>Test Member - Updated</atom:title>" +
+				"<atom:summary>This is a summary, updated.</atom:summary>" +
+			"</atom:entry>";
+		Header[] headers = { new Header("X-Atom-Revision-Comment", "second draft") };
+		Document updatedEntryDoc = putEntry(location, entryDoc, headers, USER, PASS);
+		String historyLocation = getHistoryLocation(updatedEntryDoc);
+		assertNotNull(historyLocation);
 		
-		// TODO retrieve history feed, verify response prior to deletion
+		// retrieve history feed, verify response prior to deletion
+		GetMethod get = new GetMethod(historyLocation);
+		int result = executeMethod(get);
+		assertEquals(200, result);
+		Document historyFeedDoc = getResponseBodyAsDocument(get);
+		List<Element> entries = getEntries(historyFeedDoc);
+		assertEquals(2, entries.size());
+		List<Element> deletedEntries = getChildrenByTagNameNS(historyFeedDoc, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(0, deletedEntries.size());
 		
-		// TODO retrieve revisions, verify response prior to deletion
+		// retrieve revisions, verify response prior to deletion
+		for (Element e : entries) {
+			String revloc = getLinkHref(e, "this-revision");
+			GetMethod getrev = new GetMethod(revloc);
+			int getrevres = executeMethod(getrev);
+			assertEquals(200, getrevres);
+		}
 		
-		// TODO delete member
+		// delete member
+		DeleteMethod delete = new DeleteMethod(location);
+		delete.setRequestHeader("X-Atom-Tombstone-Comment", "remove versioned resource");
+		int delresult = executeMethod(delete);
+		assertEquals(200, delresult);
 		
-		// TODO retrieve history feed, verify response after deletion
+		// retrieve history feed, verify response after deletion
+		GetMethod gethist2 = new GetMethod(historyLocation);
+		int gethist2result = executeMethod(gethist2);
+		assertEquals(200, gethist2result);
+		Document historyFeedDoc2 = getResponseBodyAsDocument(gethist2);
+		List<Element> entries2 = getEntries(historyFeedDoc2);
+		assertEquals(2, entries2.size());
+		List<Element> deletedEntries2 = getChildrenByTagNameNS(historyFeedDoc2, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(1, deletedEntries2.size());
+		Element delent = deletedEntries2.get(0);
+		Element revmeta = getChildrenByTagNameNS(delent, "http://purl.org/atompub/revision/1.0", "revision").get(0);
+		assertEquals("3", revmeta.getAttribute("number"));
+		assertEquals("no", revmeta.getAttribute("initial"));
+		assertEquals("yes", revmeta.getAttribute("final"));
+		assertEquals("yes", revmeta.getAttribute("significant"));
 		
-		// TODO retrieve revisions, verify response after deletion
-		
-		fail("TODO");
+		// retrieve revisions, verify response after deletion
+		for (Element e : entries2) {
+
+			String revloc = getLinkHref(e, "this-revision");
+			GetMethod getrev = new GetMethod(revloc);
+			int getrevres = executeMethod(getrev);
+			assertEquals(200, getrevres);
+
+			String nextrevloc = getLinkHref(e, "next-revision");
+			assertNotNull(nextrevloc);
+			if (nextrevloc != null) {
+				// check we can always retrieve the next revision (which might be a deleted-entry)
+				GetMethod getnextrev = new GetMethod(nextrevloc);
+				int getnextrevres = executeMethod(getnextrev);
+				assertEquals(200, getnextrevres);
+			}
+
+		}
 		
 	}
 
