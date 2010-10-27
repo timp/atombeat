@@ -225,6 +225,7 @@ public class TestTombstones extends TestCase {
 		Element by = bys.get(0);
 		List<Element> names = getChildrenByTagNameNS(by, Atom.NSURI, Atom.NAME);
 		assertEquals(1, names.size());
+		expectedByName = AtomTestUtils.SECURE ? expectedByName : "";
 		assertEquals(expectedByName, names.get(0).getTextContent());
 		
 		// verify at:comment element
