@@ -48,7 +48,7 @@ declare function common-protocol:do-not-found(
 
     let $message := "The server has not found anything matching the Request-URI."
 
-    return
+    let $response :=
     
         <response>
             <status>{$CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND}</status>
@@ -61,6 +61,8 @@ declare function common-protocol:do-not-found(
             <body type="text">{$message}</body>
         </response>
 
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+
 };
 
 
@@ -71,16 +73,20 @@ declare function common-protocol:do-precondition-failed(
 ) as element(response)
 {
 
-    <response>
-        <status>{$CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED}</status>
-        <headers>
-            <header>
-                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
-            </header>
-        </headers>
-        <body type="text">{concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." )}</body>
-    </response>
+    let $response :=
+    
+        <response>
+            <status>{$CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED}</status>
+            <headers>
+                <header>
+                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                    <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
+                </header>
+            </headers>
+            <body type="text">{concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." )}</body>
+        </response>
+
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
 
 };
 
@@ -94,7 +100,7 @@ declare function common-protocol:do-bad-request(
 
     let $message := concat( $message , " The request could not be understood by the server due to malformed syntax. The client SHOULD NOT repeat the request without modifications." )
 
-    return 
+    let $response :=
     
         <response>
             <status>{$CONSTANT:STATUS-CLIENT-ERROR-BAD-REQUEST}</status>
@@ -106,6 +112,8 @@ declare function common-protocol:do-bad-request(
             </headers>
             <body type="text">{$message}</body>
         </response>
+        
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
 
 };
 
@@ -121,7 +129,7 @@ declare function common-protocol:do-method-not-allowed(
 
     let $message := "The method specified in the Request-Line is not allowed for the resource identified by the Request-URI."
 
-    return 
+    let $response :=
     
         <response>
             <status>{$CONSTANT:STATUS-CLIENT-ERROR-METHOD-NOT-ALLOWED}</status>
@@ -138,6 +146,8 @@ declare function common-protocol:do-method-not-allowed(
             <body type="text">{$message}</body>
         </response>
     
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    
 };
 
  
@@ -151,7 +161,7 @@ declare function common-protocol:do-forbidden(
 
     let $message := "The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated."
 
-    return
+    let $response :=
 
         <response>
             <status>{$CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN}</status>
@@ -164,6 +174,8 @@ declare function common-protocol:do-forbidden(
             <body type="text">{$message}</body>
         </response>
 
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    
 };
 
 
@@ -177,7 +189,7 @@ declare function common-protocol:do-unsupported-media-type(
 
     let $message := concat( $message , " The server is refusing to service the request because the entity of the request is in a format not supported by the requested resource for the requested method." )
 
-    return
+    let $response :=
     
         <response>
             <status>{$CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE}</status>
@@ -189,6 +201,8 @@ declare function common-protocol:do-unsupported-media-type(
             </headers>
             <body type="text">{$message}</body>
         </response>
+
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
 
 };
 
@@ -348,7 +362,7 @@ declare function common-protocol:do-internal-server-error(
 
     let $message := concat( $message , " The server encountered an unexpected condition which prevented it from fulfilling the request." )
 
-    return 
+    let $response := 
     
         <response>
             <status>{$CONSTANT:STATUS-SERVER-ERROR-INTERNAL-SERVER-ERROR}</status>
@@ -360,6 +374,8 @@ declare function common-protocol:do-internal-server-error(
             </headers>
             <body type="text">{$message}</body>
         </response>
+
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
 
 };
 
@@ -374,6 +390,7 @@ declare function common-protocol:do-internal-server-error(
 declare function common-protocol:respond( $response as element(response) ) as item()*
 {
 
+    (: TODO migrate augment errors to after-error plugin :)
     let $response := common-protocol:augment-errors( $response )
     
     let $set-headers :=
