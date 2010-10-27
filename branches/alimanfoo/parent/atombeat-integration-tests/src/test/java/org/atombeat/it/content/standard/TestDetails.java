@@ -255,7 +255,7 @@ public class TestDetails extends TestCase {
 		String type = editMediaLink.getAttribute("type");
 		assertEquals("text/plain", type);
 		
-		Element contentElement = getContent(mediaLinkDoc);
+		Element contentElement = getAtomContent(mediaLinkDoc);
 		assertEquals(type, contentElement.getAttribute("type"));
 		
 		// check get on media resource has correct content type
@@ -283,7 +283,7 @@ public class TestDetails extends TestCase {
 		type = editMediaLink.getAttribute("type");
 		assertEquals("application/vnd.ms-excel", type);
 
-		contentElement = getContent(mediaLinkDoc);
+		contentElement = getAtomContent(mediaLinkDoc);
 		assertEquals(type, contentElement.getAttribute("type"));
 		
 		// check get on media resource has correct content type
@@ -535,7 +535,7 @@ public class TestDetails extends TestCase {
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		
 		// store updated date for comparison
-		String updatedBefore = getUpdated(mediaLinkDoc);
+		String updatedBefore = getAtomUpdated(mediaLinkDoc);
 
 		// store length before for comparison later
 		Element editMediaLink = getLinks(mediaLinkDoc, "edit-media").get(0);
@@ -556,7 +556,7 @@ public class TestDetails extends TestCase {
 		mediaLinkDoc = getResponseBodyAsDocument(get);
 
 		// compared updated
-		String updatedAfter = getUpdated(mediaLinkDoc);
+		String updatedAfter = getAtomUpdated(mediaLinkDoc);
 		assertFalse(updatedBefore.equals(updatedAfter));
 		
 		// compare length after with length before

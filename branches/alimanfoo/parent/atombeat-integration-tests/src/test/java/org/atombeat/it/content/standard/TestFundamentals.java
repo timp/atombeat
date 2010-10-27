@@ -409,7 +409,7 @@ public class TestFundamentals extends TestCase {
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
-		String mediaLinkLocation = AtomTestUtils.getEditLocation(mediaLinkDoc);
+		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);
@@ -448,7 +448,7 @@ public class TestFundamentals extends TestCase {
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
-		String mediaLinkLocation = AtomTestUtils.getEditLocation(mediaLinkDoc);
+		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
 		
 		// now try to get media
 		GetMethod get1 = new GetMethod(mediaLocation);

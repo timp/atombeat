@@ -1136,7 +1136,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		String newMediaLocation = getEditMediaLocation(entries.get(0));
 		assertNull(newMediaLocation); // edit-media link should have been stripped
 		
-		String contentLocation = getContent(d3).getAttribute("src"); // content element should remain tho, pointing to original media resource
+		String contentLocation = getAtomContent(d3).getAttribute("src"); // content element should remain tho, pointing to original media resource
  		
 		// try to GET Audrey's media resource as Austin
 		GetMethod get4 = new GetMethod(contentLocation);
