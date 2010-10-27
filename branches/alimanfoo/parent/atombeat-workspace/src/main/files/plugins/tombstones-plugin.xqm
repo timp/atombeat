@@ -28,10 +28,10 @@ declare function tombstones-plugin:before(
 	
 	return 
 	
-	    if ( $operation = $CONSTANT:OP-DELETE-MEMBER )
-	    then 
-	        let $prepare := tombstones-plugin:before-delete-member( $request-path-info )
-	        return $request-data
+        if ( $operation = $CONSTANT:OP-DELETE-MEMBER or $operation = $CONSTANT:OP-DELETE-MEDIA )
+        then 
+            let $prepare := tombstones-plugin:before-delete-member-or-media( $request-path-info )
+            return $request-data
 	    else $request-data
 	
 };
@@ -39,12 +39,18 @@ declare function tombstones-plugin:before(
 
 
 
-declare function tombstones-plugin:before-delete-member(
+declare function tombstones-plugin:before-delete-member-or-media(
     $request-path-info as xs:string 
 ) as empty()
 {
 
+    let $member-path-info :=
+        if ( ends-with( $request-path-info , ".media" ) )
+        then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" )
+        else $request-path-info
+
     let $collection-path-info := text:groups( $request-path-info , "^(.+)/[^/]+$" )[2]
+    
     let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
     
     let $prepared :=
@@ -55,7 +61,7 @@ declare function tombstones-plugin:before-delete-member(
     
             let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
             let $comment := request:get-header( "X-Atom-Tombstone-Comment" )
-            let $deleted-entry := tombstone-db:create-deleted-entry( $request-path-info , $user-name , $comment )
+            let $deleted-entry := tombstone-db:create-deleted-entry( $member-path-info , $user-name , $comment )
             return request:set-attribute( "tombstone" , $deleted-entry )
             
         else ()
@@ -63,6 +69,7 @@ declare function tombstones-plugin:before-delete-member(
     return ()
     
 };
+
 
 
 
@@ -78,8 +85,8 @@ declare function tombstones-plugin:after(
 	
     return 
     
-        if ( $operation = $CONSTANT:OP-DELETE-MEMBER )
-        then tombstones-plugin:after-delete-member( $request-path-info , $response )
+        if ( $operation = $CONSTANT:OP-DELETE-MEMBER or $operation = $CONSTANT:OP-DELETE-MEDIA )
+        then tombstones-plugin:after-delete-member-or-media( $request-path-info , $response )
         else if ( $operation = $CONSTANT:OP-LIST-COLLECTION ) 
         then tombstones-plugin:after-list-collection( $request-path-info , $response )
         else $response
@@ -89,7 +96,7 @@ declare function tombstones-plugin:after(
 
 
 
-declare function tombstones-plugin:after-delete-member(
+declare function tombstones-plugin:after-delete-member-or-media(
     $request-path-info as xs:string ,
     $response as element(response)
 ) as element(response)
@@ -103,7 +110,12 @@ declare function tombstones-plugin:after-delete-member(
         
         then
 
-            let $tombstone-stored := tombstone-db:erect-tombstone( $request-path-info , $deleted-entry )
+            let $member-path-info :=
+                if ( ends-with( $request-path-info , ".media" ) )
+                then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" )
+                else $request-path-info
+        
+            let $tombstone-stored := tombstone-db:erect-tombstone( $member-path-info , $deleted-entry )
             
             return
         

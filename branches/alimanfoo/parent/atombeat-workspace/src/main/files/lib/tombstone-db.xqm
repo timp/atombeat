@@ -88,11 +88,14 @@ declare function tombstone-db:create-deleted-entry(
     if ( atomdb:member-available( $member-path-info ) )
     
     then 
-    
+
         let $condemned := atomdb:retrieve-member( $member-path-info )
         let $self := $condemned/atom:link[@rel="self"]/@href cast as xs:string
         let $ref := $condemned/atom:id
         let $when := current-dateTime()
+        let $collection-path-info := atomdb:collection-path-info( $condemned )
+        let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
+        let $ghost-atom-elements := $feed/atombeat:config-tombstones/atombeat:config/atombeat:param[@name="ghost-atom-elements"]/@value
         
         return
         
@@ -108,8 +111,24 @@ declare function tombstone-db:create-deleted-entry(
                 </at:by>
                 <at:comment>{$comment}</at:comment>
                 <atom:link rel="self" type="application/atomdeleted+xml" href="{$self}"/>
+                {
+                    if ( exists( $ghost-atom-elements ) )
+                    then
+                        <atombeat:ghost>
+                        {
+                            let $tokens := tokenize( $ghost-atom-elements cast as xs:string , " " )
+                            for $child in $condemned/child::*
+                            where (
+                                namespace-uri( $child ) = $CONSTANT:ATOM-NSURI
+                                and local-name( $child ) = $tokens
+                            )
+                            return util:deep-copy( $child )
+                        }
+                        </atombeat:ghost>
+                    else ()
+                }
             </at:deleted-entry>
-        
+    
     else ()
     
 };
