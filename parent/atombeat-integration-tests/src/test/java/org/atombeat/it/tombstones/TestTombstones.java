@@ -2,6 +2,8 @@ package org.atombeat.it.tombstones;
 
 import static org.atombeat.it.AtomTestUtils.BASE_URI;
 import static org.atombeat.it.AtomTestUtils.CONTENT_URI;
+import static org.atombeat.it.AtomTestUtils.createTestMediaResourceAndReturnMediaLinkEntry;
+import static org.atombeat.it.AtomTestUtils.getEditMediaLocation;
 
 import java.util.List;
 
@@ -11,6 +13,7 @@ import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
 import org.atombeat.Atom;
+import org.atombeat.AtomBeat;
 import org.atombeat.Tombstones;
 import org.atombeat.it.AtomTestUtils;
 import org.w3c.dom.Document;
@@ -70,8 +73,6 @@ public class TestTombstones extends TestCase {
 	
 	private static String createTombstoneEnabledCollection() throws Exception {
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
-		
 		String content = 
 			"<atom:feed " +
 				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
@@ -79,6 +80,15 @@ public class TestTombstones extends TestCase {
 				"atombeat:enable-tombstones=\"true\">" +
 				"<atom:title>Test Collection with Tombstones</atom:title>" +
 			"</atom:feed>";
+		
+		return createTombstoneEnabledCollection(content);
+		
+	}
+	
+	
+	private static String createTombstoneEnabledCollection(String content) throws Exception {
+		
+		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		
 		PutMethod put = new PutMethod(collectionUri);
 		setAtomRequestEntity(put, content);
@@ -276,103 +286,196 @@ public class TestTombstones extends TestCase {
 
 	
 	
-	public void testDeleteMediaResourceViaMediaLinkUri() {
+	public void testDeleteMediaResourceViaMediaLinkUri() throws Exception {
 		
 		// create a tombstone-enabled collection
-		// TODO
+		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a media resource
-		// TODO
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
+		String memberId = getAtomId(mediaLinkDoc);
 		
 		// retrieve the media-link member, verify response prior to deletion
-		// TODO
+		GetMethod getMediaLink = new GetMethod(mediaLinkLocation);
+		int getMediaLinkResult = executeMethod(getMediaLink);
+		assertEquals(200, getMediaLinkResult);
 		
 		// retrieve the media resource, verify the response prior to deletion
-		// TODO
+		GetMethod getMedia = new GetMethod(mediaLocation);
+		int getMediaResult = executeMethod(getMedia);
+		assertEquals(200, getMediaResult);
 		
 		// list the collection, verify the response prior to deletion
-		// TODO
+		GetMethod getFeed = new GetMethod(collectionUri);
+		int getFeedResult = executeMethod(getFeed);
+		assertEquals(200, getFeedResult);
+		Document feed = getResponseBodyAsDocument(getFeed);
+		assertEquals(1, getEntries(feed).size());
+		List<Element> deletedEntries = getChildrenByTagNameNS(feed, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(0, deletedEntries.size());
 		
 		// delete the media resource via the member URI
-		// TODO
+		DeleteMethod delete = new DeleteMethod(mediaLinkLocation);
+		delete.setRequestHeader("X-Atom-Tombstone-Comment", "delete media resource via media link URI");
+		int deleteResult = executeMethod(delete);
 		
 		// verify delete response
-		// TODO
+		assertEquals(200, deleteResult);
+		verifyResponseBodyIsDeletedEntry(delete, memberId, USER, "delete media resource via media link URI");
 		
 		// retrieve the media-link member, verify response after deletion
-		// TODO
+		GetMethod getMediaLink2 = new GetMethod(mediaLinkLocation);
+		int getMediaLinkResult2 = executeMethod(getMediaLink2);
+		assertEquals(410, getMediaLinkResult2);
+		verifyResponseBodyIsDeletedEntry(getMediaLink2, memberId, USER, "delete media resource via media link URI");
 		
 		// retrieve the media resource, verify the response after deletion
-		// TODO
+		GetMethod getMedia2 = new GetMethod(mediaLocation);
+		int getMediaResult2 = executeMethod(getMedia2);
+		assertEquals(404, getMediaResult2);
 		
 		// list the collection, verify the response after deletion
-		// TODO
-		
-		fail("TODO");
+		GetMethod getFeed2 = new GetMethod(collectionUri);
+		int getFeedResult2 = executeMethod(getFeed2);
+		assertEquals(200, getFeedResult2);
+		Document feed2 = getResponseBodyAsDocument(getFeed2);
+		assertEquals(0, getEntries(feed2).size());
+		List<Element> deletedEntries2 = getChildrenByTagNameNS(feed2, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(1, deletedEntries2.size());
 		
 	}
 
 
 
 
-	public void testDeleteMediaResourceViaMediaResourceUri() {
+	public void testDeleteMediaResourceViaMediaResourceUri() throws Exception {
 		
 		// create a tombstone-enabled collection
-		// TODO
+		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a media resource
-		// TODO
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
+		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
+		String memberId = getAtomId(mediaLinkDoc);
 		
 		// retrieve the media-link member, verify response prior to deletion
-		// TODO
+		GetMethod getMediaLink = new GetMethod(mediaLinkLocation);
+		int getMediaLinkResult = executeMethod(getMediaLink);
+		assertEquals(200, getMediaLinkResult);
 		
 		// retrieve the media resource, verify the response prior to deletion
-		// TODO
+		GetMethod getMedia = new GetMethod(mediaLocation);
+		int getMediaResult = executeMethod(getMedia);
+		assertEquals(200, getMediaResult);
 		
 		// list the collection, verify the response prior to deletion
-		// TODO
+		GetMethod getFeed = new GetMethod(collectionUri);
+		int getFeedResult = executeMethod(getFeed);
+		assertEquals(200, getFeedResult);
+		Document feed = getResponseBodyAsDocument(getFeed);
+		assertEquals(1, getEntries(feed).size());
+		List<Element> deletedEntries = getChildrenByTagNameNS(feed, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(0, deletedEntries.size());
 		
 		// delete the media resource via the media resource URI
-		// TODO
+		DeleteMethod delete = new DeleteMethod(mediaLocation);
+		delete.setRequestHeader("X-Atom-Tombstone-Comment", "delete media resource via media URI");
+		int deleteResult = executeMethod(delete);
 		
 		// verify delete response
-		// TODO
+		assertEquals(200, deleteResult);
+		verifyResponseBodyIsDeletedEntry(delete, memberId, USER, "delete media resource via media URI");
 		
 		// retrieve the media-link member, verify response after deletion
-		// TODO
+		GetMethod getMediaLink2 = new GetMethod(mediaLinkLocation);
+		int getMediaLinkResult2 = executeMethod(getMediaLink2);
+		assertEquals(410, getMediaLinkResult2);
+		verifyResponseBodyIsDeletedEntry(getMediaLink2, memberId, USER, "delete media resource via media URI");
 		
 		// retrieve the media resource, verify the response after deletion
-		// TODO
+		GetMethod getMedia2 = new GetMethod(mediaLocation);
+		int getMediaResult2 = executeMethod(getMedia2);
+		assertEquals(404, getMediaResult2);
 		
 		// list the collection, verify the response after deletion
-		// TODO
-		
-		fail("TODO");
+		GetMethod getFeed2 = new GetMethod(collectionUri);
+		int getFeedResult2 = executeMethod(getFeed2);
+		assertEquals(200, getFeedResult2);
+		Document feed2 = getResponseBodyAsDocument(getFeed2);
+		assertEquals(0, getEntries(feed2).size());
+		List<Element> deletedEntries2 = getChildrenByTagNameNS(feed2, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(1, deletedEntries2.size());
 		
 	}
 	
 	
 	
-	public void testDefaultGhostConfiguration() {
+	public void testDefaultGhostConfiguration() throws Exception {
 		
-		// TODO create a collection with default ghost configuration
+		// create a collection with default ghost configuration
+		String collectionUri = createTombstoneEnabledCollection();
 		
-		// TODO create member, delete member, verify response (elements in ghost)
+		// create member 
+		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, USER, PASS);
+		String memberUri = getEditLocation(entryDoc);
 		
-		fail("TODO");
+		// delete the member 
+		DeleteMethod delete = new DeleteMethod(memberUri);
+		delete.setRequestHeader("X-Atom-Tombstone-Comment", "remove spam");
+		executeMethod(delete);
+
+		// verify response (elements in ghost)
+		Document d = getResponseBodyAsDocument(delete);
+		List<Element> ghosts = getChildrenByTagNameNS(d, AtomBeat.XMLNS, AtomBeat.GHOST);
+		assertEquals(0, ghosts.size());
 		
 	}
 
 
 	
-	public void testSpecificGhostConfiguration() {
+	public void testSpecificGhostConfiguration() throws Exception {
 		
-		// TODO create a collection with specific ghost configuration
+		// create a collection with default ghost configuration
 		
-		// TODO create member, delete member, verify response (elements in ghost)
+		String content = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:enable-tombstones=\"true\">" +
+				"<atom:title>Test Collection with Tombstones and Ghosts</atom:title>" +
+				"<atombeat:config-tombstones>" +
+					"<atombeat:config>" +
+						"<atombeat:param name=\"ghost-atom-elements\" value=\"title author published\"/>" +
+					"</atombeat:config>" +
+				"</atombeat:config-tombstones>" +
+			"</atom:feed>";
 		
-		fail("TODO");
+		String collectionUri = createTombstoneEnabledCollection(content);
 		
+		// create member 
+		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, USER, PASS);
+		String memberUri = getEditLocation(entryDoc);
+		String title = getAtomTitle(entryDoc);
+		String published = getAtomPublished(entryDoc);
+		String authorName = getAtomAuthorName(entryDoc);
+		
+		// delete the member 
+		DeleteMethod delete = new DeleteMethod(memberUri);
+		delete.setRequestHeader("X-Atom-Tombstone-Comment", "remove spam");
+		executeMethod(delete);
+
+		// verify response (elements in ghost)
+		Document d = getResponseBodyAsDocument(delete);
+		List<Element> ghosts = getChildrenByTagNameNS(d, AtomBeat.XMLNS, AtomBeat.GHOST);
+		assertEquals(1, ghosts.size());
+		Element ghost = ghosts.get(0);
+		String ghostTitle = getAtomTitle(ghost); assertEquals(title, ghostTitle);
+		String ghostPublished = getAtomPublished(ghost); assertEquals(published, ghostPublished);
+		String ghostAuthorName = getAtomAuthorName(ghost); assertEquals(authorName, ghostAuthorName);
+
 	}
 
 	

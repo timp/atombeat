@@ -506,27 +506,107 @@ public class AtomTestUtils {
 	
 	public static String getAtomId(Document doc) {
 		
-		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "id");
+		return getAtomId(doc.getDocumentElement());
+
+	}
+	
+	
+
+	public static String getAtomId(Element parent) {
+		
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "id");
 		Element e = (Element) nodes.item(0);
 		return e.getTextContent();
 
 	}
 	
 	
-	public static String getUpdated(Document doc) {
+	public static String getAtomTitle(Document doc) {
+
+		return getAtomTitle(doc.getDocumentElement());
+
+	}
+
+	public static String getAtomTitle(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS(
+				"http://www.w3.org/2005/Atom", "title");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+
+	}
+
+
+	public static String getAtomUpdated(Document doc) {
 		
-		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated");
+		return getAtomUpdated(doc.getDocumentElement());
+		
+	}
+
+	
+	
+	
+	public static String getAtomUpdated(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated");
 		Element e = (Element) nodes.item(0);
 		return e.getTextContent();
 		
 	}
-	
-	
-	
-	
-	public static Element getContent(Document doc) {
+
+
+
+	public static String getAtomPublished(Document doc) {
 		
-		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
+		return getAtomPublished(doc.getDocumentElement());
+		
+	}
+
+	
+	
+	
+	public static String getAtomName(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "name");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+		
+	}
+
+
+
+	public static String getAtomName(Document doc) {
+		
+		return getAtomName(doc.getDocumentElement());
+		
+	}
+
+	
+	
+	
+	public static String getAtomPublished(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "published");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+		
+	}
+
+
+
+
+	public static Element getAtomContent(Document doc) {
+		
+		return getAtomContent(doc.getDocumentElement());
+		
+	}
+	
+	
+	
+	
+	public static Element getAtomContent(Element parent) {
+		
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
 		Element e = (Element) nodes.item(0);
 		return e;
 		
@@ -535,11 +615,36 @@ public class AtomTestUtils {
 	
 	
 	
-	public static Element getContent(Element elm) {
+	public static Element getAtomAuthor(Document doc) {
 		
-		NodeList nodes = elm.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
+		return getAtomAuthor(doc.getDocumentElement());
+		
+	}
+	
+	
+	
+	
+	public static Element getAtomAuthor(Element parent) {
+		
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "author");
 		Element e = (Element) nodes.item(0);
 		return e;
+		
+	}
+	
+	
+	
+	public static String getAtomAuthorName(Element parent) {
+		 
+		return getAtomName(getAtomAuthor(parent));
+		
+	}
+	
+	
+	
+	public static String getAtomAuthorName(Document d) {
+		 
+		return getAtomAuthorName(d.getDocumentElement());
 		
 	}
 	

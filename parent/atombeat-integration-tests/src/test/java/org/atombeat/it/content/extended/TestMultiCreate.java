@@ -206,7 +206,7 @@ public class TestMultiCreate extends TestCase {
 		for (Element e : l) {
 			String editMediaLocation = getEditMediaLocation(e);
 			assertNotNull(editMediaLocation);
-			String contentSrc = getContent(e).getAttribute("src");
+			String contentSrc = getAtomContent(e).getAttribute("src");
 			assertNotNull(contentSrc);
 			assertEquals(editMediaLocation, contentSrc);
 		}
