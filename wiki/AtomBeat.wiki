@@ -35,9 +35,9 @@ To find out more, see the following tutorials:
 
 = Status =
 
-AtomBeat is approaching a first stable release (0.1). If you're interested developing web services using the Atom Publishing Protocol and want to do some quick prototyping, then AtomBeat may be a good option. As yet we only have limited experience of running AtomBeat in a production setting.
+0.1-RC7 is the final release in the 0.1 series. See the [http://code.google.com/p/atombeat/downloads/list downloads page] to download this version. We're calling this release "stable", but bear in mind that AtomBeat is a young project, and it is early days, so caveat emptor. If you're interested developing with web services using the Atom Publishing Protocol and want to do some quick prototyping, then AtomBeat may be a good option. As yet we only have limited experience of running AtomBeat in a production setting.
 
-AtomBeat is being developed as part of work on scientific data repositories at the Centre for Genomics and Global Health, University of Oxford. If it's of interest to you, please feel free to [mailto:atombeat@googlegroups.com get in touch] via the [http://groups.google.com/group/atombeat AtomBeat Mailing List].
+AtomBeat is being developed as part of work on scientific data repositories at the Centre for Genomics and Global Health, a joint research programme of Oxford University and the Wellcome Trust Sanger Institute. If it's of interest to you, please feel free to [mailto:atombeat@googlegroups.com get in touch] via the [http://groups.google.com/group/atombeat AtomBeat Mailing List].
 
 = eXist already has an Atom Protocol implementation, why do another? =
 
