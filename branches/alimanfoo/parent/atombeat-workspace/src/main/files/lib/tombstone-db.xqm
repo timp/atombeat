@@ -63,6 +63,23 @@ declare function tombstone-db:retrieve-tombstone(
 
 
 
+declare function tombstone-db:retrieve-tombstones(
+    $collection-path-info as xs:string ,
+    $recursive as xs:boolean?
+) as element(at:deleted-entry)*
+{
+    
+    let $db-collection-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+    return
+        if ( $recursive )
+        then collection( $db-collection-path )/at:deleted-entry (: recursive :)
+        else xmldb:xcollection( $db-collection-path )/at:deleted-entry (: not recursive :)
+    
+};
+
+
+
+
 declare function tombstone-db:create-deleted-entry( 
     $member-path-info as xs:string , $user-name as xs:string? , $comment as xs:string?
 ) as element(at:deleted-entry)?

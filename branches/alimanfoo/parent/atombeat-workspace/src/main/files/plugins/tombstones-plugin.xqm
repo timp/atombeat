@@ -9,6 +9,7 @@ declare namespace at = "http://purl.org/atompub/tombstones/1.0";
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace tombstone-db = "http://purl.org/atombeat/xquery/tombstone-db" at "../lib/tombstone-db.xqm" ;
 
 
@@ -43,10 +44,22 @@ declare function tombstones-plugin:before-delete-member(
 ) as empty()
 {
 
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
-    let $comment := request:get-header( "X-Atom-Tombstone-Comment" )
-    let $deleted-entry := tombstone-db:create-deleted-entry( $request-path-info , $user-name , $comment )
-    let $prepared := request:set-attribute( "tombstone" , $deleted-entry )
+    let $collection-path-info := text:groups( $request-path-info , "^(.+)/[^/]+$" )[2]
+    let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
+    
+    let $prepared :=
+    
+        if ( xs:boolean( $feed/@atombeat:enable-tombstones ) )
+        
+        then
+    
+            let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+            let $comment := request:get-header( "X-Atom-Tombstone-Comment" )
+            let $deleted-entry := tombstone-db:create-deleted-entry( $request-path-info , $user-name , $comment )
+            return request:set-attribute( "tombstone" , $deleted-entry )
+            
+        else ()
+        
     return ()
     
 };
@@ -67,6 +80,8 @@ declare function tombstones-plugin:after(
     
         if ( $operation = $CONSTANT:OP-DELETE-MEMBER )
         then tombstones-plugin:after-delete-member( $request-path-info , $response )
+        else if ( $operation = $CONSTANT:OP-LIST-COLLECTION ) 
+        then tombstones-plugin:after-list-collection( $request-path-info , $response )
         else $response
     
 }; 
@@ -81,22 +96,73 @@ declare function tombstones-plugin:after-delete-member(
 {
 
     let $deleted-entry := request:get-attribute("tombstone")
-    let $tombstone-stored := tombstone-db:erect-tombstone( $request-path-info , $deleted-entry )
     
-    return
+    return 
+    
+        if ( exists( $deleted-entry ) )
+        
+        then
 
-        <response>
-            <status>200</status>
-            <headers>
-                <header>
-                    <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                    <value>application/atomdeleted+xml</value>
-                </header>
-            </headers>
-            <body>{$deleted-entry}</body>
-        </response>
+            let $tombstone-stored := tombstone-db:erect-tombstone( $request-path-info , $deleted-entry )
+            
+            return
+        
+                <response>
+                    <status>200</status>
+                    <headers>
+                        <header>
+                            <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                            <value>application/atomdeleted+xml</value>
+                        </header>
+                    </headers>
+                    <body>{$deleted-entry}</body>
+                </response>
+                
+        else $response
 
 };
+
+
+
+
+declare function tombstones-plugin:after-list-collection(
+    $request-path-info as xs:string ,
+    $response as element(response)
+) as element(response)
+{
+
+    let $feed := $response/body/atom:feed
+    
+    return 
+    
+        if ( exists( $feed) and xs:boolean( $feed/@atombeat:enable-tombstones ) )
+        
+        then
+        
+            let $augmented-feed :=
+            
+                <atom:feed>
+                {
+                    $feed/attribute::* ,
+                    $feed/child::* ,
+                    tombstone-db:retrieve-tombstones( $request-path-info , xs:boolean( $feed/atombeat:recursive ) ) 
+                }
+                </atom:feed>
+                
+            return 
+            
+                <response>
+                {
+                    $response/status ,
+                    $response/headers
+                }
+                    <body>{$augmented-feed}</body>
+                </response>
+        
+        else $response
+        
+};
+
 
 
 
@@ -107,8 +173,31 @@ declare function tombstones-plugin:after-error(
 ) as element(response)
 {
 
-    (: TODO :)
-    $response
+    if ( 
+        $operation = $CONSTANT:OP-ATOM-PROTOCOL-ERROR
+        and $response/status = 404
+        and tombstone-db:tombstone-available( $request-path-info )
+        (: TODO check tombstones enabled on collection? :)
+    )
+    then
+
+        let $deleted-entry := tombstone-db:retrieve-tombstone( $request-path-info )
+        
+        return
+    
+            (: modify the response from 404 to 410 :)
+            <response>
+                <status>410</status>
+                <headers>
+                    <header>
+                        <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                        <value>application/atomdeleted+xml</value>
+                    </header>
+                </headers>
+                <body>{$deleted-entry}</body>
+            </response>
+        
+    else $response
     
 }; 
 

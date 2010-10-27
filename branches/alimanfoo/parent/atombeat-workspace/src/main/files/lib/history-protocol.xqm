@@ -58,7 +58,7 @@ as element(response)
 		
 		then history-protocol:do-get( $request-path-info )
 		
-		else common-protocol:do-method-not-allowed( $request-path-info , ( "GET" ) )
+		else common-protocol:do-method-not-allowed( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , ( "GET" ) )
 
 };
 
@@ -77,7 +77,7 @@ declare function history-protocol:do-get(
 	
 	then history-protocol:do-get-member( $request-path-info )
 	
-	else common-protocol:do-not-found( $request-path-info )
+	else common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info )
 	
 };
 
@@ -101,7 +101,7 @@ declare function history-protocol:do-get-member(
 		
 		then history-protocol:do-get-member-revision( $request-path-info , xs:integer( $revision-index ) )
 		
-		else common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer." )
+		else common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , "Revision index parameter must be an integer." )
 };
 
 
@@ -230,11 +230,11 @@ declare function history-protocol:op-retrieve-member-revision(
     
         if ( $revision-index <= 0 )
         
-        then common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
+        then common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
         
         else if ( $revision-index > ( count($revision-numbers) + 1 ) )
         
-        then common-protocol:do-not-found( $request-path-info )
+        then common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info )
         
         else 
         

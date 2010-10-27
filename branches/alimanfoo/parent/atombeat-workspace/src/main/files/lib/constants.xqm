@@ -78,3 +78,7 @@ declare variable $CONSTANT:OP-UPDATE-MEDIA-ACL as xs:string           := "UPDATE
 declare variable $CONSTANT:OP-MULTI-CREATE as xs:string               := "MULTI_CREATE" ;
 declare variable $CONSTANT:OP-RETRIEVE-HISTORY as xs:string           := "RETRIEVE_HISTORY" ;
 declare variable $CONSTANT:OP-RETRIEVE-REVISION as xs:string          := "RETRIEVE_REVISION" ;
+
+declare variable $CONSTANT:OP-ATOM-PROTOCOL-ERROR as xs:string          := "ATOM_PROTOCOL_ERROR" ;
+declare variable $CONSTANT:OP-SECURITY-PROTOCOL-ERROR as xs:string          := "SECURITY_PROTOCOL_ERROR" ;
+declare variable $CONSTANT:OP-HISTORY-PROTOCOL-ERROR as xs:string          := "HISTORY_PROTOCOL_ERROR" ;

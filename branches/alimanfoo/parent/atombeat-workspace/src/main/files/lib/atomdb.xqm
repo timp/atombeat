@@ -1162,6 +1162,7 @@ declare function atomdb:retrieve-members(
 
 
 
+
 declare function atomdb:exclude-entry-content(
     $entry as element(atom:entry)
 ) as element(atom:entry)
