@@ -5,7 +5,7 @@
   <parent>
     <artifactId>atombeat-parent</artifactId>
     <groupId>org.atombeat</groupId>
-    <version>0.2-alpha-1</version>
+    <version>0.2-alpha-2-SNAPSHOT</version>
   </parent>
 
   <artifactId>atombeat-integration-tests</artifactId>
