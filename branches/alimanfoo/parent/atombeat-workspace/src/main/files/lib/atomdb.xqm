@@ -74,7 +74,7 @@ declare function atomdb:member-available(
 	 
 	let $member-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
 		
-	return ( not( util:binary-doc-available( $member-db-path ) ) and exists( doc( $member-db-path ) ) )
+	return ( not( util:binary-doc-available( $member-db-path ) ) and exists( doc( $member-db-path )/atom:entry ) )
 	
 };
 
