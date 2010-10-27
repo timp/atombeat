@@ -51,7 +51,7 @@ as element(response)
             and not( atomdb:media-resource-available( $request-path-info ) )
         )
         
-        then common-protocol:do-not-found( $request-path-info )
+        then common-protocol:do-not-found( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request-path-info )
         
 		else if ( $request-method = $CONSTANT:METHOD-GET )
 		
@@ -61,7 +61,7 @@ as element(response)
 		
 		then security-protocol:do-put( $request-path-info )
 		
-		else common-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "PUT" ) )
+		else common-protocol:do-method-not-allowed( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request-path-info , ( "GET" , "PUT" ) )
 
 };
 
@@ -188,7 +188,7 @@ declare function security-protocol:do-bad-descriptor(
 {
 
     let $message := "Request entity must match atom:entry/atom:content[@type='application/vnd.atombeat+xml']/atombeat:security-descriptor/atombeat:acl."
-    return common-protocol:do-bad-request( $request-path-info , $message )
+    return common-protocol:do-bad-request( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request-path-info , $message )
     
 };
 

@@ -139,7 +139,7 @@ return
     
     then local:do-post()
     
-    else common-protocol:respond( common-protocol:do-method-not-allowed( "/admin/install.xql" , ( "GET" , "POST" ) ) )
+    else common-protocol:respond( common-protocol:do-method-not-allowed( "/admin/install.xql" , "/admin/install.xql" , ( "GET" , "POST" ) ) )
     
     
 

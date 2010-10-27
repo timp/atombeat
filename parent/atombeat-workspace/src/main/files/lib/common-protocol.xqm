@@ -25,7 +25,8 @@ declare variable $common-protocol:param-request-path-info := "request-path-info"
 
 
 declare function common-protocol:do-not-modified(
-    $request-path-info
+    $op-name as xs:string? ,
+    $request-path-info as xs:string
 ) as element(response)
 {
 
@@ -42,7 +43,8 @@ declare function common-protocol:do-not-modified(
 
 
 declare function common-protocol:do-not-found(
-    $request-path-info
+    $op-name as xs:string? ,
+    $request-path-info as xs:string
 ) as element(response)
 {
 
@@ -68,8 +70,9 @@ declare function common-protocol:do-not-found(
 
 
 declare function common-protocol:do-precondition-failed(
-    $request-path-info ,
-    $message
+    $op-name as xs:string? ,
+    $request-path-info as xs:string ,
+    $message as xs:string?
 ) as element(response)
 {
 
@@ -93,8 +96,9 @@ declare function common-protocol:do-precondition-failed(
 
 
 declare function common-protocol:do-bad-request(
+    $op-name as xs:string? ,
 	$request-path-info as xs:string ,
-	$message as xs:string 
+	$message as xs:string?
 ) as element(response)
 {
 
@@ -122,6 +126,7 @@ declare function common-protocol:do-bad-request(
 
 
 declare function common-protocol:do-method-not-allowed(
+    $op-name as xs:string? ,
 	$request-path-info as xs:string ,
 	$allow as xs:string*
 ) as element(response)
@@ -155,7 +160,8 @@ declare function common-protocol:do-method-not-allowed(
 
 
 declare function common-protocol:do-forbidden(
-	$request-path-info as xs:string
+    $op-name as xs:string? ,
+    $request-path-info as xs:string
 ) as element(response)
 {
 
@@ -182,8 +188,9 @@ declare function common-protocol:do-forbidden(
 
 
 declare function common-protocol:do-unsupported-media-type(
-	$message as xs:string? ,
-	$request-path-info as xs:string
+    $op-name as xs:string? ,
+    $request-path-info as xs:string ,
+	$message as xs:string? 
 ) as element(response)
 {
 
@@ -210,11 +217,12 @@ declare function common-protocol:do-unsupported-media-type(
 
 
 declare function common-protocol:do-unsupported-media-type(
-	$request-path-info as xs:string 
+    $op-name as xs:string? ,
+    $request-path-info as xs:string
 ) as element(response)
 {
 
-    common-protocol:do-unsupported-media-type( $request-path-info , () )
+    common-protocol:do-unsupported-media-type( $op-name , $request-path-info , () )
 
 };
 
@@ -282,7 +290,7 @@ declare function common-protocol:apply-op(
  :)
 declare function common-protocol:apply-before(
 	$functions as function* ,
-	$operation as xs:string ,
+	$op-name as xs:string ,
 	$request-path-info as xs:string ,
 	$request-data as item()* ,
 	$request-media-type as xs:string?
@@ -303,7 +311,7 @@ declare function common-protocol:apply-before(
 	
 	else
 	
-		let $advice := util:call( $functions[1] , $operation , $request-path-info , $request-data , $request-media-type )
+		let $advice := util:call( $functions[1] , $op-name , $request-path-info , $request-data , $request-media-type )
 		
 		(: what happens next depends on advice :)
 		
@@ -318,7 +326,7 @@ declare function common-protocol:apply-before(
 			    let $request-data := $advice
 			    
 			    (: recursively call until before functions are exhausted :)
-			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $operation , $request-path-info , $request-data , $request-media-type )
+			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $op-name , $request-path-info , $request-data , $request-media-type )
 
 };
 
@@ -330,7 +338,7 @@ declare function common-protocol:apply-before(
  :)
 declare function common-protocol:apply-after(
 	$functions as function* ,
-	$operation as xs:string ,
+	$op-name as xs:string ,
 	$request-path-info as xs:string ,
 	$response as element(response)
 ) as item()* {
@@ -341,13 +349,13 @@ declare function common-protocol:apply-after(
 	
 	else
 	
-		let $advice := util:call( $functions[1] , $operation , $request-path-info , $response )
+		let $advice := util:call( $functions[1] , $op-name , $request-path-info , $response )
 		
 		let $response := $advice
 		
 		return
 		
-			common-protocol:apply-after( subsequence( $functions , 2 ) , $operation , $request-path-info , $response )
+			common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $request-path-info , $response )
 
 };
 
@@ -355,6 +363,7 @@ declare function common-protocol:apply-after(
 
 
 declare function common-protocol:do-internal-server-error(
+    $op-name as xs:string? ,
 	$request-path-info as xs:string ,
 	$message as xs:string 
 ) as element(response)
