@@ -54,7 +54,11 @@ public class AtomTestUtils {
 	public static final String WORKSPACEPATH = 
 		(System.getProperty("org.atombeat.it.workspacePath") != null) ? 
 				System.getProperty("org.atombeat.it.workspacePath") : "/workspace/";
-	
+				
+	public static final Boolean SECURE = 
+		(System.getProperty("org.atombeat.it.secure") != null) ? 
+				Boolean.parseBoolean(System.getProperty("org.atombeat.it.secure")) : true;
+							
 	public static final String BASE_URI = "http://" + HOST + ":" + PORT + CONTEXTPATH + WORKSPACEPATH;
 	public static final String CONTENT_URI = BASE_URI + "content/";
 	public static final String SECURITY_URI = BASE_URI + "security/";
