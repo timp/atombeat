@@ -55,7 +55,7 @@ as element(response)
 		
 		then atom-protocol:do-delete( $request-path-info )
 		
-		else common-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "POST" , "PUT" , "DELETE" ) )
+		else common-protocol:do-method-not-allowed( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , ( "GET" , "POST" , "PUT" , "DELETE" ) )
 
 };
 
@@ -118,7 +118,7 @@ declare function atom-protocol:do-post-atom(
 		
 		then atom-protocol:do-post-atom-entry( $request-path-info , $request-data )
 		
-		else common-protocol:do-bad-request( $request-path-info , "Request entity must be well-formed XML and the root element must be either an Atom feed element or an Atom entry element." )
+		else common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "Request entity must be well-formed XML and the root element must be either an Atom feed element or an Atom entry element." )
 
 };
 
@@ -165,7 +165,7 @@ declare function atom-protocol:do-post-atom-feed(
 			let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-create-collection" ) , 3 )
 			return common-protocol:apply-op( $CONSTANT:OP-CREATE-COLLECTION , $op , $request-path-info , $request-data )
 		
-(:		else common-protocol:do-bad-request( $request-path-info , "A collection already exists at the given location." ) :)
+(:		else common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "A collection already exists at the given location." ) :)
 
         else 
         
@@ -228,7 +228,7 @@ declare function atom-protocol:op-create-collection(
         	        <body>{$feed}</body>
         	    </response>
 
-        else common-protocol:do-internal-server-error( $request-path-info , "Failed to create collection." )
+        else common-protocol:do-internal-server-error( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "Failed to create collection." )
 
 };
 
@@ -339,7 +339,7 @@ declare function atom-protocol:do-post-atom-entry(
 	
 		if ( not( $collection-available ) ) 
 
-		then common-protocol:do-not-found( $request-path-info )
+		then common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 		
 		else
 		
@@ -443,7 +443,7 @@ declare function atom-protocol:do-post-media(
 	
 		if ( not( $collection-available ) ) 
 
-		then common-protocol:do-not-found( $request-path-info )
+		then common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 		
 		else
 		
@@ -557,7 +557,7 @@ declare function atom-protocol:do-post-multipart-formdata(
 	
 		if ( not( $collection-available ) ) 
 
-		then common-protocol:do-not-found( $request-path-info )
+		then common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 		
 		else
 
@@ -569,7 +569,7 @@ declare function atom-protocol:do-post-multipart-formdata(
 			
 			    if ( empty( $file-name ) )
 			    
-			    then common-protocol:do-bad-request( $request-path-info , "Requests with content type 'multipart/form-data' must have a 'media' part." )
+			    then common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "Requests with content type 'multipart/form-data' must have a 'media' part." )
 			    
 			    else
 			
@@ -711,7 +711,7 @@ declare function atom-protocol:do-put-atom(
 {
 
     if ( atomdb:media-resource-available( $request-path-info ) )
-    then common-protocol:do-unsupported-media-type( "You cannot PUT content with mediatype application/atom+xml to a media resource URI." , $request-path-info )
+    then common-protocol:do-unsupported-media-type( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , "You cannot PUT content with mediatype application/atom+xml to a media resource URI." , $request-path-info )
     
     else
  	 
@@ -727,7 +727,7 @@ declare function atom-protocol:do-put-atom(
     		
     		then atom-protocol:do-put-atom-entry( $request-path-info , $request-data )
     		
-    		else common-protocol:do-bad-request( $request-path-info , "Request entity must be well-formed XML and the root element must be either an Atom feed element or an Atom entry element." )
+    		else common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "Request entity must be well-formed XML and the root element must be either an Atom feed element or an Atom entry element." )
 
 };
 
@@ -759,7 +759,7 @@ declare function atom-protocol:do-put-atom-feed(
      :)
     
     if ( atomdb:member-available( $request-path-info ) )
-    then common-protocol:do-bad-request( $request-path-info , "You cannot PUT an atom:feed to a member URI." )
+    then common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "You cannot PUT an atom:feed to a member URI." )
     
     else
 	
@@ -891,7 +891,7 @@ declare function atom-protocol:do-put-atom-entry(
 	 :)
 	 
  	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then common-protocol:do-bad-request( $request-path-info , "You cannot PUT an atom:entry to a collection URI." )
+ 	 then common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "You cannot PUT an atom:entry to a collection URI." )
  	 
  	 else
  	  
@@ -906,7 +906,7 @@ declare function atom-protocol:do-put-atom-entry(
 		
 			if ( not( $member-available ) ) 
 	
-			then common-protocol:do-not-found( $request-path-info )
+			then common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 			
 			else
 			
@@ -969,7 +969,7 @@ declare function atom-protocol:do-conditional-put-atom-entry(
             let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-update-member" ) , 3 )
             return common-protocol:apply-op( $CONSTANT:OP-UPDATE-MEMBER , $op , $request-path-info , $request-data ) 
         
-        else common-protocol:do-precondition-failed( $request-path-info , "The entity tag does not match." )
+        else common-protocol:do-precondition-failed( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "The entity tag does not match." )
         
 };
 
@@ -1024,10 +1024,10 @@ declare function atom-protocol:do-put-media(
 
 	
  	 if ( atomdb:collection-available( $request-path-info ) )
- 	 then common-protocol:do-unsupported-media-type( "You cannot PUT media content to a collection URI." , $request-path-info )
+ 	 then common-protocol:do-unsupported-media-type( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , "You cannot PUT media content to a collection URI." , $request-path-info )
  	 
  	 else if ( atomdb:member-available( $request-path-info ) )
- 	 then common-protocol:do-unsupported-media-type( "You cannot PUT media content to a member URI." , $request-path-info )
+ 	 then common-protocol:do-unsupported-media-type( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , "You cannot PUT media content to a member URI." , $request-path-info )
  	 
  	 else
 
@@ -1042,7 +1042,7 @@ declare function atom-protocol:do-put-media(
 		
 			if ( not( $found ) ) 
 	
-			then common-protocol:do-not-found( $request-path-info )
+			then common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 			
 			else
 			
@@ -1119,7 +1119,7 @@ declare function atom-protocol:do-get(
 	
 	then atom-protocol:do-get-collection( $request-path-info )
 
-	else common-protocol:do-not-found( $request-path-info )
+	else common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 	
 };
 
@@ -1190,7 +1190,7 @@ declare function atom-protocol:do-conditional-get-entry(
     
         if ( exists( $matches ) )
         
-        then common-protocol:do-not-modified( $request-path-info )
+        then common-protocol:do-not-modified( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
         
         else
         
@@ -1366,7 +1366,7 @@ declare function atom-protocol:do-delete(
 	else if ( atomdb:media-resource-available( $request-path-info ) )
 	then atom-protocol:do-delete-media( $request-path-info )
 	
-	else common-protocol:do-not-found( $request-path-info )
+	else common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info )
 	
 };
 
@@ -1379,7 +1379,7 @@ declare function atom-protocol:do-delete-collection(
 {
 
     (: for now, do not support this operation :)
-    common-protocol:do-method-not-allowed( $request-path-info , ( "GET" , "POST" , "PUT" ) )
+    common-protocol:do-method-not-allowed( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , ( "GET" , "POST" , "PUT" ) )
     
 };
 

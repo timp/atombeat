@@ -67,7 +67,7 @@ public class TestMultipartFormdata extends TestCase {
 	
 	
 	
-	public void testMultipartRequestWithFile() {
+	public void testMultipartRequestWithFile() throws Exception {
 		
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
 		PostMethod post = new PostMethod(TEST_COLLECTION_URI);

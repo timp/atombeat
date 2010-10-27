@@ -1,7 +1,6 @@
 package org.atombeat.it.plugin.security;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 
@@ -267,9 +266,9 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithEditorRoleCanUpdateAtomEntries() {
+	public void testUserWithEditorRoleCanUpdateAtomEntries() throws Exception {
 
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "austin", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "austin", "test");
 
 		// we expect the default collection ACL to allow only users with the
 		// ROLE_EDITOR role to update any atom entries in any collection
@@ -291,9 +290,9 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithoutEditorRoleCannotUpdateAtomEntries() {
+	public void testUserWithoutEditorRoleCannotUpdateAtomEntries() throws Exception {
 
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "austin", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "austin", "test");
 
 		// we expect the default collection ACL to allow only users with the
 		// ROLE_EDITOR role to update any atom entries in any collection
@@ -314,11 +313,11 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testAuthorCanUpdateTheirOwnEntry() {
+	public void testAuthorCanUpdateTheirOwnEntry() throws Exception {
 
 		// we expect "audrey" is assigned the ROLE_AUTHOR so can create entries
 		
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 
 		PutMethod method = new PutMethod(entryUri);
 
@@ -336,11 +335,11 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 
 
-	public void testAuthorCannotUpdateAnotherAuthorsEntry() {
+	public void testAuthorCannotUpdateAnotherAuthorsEntry() throws Exception {
 
 		// we expect "audrey" is assigned the ROLE_AUTHOR so can create entries
 		
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 
 		PutMethod method = new PutMethod(entryUri);
 
@@ -358,10 +357,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithReaderRoleCanListCollections() {
+	public void testUserWithReaderRoleCanListCollections() throws Exception {
 
 		// setup test
-		createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 		
 		// list collection, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method = new GetMethod(testCollectionUri);
@@ -373,10 +372,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithoutReaderRoleCannotListCollections() {
+	public void testUserWithoutReaderRoleCannotListCollections() throws Exception {
 
 		// setup test
-		createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 		
 		// list collection, expecting user "ursula" not to be in role ROLE_READER
 		GetMethod method = new GetMethod(testCollectionUri);
@@ -389,10 +388,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithReaderRoleCanRetrieveEntry() {
+	public void testUserWithReaderRoleCanRetrieveEntry() throws Exception {
 		
 		// setup test
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 		
 		// retrieve entry, expecting user "rebecca" to be in role ROLE_READER
 		GetMethod method = new GetMethod(entryUri);
@@ -403,10 +402,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithoutReaderRoleCannotRetrieveEntry() {
+	public void testUserWithoutReaderRoleCannotRetrieveEntry() throws Exception {
 		
 		// setup test
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 		
 		// list collection, expecting user "ursula" not to be in role ROLE_READER
 		GetMethod method = new GetMethod(entryUri);
@@ -521,7 +520,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithReaderRoleCanRetrieveMediaResource() {
+	public void testUserWithReaderRoleCanRetrieveMediaResource() throws Exception {
 		
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -541,7 +540,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithoutReaderRoleCannotRetrieveMediaResource() {
+	public void testUserWithoutReaderRoleCannotRetrieveMediaResource() throws Exception {
 		
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -561,7 +560,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithMediaEditorRoleCanUpdateMediaResources() {
+	public void testUserWithMediaEditorRoleCanUpdateMediaResources() throws Exception {
 		
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -584,7 +583,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithoutMediaEditorRoleCannotUpdateMediaResources() {
+	public void testUserWithoutMediaEditorRoleCannotUpdateMediaResources() throws Exception {
 		
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -608,9 +607,9 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 
-	public void testAuthorsCanRetrieveEntryTheyCreated() {
+	public void testAuthorsCanRetrieveEntryTheyCreated() throws Exception {
 		
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 
 		GetMethod method = new GetMethod(entryUri);
 		
@@ -625,9 +624,9 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 
 
-	public void testAuthorsCannotRetrieveAnotherAuthorsEntry() {
+	public void testAuthorsCannotRetrieveAnotherAuthorsEntry() throws Exception {
 		
-		String entryUri = createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
+		String entryUri = createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
 
 		GetMethod method = new GetMethod(entryUri);
 		
@@ -642,10 +641,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testAuthorsCanListCollectionButOnlyRetrieveEntriesTheyCreated() {
+	public void testAuthorsCanListCollectionButOnlyRetrieveEntriesTheyCreated() throws Exception {
 
-		createTestEntryAndReturnLocation(testCollectionUri, "audrey", "test");
-		createTestEntryAndReturnLocation(testCollectionUri, "austin", "test");
+		createTestMemberAndReturnLocation(testCollectionUri, "audrey", "test");
+		createTestMemberAndReturnLocation(testCollectionUri, "austin", "test");
 		
 		GetMethod method = new GetMethod(testCollectionUri);
 		int result = executeMethod(method, "audrey", "test");
@@ -683,7 +682,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 
 	
-	public void testAuthorsCanRetrieveMediaResourceTheyCreated() {
+	public void testAuthorsCanRetrieveMediaResourceTheyCreated() throws Exception {
 
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -703,7 +702,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	
 	
-	public void testAuthorsCannotRetrieveAnotherAuthorsMediaResource() {
+	public void testAuthorsCannotRetrieveAnotherAuthorsMediaResource() throws Exception {
 
 
 		// setup test
@@ -724,7 +723,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	
 	
-	public void testAuthorCanUpdateTheirOwnMediaResources() {
+	public void testAuthorCanUpdateTheirOwnMediaResources() throws Exception {
 		
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -747,7 +746,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testAuthorCannotUpdateAnotherAuthorsMediaResources() {
+	public void testAuthorCannotUpdateAnotherAuthorsMediaResources() throws Exception {
 		
 		// setup test
 		PostMethod method = new PostMethod(testCollectionUri);
@@ -895,7 +894,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 
 	
-	public void testUserWithMediaEditorRoleCanDeleteMediaResource() {
+	public void testUserWithMediaEditorRoleCanDeleteMediaResource() throws Exception {
 		
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -933,7 +932,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	
 	
-	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResource() {
+	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResource() throws Exception {
 
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -971,7 +970,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithMediaEditorRoleCanDeleteMediaResourceViaMediaLinkLocation() {
+	public void testUserWithMediaEditorRoleCanDeleteMediaResourceViaMediaLinkLocation() throws Exception {
 
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -1009,7 +1008,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResourceViaMediaLinkLocation() {
+	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResourceViaMediaLinkLocation() throws Exception {
 
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -1046,10 +1045,10 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	
 	
-	public void testUserWithoutReaderRoleCannotRetrieveHistoryOrRevision() {
+	public void testUserWithoutReaderRoleCannotRetrieveHistoryOrRevision() throws Exception {
 		
 		String collectionUri = createTestVersionedCollection(CONTENT_URI, "adam", "test");
-		Document d = createTestEntryAndReturnDocument(collectionUri, "austin", "test");
+		Document d = createTestMemberAndReturnDocument(collectionUri, "austin", "test");
 		String historyLocation = getLinkHref(d, "history");
 		assertNotNull(historyLocation);
 		
@@ -1084,7 +1083,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	
 	
-	public void testAuthorCannotStealAnotherAuthorsMediaResourcesViaMultiCreate() throws IOException {
+	public void testAuthorCannotStealAnotherAuthorsMediaResourcesViaMultiCreate() throws Exception {
 
 		// this test exposes a security flaw involving the atombeat "multicreate" 
 		// protocol extension - when posting a feed containing a media-link
@@ -1137,7 +1136,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		String newMediaLocation = getEditMediaLocation(entries.get(0));
 		assertNull(newMediaLocation); // edit-media link should have been stripped
 		
-		String contentLocation = getContent(d3).getAttribute("src"); // content element should remain tho, pointing to original media resource
+		String contentLocation = getAtomContent(d3).getAttribute("src"); // content element should remain tho, pointing to original media resource
  		
 		// try to GET Audrey's media resource as Austin
 		GetMethod get4 = new GetMethod(contentLocation);

@@ -52,7 +52,7 @@ public class TestSecurityProtocol extends TestCase {
 
 	
 
-	public void testGetWorkspaceDescriptor() {
+	public void testGetWorkspaceDescriptor() throws Exception {
 		
 		GetMethod g = new GetMethod(SECURITY_URI);
 		int r = executeMethod(g, "adam", "test");
@@ -79,7 +79,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 
 	
-	public void testGetCollectionDescriptor() {
+	public void testGetCollectionDescriptor() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -125,7 +125,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testGetCollectionDescriptorDenied() {
+	public void testGetCollectionDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -149,11 +149,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testGetMemberDescriptor() {
+	public void testGetMemberDescriptor() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
@@ -182,11 +182,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testGetMemberDescriptor2() {
+	public void testGetMemberDescriptor2() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve collection
 		GetMethod g = new GetMethod(collectionUri);
@@ -218,11 +218,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testGetMemberDescriptor3() {
+	public void testGetMemberDescriptor3() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// edwina is an editor, and should be able to retrieve acl but not update
 		
@@ -285,11 +285,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testGetMemberNoMediaDescriptorLink() {
+	public void testGetMemberNoMediaDescriptorLink() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "adam", "test");
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, "adam", "test");
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
@@ -305,11 +305,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testDescriptorLinkPresentInResponseToCreateEntry() {
+	public void testDescriptorLinkPresentInResponseToCreateEntry() throws Exception {
 		
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		Document d = createTestEntryAndReturnDocument(collectionUri, "audrey", "test");
+		Document d = createTestMemberAndReturnDocument(collectionUri, "audrey", "test");
 
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
 		assertNotNull(descriptorLocation);
@@ -318,11 +318,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testGetMemberDescriptorDenied() {
+	public void testGetMemberDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
@@ -363,7 +363,7 @@ public class TestSecurityProtocol extends TestCase {
 
 	
 	
-	public void testGetMediaDescriptor() {
+	public void testGetMediaDescriptor() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -386,7 +386,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testGetMediaDescriptor2() {
+	public void testGetMediaDescriptor2() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -415,7 +415,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testGetMediaDescriptorDenied() {
+	public void testGetMediaDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -458,7 +458,7 @@ public class TestSecurityProtocol extends TestCase {
 
 	
 	
-	public void testUpdateWorkspaceDescriptor() {
+	public void testUpdateWorkspaceDescriptor() throws Exception {
 		
 		// make sure adam can create collections
 		String u = createTestCollection(CONTENT_URI, "adam", "test");
@@ -507,7 +507,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateCollectionDescriptor() {
+	public void testUpdateCollectionDescriptor() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -550,7 +550,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateCollectionDescriptorDenied() {
+	public void testUpdateCollectionDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -579,7 +579,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testBadRequest() {
+	public void testBadRequest() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -609,11 +609,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateMemberDescriptor() {
+	public void testUpdateMemberDescriptor() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
@@ -647,11 +647,11 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testUpdateMemberDescriptorDenied() {
+	public void testUpdateMemberDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String memberUri = createTestEntryAndReturnLocation(collectionUri, "audrey", "test");
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
 		GetMethod g = new GetMethod(memberUri);
@@ -684,7 +684,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testUpdateMediaDescriptor() {
+	public void testUpdateMediaDescriptor() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -722,7 +722,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 
-	public void testUpdateMediaDescriptorDenied() {
+	public void testUpdateMediaDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -760,7 +760,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	
 	
-	public void testCannotOverrideDescriptorLinksOnCreateCollection() {
+	public void testCannotOverrideDescriptorLinksOnCreateCollection() throws Exception {
 		
 		String collectionUri = CONTENT_URI + Double.toString(Math.random());
 		PutMethod method = new PutMethod(collectionUri);
@@ -783,7 +783,7 @@ public class TestSecurityProtocol extends TestCase {
 	}
 	
 	
-	public void testCannotOverrideDescriptorLinksOnUpdateCollection() {
+	public void testCannotOverrideDescriptorLinksOnUpdateCollection() throws Exception {
 		
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -809,7 +809,7 @@ public class TestSecurityProtocol extends TestCase {
 	}
 	
 	
-	public void testCannotOverrideDescriptorLinksOnCreateMember() {
+	public void testCannotOverrideDescriptorLinksOnCreateMember() throws Exception {
 
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
@@ -836,11 +836,11 @@ public class TestSecurityProtocol extends TestCase {
 	}
 	
 	
-	public void testCannotOverrideDescriptorLinksOnUpdateMember() {
+	public void testCannotOverrideDescriptorLinksOnUpdateMember() throws Exception {
 		
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
-		String location = createTestEntryAndReturnLocation(collectionUri, "adam", "test");
+		String location = createTestMemberAndReturnLocation(collectionUri, "adam", "test");
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);
