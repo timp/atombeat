@@ -1,6 +1,5 @@
 package org.atombeat.it.plugin.linkexpansion;
 
-import java.io.IOException;
 import java.util.List;
 
 import org.apache.commons.httpclient.methods.GetMethod;
@@ -46,7 +45,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 	
 	
 
-	public void testExpansionInFeed() throws IOException {
+	public void testExpansionInFeed() throws Exception {
 		
 		String feed = 
 			"<atom:feed \n" +
@@ -88,7 +87,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 	
 	
 
-	public void testExpansionInEntry() throws IOException {
+	public void testExpansionInEntry() throws Exception {
 		
 		String feed = 
 			"<atom:feed \n" +
@@ -170,7 +169,7 @@ public class TestLinkExpansionPlugin extends TestCase {
 	
 	
 
-	public void testExpansionInEntryInFeed() throws IOException {
+	public void testExpansionInEntryInFeed() throws Exception {
 		
 		String feed = 
 			"<atom:feed \n" +

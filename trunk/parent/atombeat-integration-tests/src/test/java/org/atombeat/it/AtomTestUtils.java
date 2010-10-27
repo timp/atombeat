@@ -32,7 +32,6 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
-import org.xml.sax.SAXException;
 
 import static junit.framework.TestCase.fail;
 
@@ -55,7 +54,11 @@ public class AtomTestUtils {
 	public static final String WORKSPACEPATH = 
 		(System.getProperty("org.atombeat.it.workspacePath") != null) ? 
 				System.getProperty("org.atombeat.it.workspacePath") : "/workspace/";
-	
+				
+	public static final Boolean SECURE = 
+		(System.getProperty("org.atombeat.it.secure") != null) ? 
+				Boolean.parseBoolean(System.getProperty("org.atombeat.it.secure")) : true;
+							
 	public static final String BASE_URI = "http://" + HOST + ":" + PORT + CONTEXTPATH + WORKSPACEPATH;
 	public static final String CONTENT_URI = BASE_URI + "content/";
 	public static final String SECURITY_URI = BASE_URI + "security/";
@@ -287,7 +290,7 @@ public class AtomTestUtils {
 	
 	
 	
-	public static String createTestEntryAndReturnLocation(String collectionUri, String user, String pass) {
+	public static String createTestMemberAndReturnLocation(String collectionUri, String user, String pass) throws Exception {
 
 		PostMethod method = new PostMethod(collectionUri);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
@@ -304,13 +307,17 @@ public class AtomTestUtils {
 		
 		method.releaseConnection();
 		
+		if (location == null) {
+			throw new Exception("Could not create member.");
+		}
+		
 		return location;
 
 	}
 	
 	
 	
-	public static Document createTestEntryAndReturnDocument(String collectionUri, String user, String pass) {
+	public static Document createTestMemberAndReturnDocument(String collectionUri, String user, String pass) throws Exception {
 
 		PostMethod method = new PostMethod(collectionUri);
 		String content = "<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Entry</atom:title><atom:summary>this is a test</atom:summary></atom:entry>";
@@ -324,13 +331,16 @@ public class AtomTestUtils {
 		
 		method.releaseConnection();
 		
+		if (doc == null) 
+			throw new Exception("Could not create member.");
+		
 		return doc;
 
 	}
 	
 	
 	
-	public static Document createTestMediaResourceAndReturnMediaLinkEntry(String collectionUri, String user, String pass) {
+	public static Document createTestMediaResourceAndReturnMediaLinkEntry(String collectionUri, String user, String pass) throws Exception {
 		
 		PostMethod method = new PostMethod(collectionUri);
 		String media = "This is a test.";
@@ -343,6 +353,9 @@ public class AtomTestUtils {
 			doc = getResponseBodyAsDocument(method);
 
 		method.releaseConnection();
+		
+		if (doc == null)
+			throw new Exception("Could not create media resource.");
 		
 		return doc;
 		
@@ -369,6 +382,18 @@ public class AtomTestUtils {
 		return o;
 	}
 	
+	
+	public static Element getFirstChildByTagNameNS(Document d, String nsuri, String tagName) {
+		return getFirstChildByTagNameNS(d.getDocumentElement(), nsuri, tagName);
+	}
+
+	
+	
+	public static Element getFirstChildByTagNameNS(Element e, String nsuri, String tagName) {
+		List<Element> l = getChildrenByTagNameNS(e, nsuri, tagName);
+		if (l.size()>0) return l.get(0);
+		else return null;
+	}
 	
 	
 	public static List<Element> getEntries(Document d) {
@@ -482,20 +507,110 @@ public class AtomTestUtils {
 	}
 	
 	
-	public static String getUpdated(Document doc) {
+	
+	public static String getAtomId(Document doc) {
 		
-		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated");
+		return getAtomId(doc.getDocumentElement());
+
+	}
+	
+	
+
+	public static String getAtomId(Element parent) {
+		
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "id");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+
+	}
+	
+	
+	public static String getAtomTitle(Document doc) {
+
+		return getAtomTitle(doc.getDocumentElement());
+
+	}
+
+	public static String getAtomTitle(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS(
+				"http://www.w3.org/2005/Atom", "title");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+
+	}
+
+
+	public static String getAtomUpdated(Document doc) {
+		
+		return getAtomUpdated(doc.getDocumentElement());
+		
+	}
+
+	
+	
+	
+	public static String getAtomUpdated(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "updated");
 		Element e = (Element) nodes.item(0);
 		return e.getTextContent();
 		
 	}
-	
-	
-	
-	
-	public static Element getContent(Document doc) {
+
+
+
+	public static String getAtomPublished(Document doc) {
 		
-		NodeList nodes = doc.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
+		return getAtomPublished(doc.getDocumentElement());
+		
+	}
+
+	
+	
+	
+	public static String getAtomName(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "name");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+		
+	}
+
+
+
+	public static String getAtomName(Document doc) {
+		
+		return getAtomName(doc.getDocumentElement());
+		
+	}
+
+	
+	
+	
+	public static String getAtomPublished(Element parent) {
+
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "published");
+		Element e = (Element) nodes.item(0);
+		return e.getTextContent();
+		
+	}
+
+
+
+
+	public static Element getAtomContent(Document doc) {
+		
+		return getAtomContent(doc.getDocumentElement());
+		
+	}
+	
+	
+	
+	
+	public static Element getAtomContent(Element parent) {
+		
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
 		Element e = (Element) nodes.item(0);
 		return e;
 		
@@ -504,11 +619,36 @@ public class AtomTestUtils {
 	
 	
 	
-	public static Element getContent(Element elm) {
+	public static Element getAtomAuthor(Document doc) {
 		
-		NodeList nodes = elm.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "content");
+		return getAtomAuthor(doc.getDocumentElement());
+		
+	}
+	
+	
+	
+	
+	public static Element getAtomAuthor(Element parent) {
+		
+		NodeList nodes = parent.getElementsByTagNameNS("http://www.w3.org/2005/Atom", "author");
 		Element e = (Element) nodes.item(0);
 		return e;
+		
+	}
+	
+	
+	
+	public static String getAtomAuthorName(Element parent) {
+		 
+		return getAtomName(getAtomAuthor(parent));
+		
+	}
+	
+	
+	
+	public static String getAtomAuthorName(Document d) {
+		 
+		return getAtomAuthorName(d.getDocumentElement());
 		
 	}
 	
@@ -545,7 +685,7 @@ public class AtomTestUtils {
 	
 	
 	
-	public static Document postEntry(String collectionUri, String entryDoc, Header[] headers, String user, String pass) {
+	public static Document postEntry(String collectionUri, String entryDoc, Header[] headers, String user, String pass) throws Exception {
 		
 		// setup a new POST request
 		PostMethod method = new PostMethod(collectionUri);
@@ -562,7 +702,7 @@ public class AtomTestUtils {
 		Document doc = null;
 
 		if (result == 201) {
-			doc = getResponseBodyAsDocument(method);
+			doc =  getResponseBodyAsDocument(method);
 		}
 
 		method.releaseConnection();
@@ -574,7 +714,7 @@ public class AtomTestUtils {
 
 	
 	
-	public static Document putEntry(String uri, String entryDoc, Header[] headers, String user, String pass) {
+	public static Document putEntry(String uri, String entryDoc, Header[] headers, String user, String pass) throws Exception {
 	
 		// setup a new POST request
 		PutMethod method = new PutMethod(uri);
@@ -598,26 +738,10 @@ public class AtomTestUtils {
 
 	
 	
-	public static Document getResponseBodyAsDocument(HttpMethod method) {
+	public static Document getResponseBodyAsDocument(HttpMethod method) throws Exception {
 		
-		Document doc = null;
+		Document doc = builder.parse(method.getResponseBodyAsStream());
 		
-		try {
-		
-			doc = builder.parse(method.getResponseBodyAsStream());
-			
-		} catch (SAXException e) {
-	
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-	
-		} catch (IOException e) {
-	
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-	
-		}
-	
 		return doc;
 
 	}

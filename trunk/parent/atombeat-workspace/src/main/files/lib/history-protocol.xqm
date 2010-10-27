@@ -4,6 +4,7 @@ module namespace history-protocol = "http://purl.org/atombeat/xquery/history-pro
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
+declare namespace at = "http://purl.org/atompub/tombstones/1.0";
 
 (: see http://tools.ietf.org/html/draft-snell-atompub-revision-00 :)
 declare namespace ar = "http://purl.org/atompub/revision/1.0" ;
@@ -19,6 +20,7 @@ import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" a
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace tombstone-db = "http://purl.org/atombeat/xquery/tombstone-db" at "tombstone-db.xqm" ;
 import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
@@ -58,7 +60,7 @@ as element(response)
 		
 		then history-protocol:do-get( $request-path-info )
 		
-		else common-protocol:do-method-not-allowed( $request-path-info , ( "GET" ) )
+		else common-protocol:do-method-not-allowed( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , ( "GET" ) )
 
 };
 
@@ -73,11 +75,11 @@ declare function history-protocol:do-get(
 ) as element(response)
 {
 
-	if ( atomdb:member-available( $request-path-info ) )
+	if ( atomdb:member-available( $request-path-info ) or tombstone-db:tombstone-available( $request-path-info ) )
 	
 	then history-protocol:do-get-member( $request-path-info )
 	
-	else common-protocol:do-not-found( $request-path-info )
+	else common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info )
 	
 };
 
@@ -101,7 +103,7 @@ declare function history-protocol:do-get-member(
 		
 		then history-protocol:do-get-member-revision( $request-path-info , xs:integer( $revision-index ) )
 		
-		else common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer." )
+		else common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , "Revision index parameter must be an integer." )
 };
 
 
@@ -134,17 +136,22 @@ declare function history-protocol:op-retrieve-member-history(
 
     let $self-uri := concat( $config:history-service-url , $request-path-info )
     let $versioned-uri := concat( $config:content-service-url , $request-path-info )
-    let $updated := atomdb:retrieve-member( $request-path-info )/atom:updated
     
-    let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
+    let $updated := 
+        if ( atomdb:member-available( $request-path-info ) ) 
+        then atomdb:retrieve-member( $request-path-info )/atom:updated
+        else (: tombstone :)
+            <atom:updated>{tombstone-db:retrieve-tombstone( $request-path-info )/@when cast as xs:string}</atom:updated>
+    
+    let $doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
 
-    let $entry-doc := doc( $entry-doc-path )
+    let $doc := doc( $doc-path )
     
-    let $vhist := v:history( $entry-doc )
+    let $vhist := v:history( $doc )
     
-    let $vvers := v:versions( $entry-doc )
+    let $vvers := v:versions( $doc )
     
-    let $revisions := v:revisions( $entry-doc )
+    let $revisions := v:revisions( $doc )
     
     let $feed := 
 
@@ -162,7 +169,7 @@ declare function history-protocol:op-retrieve-member-history(
 (:				$vvers , :)
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
-				return history-protocol:construct-member-revision( $request-path-info , $entry-doc , $i , $revisions , true() )
+				return history-protocol:construct-member-revision( $request-path-info , $doc , $i , $revisions , true() )
 				
 			}
 		</atom:feed>
@@ -230,11 +237,11 @@ declare function history-protocol:op-retrieve-member-revision(
     
         if ( $revision-index <= 0 )
         
-        then common-protocol:do-bad-request( $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
+        then common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
         
         else if ( $revision-index > ( count($revision-numbers) + 1 ) )
         
-        then common-protocol:do-not-found( $request-path-info )
+        then common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info )
         
         else 
         
@@ -247,7 +254,13 @@ declare function history-protocol:op-retrieve-member-revision(
                     <headers>
                         <header>
                             <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                            <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
+                            <value>
+                            {
+                                if ( $entry-revision instance of element(atom:entry) ) then $CONSTANT:MEDIA-TYPE-ATOM-ENTRY
+                                else if ( $entry-revision instance of element(at:deleted-entry) ) then "application/atomdeleted+xml"
+                                else "application/xml" (: just in case :)
+                            }
+                            </value>
                         </header>
                     </headers>
                     <body>{$entry-revision}</body>
@@ -355,56 +368,107 @@ declare function history-protocol:construct-member-specified-revision(
     let $revision-number := $revision-numbers[$revision-index -1] 
     
 	let $revision := v:doc( $entry-doc , $revision-number )
-
-	let $when := $revision/atom:updated
-
-	let $initial := "no"
 	
-	let $this-revision-href :=
-		concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index ) )	
-
-	let $next-revision-href :=
-		if ( $revision-index <= count( $revision-numbers ) ) 
-		then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index + 1 ) )	
-		else ()
-
-	let $previous-revision-href :=
-		if ( $revision-index > 1 ) 
-		then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index - 1 ) )	
-		else ()
-		
-	let $current-revision-href :=
-		concat( $config:content-service-url , $request-path-info )
-
-	let $initial-revision-href :=
-		concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )	
-
-	(: N.B. don't need history link because already in entry :)
+	return
 	
-	return 
-		<atom:entry>
-			<ar:revision 
-				number="{$revision-index}"
-				when="{$when}"
-				initial="{$initial}">
-			</ar:revision>
-			<atom:link rel="current-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$current-revision-href}"/>
-			<atom:link rel="initial-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$initial-revision-href}"/>
-			<atom:link rel="this-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$this-revision-href}"/>
-		{
-			if ( $next-revision-href ) then
-			<atom:link rel="next-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$next-revision-href}"/> 
-			else () ,
-			if ( $previous-revision-href ) then
-			<atom:link rel="previous-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$previous-revision-href}"/> 
-			else () ,
-			for $ec in $revision/child::* 
-			return 
-				if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI and $exclude-content )
-				then <atom:content>{$ec/attribute::*}</atom:content>
-				else $ec
-		}
-		</atom:entry>
+	    if ( $revision instance of element(atom:entry) )
+	    
+	    then
+
+            let $when := $revision/atom:updated
+            
+            let $initial := "no"
+            
+            let $this-revision-href :=
+            	concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index ) )	
+            
+            let $next-revision-href :=
+            	if ( $revision-index <= count( $revision-numbers ) ) 
+            	then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index + 1 ) )	
+            	else ()
+            
+            let $previous-revision-href :=
+            	if ( $revision-index > 1 ) 
+            	then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index - 1 ) )	
+            	else ()
+            	
+            let $current-revision-href :=
+            	concat( $config:content-service-url , $request-path-info )
+            
+            let $initial-revision-href :=
+            	concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )	
+            
+            (: N.B. don't need history link because already in entry :)
+            
+            return 
+            	<atom:entry>
+            		<ar:revision 
+            			number="{$revision-index}"
+            			when="{$when}"
+            			initial="{$initial}">
+            		</ar:revision>
+            		<atom:link rel="current-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$current-revision-href}"/>
+            		<atom:link rel="initial-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$initial-revision-href}"/>
+            		<atom:link rel="this-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$this-revision-href}"/>
+            	{
+            		if ( $next-revision-href ) then
+            		<atom:link rel="next-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$next-revision-href}"/> 
+            		else () ,
+            		if ( $previous-revision-href ) then
+            		<atom:link rel="previous-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$previous-revision-href}"/> 
+            		else () ,
+            		for $ec in $revision/child::* 
+            		return 
+            			if ( local-name( $ec ) = $CONSTANT:ATOM-CONTENT and namespace-uri( $ec ) = $CONSTANT:ATOM-NSURI and $exclude-content )
+            			then <atom:content>{$ec/attribute::*}</atom:content>
+            			else $ec
+            	}
+            	</atom:entry>
+            	
+         else if ( $revision instance of element(at:deleted-entry) ) (: deleted entry :)
+         
+         then
+         
+            let $when := $revision/@when cast as xs:string
+            
+            let $initial := "no"
+            
+            let $this-revision-href :=
+                concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index ) ) 
+            
+            let $previous-revision-href :=
+                if ( $revision-index > 1 ) 
+                then concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( $revision-index - 1 ) )    
+                else ()
+                
+            let $current-revision-href :=
+                concat( $config:content-service-url , $request-path-info )
+            
+            let $initial-revision-href :=
+                concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )   
+            
+            return 
+                <at:deleted-entry>
+                    <ar:revision 
+                        number="{$revision-index}"
+                        when="{$when}"
+                        initial="no"
+                        final="yes"
+                        significant="yes">
+                    </ar:revision>
+                    <atom:link rel="current-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$current-revision-href}"/>
+                    <atom:link rel="initial-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$initial-revision-href}"/>
+                    <atom:link rel="this-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$this-revision-href}"/>
+                {
+                    if ( $previous-revision-href ) then
+                    <atom:link rel="previous-revision" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$previous-revision-href}"/> 
+                    else () ,
+                    $revision/child::* 
+                }
+                </at:deleted-entry>
+                
+        else () (: just in case :)
+         
 };
 
 

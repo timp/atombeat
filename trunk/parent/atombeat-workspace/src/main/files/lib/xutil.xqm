@@ -39,22 +39,6 @@ declare function xutil:get-or-create-collection(
 
 
 
-(: return a deep copy of  the element and all sub elements :)
-declare function xutil:copy(
-    $element as element()
-) as element() {
-   element {node-name($element)}
-      {$element/@*,
-          for $child in $element/node()
-              return
-               if ($child instance of element())
-                 then xutil:copy($child)
-                 else $child
-      }
-};
-
-
-
 
 declare function xutil:enable-versioning( 
     $collection-db-path as xs:string 

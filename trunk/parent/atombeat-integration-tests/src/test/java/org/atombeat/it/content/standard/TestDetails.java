@@ -91,10 +91,10 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutEntryTwice() {
+	public void testPutEntryTwice() throws Exception {
 
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);
@@ -155,10 +155,10 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutAndGetEntry() {
+	public void testPutAndGetEntry() throws Exception {
 
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);
@@ -210,7 +210,7 @@ public class TestDetails extends TestCase {
 	
 	
 
-	public void testPostMediaWithSpaceInSlug() {
+	public void testPostMediaWithSpaceInSlug() throws Exception {
 		
 		// create a new media resource by POSTing media to the collection URI
 		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
@@ -238,7 +238,7 @@ public class TestDetails extends TestCase {
 
 
 	
-	public void testChangeMediaTypeOfMediaResource() {
+	public void testChangeMediaTypeOfMediaResource() throws Exception {
 		
 		// create a new media resource by POSTing media to the collection URI
 		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
@@ -255,7 +255,7 @@ public class TestDetails extends TestCase {
 		String type = editMediaLink.getAttribute("type");
 		assertEquals("text/plain", type);
 		
-		Element contentElement = getContent(mediaLinkDoc);
+		Element contentElement = getAtomContent(mediaLinkDoc);
 		assertEquals(type, contentElement.getAttribute("type"));
 		
 		// check get on media resource has correct content type
@@ -283,7 +283,7 @@ public class TestDetails extends TestCase {
 		type = editMediaLink.getAttribute("type");
 		assertEquals("application/vnd.ms-excel", type);
 
-		contentElement = getContent(mediaLinkDoc);
+		contentElement = getAtomContent(mediaLinkDoc);
 		assertEquals(type, contentElement.getAttribute("type"));
 		
 		// check get on media resource has correct content type
@@ -297,10 +297,10 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutMediaContentToMemberUriIsClientError() {
+	public void testPutMediaContentToMemberUriIsClientError() throws Exception {
 
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// put media
 		PutMethod put = new PutMethod(location);
@@ -318,10 +318,10 @@ public class TestDetails extends TestCase {
 
 	
 	
-	public void testPutAtomFeedToMemberUriIsClientError() {
+	public void testPutAtomFeedToMemberUriIsClientError() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		PutMethod method = new PutMethod(location);
 		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection - Updated</atom:title></atom:feed>";
@@ -353,7 +353,7 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutAtomEntryToMediaResourceUriIsClientError() {
+	public void testPutAtomEntryToMediaResourceUriIsClientError() throws Exception {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -377,7 +377,7 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutAtomFeedToMediaResourceUriIsClientError() {
+	public void testPutAtomFeedToMediaResourceUriIsClientError() throws Exception {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -446,7 +446,7 @@ public class TestDetails extends TestCase {
 
 
 	
-	public void testFeedUpdatedDateIsModifiedAfterPostOrPutEntry() {
+	public void testFeedUpdatedDateIsModifiedAfterPostOrPutEntry() throws Exception {
 
 		// now try GET to collection URI
 		GetMethod get1 = new GetMethod(TEST_COLLECTION_URI);
@@ -513,7 +513,7 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testMediaLinkEntryHasLengthAttributeOnEditMediaLink() {
+	public void testMediaLinkEntryHasLengthAttributeOnEditMediaLink() throws Exception {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -526,7 +526,7 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutMediaResourceCausesUpdatesToMediaLink() {
+	public void testPutMediaResourceCausesUpdatesToMediaLink() throws Exception {
 
 		// setup test
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
@@ -535,7 +535,7 @@ public class TestDetails extends TestCase {
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		
 		// store updated date for comparison
-		String updatedBefore = getUpdated(mediaLinkDoc);
+		String updatedBefore = getAtomUpdated(mediaLinkDoc);
 
 		// store length before for comparison later
 		Element editMediaLink = getLinks(mediaLinkDoc, "edit-media").get(0);
@@ -556,7 +556,7 @@ public class TestDetails extends TestCase {
 		mediaLinkDoc = getResponseBodyAsDocument(get);
 
 		// compared updated
-		String updatedAfter = getUpdated(mediaLinkDoc);
+		String updatedAfter = getAtomUpdated(mediaLinkDoc);
 		assertFalse(updatedBefore.equals(updatedAfter));
 		
 		// compare length after with length before
@@ -573,10 +573,10 @@ public class TestDetails extends TestCase {
 	
 	
 	
-	public void testPutEntryCausesNoMangle() {
+	public void testPutEntryCausesNoMangle() throws Exception {
 		
 		// setup test
-		String location = createTestEntryAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod put1 = new PutMethod(location);

@@ -78,7 +78,7 @@ public class TestMultiCreate extends TestCase {
 	
 	
 	
-	public void testMultiCreateMember() {
+	public void testMultiCreateMember() throws Exception {
 		
 		String collectionUri;
 		GetMethod get1, get2;
@@ -135,7 +135,7 @@ public class TestMultiCreate extends TestCase {
 
 	
 	
-	public void testMultiCreateMedia() {
+	public void testMultiCreateMedia() throws Exception {
 		
 		String col1Uri, col2Uri;
 		GetMethod get1, get2, get3;
@@ -206,7 +206,7 @@ public class TestMultiCreate extends TestCase {
 		for (Element e : l) {
 			String editMediaLocation = getEditMediaLocation(e);
 			assertNotNull(editMediaLocation);
-			String contentSrc = getContent(e).getAttribute("src");
+			String contentSrc = getAtomContent(e).getAttribute("src");
 			assertNotNull(contentSrc);
 			assertEquals(editMediaLocation, contentSrc);
 		}
