@@ -69,6 +69,10 @@
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full</value>
                 </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
+                </property>
               </systemProperties>
               <!-- exclude tests that require security - security is disabled in atombeat-exist-full -->
               <excludes>
@@ -105,6 +109,10 @@
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-minimal</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
                 </property>
               </systemProperties>
               <!-- exclude tests that require security - security is disabled in atombeat-exist-minimal -->
@@ -143,6 +151,10 @@
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-full-secure</value>
                 </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
               </systemProperties>
             </configuration>
           </execution>
@@ -172,6 +184,10 @@
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-exist-minimal-secure</value>
                 </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
               </systemProperties>
             </configuration>
           </execution>
@@ -200,6 +216,10 @@
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-orbeon-full</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
                 </property>
               </systemProperties>
               <!-- exclude tests that require security - security is disabled in atombeat-orbeon-full -->
@@ -238,6 +258,10 @@
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-orbeon-minimal</value>
                 </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
+                </property>
               </systemProperties>
               <!-- exclude tests that require security - security is disabled in atombeat-orbeon-minimal -->
               <excludes>
@@ -275,6 +299,10 @@
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-orbeon-full-secure</value>
                 </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
               </systemProperties>
             </configuration>
           </execution>
@@ -303,6 +331,10 @@
                 <property>
                   <name>org.atombeat.it.contextPath</name>
                   <value>/atombeat-orbeon-minimal-secure</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
                 </property>
               </systemProperties>
             </configuration>
