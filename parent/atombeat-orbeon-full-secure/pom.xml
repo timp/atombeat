@@ -32,7 +32,7 @@
     <dependency>
       <groupId>org.springframework.security</groupId>
       <artifactId>spring-security-core</artifactId>
-      <version>2.0.5.RELEASE</version>
+      <version>2.0.6.RELEASE</version>
       <scope>runtime</scope>
       <exclusions>
         <!-- avoid clash with eXist -->
@@ -85,10 +85,10 @@
   	<scope>runtime</scope>
     </dependency>
     
-    <!-- overlay an AtomBeat workspace -->
+    <!-- overlay an AtomBeat service -->
     <dependency>
       <groupId>org.atombeat</groupId>
-      <artifactId>atombeat-workspace</artifactId>
+      <artifactId>atombeat-service</artifactId>
       <version>${project.version}</version>
       <type>zip</type>
       <scope>runtime</scope>
@@ -114,12 +114,12 @@
 	       	<warName>${project.build.finalName}</warName>
 	       	<webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
 	        <overlays>
-	         <!-- overlay an AtomBeat workspace -->
+	         <!-- overlay an AtomBeat service -->
 	         <overlay>
 	           <groupId>org.atombeat</groupId>
-	           <artifactId>atombeat-workspace</artifactId>
+	           <artifactId>atombeat-service</artifactId>
 	           <type>zip</type>
-	           <targetPath>workspace</targetPath>
+	           <targetPath>service</targetPath>
 	         </overlay>
 	         <!-- overlay the whole of Orbeon -->
 	         <overlay>
