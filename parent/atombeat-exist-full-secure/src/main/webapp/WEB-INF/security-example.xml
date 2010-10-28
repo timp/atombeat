@@ -19,12 +19,12 @@
     <intercept-url pattern="/webdav/**" filters="none"/>
     <intercept-url pattern="/xmlrpc" filters="none"/>
     
-    <!-- restrict access to AtomBeat workspace administrative scripts -->
-    <intercept-url pattern="/workspace/admin/**" access="ROLE_ADMINISTRATOR" />
+    <!-- restrict access to AtomBeat service administrative scripts -->
+    <intercept-url pattern="/service/admin/**" access="ROLE_ADMINISTRATOR" />
     
     <!-- force authentication for all requests to AtomBeat, but delegate
     access control decisions to AtomBeat -->
-    <intercept-url pattern="/workspace/**" access="ROLE_USER" />
+    <intercept-url pattern="/service/**" access="ROLE_USER" />
 
   </http>
   

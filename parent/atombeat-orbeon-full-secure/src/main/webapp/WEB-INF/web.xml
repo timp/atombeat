@@ -489,7 +489,7 @@
     
     <filter-mapping>
         <filter-name>XQueryURLRewrite</filter-name>
-        <url-pattern>/workspace/*</url-pattern>
+        <url-pattern>/service/*</url-pattern>
     </filter-mapping>
     
 </web-app>
