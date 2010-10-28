@@ -52,8 +52,8 @@ public class AtomTestUtils {
 				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-minimal-secure";
 
 	public static final String WORKSPACEPATH = 
-		(System.getProperty("org.atombeat.it.workspacePath") != null) ? 
-				System.getProperty("org.atombeat.it.workspacePath") : "/workspace/";
+		(System.getProperty("org.atombeat.it.servicePath") != null) ? 
+				System.getProperty("org.atombeat.it.servicePath") : "/service/";
 				
 	public static final Boolean SECURE = 
 		(System.getProperty("org.atombeat.it.secure") != null) ? 
