@@ -66,7 +66,7 @@ public class TestCollections extends TestCase {
 	 * Test creation of a new atom collection by a PUT request with an atom feed
 	 * document as the request body. N.B. this operation is not part of the
 	 * standard atom protocol, but is an extension to support bootstrapping
-	 * of an atom workspace, e.g., by an administrator.
+	 * of an atom service, e.g., by an administrator.
 	 */
 	public void testPutFeedToCreateCollection() {
 		

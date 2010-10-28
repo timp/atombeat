@@ -48,10 +48,10 @@
   	<scope>runtime</scope>
     </dependency>
     
-    <!-- overlay an AtomBeat workspace -->
+    <!-- overlay an AtomBeat service -->
     <dependency>
       <groupId>org.atombeat</groupId>
-      <artifactId>atombeat-workspace</artifactId>
+      <artifactId>atombeat-service</artifactId>
       <version>${project.version}</version>
       <type>zip</type>
       <scope>runtime</scope>
@@ -77,12 +77,12 @@
 	       	<warName>${project.build.finalName}</warName>
 	       	<webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
 	        <overlays>
-	         <!-- overlay an AtomBeat workspace -->
+	         <!-- overlay an AtomBeat service -->
 	         <overlay>
 	           <groupId>org.atombeat</groupId>
-	           <artifactId>atombeat-workspace</artifactId>
+	           <artifactId>atombeat-service</artifactId>
 	           <type>zip</type>
-	           <targetPath>workspace</targetPath>
+	           <targetPath>service</targetPath>
 	         </overlay>
 	         <!-- overlay the whole of Orbeon -->
 	         <overlay>

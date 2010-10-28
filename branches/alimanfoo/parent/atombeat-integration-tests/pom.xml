@@ -62,8 +62,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -103,8 +103,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -144,8 +144,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -177,8 +177,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -210,8 +210,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -251,8 +251,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -292,8 +292,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
@@ -325,8 +325,8 @@
                   <value>${jetty.port}</value>
                 </property>
                 <property>
-                  <name>org.atombeat.it.workspacePath</name>
-                  <value>/workspace/</value>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
                 </property>
                 <property>
                   <name>org.atombeat.it.contextPath</name>
