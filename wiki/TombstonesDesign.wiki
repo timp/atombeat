@@ -13,10 +13,12 @@ $ mvn clean install
 
 N.B., in 0.2-alpha-2 the default path to the atombeat service is changing from "/workspace" to "/service" in all atombeat web application packages. 
 
+----
 *Table of Contents*
 
 <wiki:toc/>
 
+----
 = Enabling Tombstones =
 
 Tombstones are enabled on a per-collection basis. By default, tombstones are not enabled. Tombstones are enabled via an extension attribute on the root element of the collection feed document. 
