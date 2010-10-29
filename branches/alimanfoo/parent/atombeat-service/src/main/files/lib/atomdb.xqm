@@ -668,6 +668,7 @@ declare function atomdb:update-feed(
     
         <atom:feed>
             {
+                $request-data/attribute::* ,
                 $feed/atom:id
             }
             <atom:updated>{$updated}</atom:updated>
