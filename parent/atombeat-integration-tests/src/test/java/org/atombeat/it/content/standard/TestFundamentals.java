@@ -125,7 +125,7 @@ public class TestFundamentals extends TestCase {
 		// expect Content-Type header 
 		String responseContentType = method.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
-		assertTrue(responseContentType.trim().startsWith("application/atom+xml"));
+		assertTrue(responseContentType.trim().startsWith("application/atom+xml;type=entry"));
 		
 		method.releaseConnection();
 
@@ -203,6 +203,9 @@ public class TestFundamentals extends TestCase {
 		
 		// expect the status code is 200 OK
 		assertEquals(200, result1);
+		
+		String contentType = get1.getResponseHeader("Content-Type").getValue();
+		assertTrue(contentType.startsWith("application/atom+xml;type=feed"));
 
 		// check content
 		Document d1 = getResponseBodyAsDocument(get1);
