@@ -6,7 +6,7 @@ Notes on implementing http://tools.ietf.org/html/draft-snell-atompub-tombstones-
 
 = Enabling Tombstones =
 
-Tombstones are enabled on a per-collection basis. By default, tombstones are not enabled. Tombstones are enabled via an attribute on the root element of the collection feed document. 
+Tombstones are enabled on a per-collection basis. By default, tombstones are not enabled. Tombstones are enabled via an extension attribute on the root element of the collection feed document. 
 
 E.g., if the collection /foo does not already exist, the request:
 
@@ -106,17 +106,6 @@ Content-Type: application/atomdeleted+xml
     <atom:name>jdoe</atom:name>
   </at:by>
   <at:comment>Removed comment spam</at:comment>
-  <atombeat:ghost>
-    <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
-    <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
-    <atom:author>
-        <atom:name>audrey</atom:name>
-    </atom:author>
-    <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
-    <atom:summary type="text">Some text.</atom:summary>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-  </atombeat:ghost>
 </at:deleted-entry>
 }}}
 
@@ -151,17 +140,6 @@ Content-Type: application/atomdeleted+xml
     <atom:name>jdoe</atom:name>
   </at:by>
   <at:comment>Removed comment spam</at:comment>
-  <atombeat:ghost>
-    <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
-    <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
-    <atom:author>
-        <atom:name>audrey</atom:name>
-    </atom:author>
-    <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
-    <atom:summary type="text">Some text.</atom:summary>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-  </atombeat:ghost>
 </at:deleted-entry>
 }}}
 
@@ -208,24 +186,13 @@ Content-Type: application/atom+xml
         <atom:name>jdoe</atom:name>
       </at:by>
       <at:comment>Removed comment spam</at:comment>
-      <atombeat:ghost>
-        <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
-        <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
-        <atom:author>
-            <atom:name>audrey</atom:name>
-        </atom:author>
-        <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
-        <atom:summary type="text">Some text.</atom:summary>
-        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-      </atombeat:ghost>
     </at:deleted-entry>
 </atom:feed>
 }}}
 
 = Configuring Ghosts =
 
-The behaviour of the tombstones implementation w.r.t. the atombeat:ghost element within at:deleted-entry elements can be configured on a per-collection basis. To configure the elements to be copied from the entry being deleted into the ghost, update the collection feed document, e.g.:
+The behaviour of the tombstones implementation w.r.t. the atombeat:ghost element within at:deleted-entry elements can be configured on a per-collection basis. To configure the elements to be copied from the condemned entry into the ghost, update the collection feed document, e.g.:
 
 {{{
 PUT /atombeat/workspace/content/foo HTTP/1.1
@@ -245,7 +212,42 @@ Content-Type: application/atom+xml
 </atom:feed>
 }}}
 
-By default, the following elements will be copied from the Atom entry prior to deletion to the atombeat:ghost element in the deleted entry: atom:id, atom:title, atom:rights, atom:source, atom:summary, atom:published, atom:author, atom:contributor, atom:category, atom:link.
+Then, deleting the collection member:
+
+{{{
+DELETE /atombeat/workspace/content/foo/xyz.atom HTTP/1.1
+X-Atom-Tombstone-Comment: Removed comment spam
+Host: example.org
+}}}
+
+...expects:
+
+{{{
+HTTP/1.1 200 OK
+Content-Type: application/atomdeleted+xml
+
+<at:deleted-entry
+  xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
+  xmlns:at="http://purl.org/atompub/tombstones/1.0"
+  ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+  when="2010-10-26T18:29:48.687+01:00">
+  <at:by>
+    <atom:name>jdoe</atom:name>
+  </at:by>
+  <at:comment>Removed comment spam</at:comment>
+  <atombeat:ghost>
+    <atom:author>
+        <atom:name>audrey</atom:name>
+    </atom:author>
+    <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
+  </atombeat:ghost>
+</at:deleted-entry>
+}}}
+
+By default, ghosts will not be present in deleted entries.
+
+The content model for the atombeat:ghost element is as for the atom:entry element.
 
 = Deleting Media Resources =
 
@@ -374,16 +376,6 @@ Date: Fri, 15 Oct 2010 15:42:07 GMT
       <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
       <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=3"/>
       <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
-      <atombeat:ghost>
-        <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
-        <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
-        <atom:author>
-            <atom:name>audrey</atom:name>
-        </atom:author>
-        <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
-        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-      </atombeat:ghost>
     </at:deleted-entry>
 </atom:feed>
 }}}
@@ -393,5 +385,3 @@ Note the presence of the ar:revision element within the at:deleted-entry element
 Note that the ar:comment element is *not* present within the deleted entry. This would be redundant, as the same information is given in the @when, at:by and at:comment elements. 
 
 This is a bit of a mish-mash, which reflects the fact that the [http://tools.ietf.org/html/draft-snell-atompub-revision-00 atompub-revision draft] is much older than the [http://tools.ietf.org/html/draft-snell-atompub-tombstones-11 atompub-tombstones draft], and that they overlap in scope. 
-
-
