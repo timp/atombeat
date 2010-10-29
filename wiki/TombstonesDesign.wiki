@@ -2,6 +2,17 @@
 
 Notes on implementing http://tools.ietf.org/html/draft-snell-atompub-tombstones-11
 
+N.B., this design has been implemented in 0.2-alpha-1, to build and test do:
+
+{{{
+$ svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-1 /local/path/to/atombeat-0.2-alpha-1
+$ cd /local/path/to/atombeat-0.2-alpha-1
+$ export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
+$ mvn clean install
+}}} 
+
+N.B., in 0.2-alpha-2 the default path to the atombeat service is changing from "/workspace" to "/service" in all atombeat web application packages. 
+
 <wiki:toc/>
 
 = Enabling Tombstones =
