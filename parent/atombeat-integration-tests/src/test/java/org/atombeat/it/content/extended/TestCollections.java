@@ -10,6 +10,7 @@ import org.apache.commons.httpclient.methods.PutMethod;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
+import org.atombeat.Atom;
 import org.atombeat.it.AtomTestUtils;
 import static org.atombeat.it.AtomTestUtils.*;
 
@@ -130,15 +131,16 @@ public class TestCollections extends TestCase {
 	/**
 	 * Test the use of a PUT request to update the feed metadata for an already
 	 * existing atom collection.
+	 * @throws Exception 
 	 */
-	public void testPutFeedToCreateAndUpdateCollection() {
+	public void testPutFeedToCreateAndUpdateCollection() throws Exception {
 		
 		// setup test
 		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
 		
 		// now try to update feed metadata via a PUT request
 		PutMethod method = new PutMethod(collectionUri);
-		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection - Updated</atom:title></atom:feed>";
+		String content = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\" hello=\"world\"><atom:title>Test Collection - Updated</atom:title></atom:feed>";
 		setAtomRequestEntity(method, content);
 		int result = executeMethod(method);
 		
@@ -153,6 +155,13 @@ public class TestCollections extends TestCase {
 		String responseContentType = method.getResponseHeader("Content-Type").getValue();
 		assertNotNull(responseContentType);
 		assertTrue(responseContentType.trim().startsWith("application/atom+xml"));
+		
+		Document d = getResponseBodyAsDocument(method);
+		Element e = d.getDocumentElement();
+		assertEquals(Atom.NSURI, e.getNamespaceURI());
+		assertEquals(Atom.FEED, e.getLocalName());
+		assertEquals("Test Collection - Updated", getAtomTitle(e));
+		assertEquals("world", e.getAttribute("hello"));
 
 	}
 	
