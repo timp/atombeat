@@ -1335,7 +1335,7 @@ declare function atom-protocol:op-list-collection(
 	        <headers>
 	            <header>
 	                <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}</value>
+	                <value>{$CONSTANT:MEDIA-TYPE-ATOM-FEED}</value>
 	            </header>
 	        </headers>
 	        <body>{$feed}</body>
