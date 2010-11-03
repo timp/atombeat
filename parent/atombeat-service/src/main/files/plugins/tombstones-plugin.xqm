@@ -28,10 +28,14 @@ declare function tombstones-plugin:before(
 	
 	return 
 	
-        if ( $operation = $CONSTANT:OP-DELETE-MEMBER or $operation = $CONSTANT:OP-DELETE-MEDIA )
+        if ( $operation = ( $CONSTANT:OP-DELETE-MEMBER , $CONSTANT:OP-DELETE-MEDIA ) )
         then 
             let $prepare := tombstones-plugin:before-delete-member-or-media( $request-path-info )
             return $request-data
+            
+        else if ( $request-data instance of element(atom:feed) )
+        then tombstones-plugin:filter-feed($request-data) 
+        
 	    else $request-data
 	
 };
@@ -68,6 +72,21 @@ declare function tombstones-plugin:before-delete-member-or-media(
         
     return ()
     
+};
+
+
+
+
+declare function tombstones-plugin:filter-feed(
+    $feed as element(atom:feed)
+) as element(atom:feed)
+{
+    <atom:feed>
+    {
+        $feed/attribute::* ,
+        $feed/child::*[not( . instance of element(at:deleted-entry) )]
+    }
+    </atom:feed>
 };
 
 
