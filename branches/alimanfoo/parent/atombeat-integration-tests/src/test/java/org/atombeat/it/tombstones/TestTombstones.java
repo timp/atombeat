@@ -108,6 +108,54 @@ public class TestTombstones extends TestCase {
 	}
 	
 	
+	
+	public void testDeletedEntriesAreStrippedFromFeedOnPut() throws Exception {
+		
+		// check on create collection 
+		
+		String content = 
+			"<atom:feed " +
+				"xmlns:atom=\"http://www.w3.org/2005/Atom\" " +
+				"xmlns:atombeat=\"http://purl.org/atombeat/xmlns\" " +
+				"atombeat:enable-tombstones=\"true\" " +
+				"xmlns:at=\""+Tombstones.NSURI+"\">" +
+				"<atom:title>Test Collection with Deleted Entries</atom:title>" +
+				"<at:deleted-entry/>" +
+				"<at:deleted-entry/>" +
+			"</atom:feed>";
+		
+		String collectionUri = createTombstoneEnabledCollection(content);
+		
+		// list the collection, verify the response 
+		GetMethod get = new GetMethod(collectionUri);
+		int getResult = executeMethod(get);
+		assertEquals(200, getResult);
+		Document feedDoc = getResponseBodyAsDocument(get);
+		List<Element> entries = getEntries(feedDoc);
+		assertEquals(0, entries.size());
+		List<Element> deletedEntries = getChildrenByTagNameNS(feedDoc, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(0, deletedEntries.size()); // should get stripped
+		
+		// check on update feed metadata
+		
+		PutMethod put = new PutMethod(collectionUri);
+		setAtomRequestEntity(put, content);
+		int putResult = executeMethod(put);
+		assertEquals(200, putResult);
+		
+		// list the collection again, verify the response 
+		GetMethod get2 = new GetMethod(collectionUri);
+		int get2Result = executeMethod(get2);
+		assertEquals(200, get2Result);
+		Document feedDoc2 = getResponseBodyAsDocument(get2);
+		List<Element> entries2 = getEntries(feedDoc2);
+		assertEquals(0, entries2.size());
+		List<Element> deletedEntries2 = getChildrenByTagNameNS(feedDoc2, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
+		assertEquals(0, deletedEntries2.size()); // should get stripped		
+		
+	}
+	
+	
 	public void testDeleteMemberResponse() throws Exception {
 		
 		// create a tombstone-enabled collection
