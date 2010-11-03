@@ -355,7 +355,11 @@ declare function common-protocol:apply-after(
 		
 		return
 		
-			common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $request-path-info , $response )
+		    if ( exists( $response ) and $response instance of element(response) ) 
+		    
+		    then common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $request-path-info , $response )
+		    
+		    else common-protocol:do-internal-server-error( $op-name , $request-path-info , "A plugin function failed to return a valid response; expected element(response)." )
 
 };
 
@@ -384,7 +388,10 @@ declare function common-protocol:do-internal-server-error(
             <body type="text">{$message}</body>
         </response>
 
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return $response
+    (: do not send through after-error plugins, make this final - otherwise, could end up
+       going in circles if plugin causes error :)
+(:    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response ) :)
 
 };
 
