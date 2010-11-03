@@ -651,6 +651,32 @@ public class TestDetails extends TestCase {
 
 	
 	
+	public void testPutNotWellFormedFeedIsClientError() {
+		
+		// create a new member by POSTing an atom entry document to the
+		// collection URI
+		PutMethod method = new PutMethod(TEST_COLLECTION_URI);
+		String content = 
+			"<atom:feed>" + // not well-formed because forgot namespace declaration
+				"<atom:title>Test Collection - not well-formed because forgot namespace declaration</atom:title>" +
+				"<atom:summary>This is a summary.</atom:summary>" +
+			"</atom:feed>";
+		setAtomRequestEntity(method, content);
+		int result = executeMethod(method);
+		
+		assertEquals(400, result);
+
+		// expect Content-Type header 
+		String responseContentType = method.getResponseHeader("Content-Type").getValue();
+		assertNotNull(responseContentType);
+		assertTrue(responseContentType.trim().startsWith("application/xml"));
+		
+		method.releaseConnection();
+		
+	}
+
+	
+	
 }
 
 
