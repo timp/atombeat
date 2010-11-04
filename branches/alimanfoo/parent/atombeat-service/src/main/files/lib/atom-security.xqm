@@ -145,7 +145,9 @@ declare function atomsec:store-resource-descriptor(
         
         let $descriptor-collection-db-path := xutil:get-or-create-collection( $descriptor-collection-db-path )
         
-        let $resource-name := $groups[3]
+        let $resource-name := 
+            if ( atomdb:member-available( $request-path-info ) ) then concat( $groups[3] , ".atom" )
+            else $groups[3]
         
         let $descriptor-doc-name := concat( $resource-name , $atomsec:descriptor-suffix )
         
@@ -240,7 +242,7 @@ declare function atomsec:retrieve-resource-descriptor(
     
     then
 
-        let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , $atomsec:descriptor-suffix )
+        let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , if ( atomdb:member-available( $request-path-info ) ) then ".atom" else "" , $atomsec:descriptor-suffix )
     
         let $descriptor-doc := doc( $descriptor-doc-db-path )
         
@@ -255,12 +257,12 @@ declare function atomsec:retrieve-resource-descriptor(
 
 
 
-declare function atomsec:retrieve-resource-descriptor-nocheck(
+declare function atomsec:retrieve-member-descriptor-nocheck(
     $request-path-info as xs:string
 ) as element(atombeat:security-descriptor)?
 {
 
-    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , $atomsec:descriptor-suffix )
+    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" , $atomsec:descriptor-suffix )
 
     let $descriptor-doc := doc( $descriptor-doc-db-path )
     
@@ -332,7 +334,7 @@ declare function atomsec:filter-feed(
                         then $collection-decision
                         else atomsec:apply-acl( $owner-collection-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
                         
-                    let $resource-descriptor := atomsec:retrieve-resource-descriptor-nocheck( $child-path-info )
+                    let $resource-descriptor := atomsec:retrieve-member-descriptor-nocheck( $child-path-info )
                     let $resource-decision := atomsec:apply-acl( $resource-descriptor , $CONSTANT:OP-RETRIEVE-MEMBER , () , $user , $roles , $owner-collection-path-info )
                                                     
                     let $decision := atomsec:decide-priority( $resource-decision , $owner-collection-decision ,$workspace-decision )
