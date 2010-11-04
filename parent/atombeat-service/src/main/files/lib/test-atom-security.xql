@@ -19,8 +19,8 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 
 
 declare variable $test-collection-path as xs:string := "/test-security" ;
-declare variable $test-member-name as xs:string := "test-member.atom" ;
-declare variable $test-member-path as xs:string := concat( $test-collection-path , "/" , $test-member-name ) ;
+declare variable $test-member-id as xs:string := "XYZ" ;
+declare variable $test-member-path as xs:string := concat( $test-collection-path , "/" , $test-member-id ) ;
 declare variable $workspace-uri := concat( $config:content-service-url , "/" ) ;
 declare variable $test-collection-uri := concat( $config:content-service-url , $test-collection-path ) ; 
 declare variable $test-member-uri := concat( $config:content-service-url , $test-member-path ) ;
@@ -45,7 +45,7 @@ declare function local:setup() as empty()
             <atom:title>TEST ENTRY</atom:title>
         </atom:entry>
         
-    let $member-db-path := atomdb:store-member( $test-collection-path , $test-member-name , $entry )    
+    let $member-db-path := atomdb:store-member( $test-collection-path , concat( $test-member-id , ".atom" ) , $entry )    
     
     return ()
 

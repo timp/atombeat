@@ -143,7 +143,7 @@ declare function history-protocol:op-retrieve-member-history(
         else (: tombstone :)
             <atom:updated>{tombstone-db:retrieve-tombstone( $request-path-info )/@when cast as xs:string}</atom:updated>
     
-    let $doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
+    let $doc-path := concat( atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" )
 
     let $doc := doc( $doc-path )
     
@@ -216,7 +216,7 @@ declare function history-protocol:op-retrieve-member-revision(
 
     let $revision-index := xs:integer( request:get-parameter( $history-protocol:param-name-revision-index , "" ) )
 	
-    let $entry-doc-path := atomdb:request-path-info-to-db-path( $request-path-info )
+    let $entry-doc-path := concat( atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" )
 
     let $entry-doc := doc( $entry-doc-path )
 
