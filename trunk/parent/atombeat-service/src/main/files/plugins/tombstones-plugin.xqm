@@ -50,7 +50,8 @@ declare function tombstones-plugin:before-delete-member-or-media(
 
     let $member-path-info :=
         if ( ends-with( $request-path-info , ".media" ) )
-        then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" )
+(:        then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" ) :)
+        then replace( $request-path-info , "^(.*)\.media$" , "$1" )
         else $request-path-info
 
     let $collection-path-info := text:groups( $request-path-info , "^(.+)/[^/]+$" )[2]
@@ -131,7 +132,8 @@ declare function tombstones-plugin:after-delete-member-or-media(
 
             let $member-path-info :=
                 if ( ends-with( $request-path-info , ".media" ) )
-                then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" )
+                (: then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" ) :)
+                then replace( $request-path-info , "^(.*)\.media$" , "$1" )
                 else $request-path-info
         
             let $tombstone-stored := tombstone-db:erect-tombstone( $member-path-info , $deleted-entry )
