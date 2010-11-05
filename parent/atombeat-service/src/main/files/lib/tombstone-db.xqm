@@ -34,7 +34,7 @@ declare function tombstone-db:tombstone-available(
 	 : e.g., "/db/foo/bar".
 	 :)
 	 
-	let $member-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+	let $member-db-path := concat( atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" )
 		
 	return ( not( util:binary-doc-available( $member-db-path ) ) and exists( doc( $member-db-path )/at:deleted-entry ) )
 	
@@ -54,7 +54,7 @@ declare function tombstone-db:retrieve-tombstone(
     
     else 
     
-        let $member-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+        let $member-db-path := concat( atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" )
             
         return doc( $member-db-path )/at:deleted-entry
 
@@ -141,7 +141,7 @@ declare function tombstone-db:erect-tombstone(
 ) as xs:string?
 {
  
-    let $member-db-path := atomdb:request-path-info-to-db-path( $member-path-info )
+    let $member-db-path := concat( atomdb:request-path-info-to-db-path( $member-path-info ) , ".atom" )
     let $split := text:groups( $member-db-path , "^(.+)/([^/]+)$" )
     let $collection-db-path := $split[2]
     let $resource-name := $split[3]
