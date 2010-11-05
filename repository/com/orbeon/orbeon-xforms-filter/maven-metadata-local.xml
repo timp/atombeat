@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<metadata>
+  <groupId>com.orbeon</groupId>
+  <artifactId>orbeon-xforms-filter</artifactId>
+  <version>3.8.0-CE</version>
+  <versioning>
+    <versions>
+      <version>3.8.0-CE</version>
+    </versions>
+    <lastUpdated>20101105170738</lastUpdated>
+  </versioning>
+</metadata>
