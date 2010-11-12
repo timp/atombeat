@@ -12,7 +12,23 @@
   <packaging>jar</packaging>
   <name>atombeat-servlet-filters</name>
   <url>http://atombeat.org</url>
-
+  <repositories>
+		<repository>
+			<id>repository.springframework.maven.release</id>
+			<name>Spring Framework Maven Release Repository</name>
+			<url>http://maven.springframework.org/release</url>
+		</repository>
+		<repository>
+			<id>repository.springframework.maven.milestone</id>
+			<name>Spring Framework Maven Milestone Repository</name>
+			<url>http://maven.springframework.org/milestone</url>
+		</repository>
+		<repository>
+			<id>repository.springframework.maven.snapshot</id>
+			<name>Spring Framework Maven Snapshot Repository</name>
+			<url>http://maven.springframework.org/snapshot</url>
+		</repository>
+  </repositories>
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   </properties>
@@ -53,7 +69,7 @@
     <dependency>
     	<groupId>org.springframework.security</groupId>
     	<artifactId>spring-security-core</artifactId>
-    	<version>2.0.6.RELEASE</version>
+    	<version>3.1.0.M1</version>
     </dependency>
     
     <dependency>
