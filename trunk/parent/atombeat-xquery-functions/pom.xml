@@ -53,21 +53,21 @@
     <dependency>
     	<groupId>org.exist-db</groupId>
     	<artifactId>exist</artifactId>
-    	<version>1.4.0</version>
+    	<version>${org.exist-db.version}</version>
     	<scope>provided</scope>
     </dependency>
     
     <dependency>
     	<groupId>org.exist-db</groupId>
     	<artifactId>exist-optional</artifactId>
-    	<version>1.4.0</version>
+    	<version>${org.exist-db.version}</version>
     	<scope>provided</scope>
     </dependency>
     
     <dependency>
     	<groupId>org.exist-db</groupId>
     	<artifactId>exist-versioning-module</artifactId>
-    	<version>1.4.0</version>
+    	<version>${org.exist-db.version}</version>
     	<scope>provided</scope>
     </dependency>
     

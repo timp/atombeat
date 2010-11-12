@@ -28,7 +28,7 @@
     <dependency>
       <groupId>org.exist-db</groupId>
       <artifactId>exist-versioning-module</artifactId>
-      <version>1.4.0</version>
+      <version>${org.exist-db.version}</version>
       <type>jar</type>
       <scope>runtime</scope>
       <exclusions>
@@ -41,18 +41,18 @@
     
     <!-- overlay Orbeon -->
     <dependency>
-    	<groupId>com.orbeon</groupId>
-    	<artifactId>orbeon</artifactId>
-    	<version>3.8.0-CE-exist-1.4.0</version>
-	  	<type>war</type>
-	  	<scope>runtime</scope>
+     	<groupId>com.orbeon</groupId>
+     	<artifactId>orbeon</artifactId>
+     	<version>${com.orbeon.version}</version>
+	    	<type>war</type>
+	    	<scope>runtime</scope>
     </dependency>
 
     <!-- overlay a few parts of eXist -->
     <dependency>
       <groupId>org.exist-db</groupId>
       <artifactId>exist-webapp</artifactId>
-      <version>1.4.0</version>
+      <version>${org.exist-db.version}</version>
       <type>war</type>
       <scope>runtime</scope>
     </dependency>
@@ -70,14 +70,6 @@
   
   <build>
     <plugins>
-    	<plugin>
-    	<groupId>org.apache.maven.plugins</groupId>
-    	<artifactId>maven-compiler-plugin</artifactId>
-	  <configuration>
-	     <source>1.6</source>
-	     <target>1.6</target>
-	  </configuration>
-    	</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -93,7 +85,7 @@
 	           <type>zip</type>
 	           <targetPath>service</targetPath>
 	         </overlay>
-	         <!-- TODO overlay selected parts of Orbeon -->
+	         <!-- overlay selected parts of Orbeon -->
 	         <overlay>
 	           <groupId>com.orbeon</groupId>
 	           <artifactId>orbeon</artifactId>
@@ -106,14 +98,14 @@
                <include>WEB-INF/resources/apps/xforms-hello/**</include>
              </includes>
 	         </overlay>
-            <!-- overlay selected parts of eXist -->
-            <overlay>
-              <groupId>org.exist-db</groupId>
-              <artifactId>exist-webapp</artifactId>
-              <includes>
-                 <include>admin/**</include>
-              </includes>
-            </overlay>
+          <!-- overlay selected parts of eXist -->
+          <overlay>
+            <groupId>org.exist-db</groupId>
+            <artifactId>exist-webapp</artifactId>
+            <includes>
+               <include>admin/**</include>
+            </includes>
+          </overlay>
 	        </overlays>
         </configuration>
       </plugin>

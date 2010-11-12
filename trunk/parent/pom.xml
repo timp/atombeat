@@ -26,9 +26,45 @@
   </scm>  
   <repositories>
     <repository>
-      <id>AtomBeat</id>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+		  <repository>
+			   <id>repository.springframework.maven.release</id>
+			   <name>Spring Framework Maven Release Repository</name>
+			   <url>http://maven.springframework.org/release</url>
+		  </repository>
+		  <repository>
+			   <id>repository.springframework.maven.milestone</id>
+			   <name>Spring Framework Maven Milestone Repository</name>
+			   <url>http://maven.springframework.org/milestone</url>
+		  </repository>
+    <repository>
+      <id>atombeat</id>
+      <name>AtomBeat Non-Maven Dependencies Repository</name>
       <url>http://atombeat.googlecode.com/svn/repository</url>
     </repository>
   </repositories>
+  <properties>
+   	<org.springsecurity.version>3.1.0.M1</org.springsecurity.version>
+   	<org.exist-db.version>1.4.0</org.exist-db.version>
+   	<com.orbeon.version>3.8.0-CE-exist-1.4.0</com.orbeon.version>
+  </properties>
+  <build>
+    <plugins>
+     	<plugin>
+      		<groupId>org.apache.maven.plugins</groupId>
+      		<artifactId>maven-compiler-plugin</artifactId>
+		      <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+		      </configuration>
+     	</plugin>
+    </plugins>
+  </build>
 </project>
 
