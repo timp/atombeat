@@ -28,7 +28,7 @@
     <dependency>
     	<groupId>org.exist-db</groupId>
     	<artifactId>exist-webapp</artifactId>
-    	<version>1.4.0</version>
+    	<version>${org.exist-db.version}</version>
   		<type>war</type>
   		<scope>runtime</scope>
     </dependency>
@@ -46,14 +46,6 @@
   
   <build>
     <plugins>
-    	<plugin>
-    		<groupId>org.apache.maven.plugins</groupId>
-    		<artifactId>maven-compiler-plugin</artifactId>
-		    <configuration>
-		        <source>1.6</source>
-		        <target>1.6</target>
-		    </configuration>
-    	</plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-war-plugin</artifactId>
@@ -79,4 +71,5 @@
       </plugin>
     </plugins>
   </build>
+  
 </project>

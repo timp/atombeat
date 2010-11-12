@@ -1,40 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
-
-<!--
-    - Sample namespace-based configuration
-    -
--->
-
 <beans:beans xmlns="http://www.springframework.org/schema/security"
     xmlns:beans="http://www.springframework.org/schema/beans"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
     http://www.springframework.org/schema/security http://www.springframework.org/schema/security/spring-security-3.1.xsd">
 
-    <global-method-security pre-post-annotations="enabled">
-        <!-- AspectJ pointcut expression that locates our "post" method and applies security that way
-            <protect-pointcut expression="execution(* bigbank.*Service.post*(..))" access="ROLE_TELLER"/>
-        -->
-    </global-method-security>
-    
-      <!-- don't apply security to eXist XML-RPC endpoint, rely on eXist authentication -->
+    <!-- disable security for eXist XML-RPC or REST endpoint (for development only) -->
+    <http pattern="/xmlrpc" security="none"/>
     <http pattern="/rest/**" security="none"/>
     
     <http use-expressions="true">
+
         <!-- restrict access to libraries and administrative scripts -->
         <intercept-url pattern="/service/admin/**" access="hasRole('ROLE_ADMINISTRATOR')" />
         <intercept-url pattern="/service/**" access="hasRole('ROLE_USER')" />
-        
-        <form-login  />
-      <!--  <logout logout-success-url="/home/" invalidate-session="true" /> -->
-        <remember-me />
-      
+
+        <http-basic/>
         
     </http>
     
-    <beans:bean id="sessionRegistry"
-        class="org.springframework.security.core.session.SessionRegistryImpl" />
-        
     <authentication-manager>
         <authentication-provider>
             <user-service>
