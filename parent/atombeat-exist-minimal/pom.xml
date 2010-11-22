@@ -67,7 +67,9 @@
 		          <artifactId>exist-webapp</artifactId>
 		          <includes>
 		             <include>admin/**</include>
-		              <include>WEB-INF/**</include>
+                 <include>resources/**</include>
+                 <include>scripts/**</include>
+                 <include>WEB-INF/**</include>
 		          </includes>
 		        </overlay>
 	        </overlays>
