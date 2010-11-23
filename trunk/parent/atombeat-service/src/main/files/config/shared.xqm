@@ -44,6 +44,13 @@ declare variable $config:history-service-url as xs:string := concat( $config:ser
 declare variable $config:security-service-url as xs:string := concat( $config:service-url-base , "/security" ) ;
 
 
+declare variable $config:workspace-title as xs:string := "AtomBeat Workspace" ;
+
+
+declare variable $config:workspace-summary as xs:string := "All collections." ;
+
+
+
 (:
  : The name of the request attribute where the currently authenticated user
  : is stored. N.B. it is assumed that authentication will have been carried out

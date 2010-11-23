@@ -583,6 +583,7 @@ declare function atomdb:mutable-feed-children(
         and not( $child instance of element(atom:link) and $child/@rel = "edit" )
         and not( $child instance of element(atom:entry) )
         and not( $config:auto-author and $child instance of element(atom:author) )
+        and not( $child instance of element(app:collection) )
     return $child
 };
 
@@ -647,31 +648,44 @@ declare function atomdb:create-feed(
             else ()
         }
         {
-            atomdb:mutable-feed-children($request-data)
+            atomdb:mutable-feed-children( $request-data ) ,
+            atomdb:create-collection-element( $self-uri, $request-data )
         }
-            <app:collection href="{$self-uri}">
-            {
-                (: title :)
-                if ( exists( $request-data/app:collection/atom:title ) )
-                then $request-data/app:collection/atom:title
-                else if ( exists( $request-data/atom:title ) )
-                then $request-data/atom:title
-                else <atom:title type="text">unnamed collection</atom:title>
-                ,
-                (: accept :)
-                $request-data/app:collection/app:accept
-                ,
-                (: categories :)
-                $request-data/app:collection/app:categories
-                ,
-                (: extensionSansTitle :)
-                $request-data/app:collection/*[
-                    not( namespace-uri(.) = $CONSTANT:APP-NSURI )
-                    and not( . instance of element(atom:title) )
-                ] 
-            }
-            </app:collection>
         </atom:feed>  
+
+};
+
+
+
+
+declare function atomdb:create-collection-element(
+    $self-uri as xs:string ,
+    $request-data as element(atom:feed)
+) as element(app:collection)
+{
+
+    <app:collection href="{$self-uri}">
+    {
+        (: title :)
+        if ( exists( $request-data/app:collection/atom:title ) )
+        then $request-data/app:collection/atom:title
+        else if ( exists( $request-data/atom:title ) )
+        then $request-data/atom:title
+        else <atom:title type="text">unnamed collection</atom:title>
+        ,
+        (: accept :)
+        $request-data/app:collection/app:accept
+        ,
+        (: categories :)
+        $request-data/app:collection/app:categories
+        ,
+        (: extensionSansTitle :)
+        $request-data/app:collection/*[
+            not( namespace-uri(.) = $CONSTANT:APP-NSURI )
+            and not( . instance of element(atom:title) )
+        ] 
+    }
+    </app:collection>
 
 };
 
@@ -700,7 +714,8 @@ declare function atomdb:update-feed(
                 $feed/atom:link[@rel="self"] ,
                 $feed/atom:link[@rel="edit"] ,
                 if ( $config:auto-author ) then $feed/atom:author else () ,
-                atomdb:mutable-feed-children($request-data)
+                atomdb:mutable-feed-children($request-data) ,
+                atomdb:create-collection-element( $feed/atom:link[@rel="self"]/@href cast as xs:string , $request-data )
             }
         </atom:feed>  
 };
