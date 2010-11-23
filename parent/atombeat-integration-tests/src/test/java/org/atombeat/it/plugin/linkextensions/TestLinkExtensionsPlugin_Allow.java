@@ -21,7 +21,7 @@ public class TestLinkExtensionsPlugin_Allow extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		String installUrl = BASE_URI + "admin/setup-for-test.xql";
+		String installUrl = SERVICE_URL + "admin/setup-for-test.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		

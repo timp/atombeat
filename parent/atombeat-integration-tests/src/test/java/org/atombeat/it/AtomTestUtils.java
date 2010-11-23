@@ -51,7 +51,7 @@ public class AtomTestUtils {
 		(System.getProperty("org.atombeat.it.contextPath") != null) ? 
 				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-minimal-secure";
 
-	public static final String WORKSPACEPATH = 
+	public static final String SERVICEPATH = 
 		(System.getProperty("org.atombeat.it.servicePath") != null) ? 
 				System.getProperty("org.atombeat.it.servicePath") : "/service/";
 				
@@ -59,10 +59,20 @@ public class AtomTestUtils {
 		(System.getProperty("org.atombeat.it.secure") != null) ? 
 				Boolean.parseBoolean(System.getProperty("org.atombeat.it.secure")) : true;
 							
-	public static final String BASE_URI = "http://" + HOST + ":" + PORT + CONTEXTPATH + WORKSPACEPATH;
-	public static final String CONTENT_URI = BASE_URI + "content/";
-	public static final String SECURITY_URI = BASE_URI + "security/";
-	public static final String LIB_URI = BASE_URI + "lib/";
+	public static final String SERVICE_URL = "http://" + HOST + ":" + PORT + CONTEXTPATH + SERVICEPATH;
+	public static final String CONTENT_URI = SERVICE_URL + "content/";
+	public static final String SECURITY_URI = SERVICE_URL + "security/";
+	public static final String LIB_URI = SERVICE_URL + "lib/";
+
+	public static final String REALM = "AtomBeat";
+
+	public static final String ADAM = "adam";
+	public static final String AUDREY = "audrey";
+	public static final String AUSTIN = "austin";
+
+	public static final String SCHEME_BASIC = "BASIC";
+
+	public static final String PASSWORD = "test";
 
 
 	

@@ -39,7 +39,7 @@ public class TestETags extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		String setupUrl = BASE_URI + "admin/setup-for-test.xql";
+		String setupUrl = SERVICE_URL + "admin/setup-for-test.xql";
 		
 		PostMethod method = new PostMethod(setupUrl);
 		

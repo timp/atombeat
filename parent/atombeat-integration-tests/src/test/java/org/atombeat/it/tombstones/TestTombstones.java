@@ -32,7 +32,7 @@ public class TestTombstones extends TestCase {
 	protected void setUp() throws Exception {
 		super.setUp();
 
-		String installUrl = BASE_URI + "admin/setup-for-test.xql";
+		String installUrl = SERVICE_URL + "admin/setup-for-test.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		
@@ -41,7 +41,7 @@ public class TestTombstones extends TestCase {
 		method.releaseConnection();
 		
 		if (result != 200) {
-			throw new RuntimeException("installation failed: "+result);
+			throw new RuntimeException("setup failed: "+result);
 		}
 		
 	}
@@ -53,14 +53,10 @@ public class TestTombstones extends TestCase {
 	
 	
 
-	private static final String USER = "adam"; // should be allowed all operations
-	private static final String PASS = "test";
-	
-	
-	
+
 	private static Integer executeMethod(HttpMethod method) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		return AtomTestUtils.executeMethod(method, ADAM, PASSWORD);
 
 	}
 	
@@ -162,7 +158,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a member to be deleted
-		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, USER, PASS);
+		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, ADAM, PASSWORD);
 		String memberUri = getEditLocation(entryDoc);
 		String memberId = getAtomId(entryDoc);
 		
@@ -181,7 +177,7 @@ public class TestTombstones extends TestCase {
 		assertTrue(contentTypeHeader.getValue().startsWith(Tombstones.MEDIATYPE));
 		
 		// verify response body
-		verifyResponseBodyIsDeletedEntry(delete, memberId, USER, "remove spam");
+		verifyResponseBodyIsDeletedEntry(delete, memberId, ADAM, "remove spam");
 		
 		// clean up
 		delete.releaseConnection();
@@ -196,7 +192,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a member to be deleted
-		String memberUri = createTestMemberAndReturnLocation(collectionUri, USER, PASS);
+		String memberUri = createTestMemberAndReturnLocation(collectionUri, ADAM, PASSWORD);
 		
 		// retrieve the member, verify the response prior to deletion
 		GetMethod get = new GetMethod(memberUri);
@@ -225,7 +221,7 @@ public class TestTombstones extends TestCase {
 		assertTrue(contentTypeHeader.getValue().startsWith(Tombstones.MEDIATYPE));
 
 		// verify response body
-		verifyResponseBodyIsDeletedEntry(get2, memberId, USER, "remove spam");
+		verifyResponseBodyIsDeletedEntry(get2, memberId, ADAM, "remove spam");
 		
 		// clean up
 		get2.releaseConnection();
@@ -291,7 +287,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a member to be deleted
-		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, USER, PASS);
+		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, ADAM, PASSWORD);
 		String memberUri = getEditLocation(entryDoc);
 		String memberId = getAtomId(entryDoc);
 		
@@ -321,7 +317,7 @@ public class TestTombstones extends TestCase {
 		assertEquals(0, entries.size());
 		deletedEntries = getChildrenByTagNameNS(feedDoc, Tombstones.NSURI, Tombstones.DELETED_ENTRY);
 		assertEquals(1, deletedEntries.size());
-		verifyElementIsDeletedEntry(deletedEntries.get(0), memberId, USER, "remove spam");
+		verifyElementIsDeletedEntry(deletedEntries.get(0), memberId, ADAM, "remove spam");
 
 		// clean up
 		get2.releaseConnection();
@@ -336,7 +332,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a media resource
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, ADAM, PASSWORD);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
 		String memberId = getAtomId(mediaLinkDoc);
@@ -367,13 +363,13 @@ public class TestTombstones extends TestCase {
 		
 		// verify delete response
 		assertEquals(200, deleteResult);
-		verifyResponseBodyIsDeletedEntry(delete, memberId, USER, "delete media resource via media link URI");
+		verifyResponseBodyIsDeletedEntry(delete, memberId, ADAM, "delete media resource via media link URI");
 		
 		// retrieve the media-link member, verify response after deletion
 		GetMethod getMediaLink2 = new GetMethod(mediaLinkLocation);
 		int getMediaLinkResult2 = executeMethod(getMediaLink2);
 		assertEquals(410, getMediaLinkResult2);
-		verifyResponseBodyIsDeletedEntry(getMediaLink2, memberId, USER, "delete media resource via media link URI");
+		verifyResponseBodyIsDeletedEntry(getMediaLink2, memberId, ADAM, "delete media resource via media link URI");
 		
 		// retrieve the media resource, verify the response after deletion
 		GetMethod getMedia2 = new GetMethod(mediaLocation);
@@ -400,7 +396,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create a media resource
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, ADAM, PASSWORD);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
 		String memberId = getAtomId(mediaLinkDoc);
@@ -431,13 +427,13 @@ public class TestTombstones extends TestCase {
 		
 		// verify delete response
 		assertEquals(200, deleteResult);
-		verifyResponseBodyIsDeletedEntry(delete, memberId, USER, "delete media resource via media URI");
+		verifyResponseBodyIsDeletedEntry(delete, memberId, ADAM, "delete media resource via media URI");
 		
 		// retrieve the media-link member, verify response after deletion
 		GetMethod getMediaLink2 = new GetMethod(mediaLinkLocation);
 		int getMediaLinkResult2 = executeMethod(getMediaLink2);
 		assertEquals(410, getMediaLinkResult2);
-		verifyResponseBodyIsDeletedEntry(getMediaLink2, memberId, USER, "delete media resource via media URI");
+		verifyResponseBodyIsDeletedEntry(getMediaLink2, memberId, ADAM, "delete media resource via media URI");
 		
 		// retrieve the media resource, verify the response after deletion
 		GetMethod getMedia2 = new GetMethod(mediaLocation);
@@ -463,7 +459,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection();
 		
 		// create member 
-		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, USER, PASS);
+		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, ADAM, PASSWORD);
 		String memberUri = getEditLocation(entryDoc);
 		
 		// delete the member 
@@ -500,7 +496,7 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection(content);
 		
 		// create member 
-		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, USER, PASS);
+		Document entryDoc = createTestMemberAndReturnDocument(collectionUri, ADAM, PASSWORD);
 		String memberUri = getEditLocation(entryDoc);
 		String title = getAtomTitle(entryDoc);
 		String published = getAtomPublished(entryDoc);
@@ -538,14 +534,14 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection(content);
 		
 		// create and update a member
-		String location = createTestMemberAndReturnLocation(collectionUri, USER, PASS);
+		String location = createTestMemberAndReturnLocation(collectionUri, ADAM, PASSWORD);
 		String entryDoc = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Member - Updated</atom:title>" +
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		Header[] headers = { new Header("X-Atom-Revision-Comment", "second draft") };
-		Document updatedEntryDoc = putEntry(location, entryDoc, headers, USER, PASS);
+		Document updatedEntryDoc = putEntry(location, entryDoc, headers, ADAM, PASSWORD);
 		String historyLocation = getHistoryLocation(updatedEntryDoc);
 		assertNotNull(historyLocation);
 		
@@ -605,14 +601,14 @@ public class TestTombstones extends TestCase {
 		String collectionUri = createTombstoneEnabledCollection(content);
 		
 		// create and update a member
-		String location = createTestMemberAndReturnLocation(collectionUri, USER, PASS);
+		String location = createTestMemberAndReturnLocation(collectionUri, ADAM, PASSWORD);
 		String entryDoc = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Member - Updated</atom:title>" +
 				"<atom:summary>This is a summary, updated.</atom:summary>" +
 			"</atom:entry>";
 		Header[] headers = { new Header("X-Atom-Revision-Comment", "second draft") };
-		Document updatedEntryDoc = putEntry(location, entryDoc, headers, USER, PASS);
+		Document updatedEntryDoc = putEntry(location, entryDoc, headers, ADAM, PASSWORD);
 		String historyLocation = getHistoryLocation(updatedEntryDoc);
 		assertNotNull(historyLocation);
 		
