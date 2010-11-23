@@ -29,7 +29,7 @@ public class TestHistoryProtocol extends TestCase {
 	
 	public void setUp() {
 	
-		String installUrl = BASE_URI + "admin/setup-for-test.xql";
+		String installUrl = SERVICE_URL + "admin/setup-for-test.xql";
 		
 		GetMethod method = new GetMethod(installUrl);
 		
