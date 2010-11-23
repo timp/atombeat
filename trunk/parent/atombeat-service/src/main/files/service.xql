@@ -15,7 +15,10 @@ return
         xmlns:app="http://www.w3.org/2007/app"
         xmlns:atom="http://www.w3.org/2005/Atom">
         <app:workspace>
-            <atom:title>TODO</atom:title>
+            <atom:title type="text">AtomBeat Collections</atom:title>
+            {
+                collection( $config:base-collection-path )/atom:feed/app:collection
+            }
         </app:workspace>
     </app:service>
     

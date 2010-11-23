@@ -3,6 +3,7 @@ xquery version "1.0";
 module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb";
 
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace app = "http://www.w3.org/2007/app" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 
 import module namespace text = "http://exist-db.org/xquery/text" ;
@@ -648,6 +649,28 @@ declare function atomdb:create-feed(
         {
             atomdb:mutable-feed-children($request-data)
         }
+            <app:collection href="{$self-uri}">
+            {
+                (: title :)
+                if ( exists( $request-data/app:collection/atom:title ) )
+                then $request-data/app:collection/atom:title
+                else if ( exists( $request-data/atom:title ) )
+                then $request-data/atom:title
+                else <atom:title type="text">unnamed collection</atom:title>
+                ,
+                (: accept :)
+                $request-data/app:collection/app:accept
+                ,
+                (: categories :)
+                $request-data/app:collection/app:categories
+                ,
+                (: extensionSansTitle :)
+                $request-data/app:collection/*[
+                    not( namespace-uri(.) = $CONSTANT:APP-NSURI )
+                    and not( . instance of element(atom:title) )
+                ] 
+            }
+            </app:collection>
         </atom:feed>  
 
 };
