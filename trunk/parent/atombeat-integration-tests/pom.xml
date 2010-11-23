@@ -362,6 +362,7 @@
           </systemProperties>
         </configuration>
         
+        <version>6.1.26</version>
         <executions>
         
           <execution>
