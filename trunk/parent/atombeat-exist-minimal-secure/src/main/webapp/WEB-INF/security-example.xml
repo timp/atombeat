@@ -9,7 +9,7 @@
     <http pattern="/xmlrpc" security="none"/>
     <http pattern="/rest/**" security="none"/>
     
-    <http use-expressions="true">
+    <http use-expressions="true" realm="AtomBeat">
 
         <!-- restrict access to libraries and administrative scripts -->
         <intercept-url pattern="/service/admin/**" access="hasRole('ROLE_ADMINISTRATOR')" />
