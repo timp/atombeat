@@ -57,6 +57,8 @@ declare variable $CONSTANT:ATOM-EDIT-MEDIA as xs:string 	:= "edit-media" ;
 declare variable $CONSTANT:ATOM-CONTENT as xs:string        := "content" ;
 declare variable $CONSTANT:ATOM-AUTHOR as xs:string         := "author" ;
 
+declare variable $CONSTANT:APP-NSURI 						:= "http://www.w3.org/2007/app" ;
+
 declare variable $CONSTANT:OP-CREATE-COLLECTION as xs:string          := "CREATE_COLLECTION" ;
 declare variable $CONSTANT:OP-UPDATE-COLLECTION as xs:string          := "UPDATE_COLLECTION" ;
 declare variable $CONSTANT:OP-LIST-COLLECTION as xs:string            := "LIST_COLLECTION" ;
