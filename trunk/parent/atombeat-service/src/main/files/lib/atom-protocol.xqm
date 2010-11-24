@@ -78,7 +78,11 @@ declare function atom-protocol:do-post(
 
 	return 
 
-		if ( starts-with( $request-content-type, $CONSTANT:MEDIA-TYPE-ATOM ) )
+        if ( empty( $request-content-type ) )
+        
+        then common-protocol:do-bad-request( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request-path-info , "POST requests must provide a Content-Type header." )
+        
+		else if ( starts-with( $request-content-type, $CONSTANT:MEDIA-TYPE-ATOM ) )
 		
 		then atom-protocol:do-post-atom( $request-path-info )
 		

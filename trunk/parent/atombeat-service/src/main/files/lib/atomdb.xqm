@@ -776,7 +776,8 @@ declare function atomdb:create-media-link-entry(
     $media-type as xs:string ,
     $media-link-title as xs:string? ,
     $media-link-summary as xs:string? ,
-    $media-link-category as xs:string?
+    $media-link-category as xs:string? ,
+    $md5 as xs:string?
 ) as element(atom:entry)
 {
 
@@ -819,8 +820,20 @@ declare function atomdb:create-media-link-entry(
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$self-uri}"/>
             <atom:link rel="edit" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$edit-uri}"/>
-            <atom:link rel="edit-media" type="{$media-type}" href="{$media-uri}" length="{$media-size}"/>
-            <atom:content src="{$media-uri}" type="{$media-type}"/>
+            <atom:link rel="edit-media" type="{$media-type}" href="{$media-uri}" length="{$media-size}">
+            {
+                if ( exists( $md5 ) )
+                then attribute hash { concat( "md5:" , $md5 ) }
+                else ()
+            }
+            </atom:link>
+            <atom:content src="{$media-uri}" type="{$media-type}">
+            {
+                if ( exists( $md5 ) )
+                then attribute hash { concat( "md5:" , $md5 ) }
+                else ()
+            }
+            </atom:content>
             <atom:title type="text">{$title}</atom:title>
             <atom:summary type="text">{$summary}</atom:summary>
         {
@@ -904,7 +917,7 @@ declare function atomdb:create-media-resource(
 
 	let $media-resource-db-path := xmldb:store( $collection-db-path , $media-resource-name , $request-data , $media-type )
 	
-    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category )
+    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category , () )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
     
@@ -934,9 +947,9 @@ declare function atomdb:create-file-backed-media-resource-from-request-data(
 	
 	let $file-path := concat( $config:media-storage-dir , $media-resource-path )
 
-    let $media-resource-stored := atombeat-util:stream-request-data-to-file( $file-path )
+    let $md5 := atombeat-util:stream-request-data-to-file( $file-path )
     
-    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category , $md5 )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
     
@@ -965,9 +978,9 @@ declare function atomdb:create-file-backed-media-resource-from-existing-media-re
 	let $new-file-path := concat( $config:media-storage-dir , $media-resource-path-info )
 	let $existing-file-path := concat( $config:media-storage-dir , $existing-media-path-info )
 
-    let $media-resource-stored := atombeat-util:copy-file( $existing-file-path , $new-file-path )
+    let $md5 := atombeat-util:copy-file( $existing-file-path , $new-file-path )
     
-    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , () , () , () )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , () , () , () , $md5 )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
@@ -997,9 +1010,9 @@ declare function atomdb:create-file-backed-media-resource-from-upload(
 	
 	let $file-path := concat( $config:media-storage-dir , $media-resource-path )
 
-    let $media-resource-stored := atombeat-util:save-upload-as( "media" , $file-path )
+    let $md5 := atombeat-util:save-upload-as( "media" , $file-path )
     
-    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category , $md5 )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
@@ -1078,7 +1091,7 @@ declare function atomdb:update-file-backed-media-resource(
 	
 		let $file-path := concat( $config:media-storage-dir , $request-path-info )
 		
-		let $media-resource-stored := atombeat-util:stream-request-data-to-file( $file-path )
+		let $md5 := atombeat-util:stream-request-data-to-file( $file-path )
 
 		let $groups := text:groups( $request-path-info , "^(.*)/([^/]+)\.media$" )
 		let $collection-path-info := $groups[2]
@@ -1098,9 +1111,9 @@ declare function atomdb:update-file-backed-media-resource(
 				    if ( $child instance of element(atom:updated) )
 				    then <atom:updated>{current-dateTime()}</atom:updated>
 				    else if ( $child instance of element(atom:link) and $child/@rel='edit-media' )
-					then <atom:link rel='edit-media' type='{$media-type}' href='{$child/@href}' length='{$media-size}'/>
+					then <atom:link rel='edit-media' type='{$media-type}' href='{$child/@href}' length='{$media-size}' hash='md5:{$md5}'/>
 				    else if ( $child instance of element(atom:content) )
-					then <atom:content type='{$media-type}' src='{$child/@src}'/>
+					then <atom:content type='{$media-type}' src='{$child/@src}' hash='md5:{$md5}'/>
 					else $child
 				
 			}
