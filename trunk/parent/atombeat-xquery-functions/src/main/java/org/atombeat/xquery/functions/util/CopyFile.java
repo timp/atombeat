@@ -26,6 +26,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.math.BigInteger;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 import org.apache.commons.logging.Log;
@@ -36,11 +42,11 @@ import org.exist.xquery.Cardinality;
 import org.exist.xquery.FunctionSignature;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
+import org.exist.xquery.value.StringValue;
 import org.exist.xquery.value.Type;
 
 
@@ -60,7 +66,7 @@ public class CopyFile extends BasicFunction {
 			new SequenceType[] {
 					new FunctionParameterSequenceType("from", Type.STRING, Cardinality.EXACTLY_ONE, "The path to the file to copy."),
 					new FunctionParameterSequenceType("to", Type.STRING, Cardinality.EXACTLY_ONE, "The path where the new file will be stored.")},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the operation succeeded, false otherwise"));
+					new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "an MD5 digest of the content, or empty if there was a problem"));
 		
 	public CopyFile(XQueryContext context) {
 		super(context, signature);
@@ -79,24 +85,23 @@ public class CopyFile extends BasicFunction {
 			String to = args[1].getStringValue();
 			File fromFile = new File(from);
 			File toFile = new File(to);
-			FileInputStream in = new FileInputStream(fromFile);
-			FileOutputStream out = new FileOutputStream(toFile);
+
+			InputStream in = new FileInputStream(fromFile);
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			in = new DigestInputStream(in, md5);
+			OutputStream out = new FileOutputStream(toFile);
 			
 			Stream.copy(in, out);
 			
-//		    byte buf[]=new byte[8*1024];
-//		    int len;
-//		    while((len=in.read(buf))>0)
-//		    	out.write(buf,0,len);
-//		    out.flush();
-//		    out.close();
-//		    in.close();		
-		    
-		    return BooleanValue.TRUE;
+			String signature = new BigInteger(1, md5.digest()).toString(16);		    
+		    return new StringValue(signature);
+			
 		}
 		catch(IOException ioe)
 		{
 			throw new XPathException(this, "An IO exception ocurred: " + ioe.getMessage(), ioe);
+		} catch (NoSuchAlgorithmException e) {
+			throw new XPathException(this, "A message digest exception ocurred: " + e.getMessage(), e);
 		}
 		
 	}

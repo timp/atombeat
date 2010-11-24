@@ -26,6 +26,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigInteger;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 
 import org.apache.commons.logging.Log;
@@ -39,13 +43,13 @@ import org.exist.xquery.Variable;
 import org.exist.xquery.XPathException;
 import org.exist.xquery.XQueryContext;
 import org.exist.xquery.functions.request.RequestModule;
-import org.exist.xquery.value.BooleanValue;
 import org.exist.xquery.value.FunctionParameterSequenceType;
 import org.exist.xquery.value.FunctionReturnSequenceType;
 import org.exist.xquery.value.JavaObjectValue;
 import org.exist.xquery.value.Sequence;
 import org.exist.xquery.value.SequenceType;
 import org.exist.xquery.value.Type;
+import org.exist.xquery.value.StringValue;
 
 
 /**
@@ -63,7 +67,7 @@ public class StreamRequestDataToFile extends BasicFunction {
 			"Streams the content of a POST request to a file. Returns true if the operation succeeded, otherwise false.",
 			new SequenceType[] {
 					new FunctionParameterSequenceType("path", Type.STRING, Cardinality.EXACTLY_ONE, "The file system path where the data is to be stored.")},
-			new FunctionReturnSequenceType(Type.BOOLEAN, Cardinality.EXACTLY_ONE, "true if the operation succeeded, false otherwise"));
+			new FunctionReturnSequenceType(Type.STRING, Cardinality.ZERO_OR_ONE, "an MD5 digest of the content, or empty if there was a problem"));
 		
 	public StreamRequestDataToFile(XQueryContext context) {
 		super(context, signature);
@@ -97,33 +101,30 @@ public class StreamRequestDataToFile extends BasicFunction {
 		// if the content length is unknown, return
 		if (request.getContentLength() == -1)
 		{
-			return BooleanValue.FALSE;
+			return Sequence.EMPTY_SEQUENCE;
 		}
 			
 		// try to stream request content to file
 		try
 		{
 			InputStream in = request.getInputStream();
+			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			in = new DigestInputStream(in, md5);
 			String path = args[0].getStringValue();
 			File file = new File(path);
 			FileOutputStream out = new FileOutputStream(file);
 			
 			Stream.copy(in, out);
 			
-//		    byte buf[]=new byte[8*1024];
-//		    int len;
-//		    while((len=in.read(buf))>0)
-//		    	out.write(buf,0,len);
-//		    out.flush();
-//		    out.close();
-//		    in.close();			
-		    
-		    return BooleanValue.TRUE;
+			String signature = new BigInteger(1, md5.digest()).toString(16);		    
+		    return new StringValue(signature);
 
 		}
 		catch(IOException ioe)
 		{
 			throw new XPathException(this, "An IO exception ocurred: " + ioe.getMessage(), ioe);
+		} catch (NoSuchAlgorithmException e) {
+			throw new XPathException(this, "A message digest exception ocurred: " + e.getMessage(), e);
 		}
 
 	}
