@@ -49,7 +49,7 @@ public class AtomTestUtils {
 		
 	public static final String CONTEXTPATH = 
 		(System.getProperty("org.atombeat.it.contextPath") != null) ? 
-				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-minimal-secure";
+				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-full";
 
 	public static final String SERVICEPATH = 
 		(System.getProperty("org.atombeat.it.servicePath") != null) ? 
@@ -60,9 +60,10 @@ public class AtomTestUtils {
 				Boolean.parseBoolean(System.getProperty("org.atombeat.it.secure")) : true;
 							
 	public static final String SERVICE_URL = "http://" + HOST + ":" + PORT + CONTEXTPATH + SERVICEPATH;
-	public static final String CONTENT_URI = SERVICE_URL + "content/";
-	public static final String SECURITY_URI = SERVICE_URL + "security/";
-	public static final String LIB_URI = SERVICE_URL + "lib/";
+	public static final String CONTENT_URL = SERVICE_URL + "content/";
+	public static final String SECURITY_URL = SERVICE_URL + "security/";
+	public static final String LIB_URL = SERVICE_URL + "lib/";
+	public static final String TEST_COLLECTION_URL = CONTENT_URL + "test";
 
 	public static final String REALM = "AtomBeat";
 

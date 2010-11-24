@@ -20,7 +20,7 @@ public class TestAtomSecurityLibrary extends TestCase {
 		
 		// run the xquery test case
 		
-		String testUrl = LIB_URI + "test-atom-security.xql";
+		String testUrl = LIB_URL + "test-atom-security.xql";
 		GetMethod get = new GetMethod(testUrl);
 		int result = executeMethod(get, "adam", "test");
 		assertEquals(200, result);

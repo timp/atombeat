@@ -88,7 +88,7 @@ public class TestMultiCreate extends TestCase {
 		
 		// create a collection to run test against
 		
-		collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		collectionUri = createTestCollection(CONTENT_URL, USER, PASS);
 		
 		// do initial get on collection uri, expect to find no members
 		
@@ -145,8 +145,8 @@ public class TestMultiCreate extends TestCase {
 		
 		// set up two test collections
 
-		col1Uri = createTestCollection(CONTENT_URI, USER, PASS);
-		col2Uri = createTestCollection(CONTENT_URI, USER, PASS);
+		col1Uri = createTestCollection(CONTENT_URL, USER, PASS);
+		col2Uri = createTestCollection(CONTENT_URL, USER, PASS);
 		
 		// set up first collection with some media 
 

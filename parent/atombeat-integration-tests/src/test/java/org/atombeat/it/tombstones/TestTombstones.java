@@ -79,7 +79,7 @@ public class TestTombstones extends TestCase {
 	
 	private static String createTombstoneEnabledCollection(String content) throws Exception {
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 		
 		PutMethod put = new PutMethod(collectionUri);
 		setAtomRequestEntity(put, content);

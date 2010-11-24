@@ -26,15 +26,9 @@ public class TestMultipartFormdata extends TestCase {
 	
 	
 	
-	private static final String USER = "adam"; // should be allowed all operations
-	private static final String PASS = "test";
-	private static final String TEST_COLLECTION_URI = CONTENT_URI + "test";
-	
-	
-	
 	private static Integer executeMethod(HttpMethod method) {
 		
-		return AtomTestUtils.executeMethod(method, USER, PASS);
+		return AtomTestUtils.executeMethod(method, ADAM, PASSWORD);
 
 	}
 
@@ -70,7 +64,7 @@ public class TestMultipartFormdata extends TestCase {
 	public void testMultipartRequestWithFile() throws Exception {
 		
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
-		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
+		PostMethod post = new PostMethod(TEST_COLLECTION_URL);
 		File file = new File(this.getClass().getClassLoader().getResource("spreadsheet1.xls").getFile());
 		FilePart fp = createFilePart(file, "spreadsheet1.xls", "application/vnd.ms-excel", "media");
 		StringPart sp1 = new StringPart("summary", "this is a great spreadsheet");
@@ -117,7 +111,7 @@ public class TestMultipartFormdata extends TestCase {
 	public void testBadMultipartRequest() {
 		
 		// now create a new media resource by POSTing multipart/form-data to the collection URI
-		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
+		PostMethod post = new PostMethod(TEST_COLLECTION_URL);
 		File file = new File(this.getClass().getClassLoader().getResource("spreadsheet1.xls").getFile());
 		FilePart fp = createFilePart(file, "spreadsheet1.xls", "application/vnd.ms-excel", "media-oops"); // should be "media"
 		StringPart sp1 = new StringPart("summary", "this is a great spreadsheet");

@@ -56,7 +56,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 			throw new RuntimeException("installation failed: "+result);
 		}
 	
-		testCollectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		testCollectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 
 		domImplRegistry = DOMImplementationRegistry.newInstance();
 		domImplLs = (DOMImplementationLS)domImplRegistry.getDOMImplementation("LS");
@@ -80,7 +80,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 
 		PutMethod method = new PutMethod(collectionUri);
 
@@ -104,7 +104,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to update collections
 		
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 
 		PutMethod method = new PutMethod(collectionUri);
 
@@ -128,7 +128,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 
 		PutMethod method = new PutMethod(collectionUri);
 
@@ -149,7 +149,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	public void testUserWithoutAdministratorRoleCannotUpdateCollections() {
 		
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to update collections
@@ -176,7 +176,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 
 		PostMethod method = new PostMethod(collectionUri);
 
@@ -201,7 +201,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 		// we expect the default global ACL to allow only users with the
 		// ROLE_ADMINISTRATOR role to create collections
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 
 		PostMethod method = new PostMethod(collectionUri);
 
@@ -897,7 +897,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	public void testUserWithMediaEditorRoleCanDeleteMediaResource() throws Exception {
 		
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -935,7 +935,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResource() throws Exception {
 
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -973,7 +973,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	public void testUserWithMediaEditorRoleCanDeleteMediaResourceViaMediaLinkLocation() throws Exception {
 
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -1011,7 +1011,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	public void testUserWithoutMediaEditorRoleCannotDeleteMediaResourceViaMediaLinkLocation() throws Exception {
 
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
@@ -1047,7 +1047,7 @@ public class TestDefaultSecurityPolicy extends TestCase {
 	
 	public void testUserWithoutReaderRoleCannotRetrieveHistoryOrRevision() throws Exception {
 		
-		String collectionUri = createTestVersionedCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestVersionedCollection(CONTENT_URL, "adam", "test");
 		Document d = createTestMemberAndReturnDocument(collectionUri, "austin", "test");
 		String historyLocation = getLinkHref(d, "history");
 		assertNotNull(historyLocation);
