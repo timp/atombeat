@@ -22,7 +22,7 @@ public class TestETags extends TestCase {
 	
 	private static final String USER = "adam"; // should be allowed all operations
 	private static final String PASS = "test";
-	private static final String TEST_COLLECTION_URI = CONTENT_URI + "test";
+	private static final String TEST_COLLECTION_URI = CONTENT_URL + "test";
 	
 	
 	

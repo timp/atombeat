@@ -48,10 +48,10 @@ public class TestHistoryProtocol extends TestCase {
 				"atombeat:enable-versioning=\"true\">" +
 				"<atom:title>Test Collection With Versioning</atom:title>" +
 			"</atom:feed>";
-		collectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, content);
+		collectionUri = createTestCollection(CONTENT_URL, USER, PASS, headers, content);
 
 		String noHistoryContent = "<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\"><atom:title>Test Collection (No Versioning)</atom:title></atom:feed>";
-		noHistoryCollectionUri = createTestCollection(CONTENT_URI, USER, PASS, headers, noHistoryContent);
+		noHistoryCollectionUri = createTestCollection(CONTENT_URL, USER, PASS, headers, noHistoryContent);
 			
 	}
 	

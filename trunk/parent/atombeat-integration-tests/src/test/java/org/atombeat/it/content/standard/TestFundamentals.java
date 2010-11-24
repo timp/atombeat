@@ -29,7 +29,6 @@ public class TestFundamentals extends TestCase {
 	
 	private static final String USER = "adam"; // should be allowed all operations
 	private static final String PASS = "test";
-	private static final String TEST_COLLECTION_URI = CONTENT_URI + "test";
 	
 	
 	
@@ -71,7 +70,7 @@ public class TestFundamentals extends TestCase {
 		
 		// create a new member by POSTing an atom entry document to the
 		// collection URI
-		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
+		PostMethod method = new PostMethod(TEST_COLLECTION_URL);
 		String content = 
 			"<atom:entry xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
 				"<atom:title>Test Member</atom:title>" +
@@ -109,7 +108,7 @@ public class TestFundamentals extends TestCase {
 	public void testGetEntry() throws Exception {
 
 		// setup test
-		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URL, USER, PASS);
 
 		// now try GET to member URI
 		GetMethod method = new GetMethod(location);
@@ -137,7 +136,7 @@ public class TestFundamentals extends TestCase {
 	public void testPutEntry() throws Exception {
 
 		// setup test
-		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URL, USER, PASS);
 
 		// now put an updated entry document using a PUT request
 		PutMethod method = new PutMethod(location);
@@ -171,7 +170,7 @@ public class TestFundamentals extends TestCase {
 	public void testDeleteEntry() throws Exception {
 		
 		// setup test
-		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		String location = createTestMemberAndReturnLocation(TEST_COLLECTION_URL, USER, PASS);
 
 		// check we can GET the entry
 		GetMethod get1 = new GetMethod(location);
@@ -198,7 +197,7 @@ public class TestFundamentals extends TestCase {
 	public void testGetFeed() throws Exception {
 
 		// try GET to collection URI
-		GetMethod get1 = new GetMethod(TEST_COLLECTION_URI);
+		GetMethod get1 = new GetMethod(TEST_COLLECTION_URL);
 		int result1 = executeMethod(get1);
 		
 		// expect the status code is 200 OK
@@ -223,10 +222,10 @@ public class TestFundamentals extends TestCase {
 		assertEquals(0, entries1.size());
 
 		// add a member
-		createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		createTestMemberAndReturnLocation(TEST_COLLECTION_URL, USER, PASS);
 
 		// try GET to collection URI
-		GetMethod get2 = new GetMethod(TEST_COLLECTION_URI);
+		GetMethod get2 = new GetMethod(TEST_COLLECTION_URL);
 		int result2 = executeMethod(get2);
 		
 		// expect the status code is 200 OK
@@ -238,10 +237,10 @@ public class TestFundamentals extends TestCase {
 		assertEquals(1, entries2.size());
 
 		// add a member
-		createTestMemberAndReturnLocation(TEST_COLLECTION_URI, USER, PASS);
+		createTestMemberAndReturnLocation(TEST_COLLECTION_URL, USER, PASS);
 
 		// try GET to collection URI
-		GetMethod get3 = new GetMethod(TEST_COLLECTION_URI);
+		GetMethod get3 = new GetMethod(TEST_COLLECTION_URL);
 		int result3 = executeMethod(get3);
 		
 		// expect the status code is 200 OK
@@ -262,7 +261,7 @@ public class TestFundamentals extends TestCase {
 	public void testPostMedia_Text() {
 		
 		// now create a new media resource by POSTing media to the collection URI
-		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
+		PostMethod method = new PostMethod(TEST_COLLECTION_URL);
 		String media = "This is a test.";
 		setTextPlainRequestEntity(method, media);
 		int result = executeMethod(method);
@@ -280,7 +279,7 @@ public class TestFundamentals extends TestCase {
 	public void testPostMedia_Binary() {
 		
 		// now create a new media resource by POSTing media to the collection URI
-		PostMethod method = new PostMethod(TEST_COLLECTION_URI);
+		PostMethod method = new PostMethod(TEST_COLLECTION_URL);
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(method, content, contentType);
@@ -298,7 +297,7 @@ public class TestFundamentals extends TestCase {
 	public void testGetMedia_Text() throws Exception {
 
 		// setup test
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URL, USER, PASS);
 		assertNotNull(mediaLinkDoc);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		assertNotNull(mediaLocation);
@@ -333,7 +332,7 @@ public class TestFundamentals extends TestCase {
 	public void testGetMedia_Binary() throws Exception {
 
 		// create a new media resource by POSTing media to the collection URI
-		PostMethod post = new PostMethod(TEST_COLLECTION_URI);
+		PostMethod post = new PostMethod(TEST_COLLECTION_URL);
 		InputStream content = this.getClass().getClassLoader().getResourceAsStream("spreadsheet1.xls");
 		String contentType = "application/vnd.ms-excel";
 		setInputStreamRequestEntity(post, content, contentType);
@@ -373,7 +372,7 @@ public class TestFundamentals extends TestCase {
 	public void testPutMedia_Text() throws Exception {
 
 		// setup test
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URL, USER, PASS);
 		assertNotNull(mediaLinkDoc);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		assertNotNull(mediaLocation);
@@ -410,7 +409,7 @@ public class TestFundamentals extends TestCase {
 	public void testDeleteMedia() throws Exception {
 		
 		// setup test
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URL, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
 		
@@ -449,7 +448,7 @@ public class TestFundamentals extends TestCase {
 	public void testDeleteMediaLinkEntry() throws Exception {
 		
 		// setup test
-		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URI, USER, PASS);
+		Document mediaLinkDoc = createTestMediaResourceAndReturnMediaLinkEntry(TEST_COLLECTION_URL, USER, PASS);
 		String mediaLocation = getEditMediaLocation(mediaLinkDoc);
 		String mediaLinkLocation = getEditLocation(mediaLinkDoc);
 		

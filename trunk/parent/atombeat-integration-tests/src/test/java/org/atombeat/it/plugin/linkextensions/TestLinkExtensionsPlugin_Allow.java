@@ -69,7 +69,7 @@ public class TestLinkExtensionsPlugin_Allow extends TestCase {
 		
 		// create the collection
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 		PutMethod put = new PutMethod(collectionUri);
 		setAtomRequestEntity(put, feed);
 		int putResult = executeMethod(put, "adam", "test");

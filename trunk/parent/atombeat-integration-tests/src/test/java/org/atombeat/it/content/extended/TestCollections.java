@@ -75,7 +75,7 @@ public class TestCollections extends TestCase {
 		// feed doc however, we may run this test several times without cleaning
 		// the database so we have to generate a random collection URI
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 
 		doTestPutFeedToCreateCollection(collectionUri);
 		
@@ -94,7 +94,7 @@ public class TestCollections extends TestCase {
 		// feed doc however, we may run this test several times without cleaning
 		// the database so we have to generate a random collection URI
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random()) + "/" + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random()) + "/" + Double.toString(Math.random());
 
 		doTestPutFeedToCreateCollection(collectionUri);
 
@@ -136,7 +136,7 @@ public class TestCollections extends TestCase {
 	public void testPutFeedToCreateAndUpdateCollection() throws Exception {
 		
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, USER, PASS);
+		String collectionUri = createTestCollection(CONTENT_URL, USER, PASS);
 		
 		// now try to update feed metadata via a PUT request
 		PutMethod method = new PutMethod(collectionUri);
@@ -182,7 +182,7 @@ public class TestCollections extends TestCase {
 	public void testPostFeedToCreateCollection() {
 		
 		// setup test
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 
 		// setup a new POST request
 		PostMethod method = new PostMethod(collectionUri);
@@ -211,7 +211,7 @@ public class TestCollections extends TestCase {
 	
 	public void testRecursiveCollection() throws Exception {
 
-		String col1 = CONTENT_URI + Double.toString(Math.random());
+		String col1 = CONTENT_URL + Double.toString(Math.random());
 		PutMethod put1 = new PutMethod(col1);
 		String content1 = 
 			"<atom:feed " +
@@ -259,7 +259,7 @@ public class TestCollections extends TestCase {
 
 	public void testExplicitlyNotRecursiveCollection() throws Exception {
 
-		String col1 = CONTENT_URI + Double.toString(Math.random());
+		String col1 = CONTENT_URL + Double.toString(Math.random());
 		PutMethod put1 = new PutMethod(col1);
 		String content1 = 
 			"<atom:feed " +
@@ -307,7 +307,7 @@ public class TestCollections extends TestCase {
 
 	public void testImplicitlyNotRecursiveCollection() throws Exception {
 
-		String col1 = CONTENT_URI + Double.toString(Math.random());
+		String col1 = CONTENT_URL + Double.toString(Math.random());
 		PutMethod put1 = new PutMethod(col1);
 		String content1 = 
 			"<atom:feed " +

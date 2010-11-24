@@ -54,7 +54,7 @@ public class TestSecurityProtocol extends TestCase {
 
 	public void testGetWorkspaceDescriptor() throws Exception {
 		
-		GetMethod g = new GetMethod(SECURITY_URI);
+		GetMethod g = new GetMethod(SECURITY_URL);
 		int r = executeMethod(g, "adam", "test");
 
 		assertEquals(200, r);
@@ -70,7 +70,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	public void testGetWorkspaceDescriptorDenied() {
 
-		GetMethod g = new GetMethod(SECURITY_URI);
+		GetMethod g = new GetMethod(SECURITY_URL);
 		int r = executeMethod(g, "rebecca", "test");
 
 		assertEquals(403, r);
@@ -82,7 +82,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetCollectionDescriptor() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
@@ -128,7 +128,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetCollectionDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 
 		// retrieve collection feed
 		GetMethod g = new GetMethod(collectionUri);
@@ -152,7 +152,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMemberDescriptor() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -185,7 +185,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMemberDescriptor2() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve collection
@@ -221,7 +221,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMemberDescriptor3() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// edwina is an editor, and should be able to retrieve acl but not update
@@ -288,7 +288,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMemberNoMediaDescriptorLink() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String memberUri = createTestMemberAndReturnLocation(collectionUri, "adam", "test");
 
 		// retrieve member entry
@@ -308,7 +308,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testDescriptorLinkPresentInResponseToCreateEntry() throws Exception {
 		
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document d = createTestMemberAndReturnDocument(collectionUri, "audrey", "test");
 
 		String descriptorLocation = getLinkHref(d, AtomBeat.REL_SECURITY_DESCRIPTOR);
@@ -321,7 +321,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMemberDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -366,7 +366,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMediaDescriptor() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		// look for ACL link
@@ -389,7 +389,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMediaDescriptor2() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		GetMethod get = new GetMethod(collectionUri);
@@ -418,7 +418,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testGetMediaDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 
 		// look for ACL link
@@ -461,7 +461,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateWorkspaceDescriptor() throws Exception {
 		
 		// make sure adam can create collections
-		String u = createTestCollection(CONTENT_URI, "adam", "test");
+		String u = createTestCollection(CONTENT_URL, "adam", "test");
 		assertNotNull(u);
 
 		// strip workspace descriptor
@@ -472,7 +472,7 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		
-		PutMethod p = new PutMethod(SECURITY_URI);
+		PutMethod p = new PutMethod(SECURITY_URL);
 		setAtomRequestEntity(p, content);
 		int r = executeMethod(p, "adam", "test");
 		assertEquals(200, r);
@@ -481,7 +481,7 @@ public class TestSecurityProtocol extends TestCase {
 		verifyDocIsAtomEntryWithSecurityDescriptorContent(e);
 		
 		// now try to create a collection
-		String v = createTestCollection(CONTENT_URI, "adam", "test");
+		String v = createTestCollection(CONTENT_URL, "adam", "test");
 		assertNull(v);
 		 
 	}
@@ -498,7 +498,7 @@ public class TestSecurityProtocol extends TestCase {
 			"</atom:content>" +
 			"</atom:entry>";
 		
-		PutMethod p = new PutMethod(SECURITY_URI);
+		PutMethod p = new PutMethod(SECURITY_URL);
 		setAtomRequestEntity(p, content);
 		int r = executeMethod(p, "rebecca", "test");
 		assertEquals(403, r);
@@ -510,7 +510,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateCollectionDescriptor() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
  
 		// try to retrieve collection feed as rebecca (reader) to check allowed
 		GetMethod f = new GetMethod(collectionUri);
@@ -553,7 +553,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateCollectionDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
  
 		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
@@ -582,7 +582,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testBadRequest() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
  
 		// retrieve collection feed as adam (administrator) to get security descriptor link
 		GetMethod g = new GetMethod(collectionUri);
@@ -612,7 +612,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateMemberDescriptor() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -650,7 +650,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateMemberDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String memberUri = createTestMemberAndReturnLocation(collectionUri, "audrey", "test");
 
 		// retrieve member entry
@@ -687,7 +687,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateMediaDescriptor() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(d);
 		
@@ -725,7 +725,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testUpdateMediaDescriptorDenied() throws Exception {
 
 		// set up test by creating a collection
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		Document d = createTestMediaResourceAndReturnMediaLinkEntry(collectionUri, "audrey", "test");
 		String mediaLocation = getEditMediaLocation(d);
 		
@@ -762,7 +762,7 @@ public class TestSecurityProtocol extends TestCase {
 	
 	public void testCannotOverrideDescriptorLinksOnCreateCollection() throws Exception {
 		
-		String collectionUri = CONTENT_URI + Double.toString(Math.random());
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
 		PutMethod method = new PutMethod(collectionUri);
 		String content = 
 			"<atom:feed xmlns:atom=\"http://www.w3.org/2005/Atom\">" +
@@ -786,7 +786,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testCannotOverrideDescriptorLinksOnUpdateCollection() throws Exception {
 		
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		
 		// now try to update feed metadata via a PUT request
 		PutMethod method = new PutMethod(collectionUri);
@@ -812,7 +812,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testCannotOverrideDescriptorLinksOnCreateMember() throws Exception {
 
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 
 		// now create a new member by POSTing and atom entry document to the
 		// collection URI
@@ -839,7 +839,7 @@ public class TestSecurityProtocol extends TestCase {
 	public void testCannotOverrideDescriptorLinksOnUpdateMember() throws Exception {
 		
 		// setup test
-		String collectionUri = createTestCollection(CONTENT_URI, "adam", "test");
+		String collectionUri = createTestCollection(CONTENT_URL, "adam", "test");
 		String location = createTestMemberAndReturnLocation(collectionUri, "adam", "test");
 
 		// now put an updated entry document using a PUT request
