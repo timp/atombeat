@@ -135,7 +135,7 @@ declare function history-protocol:op-retrieve-member-history(
 {
 
     let $self-uri := concat( $config:history-service-url , $request-path-info )
-    let $versioned-uri := concat( $config:content-service-url , $request-path-info )
+    let $versioned-uri := concat( $config:self-link-uri-base , $request-path-info )
     
     let $updated := 
         if ( atomdb:member-available( $request-path-info ) ) 
@@ -322,7 +322,7 @@ declare function history-protocol:construct-member-base-revision(
 		else ()
 
 	let $current-revision-href :=
-		concat( $config:content-service-url , $request-path-info )
+		concat( $config:self-link-uri-base , $request-path-info )
 
 	let $initial-revision-href := $this-revision-href
 
@@ -393,7 +393,7 @@ declare function history-protocol:construct-member-specified-revision(
             	else ()
             	
             let $current-revision-href :=
-            	concat( $config:content-service-url , $request-path-info )
+            	concat( $config:self-link-uri-base , $request-path-info )
             
             let $initial-revision-href :=
             	concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )	
@@ -442,7 +442,7 @@ declare function history-protocol:construct-member-specified-revision(
                 else ()
                 
             let $current-revision-href :=
-                concat( $config:content-service-url , $request-path-info )
+                concat( $config:self-link-uri-base , $request-path-info )
             
             let $initial-revision-href :=
                 concat( $config:history-service-url , $request-path-info , "?" , $history-protocol:param-name-revision-index , "=" , xs:string( 1 ) )   
