@@ -167,7 +167,7 @@ declare function link-expansion-plugin:augment-entry(
     $entry as element(atom:entry)
 ) as element(atom:entry)
 {
-    if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:content-service-url ) ) then
+    if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:edit-link-uri-base ) ) then
         let $collection-path-info := atomdb:collection-path-info( $entry )
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $match-entry-rels := tokenize( $feed/atombeat:config-link-expansion/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
@@ -208,9 +208,9 @@ declare function link-expansion-plugin:expand-links(
         
         if ( $match-rels = "*" or $link/@rel = $match-rels ) then
         
-            if ( starts-with( $link/@href , $config:content-service-url ) ) then
+            if ( starts-with( $link/@href , $config:self-link-uri-base ) ) then
 
-                let $path-info := substring-after( $link/@href , $config:content-service-url )
+                let $path-info := substring-after( $link/@href , $config:self-link-uri-base )
                 
                 return 
                 

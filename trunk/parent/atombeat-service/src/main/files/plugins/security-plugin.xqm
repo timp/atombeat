@@ -224,7 +224,7 @@ declare function security-plugin:after-create-member(
     
 	let $entry-uri := $response-data/atom:link[@rel="edit"]/@href
 	
-	let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
+	let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
 
 	(: if security is enabled, install default resource ACL :)
 	let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
@@ -258,11 +258,11 @@ declare function security-plugin:after-multi-create(
         {
             for $entry in $response-data/atom:entry
             let $entry-uri := $entry/atom:link[@rel="edit"]/@href
-            let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
+            let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
             (: if security is enabled, install default resource ACL :)
             let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
             let $media-uri := $entry/atom:link[@rel="edit-media"]/@href
-            let $media-path-info := substring-after( $media-uri , $config:content-service-url )
+            let $media-path-info := substring-after( $media-uri , $config:edit-media-link-uri-base )
             (: if security is enabled, install default resource ACL :)
             let $media-descriptor-installed := 
                 if ( exists( $media-path-info ) and $media-path-info != "" ) then security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
@@ -320,14 +320,14 @@ declare function security-plugin:after-create-media(
 
     let $entry-uri := $response-data/atom:link[@rel="edit"]/@href
     
-    let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
+    let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
 
     (: if security is enabled, install default resource ACL :)
     let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
 
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     
-    let $media-path-info := substring-after( $media-uri , $config:content-service-url )
+    let $media-path-info := substring-after( $media-uri , $config:edit-media-link-uri-base )
 
     (: if security is enabled, install default resource ACL :)
     let $media-descriptor-installed := security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
@@ -491,9 +491,9 @@ declare function security-plugin:augment-entry(
     (: N.B. cannot use request-path-info to check if update-descriptor allowed, because request-path-info might be a collection URI if the operation was create-member :)
     
     let $entry-uri := $response-data/atom:link[@rel="self"]/@href
-    let $entry-path-info := substring-after( $entry-uri , $config:content-service-url )
+    let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
-    let $media-path-info := substring-after( $media-uri , $config:content-service-url )
+    let $media-path-info := substring-after( $media-uri , $config:edit-media-link-uri-base )
 
     let $descriptor-link :=     
         <atom:link 

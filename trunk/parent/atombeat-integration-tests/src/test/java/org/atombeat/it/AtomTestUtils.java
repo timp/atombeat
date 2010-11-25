@@ -49,7 +49,7 @@ public class AtomTestUtils {
 		
 	public static final String CONTEXTPATH = 
 		(System.getProperty("org.atombeat.it.contextPath") != null) ? 
-				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-full";
+				System.getProperty("org.atombeat.it.contextPath") : "/atombeat-exist-minimal-secure";
 
 	public static final String SERVICEPATH = 
 		(System.getProperty("org.atombeat.it.servicePath") != null) ? 

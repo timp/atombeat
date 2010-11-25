@@ -295,7 +295,7 @@ declare function atomsec:filter-feed(
 
     let $user := request:get-attribute( $config:user-name-request-attribute-key )
     let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:content-service-url )
+    let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:self-link-uri-base )
     
     (: 
      : Try to reduce the number of times we apply an ACL.
@@ -537,7 +537,7 @@ declare function atomsec:dereference-group(
 ) as element(group)?
 {
     
-    let $src := substring-after( $src , $config:content-service-url )
+    let $src := substring-after( $src , $config:self-link-uri-base )
     
     let $descriptor :=
         if ( $src = "/" )
@@ -661,7 +661,7 @@ declare function atomsec:wrap-with-entry(
 ) as element(atom:entry)
 {
     let $id := concat( $config:security-service-url , $request-path-info )
-    let $secured-uri := concat( $config:content-service-url , $request-path-info )
+    let $secured-uri := concat( $config:self-link-uri-base , $request-path-info )
     let $secured-type :=
         if ( atomdb:collection-available( $request-path-info ) ) then concat( $CONSTANT:MEDIA-TYPE-ATOM , ";type=feed" )
         else if ( atomdb:member-available( $request-path-info ) ) then concat( $CONSTANT:MEDIA-TYPE-ATOM , ";type=entry" )

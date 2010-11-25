@@ -27,11 +27,22 @@ declare variable $config:service-url-base as xs:string := concat( "http://" , re
 (: declare variable $config:service-url-base as xs:string := "http://example.org/atombeat/service" ; :)
 
 
-(:
- : The base URL for the Atom service. This URL will be prepended to all edit
- : and self link href values.
+(:~
+ : The base URI for 'self' links. Can be different from 'edit' links if you want them to be.
  :)
-declare variable $config:content-service-url as xs:string := concat( $config:service-url-base , "/content" ) ;
+declare variable $config:self-link-uri-base as xs:string := concat( $config:service-url-base , "/content" ) ;
+
+
+(:~
+ : The base URI for 'edit' links.
+ :)
+declare variable $config:edit-link-uri-base as xs:string := concat( $config:service-url-base , "/content" ) ;
+
+
+(:~
+ : The base URI for 'edit-media' links.
+ :)
+declare variable $config:edit-media-link-uri-base as xs:string := concat( $config:service-url-base , "/content" ) ;
 
 
 (:

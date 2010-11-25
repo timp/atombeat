@@ -165,8 +165,8 @@ declare function atomdb:edit-path-info( $entry as element(atom:entry) ) as xs:st
 {
     let $uri := $entry/atom:link[@rel='edit']/@href
     return
-        if ( starts-with( $uri , $config:content-service-url ) )
-        then substring-after( $uri , $config:content-service-url )
+        if ( starts-with( $uri , $config:edit-link-uri-base ) )
+        then substring-after( $uri , $config:edit-link-uri-base )
         else ()
 };
 
@@ -176,8 +176,8 @@ declare function atomdb:edit-media-path-info( $entry as element(atom:entry) ) as
 {
     let $uri := $entry/atom:link[@rel='edit-media']/@href
     return
-        if ( starts-with( $uri , $config:content-service-url ) )
-        then substring-after( $uri , $config:content-service-url )
+        if ( starts-with( $uri , $config:edit-media-link-uri-base ) )
+        then substring-after( $uri , $config:edit-media-link-uri-base )
         else ()
 };
 
@@ -618,10 +618,10 @@ declare function atomdb:create-feed(
 
     (: TODO validate input data :)
     
-    let $id := concat( $config:content-service-url , $request-path-info )
+    let $self-uri := concat( $config:self-link-uri-base , $request-path-info )
+    let $edit-uri := concat( $config:edit-link-uri-base , $request-path-info )
+    let $id := $self-uri
     let $updated := current-dateTime()
-    let $self-uri := $id
-    let $edit-uri := $id
     
     (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
     let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
@@ -730,13 +730,12 @@ declare function atomdb:create-entry(
 ) as element(atom:entry)
 {
 
-(:    let $id := concat( $config:content-service-url , $request-path-info , "/" , $member-id , ".atom" ) :)
-    let $id := concat( $config:content-service-url , $request-path-info , "/" , $member-id )
+    let $path-info := concat( $request-path-info , "/" , $member-id )
+    let $self-uri := concat( $config:self-link-uri-base , $path-info )
+    let $edit-uri := concat( $config:edit-link-uri-base , $path-info )
+    let $id := $self-uri
     let $published := current-dateTime()
     let $updated := $published
-    let $self-uri := $id
-    let $edit-uri := $id
-    let $path-info := substring-after( $id , $config:content-service-url )
     
     (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
     let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
@@ -781,14 +780,13 @@ declare function atomdb:create-media-link-entry(
 ) as element(atom:entry)
 {
 
-(:    let $id := concat( $config:content-service-url , $collection-path-info , "/" , $member-id , ".atom" ) :)
-    let $id := concat( $config:content-service-url , $collection-path-info , "/" , $member-id ) 
+    let $self-uri := concat( $config:self-link-uri-base , $collection-path-info , "/" , $member-id ) 
+    let $edit-uri := concat( $config:edit-link-uri-base , $collection-path-info , "/" , $member-id ) 
+    let $media-uri := concat( $config:edit-media-link-uri-base , $collection-path-info , "/" , $member-id , ".media" )
+    let $id := $self-uri
     
     let $published := current-dateTime()
     let $updated := $published
-    let $self-uri := $id
-    let $edit-uri := $id
-    let $media-uri := concat( $config:content-service-url , $collection-path-info , "/" , $member-id , ".media" )
     
     (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
     let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
@@ -864,7 +862,7 @@ declare function atomdb:update-entry(
     (: TODO validate input data :)
     
     let $updated := current-dateTime()
-    let $path-info := substring-after( $entry/atom:link[@rel='edit']/@href , $config:content-service-url )
+    let $path-info := substring-after( $entry/atom:link[@rel='edit']/@href , $config:edit-link-uri-base )
 
     return
     
