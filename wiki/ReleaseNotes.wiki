@@ -18,7 +18,7 @@ Upgrading to this version will require modification of the config/shared.xqm to 
 
 = 0.2-alpha-2 =
 
-TODO
+TODO complete release notes for this version
 
 == issue 24 - provide service documents ==
 
@@ -28,4 +28,4 @@ The title and summary given in the atom:workspace element in the service documen
 
 Upgrading to this version will require modification of the config/shared.xqm to use the new configuration variables.
 
-Note also that collections created prior to upgrading to this version will not appear in the service document. They will appear after an update to the collection feed metadata, i.e., after a PUT to the collection URI. 
+Note also that collections created prior to upgrading to this version will not initially appear in the service document. They will appear after an update to the collection feed metadata, i.e., after a PUT to the collection URI. 
