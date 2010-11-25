@@ -1,0 +1,21 @@
+#summary notes on changes between releases
+
+<wiki:toc/>
+
+= 0.2-alpha-3-SNAPSHOT =
+
+== issue 118 - 	implement md5 in @hash link extension attribute for media-link entries ==
+
+If the FILE media storage mode is being used, an MD5 hash will automatically be calculated for every new and updated media resource, and the hash value will be added to the associated media-link entry in a @hash attribute on both the 'edit-media' link and the atom:content element.
+
+This is a backwards compatible change, in that upgrading to this version does not require any migration of the data. However, note that media-link entries created prior to upgrade will not include a @hash attribute. 
+
+== issue 114 - configure self link uri base independently from edit uri base ==
+
+The way in which the URI base for 'self', 'edit' and 'edit-media' links is configured has changed. The variable $config:content-service-url in the config/shared.xqm configuration module has been removed. Three new variables have been added in it's place, being $config:self-link-uri-base, $config:edit-link-uri-base and $config:edit-media-link-uri-base. These new variables allow URI bases for different link types to be configured independently if desired.
+
+Upgrading to this version will require modification of the config/shared.xqm to use the new configuration variables.
+
+= 0.2-alpha-2 =
+
+TODO
