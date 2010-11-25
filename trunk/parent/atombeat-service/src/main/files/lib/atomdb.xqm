@@ -649,7 +649,7 @@ declare function atomdb:create-feed(
         }
         {
             atomdb:mutable-feed-children( $request-data ) ,
-            atomdb:create-collection-element( $self-uri, $request-data )
+            atomdb:create-collection-element( $edit-uri, $request-data )
         }
         </atom:feed>  
 
@@ -715,7 +715,7 @@ declare function atomdb:update-feed(
                 $feed/atom:link[@rel="edit"] ,
                 if ( $config:auto-author ) then $feed/atom:author else () ,
                 atomdb:mutable-feed-children($request-data) ,
-                atomdb:create-collection-element( $feed/atom:link[@rel="self"]/@href cast as xs:string , $request-data )
+                atomdb:create-collection-element( $feed/atom:link[@rel="edit"]/@href cast as xs:string , $request-data )
             }
         </atom:feed>  
 };
