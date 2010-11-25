@@ -37,3 +37,33 @@ In this release the string ".atom" is no longer appending to member URIs.
 This is a major change, and requires that all member URIs present in the database prior to upgrade, e.g., in Atom entry documents, need to be modified following an upgrade to have the ".atom" suffix removed.
 
 Note however that the documents stored in the eXist database still retain the ".atom" suffix, i.e., the documents themselves don't need to be moved.
+
+== issue 99 - TODO ==
+
+== issue 104 - TODO ==
+
+== issue 105 - TODO ==
+
+== issue 106 - migrate workspace to service ==
+
+The default location for the !AtomBeat service in all WAR packages has changed from /workspace to /service. 
+
+All !AtomBeat URIs for resources (collections, members, media) created prior to upgrade will need to be modified to reflect the new URL base.
+
+== issue 111 - upgrade to spring security 3.1 ==
+
+Spring Security in secure WAR packages has been upgraded to 3.1.0.M1.
+
+== issue 112 - TODO ==
+
+== issue 116 - TODO ==
+
+= 0.2-alpha-1 =
+
+== issue 98 - implement tombstones ==
+
+TODO
+
+== issue 100 - error plugins ==
+
+TODO
