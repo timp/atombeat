@@ -825,7 +825,7 @@ declare function atomdb:create-media-link-entry(
                 else ()
             }
             </atom:link>
-            <atom:content src="{$media-uri}" type="{$media-type}">
+            <atom:content src="{$media-uri}" type="{$media-type}" length="{$media-size}">
             {
                 if ( exists( $md5 ) )
                 then attribute hash { concat( "md5:" , $md5 ) }
@@ -1059,7 +1059,7 @@ declare function atomdb:update-media-resource(
 				    else if ( $child instance of element(atom:link) and $child/@rel='edit-media' )
 					then <atom:link rel='edit-media' type='{$media-type}' href='{$child/@href}' length='{$media-size}'/>
 				    else if ( $child instance of element(atom:content) )
-					then <atom:content type='{$media-type}' src='{$child/@src}'/>
+					then <atom:content type='{$media-type}' src='{$child/@src}' length='{$media-size}'/>
 					else $child
 				
 			}
@@ -1111,7 +1111,7 @@ declare function atomdb:update-file-backed-media-resource(
 				    else if ( $child instance of element(atom:link) and $child/@rel='edit-media' )
 					then <atom:link rel='edit-media' type='{$media-type}' href='{$child/@href}' length='{$media-size}' hash='md5:{$md5}'/>
 				    else if ( $child instance of element(atom:content) )
-					then <atom:content type='{$media-type}' src='{$child/@src}' hash='md5:{$md5}'/>
+					then <atom:content type='{$media-type}' src='{$child/@src}' length='{$media-size}' hash='md5:{$md5}'/>
 					else $child
 				
 			}
