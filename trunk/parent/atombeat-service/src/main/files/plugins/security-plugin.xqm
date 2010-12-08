@@ -58,7 +58,7 @@ declare function security-plugin:before(
     			                <value>{$CONSTANT:MEDIA-TYPE-TEXT}</value>
     			            </header>
     			        </headers>
-    			        <body>{$response-data}></body>
+    			        <body type="text">{$response-data}></body>
     			    </response>
     			
             else if ( 
