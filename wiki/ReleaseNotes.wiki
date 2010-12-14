@@ -4,6 +4,68 @@
 
 = 0.2-alpha-3-SNAPSHOT =
 
+== issue 130 - remove references to request from atomdb xquery module ==
+
+The signature of the following functions has changed:
+
+  * atomdb:create-entry
+  * atomdb:create-media-link-entry
+  * atomdb:create-feed
+  * atomdb:create-member
+  * atomdb:create-media-resource
+  * atomdb:create-collection
+  * atomdb:create-file-backed-media-resource-from-request-data
+  * atomdb:create-file-backed-media-resource-from-existing-media-resource
+  * atomdb:create-file-backed-media-resource-from-upload
+  
+An additional parameter `$user-name` has been added to the function signature, to remove some of the dependencies of the `lib/atomdb.xqm` module on the eXist request function module. This change has been made to make testing the `lib/atomdb.xqm` functions easier.
+  
+== issue 129 - make atom:id construction configurable ==
+
+A new configuration function `config:construct-member-atom-id()` has been added to the `config/shared.xqm` configuration module. This new function allows customisation of the way in which `atom:id` elements are populated for new collection members.
+
+Upgrading to this release will require this function to be implemented in the `config/shared.xql` configuration module.
+
+If you are using UUIDs as the basis for member identifiers, then you have the option to use UUID URNs for atom:id elements. E.g.,:
+
+{{{
+declare function config:generate-identifier(
+    $collection-path-info as xs:string
+) as xs:string
+{
+    util:uuid()
+};
+
+declare function config:contruct-member-atom-id(
+    $identifier as xs:string ,
+    $collection-path-info as xs:string
+) as xs:string
+{
+    concat( 'urn:uuid:' , $identifier )
+};
+}}}
+
+The $identifier parameter passed into this function is obtained from calling the config:generate-identifier() function.
+
+Alternatively, e.g., if you were using shorter identifiers that are not guaranteed to be unique across collections, you could do something like the following:
+
+{{{
+declare function config:generate-identifier(
+    $collection-path-info as xs:string
+) as xs:string
+{
+    xutil:random-alphanumeric( 6 )
+};
+
+declare function config:contruct-member-atom-id(
+    $identifier as xs:string ,
+    $collection-path-info as xs:string
+) as xs:string
+{
+    concat( $config:self-link-uri-base , $collection-path-info , $identifier )
+};
+}}} 
+
 == issue 118 - 	implement md5 in @hash link extension attribute for media-link entries ==
 
 If the FILE media storage mode is being used, an MD5 hash will automatically be calculated for every new and updated media resource, and the hash value will be added to the associated media-link entry in a @hash attribute on both the 'edit-media' link and the atom:content element.
