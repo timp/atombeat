@@ -786,7 +786,7 @@ declare function atomdb:create-media-link-entry(
     let $self-uri := concat( $config:self-link-uri-base , $collection-path-info , "/" , $member-id ) 
     let $edit-uri := concat( $config:edit-link-uri-base , $collection-path-info , "/" , $member-id ) 
     let $media-uri := concat( $config:edit-media-link-uri-base , $collection-path-info , "/" , $member-id , ".media" )
-    let $id := $self-uri
+    let $id := config:contruct-member-atom-id( $member-id , $collection-path-info )
     
     let $published := current-dateTime()
     let $updated := $published
