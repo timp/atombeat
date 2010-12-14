@@ -203,7 +203,8 @@ declare function atom-protocol:op-create-collection(
 ) as element(response)
 {
 
-	let $create-collection := atomdb:create-collection( $request-path-info , $request-data )
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    let $create-collection := atomdb:create-collection( $request-path-info , $request-data , $user-name )
 	
 	return 
 	
@@ -262,6 +263,8 @@ declare function atom-protocol:op-multi-create(
      : each.
      :)
 
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+
     let $feed :=
 
         <atom:feed>
@@ -283,10 +286,10 @@ declare function atom-protocol:op-multi-create(
                 	
                 	    if ( $config:media-storage-mode = "DB" ) then
                 	        let $media := atomdb:retrieve-media( $media-path-info )
-                	        return atomdb:create-media-resource( $collection-path-info , $media , $media-type ) 
+                	        return atomdb:create-media-resource( $collection-path-info , $media , $media-type , $user-name ) 
                 	        
                         else if ( $config:media-storage-mode = "FILE" ) then        
-                	        atomdb:create-file-backed-media-resource-from-existing-media-resource( $collection-path-info , $media-type , $media-path-info )
+                	        atomdb:create-file-backed-media-resource-from-existing-media-resource( $collection-path-info , $media-type , $media-path-info , $user-name )
                 	    else ()
                 	    
                     let $media-link-path-info := atomdb:edit-path-info( $media-link )
@@ -294,7 +297,7 @@ declare function atom-protocol:op-multi-create(
                     
                     return $media-link
                     
-                else atomdb:create-member( $collection-path-info , $entry )
+                else atomdb:create-member( $collection-path-info , $entry , $user-name )
         }
         </atom:feed>
         
@@ -378,8 +381,10 @@ declare function atom-protocol:op-create-member(
 ) as element(response)
 {
 
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+
     (: create the member :)
-	let $entry := atomdb:create-member( $request-path-info , $request-data )
+	let $entry := atomdb:create-member( $request-path-info , $request-data , $user-name )
 
     (: set the location and content-location headers :)
     let $location := $entry/atom:link[@rel="edit"]/@href cast as xs:string
@@ -484,7 +489,9 @@ declare function atom-protocol:op-create-media(
 ) as element(response)
 {
 
-	(: check for slug to use as title :)
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+
+    (: check for slug to use as title :)
 	let $slug := request:get-header( $CONSTANT:HEADER-SLUG )
 	
 	(: check for summary :) 
@@ -497,9 +504,9 @@ declare function atom-protocol:op-create-media(
 	
 	let $media-link :=
 	    if ( $config:media-storage-mode = "DB" ) then
-	        atomdb:create-media-resource( $request-path-info , request:get-data() , $request-media-type , $slug , $summary , $category ) 
+	        atomdb:create-media-resource( $request-path-info , request:get-data() , $request-media-type , $user-name , $slug , $summary , $category ) 
         else if ( $config:media-storage-mode = "FILE" ) then        
-	        atomdb:create-file-backed-media-resource-from-request-data( $request-path-info , $request-media-type , $slug , $summary , $category )
+	        atomdb:create-file-backed-media-resource-from-request-data( $request-path-info , $request-media-type , $user-name , $slug , $summary , $category )
 	    else ()
 	    
     (: TODO handle case where $media-link is empty? :)    
@@ -625,8 +632,9 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 {
 
     (: TODO bad request if expected form parts are missing :)
-    
-	(: check for file name to use as title :)
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )    
+
+    (: check for file name to use as title :)
 	let $file-name := request:get-uploaded-file-name( "media" )
 
 	(: check for summary param :)
@@ -638,9 +646,9 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
 	let $media-link :=
 	    if ( $config:media-storage-mode = "DB" ) then
 	        let $request-data := request:get-uploaded-file-data( "media" )
-	        return atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $file-name , $summary , $category ) 
+	        return atomdb:create-media-resource( $request-path-info , $request-data , $request-media-type , $user-name , $file-name , $summary , $category ) 
         else if ( $config:media-storage-mode = "FILE" ) then        
-	        atomdb:create-file-backed-media-resource-from-upload( $request-path-info , $request-media-type , $file-name , $summary , $category )
+	        atomdb:create-file-backed-media-resource-from-upload( $request-path-info , $request-media-type , $user-name , $file-name , $summary , $category )
 	    else ()
 	    
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )

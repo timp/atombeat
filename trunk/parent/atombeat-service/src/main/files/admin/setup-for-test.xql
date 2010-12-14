@@ -13,7 +13,7 @@ let $install-workspace-descriptor := atomsec:store-workspace-descriptor( $securi
 
 let $delete-test-collection := atomdb:delete-collection( "/test" , true() )
 
-let $create-test-collection := atomdb:create-collection( "/test" , <atom:feed><atom:title>Test Collection</atom:title></atom:feed> )
+let $create-test-collection := atomdb:create-collection( "/test" , <atom:feed><atom:title>Test Collection</atom:title></atom:feed> , "test" )
 
 let $status-set := response:set-status-code( 200 )
 

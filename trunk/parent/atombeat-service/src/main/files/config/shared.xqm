@@ -149,7 +149,9 @@ declare variable $config:media-storage-dir as xs:string :=
 
 (:~
  : The function that generates an identifier token to use when constructing the
- : Atom ID for a new collection member.
+ : Atom ID for a new collection member. N.B., if the identifier is not unique
+ : within the collection, a new identifier will be generated, until a unique
+ : identifier is found.
  :)
 declare function config:generate-identifier(
     $collection-path-info as xs:string
@@ -159,5 +161,20 @@ declare function config:generate-identifier(
     (: xutil:random-alphanumeric( 6 ) :) (: N.B. it's OK to use randoms because atomdb will automatically check for collisions within a collection :)
     (: xutil:random-alphanumeric( 7 , 21 , "0123456789abcdefghijk" , "abcdefghjkmnpqrstuxyz" ) :) 
 };
+
+
+
+declare function config:contruct-member-atom-id(
+    $identifier as xs:string ,
+    $collection-path-info as xs:string
+) as xs:string
+{
+    (: if using UUID to generate identifier... :)
+    concat( 'urn:uuid:' , $identifier )
+    (: alternatively, you could do something like... :)
+    (: concat( $config:self-link-uri-base , $collection-path-info , $identifier ) :)
+};
+
+
 
 
