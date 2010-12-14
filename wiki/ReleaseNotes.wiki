@@ -19,6 +19,8 @@ The signature of the following functions has changed:
   * atomdb:create-file-backed-media-resource-from-upload
   
 An additional parameter `$user-name` has been added to the function signature, to remove some of the dependencies of the `lib/atomdb.xqm` module on the eXist request function module. This change has been made to make testing the `lib/atomdb.xqm` functions easier.
+
+Upgrading to this release will require any custom XQuery modules that call any of the above functions to be modified to use the new function signature.
   
 == issue 129 - make atom:id construction configurable ==
 
