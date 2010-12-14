@@ -48,12 +48,15 @@
       <name>AtomBeat Non-Maven Dependencies Repository</name>
       <url>http://atombeat.googlecode.com/svn/repository</url>
     </repository>
+    <!--
     <repository>
       <id>cggh</id>
       <name>CGGH Maven Repository</name>
       <url>http://cloud1.cggh.org/maven2/</url>
     </repository>
+    -->
   </repositories>
+  <!--
   <distributionManagement>
     <repository>
       <id>cggh</id>
@@ -64,6 +67,7 @@
       <url>scp://cloud1.cggh.org/var/www/maven2/</url>
     </snapshotRepository>
   </distributionManagement>
+  -->
   <properties>
    	<org.springsecurity.version>3.1.0.M1</org.springsecurity.version>
    	<org.exist-db.version>1.4.0</org.exist-db.version>
