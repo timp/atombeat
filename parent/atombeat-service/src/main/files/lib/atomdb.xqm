@@ -211,7 +211,8 @@ declare function atomdb:feed-doc-db-path(
 
 declare function atomdb:create-collection(
 	$request-path-info as xs:string ,
-	$request-data as element(atom:feed) 
+	$request-data as element(atom:feed) ,
+	$user-name as xs:string?
 ) as xs:string?
 {
 
@@ -251,7 +252,7 @@ declare function atomdb:create-collection(
         		 
         		let $feed-doc-db-path := atomdb:feed-doc-db-path( $collection-db-path )
         
-        		let $feed := atomdb:create-feed( $request-path-info , $request-data )
+        		let $feed := atomdb:create-feed( $request-path-info , $request-data , $user-name )
         		
         		let $feed-doc-db-path := xmldb:store( $collection-db-path , $config:feed-doc-name , $feed , $CONSTANT:MEDIA-TYPE-ATOM )
         		
@@ -357,13 +358,14 @@ declare function atomdb:generate-member-identifier(
  :)
 declare function atomdb:create-member(
 	$collection-path-info as xs:string ,
-	$request-data as element(atom:entry) 
+	$request-data as element(atom:entry) ,
+	$user-name as xs:string?
 ) as element(atom:entry)?
 {
 
     let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
 
-    return atomdb:create-member( $collection-path-info , $member-id , $request-data )
+    return atomdb:create-member( $collection-path-info , $member-id , $request-data , $user-name )
 		
 };
 
@@ -380,7 +382,8 @@ declare function atomdb:create-member(
 declare function atomdb:create-member(
 	$collection-path-info as xs:string ,
 	$member-id as xs:string ,
-	$request-data as element(atom:entry) 
+	$request-data as element(atom:entry) ,
+	$user-name as xs:string?
 ) as element(atom:entry)?
 {
 
@@ -390,7 +393,7 @@ declare function atomdb:create-member(
 	
 	else
 
-	    let $entry := atomdb:create-entry( $collection-path-info, $request-data , $member-id )
+	    let $entry := atomdb:create-entry( $collection-path-info, $request-data , $member-id , $user-name )
 	    
 		(:
 		 : Map the request path info, e.g., "/foo", to a database collection path,
@@ -612,7 +615,8 @@ declare function atomdb:mutable-entry-children(
 
 declare function atomdb:create-feed( 
     $request-path-info as xs:string ,
-    $request-data as element(atom:feed)
+    $request-data as element(atom:feed) ,
+    $user-name as xs:string?
 ) as element(atom:feed) 
 {
 
@@ -624,7 +628,7 @@ declare function atomdb:create-feed(
     let $updated := current-dateTime()
     
     (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+(:    let $user-name := request:get-attribute( $config:user-name-request-attribute-key ) :)
     
     return
     
@@ -724,21 +728,19 @@ declare function atomdb:update-feed(
 
 
 declare function atomdb:create-entry(
-	$request-path-info as xs:string ,
+	$collection-path-info as xs:string ,
     $request-data as element(atom:entry) ,
-    $member-id as xs:string 
+    $member-id as xs:string ,
+    $user-name as xs:string?
 ) as element(atom:entry)
 {
 
-    let $path-info := concat( $request-path-info , "/" , $member-id )
+    let $path-info := concat( $collection-path-info , "/" , $member-id )
     let $self-uri := concat( $config:self-link-uri-base , $path-info )
     let $edit-uri := concat( $config:edit-link-uri-base , $path-info )
-    let $id := $self-uri
+    let $id := config:contruct-member-atom-id( $member-id , $collection-path-info )
     let $published := current-dateTime()
     let $updated := $published
-    
-    (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
     
     return
 	
@@ -773,6 +775,7 @@ declare function atomdb:create-media-link-entry(
 	$collection-path-info as xs:string ,
     $member-id as xs:string ,
     $media-type as xs:string ,
+    $user-name as xs:string? ,
     $media-link-title as xs:string? ,
     $media-link-summary as xs:string? ,
     $media-link-category as xs:string? ,
@@ -788,9 +791,6 @@ declare function atomdb:create-media-link-entry(
     let $published := current-dateTime()
     let $updated := $published
     
-    (: TODO review this, maybe provide user as function arg, rather than interrogate request here :)
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
-
     let $title :=
     	if ( $media-link-title ) then $media-link-title
     	else concat( $member-id , ".media" )
@@ -888,10 +888,11 @@ declare function atomdb:update-entry(
 declare function atomdb:create-media-resource(
 	$request-path-info as xs:string , 
 	$request-data as item()* , 
-	$media-type as xs:string 
+	$media-type as xs:string ,
+	$user-name as xs:string?
 ) as element(atom:entry)?
 {
-    atomdb:create-media-resource( $request-path-info , $request-data , $media-type , () , () , () )
+    atomdb:create-media-resource( $request-path-info , $request-data , $media-type , $user-name , () , () , () )
 };
 
 
@@ -901,6 +902,7 @@ declare function atomdb:create-media-resource(
 	$request-path-info as xs:string , 
 	$request-data as item()* , 
 	$media-type as xs:string ,
+	$user-name as xs:string? ,
 	$media-link-title as xs:string? ,
 	$media-link-summary as xs:string? ,
 	$media-link-category as xs:string?
@@ -915,7 +917,7 @@ declare function atomdb:create-media-resource(
 
 	let $media-resource-db-path := xmldb:store( $collection-db-path , $media-resource-name , $request-data , $media-type )
 	
-    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category , () )
+    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $user-name , $media-link-title , $media-link-summary , $media-link-category , () )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
     
@@ -929,6 +931,7 @@ declare function atomdb:create-media-resource(
 declare function atomdb:create-file-backed-media-resource-from-request-data(
 	$collection-path-info as xs:string , 
 	$media-type as xs:string ,
+	$user-name as xs:string? , 
 	$media-link-title as xs:string? ,
 	$media-link-summary as xs:string? ,
 	$media-link-category as xs:string?
@@ -947,7 +950,7 @@ declare function atomdb:create-file-backed-media-resource-from-request-data(
 
     let $md5 := atombeat-util:stream-request-data-to-file( $file-path )
     
-    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category , $md5 )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $user-name , $media-link-title , $media-link-summary , $media-link-category , $md5 )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
     
@@ -961,7 +964,8 @@ declare function atomdb:create-file-backed-media-resource-from-request-data(
 declare function atomdb:create-file-backed-media-resource-from-existing-media-resource(
 	$collection-path-info as xs:string , 
 	$media-type as xs:string ,
-	$existing-media-path-info as xs:string
+	$existing-media-path-info as xs:string ,
+	$user-name as xs:string?
 ) as element(atom:entry)?
 {
 
@@ -978,7 +982,7 @@ declare function atomdb:create-file-backed-media-resource-from-existing-media-re
 
     let $md5 := atombeat-util:copy-file( $existing-file-path , $new-file-path )
     
-    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , () , () , () , $md5 )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $user-name , () , () , () , $md5 )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     
@@ -992,6 +996,7 @@ declare function atomdb:create-file-backed-media-resource-from-existing-media-re
 declare function atomdb:create-file-backed-media-resource-from-upload(
 	$collection-path-info as xs:string , 
 	$media-type as xs:string ,
+	$user-name as xs:string? ,
 	$media-link-title as xs:string? ,
 	$media-link-summary as xs:string? ,
 	$media-link-category as xs:string?
@@ -1010,7 +1015,7 @@ declare function atomdb:create-file-backed-media-resource-from-upload(
 
     let $md5 := atombeat-util:save-upload-as( "media" , $file-path )
     
-    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $media-link-title , $media-link-summary , $media-link-category , $md5 )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $user-name , $media-link-title , $media-link-summary , $media-link-category , $md5 )
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM )    
     

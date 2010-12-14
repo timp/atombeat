@@ -38,7 +38,8 @@ declare function local:setup() as empty()
             <atom:title>TEST COLLECTION</atom:title>
         </atom:feed>
     
-    let $collection-db-path := atomdb:create-collection( $test-collection-path, $feed )
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    let $collection-db-path := atomdb:create-collection( $test-collection-path, $feed , $user-name )
     
     let $entry :=
         <atom:entry>
