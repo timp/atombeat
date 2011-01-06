@@ -2,7 +2,10 @@
 
 <wiki:toc/>
 
-= 0.2-alpha-3-SNAPSHOT =
+= 0.2-alpha-4-SNAPSHOT =
+
+
+= 0.2-alpha-3 =
 
 == issue 130 - remove references to request from atomdb xquery module ==
 
