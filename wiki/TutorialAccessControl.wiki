@@ -1,0 +1,42 @@
+#summary A tutorial on using AtomBeat's support for access control.
+
+<wiki:toc/>
+
+= Introduction =
+
+This tutorial provides an introduction to AtomBeat's support for access control.
+
+AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels. Atom protocol operations can be allowed or denied based on users, roles and groups.
+
+= Prerequisites =
+
+For this tutorial you need to deploy one of the security-enabled WAR packages of atombeat, e.g., atombeat-exist-minimal-secure. You will also need to deploy a version 0.2-alpha-4 or later.
+
+Please note that WAR packages in the 0.2-* series are *not* available from the project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
+
+{{{
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-4/atombeat-exist-minimal-secure-0.2-alpha-4.war
+}}} 
+
+...or you can check out and build it yourself (currently only works on Linux), e.g.:
+
+{{{
+svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-4
+cd atombeat-parent-0.2-alpha-4
+export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
+mvn install
+}}}
+
+This tutorial assumes you have downloaded the atombeat-exist-minimal-secure WAR package version 0.2-alpha-4 or later and deployed it to a local Tomcat or Jetty server running on port 8080, and that *you have deployed the WAR at the context path `/atombeat`*. 
+
+You will also need to have cURL installed. 
+
+This tutorial also assumes that you have a TCP proxy listening on port 8081 and forwarding to port 8080, so you can watch the HTTP traffic. If you are doing this tutorial without a TCP proxy, replace "8081" with "8080" wherever you see it below.
+
+To check that the AtomBeat web application is installed and running, go to http://localhost:8081/atombeat/ - you should see a web page saying, "It works!" 
+
+If you have problems with any of the above, try the [TutorialGettingStarted Getting Started Tutorial] or [mailto:atombeat@googlegroups.com email the AtomBeat google group].
+
+= Concepts =
+
+TODO
