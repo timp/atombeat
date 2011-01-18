@@ -8,7 +8,7 @@
 
 == issue 81 - reference groups where source is any atom member ==
 
-The way that out-of-line security groups are referenced from a security descriptor has changed. In this release, you can either reference a security group defined in another security descriptor, or you can reference a group defined in an atom collection member. 
+The way that out-of-line security groups are referenced from a security descriptor has changed. In this release, you can either reference a security group defined in another security descriptor, *or* you can reference a group defined in an Atom collection member. 
 
 To reference a group defined in a security descriptor, use the *security descriptor URI* in the `@src` attribute. E.g.:
 
@@ -22,7 +22,7 @@ To reference a group defined in a security descriptor, use the *security descrip
  </atombeat:security-descriptor>
 }}}
 
-To reference a group defined in an atom collection member, use the *member's edit URI* in the `@src` attribute.
+To reference a group defined in an Atom collection member, use the *member's edit URI* in the `@src` attribute.
 
 {{{
 <atombeat:security-descriptor>
@@ -33,6 +33,8 @@ To reference a group defined in an atom collection member, use the *member's edi
      </atombeat:acl>
  </atombeat:security-descriptor>
 }}}
+
+The definition of a group can appear *anywhere* within the member's Atom entry document. I.e., AtomBeat will use the XPath `//atombeat:group[@src='admins']` to find matching groups within the referenced document.
 
 In previous releases, you could only reference groups defined in a security descriptor, and this was done indirectly *via* the URI of the workspace, collection or member whose descriptor you wanted to reference. Upgrading to this release will require that any URIs given in `@src` attributes on `atombeat:group` elements are *changed* to point *directly* to the URI of the security descriptor containing the group definitions.
 
