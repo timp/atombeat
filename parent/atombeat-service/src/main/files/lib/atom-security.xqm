@@ -537,16 +537,34 @@ declare function atomsec:dereference-group(
 ) as element(group)?
 {
     
-    let $src := substring-after( $src , $config:self-link-uri-base )
+    (: is this a reference to a security descriptor? :)
     
-    let $descriptor :=
-        if ( $src = "/" )
-        then atomsec:retrieve-workspace-descriptor()
-        else if ( atomdb:collection-available( $src ) )
-        then atomsec:retrieve-collection-descriptor( $src )
-        else atomsec:retrieve-resource-descriptor( $src )
+    if ( starts-with( $src , $config:security-service-url ) )
+    
+    then
+    
+        let $src := substring-after( $src , $config:security-service-url )
         
-    return $descriptor/atombeat:groups/atombeat:group[@id=$id]  
+        let $descriptor :=
+            if ( $src = "/" )
+            then atomsec:retrieve-workspace-descriptor()
+            else if ( atomdb:collection-available( $src ) )
+            then atomsec:retrieve-collection-descriptor( $src )
+            else atomsec:retrieve-resource-descriptor( $src )
+            
+        return $descriptor/atombeat:groups/atombeat:group[@id=$id]  
+
+    (: is this a reference to a collection member? :)
+    
+    else if ( starts-with( $src , $config:edit-link-uri-base ) )
+    
+    then
+    
+        let $src := substring-after( $src , $config:edit-link-uri-base )
+        let $member := atomdb:retrieve-member( $src )
+        return $member//atombeat:group[@id=$id]  
+        
+    else ()
     
 };
 
