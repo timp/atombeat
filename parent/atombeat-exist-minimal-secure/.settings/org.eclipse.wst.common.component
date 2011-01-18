@@ -5,8 +5,5 @@
     <wb-resource deploy-path="/" source-path="src/main/webapp"/>
     <wb-resource deploy-path="/" source-path="target/atombeat-exist-minimal-secure"/>
     <property name="java-output-path" value="/target/classes"/>
-    <dependent-module archiveName="atombeat-xquery-functions.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/atombeat-xquery-functions/atombeat-xquery-functions">
-      <dependency-type>uses</dependency-type>
-    </dependent-module>
   </wb-module>
 </project-modules>
