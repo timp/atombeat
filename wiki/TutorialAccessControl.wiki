@@ -12,7 +12,7 @@ AtomBeat's security plugin has support for fine-grained access control policies 
 
 For this tutorial you need to deploy one of the security-enabled WAR packages of atombeat, e.g., atombeat-exist-minimal-secure. You will also need to deploy a version 0.2-alpha-4 or later.
 
-Please note that WAR packages in the 0.2-* series are *not* available from the project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
+Please note that WAR packages in the 0.2 series are *not* available from the project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
 
 {{{
 wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-4/atombeat-exist-minimal-secure-0.2-alpha-4.war
@@ -31,7 +31,7 @@ This tutorial assumes you have downloaded the atombeat-exist-minimal-secure WAR 
 
 You will also need to have cURL installed. 
 
-This tutorial also assumes that you have a TCP proxy listening on port 8081 and forwarding to port 8080, so you can watch the HTTP traffic. If you are doing this tutorial without a TCP proxy, replace "8081" with "8080" wherever you see it below.
+This tutorial also assumes that you have a TCP proxy listening on port 8081 and forwarding to port 8080, so you can watch the HTTP traffic. If you are doing this tutorial *without* a TCP proxy, replace "8081" with "8080" wherever you see it below.
 
 To check that the AtomBeat web application is installed and running, go to http://localhost:8081/atombeat/ - you should see a web page saying, "It works!" 
 
