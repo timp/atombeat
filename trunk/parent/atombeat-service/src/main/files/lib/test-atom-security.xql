@@ -20,10 +20,13 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 
 declare variable $test-collection-path as xs:string := "/test-security" ;
 declare variable $test-member-id as xs:string := "XYZ" ;
+declare variable $another-test-member-id as xs:string := "ABC" ;
 declare variable $test-member-path as xs:string := concat( $test-collection-path , "/" , $test-member-id ) ;
+declare variable $another-test-member-path as xs:string := concat( $test-collection-path , "/" , $another-test-member-id ) ;
 declare variable $workspace-uri := concat( $config:edit-link-uri-base , "/" ) ;
 declare variable $test-collection-uri := concat( $config:edit-link-uri-base , $test-collection-path ) ; 
 declare variable $test-member-uri := concat( $config:edit-link-uri-base , $test-member-path ) ;
+declare variable $another-test-member-uri := concat( $config:edit-link-uri-base , $another-test-member-path ) ;
 
 
 
@@ -46,7 +49,7 @@ declare function local:setup() as empty()
             <atom:title>TEST ENTRY</atom:title>
         </atom:entry>
         
-    let $member-db-path := atomdb:store-member( $test-collection-path , concat( $test-member-id , ".atom" ) , $entry )    
+    let $member-db-path := atomdb:create-member( $test-collection-path , $test-member-id , $entry , $user-name )    
     
     return ()
 
@@ -58,7 +61,7 @@ declare function local:setup() as empty()
 declare function local:test-workspace-descriptor() as item()*
 {
 
-    let $output := ( "test-workspace-descriptor..." )
+    let $output := ( "== test-workspace-descriptor ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -138,7 +141,7 @@ declare function local:test-workspace-descriptor() as item()*
 declare function local:test-collection-descriptor() as item()*
 {
 
-    let $output := ( "test-collection-descriptor..." )
+    let $output := ( "== test-collection-descriptor ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -274,7 +277,7 @@ declare function local:test-collection-descriptor() as item()*
 declare function local:test-resource-descriptor()
 {
 
-    let $output := ( "test-resource-descriptor..." )
+    let $output := ( "== test-resource-descriptor ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -470,7 +473,7 @@ declare function local:test-resource-descriptor()
 declare function local:test-wildcards() as item()*
 {
 
-    let $output := ( "test-wildcards..." )
+    let $output := ( "== test-wildcards ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -520,7 +523,7 @@ declare function local:test-wildcards() as item()*
 declare function local:test-media-range-condition() as item()*
 {
 
-    let $output := ( "test-media-range-condition..." )
+    let $output := ( "== test-media-range-condition ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -652,7 +655,7 @@ declare function local:test-media-range-condition() as item()*
 declare function local:test-match-request-path-info-condition() as item()*
 {
 
-    let $output := ( "test-match-request-path-info-condition..." )
+    let $output := ( "== test-match-request-path-info-condition ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -736,7 +739,7 @@ declare function local:test-match-request-path-info-condition() as item()*
 declare function local:test-inline-groups() as item()*
 {
 
-    let $output := ( "test-inline-groups..." )
+    let $output := ( "== test-inline-groups ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -850,13 +853,34 @@ declare function local:test-inline-groups() as item()*
 
 
 
-declare function local:test-reference-workspace-groups() as item()*
+(:~
+ : This function tests whether groups defined in an atom entry
+ : can be referenced from a security descriptor.
+ :)
+declare function local:test-reference-groups-in-member() as item()*
 {
 
-    let $output := ( "test-reference-workspace-groups..." )
+    let $output := ( "== test-reference-groups-in-member ==" )
     
+    (: an empty workspace descriptor for this test :)
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+    
+    (: an empty collection descriptor for this test :)
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
+        
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
+    
+    (: create an atom entry with some groups in it :)
+    
+    let $entry :=
+        <atom:entry>
+            <atom:title>TEST ENTRY WITH GROUPS</atom:title>
             <atombeat:groups>
                 <atombeat:group id="readers">
                     <atombeat:member>richard</atombeat:member>
@@ -871,147 +895,19 @@ declare function local:test-reference-workspace-groups() as item()*
                     <atombeat:member>edward</atombeat:member>
                 </atombeat:group>
             </atombeat:groups>
-        </atombeat:security-descriptor>
+        </atom:entry>
         
-    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    let $member-created := atomdb:create-member( $test-collection-path , $another-test-member-id , $entry , $user-name )    
     
-    let $collection-descriptor :=
-        <atombeat:security-descriptor>
-            <atombeat:groups>
-                <atombeat:group id="readers" src="{$workspace-uri}"/>
-                <atombeat:group id="authors" src="{$workspace-uri}"/>
-                <atombeat:group id="editors" src="{$workspace-uri}"/>
-            </atombeat:groups>
-            <atombeat:acl>
-                <atombeat:ace>
-                    <atombeat:type>ALLOW</atombeat:type>
-                    <atombeat:recipient type="group">readers</atombeat:recipient>
-                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
-                </atombeat:ace>
-                <atombeat:ace>
-                    <atombeat:type>ALLOW</atombeat:type>
-                    <atombeat:recipient type="group">authors</atombeat:recipient>
-                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
-                </atombeat:ace>
-                <atombeat:ace>
-                    <atombeat:type>ALLOW</atombeat:type>
-                    <atombeat:recipient type="group">editors</atombeat:recipient>
-                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
-                </atombeat:ace>
-            </atombeat:acl>
-        </atombeat:security-descriptor>
+    let $groups-src-uri := $another-test-member-uri
     
-    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
-    
-    (: test readers :)
-    
-    let $request-path-info := $test-member-path
-    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
-    let $media-type := ()
-    let $user := "richard"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
-    
-    let $request-path-info := $test-member-path
-    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
-    let $media-type := ()
-    let $user := "rebecca"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
-    
-    let $request-path-info := $test-collection-path
-    let $permission := $CONSTANT:OP-CREATE-MEMBER
-    let $media-type := ()
-    let $user := "richard"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to create collection members" ) )
-    
-    let $request-path-info := $test-member-path
-    let $permission := $CONSTANT:OP-UPDATE-MEMBER
-    let $media-type := ()
-    let $user := "rebecca"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update collection members" ) )
-    
-    (: test authors :)
-    
-    let $request-path-info := $test-collection-path
-    let $permission := $CONSTANT:OP-CREATE-MEMBER
-    let $media-type := ()
-    let $user := "alice"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "authors should be allowed to create collection members" ) )
-    
-    let $request-path-info := $test-member-path
-    let $permission := $CONSTANT:OP-UPDATE-MEMBER
-    let $media-type := ()
-    let $user := "austin"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "DENY" , $decision , "authors should not be allowed to update collection members" ) )
-    
-    (: test editors :)
-    
-    let $request-path-info := $test-member-path
-    let $permission := $CONSTANT:OP-UPDATE-MEMBER
-    let $media-type := ()
-    let $user := "emma"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update collection members" ) )
-    
-    let $request-path-info := $test-collection-path
-    let $permission := $CONSTANT:OP-CREATE-MEMBER
-    let $media-type := ()
-    let $user := "edward"
-    let $roles := ()
-    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
-    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to create collection members" ) )
-    
-    return $output
-};
-
-
-
-declare function local:test-reference-collection-groups() as item()*
-{
-
-    (: TODO update for new ACL syntax :)
-
-    let $output := ( "test-reference-collection-groups..." )
-    
-    let $workspace-descriptor :=
-        <atombeat:security-descriptor>
-        </atombeat:security-descriptor>
-        
-    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
-    
-    let $collection-descriptor :=
-        <atombeat:security-descriptor>
-            <atombeat:groups>
-                <atombeat:group id="readers">
-                    <atombeat:member>richard</atombeat:member>
-                    <atombeat:member>rebecca</atombeat:member>
-                </atombeat:group>
-                <atombeat:group id="editors">
-                    <atombeat:member>emma</atombeat:member>
-                    <atombeat:member>edward</atombeat:member>
-                </atombeat:group>
-            </atombeat:groups>
-        </atombeat:security-descriptor>
-        
-    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
-    
+    (: a member security descriptor that sources groups from another member :)
     let $resource-descriptor :=
         <atombeat:security-descriptor>
             <atombeat:groups>
-                <atombeat:group id="readers" src="{$test-collection-uri}"/>
-                <atombeat:group id="editors" src="{$test-collection-uri}"/>
+                <atombeat:group id="readers" src="{$groups-src-uri}"/>
+                <atombeat:group id="editors" src="{$groups-src-uri}"/>
             </atombeat:groups>
             <atombeat:acl>
                 <atombeat:ace>
@@ -1078,10 +974,376 @@ declare function local:test-reference-collection-groups() as item()*
 
 
 
-declare function local:test-reference-resource-groups() as item()*
+
+(:~
+ : This function tests whether groups defined in an atom entry
+ : can be referenced from a security descriptor.
+ :)
+declare function local:test-reference-groups-in-member-content() as item()*
 {
 
-    let $output := ( "test-reference-resource-groups..." )
+    let $output := ( "== test-reference-groups-in-member-content ==" )
+    
+    (: an empty workspace descriptor for this test :)
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+    
+    (: an empty collection descriptor for this test :)
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
+        
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
+    
+    (: create an atom entry with some groups in it :)
+    
+    let $entry :=
+        <atom:entry>
+            <atom:title>TEST ENTRY WITH GROUPS</atom:title>
+            <atom:content type="application/xml">
+                <atombeat:groups>
+                    <atombeat:group id="readers">
+                        <atombeat:member>richard</atombeat:member>
+                        <atombeat:member>rebecca</atombeat:member>
+                    </atombeat:group>
+                    <atombeat:group id="authors">
+                        <atombeat:member>alice</atombeat:member>
+                        <atombeat:member>austin</atombeat:member>
+                    </atombeat:group>
+                    <atombeat:group id="editors">
+                        <atombeat:member>emma</atombeat:member>
+                        <atombeat:member>edward</atombeat:member>
+                    </atombeat:group>
+                </atombeat:groups>
+            </atom:content>
+        </atom:entry>
+        
+    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    let $member-created := atomdb:create-member( $test-collection-path , $another-test-member-id , $entry , $user-name )    
+    
+    let $groups-src-uri := $another-test-member-uri
+    
+    (: a member security descriptor that sources groups from another member :)
+    let $resource-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers" src="{$groups-src-uri}"/>
+                <atombeat:group id="editors" src="{$groups-src-uri}"/>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+
+    let $resource-descriptor-doc-db-path := atomsec:store-resource-descriptor( $test-member-path , $resource-descriptor )  
+    
+    (: test readers :)
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
+    let $media-type := ()
+    let $user := "richard"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
+    let $media-type := ()
+    let $user := "rebecca"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "rebecca"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update the resource" ) )
+    
+    (: test editors :)
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "emma"
+    let $roles := ()
+    let $decision := atomsec:decide($user , $roles , $request-path-info , $permission , $media-type)
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update the resource" ) )
+    
+    let $request-path-info := $test-collection-path
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
+    let $media-type := ()
+    let $user := "edward"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to delete the resource" ) )
+    
+    return $output
+};
+
+
+
+
+declare function local:test-reference-groups-in-workspace-descriptor() as item()*
+{
+
+    let $output := ( "== test-reference-groups-in-workspace-descriptor ==" )
+    
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers">
+                    <atombeat:member>richard</atombeat:member>
+                    <atombeat:member>rebecca</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="authors">
+                    <atombeat:member>alice</atombeat:member>
+                    <atombeat:member>austin</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="editors">
+                    <atombeat:member>emma</atombeat:member>
+                    <atombeat:member>edward</atombeat:member>
+                </atombeat:group>
+            </atombeat:groups>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+    
+    let $groups-src-uri := concat( $config:security-service-url , '/' )
+    
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers" src="{$groups-src-uri}"/>
+                <atombeat:group id="authors" src="{$groups-src-uri}"/>
+                <atombeat:group id="editors" src="{$groups-src-uri}"/>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">authors</atombeat:recipient>
+                    <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+    
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
+    
+    (: test readers :)
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
+    let $media-type := ()
+    let $user := "richard"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
+    let $media-type := ()
+    let $user := "rebecca"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve collection members" ) )
+    
+    let $request-path-info := $test-collection-path
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
+    let $media-type := ()
+    let $user := "richard"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to create collection members" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "rebecca"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update collection members" ) )
+    
+    (: test authors :)
+    
+    let $request-path-info := $test-collection-path
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
+    let $media-type := ()
+    let $user := "alice"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "authors should be allowed to create collection members" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "austin"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "authors should not be allowed to update collection members" ) )
+    
+    (: test editors :)
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "emma"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update collection members" ) )
+    
+    let $request-path-info := $test-collection-path
+    let $permission := $CONSTANT:OP-CREATE-MEMBER
+    let $media-type := ()
+    let $user := "edward"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to create collection members" ) )
+    
+    return $output
+};
+
+
+
+(:~
+ : This function tests whether groups defined in a collection security descriptor
+ : can be referenced from another descriptor.
+ :)
+declare function local:test-reference-groups-in-collection-descriptor() as item()*
+{
+
+    let $output := ( "== test-reference-groups-in-collection-descriptor ==" )
+    
+    (: an empty workspace descriptor for this test :)
+    let $workspace-descriptor :=
+        <atombeat:security-descriptor>
+        </atombeat:security-descriptor>
+        
+    let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
+    
+    (: a collection security descriptor which defines some inline groups :)
+    let $collection-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers">
+                    <atombeat:member>richard</atombeat:member>
+                    <atombeat:member>rebecca</atombeat:member>
+                </atombeat:group>
+                <atombeat:group id="editors">
+                    <atombeat:member>emma</atombeat:member>
+                    <atombeat:member>edward</atombeat:member>
+                </atombeat:group>
+            </atombeat:groups>
+        </atombeat:security-descriptor>
+        
+    let $collection-descriptor-doc-db-path := atomsec:store-collection-descriptor( $test-collection-path , $collection-descriptor )
+    
+    let $groups-src-uri := concat( $config:security-service-url , $test-collection-path )
+    
+    (: a security descriptor that sources groups from another descriptor :)
+    let $resource-descriptor :=
+        <atombeat:security-descriptor>
+            <atombeat:groups>
+                <atombeat:group id="readers" src="{$groups-src-uri}"/>
+                <atombeat:group id="editors" src="{$groups-src-uri}"/>
+            </atombeat:groups>
+            <atombeat:acl>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">readers</atombeat:recipient>
+                    <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+                <atombeat:ace>
+                    <atombeat:type>ALLOW</atombeat:type>
+                    <atombeat:recipient type="group">editors</atombeat:recipient>
+                    <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+                </atombeat:ace>
+            </atombeat:acl>
+        </atombeat:security-descriptor>
+
+    let $resource-descriptor-doc-db-path := atomsec:store-resource-descriptor( $test-member-path , $resource-descriptor )  
+    
+    (: test readers :)
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
+    let $media-type := ()
+    let $user := "richard"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-RETRIEVE-MEMBER
+    let $media-type := ()
+    let $user := "rebecca"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "readers should be allowed to retrieve the resource" ) )
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "rebecca"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "readers should not be allowed to update the resource" ) )
+    
+    (: test editors :)
+    
+    let $request-path-info := $test-member-path
+    let $permission := $CONSTANT:OP-UPDATE-MEMBER
+    let $media-type := ()
+    let $user := "emma"
+    let $roles := ()
+    let $decision := atomsec:decide($user , $roles , $request-path-info , $permission , $media-type)
+    let $output := ( $output , test:assert-equals( "ALLOW" , $decision , "editors should be allowed to update the resource" ) )
+    
+    let $request-path-info := $test-collection-path
+    let $permission := $CONSTANT:OP-DELETE-MEMBER
+    let $media-type := ()
+    let $user := "edward"
+    let $roles := ()
+    let $decision := atomsec:decide( $user , $roles , $request-path-info , $permission , $media-type )
+    let $output := ( $output , test:assert-equals( "DENY" , $decision , "editors should not be allowed to delete the resource" ) )
+    
+    return $output
+};
+
+
+
+(:~
+ : This function tests whether groups defined in a resource security descriptor
+ : can be referenced from another descriptor.
+ :)
+declare function local:test-reference-groups-in-resource-descriptor() as item()*
+{
+
+    let $output := ( "== test-reference-groups-in-resource-descriptor ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -1089,11 +1351,13 @@ declare function local:test-reference-resource-groups() as item()*
         
     let $workspace-descriptor-doc-db-path := atomsec:store-workspace-descriptor($workspace-descriptor)
     
+    let $groups-src-uri := concat( $config:security-service-url , $test-member-path )
+    
     let $collection-descriptor :=
         <atombeat:security-descriptor>
             <atombeat:groups>
-                <atombeat:group id="readers" src="{$test-member-uri}"/>
-                <atombeat:group id="editors" src="{$test-member-uri}"/>
+                <atombeat:group id="readers" src="{$groups-src-uri}"/>
+                <atombeat:group id="editors" src="{$groups-src-uri}"/>
             </atombeat:groups>
             <atombeat:acl>
                 <atombeat:ace>
@@ -1180,7 +1444,7 @@ declare function local:test-reference-resource-groups() as item()*
 declare function local:test-update-workspace-descriptor() as item()*
 {
 
-    let $output := ( "test-update-workspace-descriptor..." )
+    let $output := ( "== test-update-workspace-descriptor ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -1240,7 +1504,7 @@ declare function local:test-update-workspace-descriptor() as item()*
 declare function local:test-processing-order() as item()*
 {
 
-    let $output := ( "test-processing-order..." )
+    let $output := ( "== test-processing-order ==" )
     
     let $workspace-descriptor :=
         <atombeat:security-descriptor>
@@ -1279,7 +1543,7 @@ declare function local:test-processing-order() as item()*
 declare function local:test-whitespace() as item()*
 {
 
-    let $output := ( "test-whitespace..." )
+    let $output := ( "== test-whitespace ==" )
     
     (: to improve efficiency of acl processing, whitespace is no longer allowed :)
     
@@ -1328,9 +1592,11 @@ declare function local:main() as item()*
         local:test-media-range-condition() ,
         local:test-match-request-path-info-condition() ,
         local:test-inline-groups() ,
-        local:test-reference-workspace-groups() ,
-        local:test-reference-collection-groups() ,
-        local:test-reference-resource-groups() ,
+        local:test-reference-groups-in-member() ,
+        local:test-reference-groups-in-member-content() ,
+        local:test-reference-groups-in-workspace-descriptor() ,
+        local:test-reference-groups-in-collection-descriptor() ,
+        local:test-reference-groups-in-resource-descriptor() ,
         local:test-update-workspace-descriptor() ,
         local:test-processing-order() ,
         local:test-whitespace()
