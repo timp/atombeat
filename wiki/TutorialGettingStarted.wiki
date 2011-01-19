@@ -14,7 +14,7 @@ This tutorial covers the following topics:
 
 = Prerequisites =
 
-You will need to have a servlet container like [http://tomcat.apache.org/download-60.cgi Tomcat] or [http://docs.codehaus.org/display/JETTY/Downloading+Jetty Jetty] installed on your computer, and you will need to know how to deploy a WAR file. AtomBeat 0.1 has been tested with Tomcat 6.0 and Jetty 6.1.
+You will need to have a servlet container like [http://tomcat.apache.org/download-60.cgi Tomcat] or [http://docs.codehaus.org/display/JETTY/Downloading+Jetty Jetty] installed on your computer, and you will need to know how to deploy a WAR file. AtomBeat 0.2 has been tested with Tomcat 6.0 and Jetty 6.1.
 
 You will need to have the cURL HTTP command-line utility installed on your computer. If you're on a Linux computer, you probably already have curl installed, or can install it via a software repository, e.g.:
 
@@ -67,7 +67,7 @@ sudo chown -R tomcat6:tomcat6 /opt/atombeat-exist-minimal-0.2-alpha-4
 sudo service tomcat6 restart
 }}}
 
-The rest of the tutorial assumes you have *deployed the AtomBeat web application at the context path /atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from `atombeat-exist-minimal-0.1-RC7.war` to `atombeat.war` before you do, to make sure it gets deployed to the right context path.
+The rest of the tutorial assumes you have *deployed the AtomBeat web application at the context path /atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from `atombeat-exist-minimal-0.2-alpha-4.war` to `atombeat.war` before you do, to make sure it gets deployed to the right context path.
 
 Once you've done this, restart your servlet container, and point your browser to http://localhost:8080/atombeat/ - you should see a web page saying, "It works!" 
 
@@ -297,7 +297,7 @@ E.g., create a new file `entry1-updated.xml` in your current directory containin
   <atom:title>Atom-Powered Robots Run Amok</atom:title>
   <atom:content type="xhtml">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p><em>AtomBeat 0.1 has been released!</em></p>
+      <p><em>AtomBeat 0.2 has been released!</em></p>
     </div>
   </atom:content>
 </atom:entry>
@@ -324,7 +324,7 @@ Content-Length: 306
   <atom:title>Atom-Powered Robots Run Amok</atom:title>
   <atom:content type="xhtml">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p><em>AtomBeat 0.1 has been released!</em></p>
+      <p><em>AtomBeat 0.2 has been released!</em></p>
     </div>
   </atom:content>
 </atom:entry>
@@ -350,7 +350,7 @@ Date: Thu, 14 Oct 2010 17:45:57 GMT
     <atom:content type="xhtml">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-                <em>AtomBeat 0.1 has been released!</em>
+                <em>AtomBeat 0.2 has been released!</em>
             </p>
         </div>
     </atom:content>

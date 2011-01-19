@@ -179,7 +179,7 @@ Content-Length: 306
   <atom:title>Atom-Powered Robots Run Amok</atom:title>
   <atom:content type="xhtml">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p><em>AtomBeat 0.1 has been released!</em></p>
+      <p><em>AtomBeat 0.2 has been released!</em></p>
     </div>
   </atom:content>
 </atom:entry>
@@ -205,7 +205,7 @@ Date: Fri, 15 Oct 2010 15:39:35 GMT
     <atom:content type="xhtml">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-                <em>AtomBeat 0.1 has been released!</em>
+                <em>AtomBeat 0.2 has been released!</em>
             </p>
         </div>
     </atom:content>
@@ -408,7 +408,7 @@ Date: Fri, 15 Oct 2010 15:53:43 GMT
     <atom:content type="xhtml">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-                <em>AtomBeat 0.1 has been released!</em>
+                <em>AtomBeat 0.2 has been released!</em>
             </p>
         </div>
     </atom:content>
@@ -444,7 +444,7 @@ E.g., create a file "entry1-updated-again.xml" in your current directory contain
   <atom:title>Atom-Powered Robots Run Amok</atom:title>
   <atom:content type="xhtml">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p><em>AtomBeat 0.1 has been released!</em></p>
+      <p><em>AtomBeat 0.2 has been released!</em></p>
       <p><a href="http://purl.org/atombeat">Visit purl.org/atombeat to find out more.</a></p>
     </div>
   </atom:content>
@@ -475,7 +475,7 @@ Content-Length: 400
   <atom:title>Atom-Powered Robots Run Amok</atom:title>
   <atom:content type="xhtml">
     <div xmlns="http://www.w3.org/1999/xhtml">
-      <p><em>AtomBeat 0.1 has been released!</em></p>
+      <p><em>AtomBeat 0.2 has been released!</em></p>
       <p><a href="http://purl.org/atombeat">Visit purl.org/atombeat to find out more.</a></p>
     </div>
   </atom:content>
@@ -502,7 +502,7 @@ Date: Fri, 15 Oct 2010 16:09:57 GMT
     <atom:content type="xhtml">
         <div xmlns="http://www.w3.org/1999/xhtml">
             <p>
-                <em>AtomBeat 0.1 has been released!</em>
+                <em>AtomBeat 0.2 has been released!</em>
             </p>
             <p>
                 <a href="http://purl.org/atombeat">Visit purl.org/atombeat to find out more.</a>
