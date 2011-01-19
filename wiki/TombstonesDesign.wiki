@@ -11,8 +11,6 @@ $ export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
 $ mvn clean install
 }}} 
 
-N.B., in 0.2-alpha-2 the default path to the atombeat service is changing from "/workspace" to "/service" in all atombeat web application packages. 
-
 ----
 *Table of Contents*
 
@@ -26,7 +24,7 @@ Tombstones are enabled on a per-collection basis. By default, tombstones are not
 E.g., if the collection /foo does not already exist, the request:
 
 {{{
-PUT /atombeat/workspace/content/foo HTTP/1.1
+PUT /atombeat/service/content/foo HTTP/1.1
 Host: example.org
 Content-Type: application/atom+xml
 
@@ -42,13 +40,13 @@ Content-Type: application/atom+xml
 
 {{{
 HTTP/1.1 201 Created
-Location: http://example.org/atombeat/workspace/content/foo
+Location: http://example.org/atombeat/service/content/foo
 }}}
 
 E.g., if the collection /foo already exists, the request:
 
 {{{
-PUT /atombeat/workspace/content/foo HTTP/1.1
+PUT /atombeat/service/content/foo HTTP/1.1
 Host: example.org
 Content-Type: application/atom+xml
 
@@ -74,7 +72,7 @@ Assume that a collection member already exists at /foo/xyz.atom, with the follow
 
 {{{
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://example.org/atombeat/workspace/content/foo/xyz.atom</atom:id>
+    <atom:id>http://example.org/atombeat/service/content/foo/xyz.atom</atom:id>
     <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
     <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
     <atom:author>
@@ -82,8 +80,8 @@ Assume that a collection member already exists at /foo/xyz.atom, with the follow
     </atom:author>
     <atom:title type="text">Atom-Powered Robots Run Amok</atom:title>
     <atom:summary type="text">Some text.</atom:summary>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/foo/xyz.atom"/>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/foo/xyz.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/foo/xyz.atom"/>
 </atom:entry>
 }}}
 
@@ -94,7 +92,7 @@ Assume that this is the only member of the collection at /foo.
 The collection member can be deleted with the request:
 
 {{{
-DELETE /atombeat/workspace/content/foo/xyz.atom HTTP/1.1
+DELETE /atombeat/service/content/foo/xyz.atom HTTP/1.1
 X-Atom-Tombstone-Comment: Removed comment spam
 Host: example.org
 }}}
@@ -115,7 +113,7 @@ Content-Type: application/atomdeleted+xml
   xmlns:atom="http://www.w3.org/2005/Atom"
   xmlns:atombeat="http://purl.org/atombeat/xmlns"
   xmlns:at="http://purl.org/atompub/tombstones/1.0"
-  ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+  ref="http://example.org/atombeat/service/content/foo/xyz.atom"
   when="2010-10-26T18:29:48.687+01:00">
   <at:by>
     <atom:name>jdoe</atom:name>
@@ -129,7 +127,7 @@ Content-Type: application/atomdeleted+xml
 If tombstones are *not* enabled, a subsequent request to retrieve the member:
 
 {{{
-GET /atombeat/workspace/content/foo/xyz.atom HTTP/1.1
+GET /atombeat/service/content/foo/xyz.atom HTTP/1.1
 Host: example.org
 }}}
 
@@ -149,7 +147,7 @@ Content-Type: application/atomdeleted+xml
   xmlns:atom="http://www.w3.org/2005/Atom"
   xmlns:atombeat="http://purl.org/atombeat/xmlns"
   xmlns:at="http://purl.org/atompub/tombstones/1.0"
-  ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+  ref="http://example.org/atombeat/service/content/foo/xyz.atom"
   when="2010-10-26T18:29:48.687+01:00">
   <at:by>
     <atom:name>jdoe</atom:name>
@@ -163,7 +161,7 @@ Content-Type: application/atomdeleted+xml
 If tombstones are *not* enabled, a subsequent request to list the collection:
 
 {{{
-GET /atombeat/workspace/content/foo HTTP/1.1
+GET /atombeat/service/content/foo HTTP/1.1
 Host: example.org
 }}}
 
@@ -174,11 +172,11 @@ HTTP/1.1 200 OK
 Content-Type: application/atom+xml
 
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns">
-    <atom:id>http://example.org/atombeat/workspace/content/foo</atom:id>
+    <atom:id>http://example.org/atombeat/service/content/foo</atom:id>
     <atom:updated>2010-10-26T18:29:48.687+01:00</atom:updated>
     <atom:title type="text">Test Collection</atom:title>
-    <atom:link rel="self" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
-    <atom:link rel="edit" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
+    <atom:link rel="self" href="http://example.org/atombeat/service/content/foo" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://example.org/atombeat/service/content/foo" type="application/atom+xml;type=feed"/>
 </atom:feed>
 }}}
 
@@ -189,13 +187,13 @@ HTTP/1.1 200 OK
 Content-Type: application/atom+xml
 
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:tombstones-enabled="true">
-    <atom:id>http://example.org/atombeat/workspace/content/foo</atom:id>
+    <atom:id>http://example.org/atombeat/service/content/foo</atom:id>
     <atom:updated>2010-10-26T18:29:48.687+01:00</atom:updated>
     <atom:title type="text">Test Collection</atom:title>
-    <atom:link rel="self" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
-    <atom:link rel="edit" href="http://example.org/atombeat/workspace/content/foo" type="application/atom+xml;type=feed"/>
+    <atom:link rel="self" href="http://example.org/atombeat/service/content/foo" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://example.org/atombeat/service/content/foo" type="application/atom+xml;type=feed"/>
     <at:deleted-entry xmlns:at="http://purl.org/atompub/tombstones/1.0"
-      ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+      ref="http://example.org/atombeat/service/content/foo/xyz.atom"
       when="2010-10-26T18:29:48.687+01:00">
       <at:by>
         <atom:name>jdoe</atom:name>
@@ -210,7 +208,7 @@ Content-Type: application/atom+xml
 The behaviour of the tombstones implementation w.r.t. the atombeat:ghost element within at:deleted-entry elements can be configured on a per-collection basis. To configure the elements to be copied from the condemned entry into the ghost, update the collection feed document, e.g.:
 
 {{{
-PUT /atombeat/workspace/content/foo HTTP/1.1
+PUT /atombeat/service/content/foo HTTP/1.1
 Host: example.org
 Content-Type: application/atom+xml
 
@@ -230,7 +228,7 @@ Content-Type: application/atom+xml
 Then, deleting the collection member:
 
 {{{
-DELETE /atombeat/workspace/content/foo/xyz.atom HTTP/1.1
+DELETE /atombeat/service/content/foo/xyz.atom HTTP/1.1
 X-Atom-Tombstone-Comment: Removed comment spam
 Host: example.org
 }}}
@@ -245,7 +243,7 @@ Content-Type: application/atomdeleted+xml
   xmlns:atom="http://www.w3.org/2005/Atom"
   xmlns:atombeat="http://purl.org/atombeat/xmlns"
   xmlns:at="http://purl.org/atompub/tombstones/1.0"
-  ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+  ref="http://example.org/atombeat/service/content/foo/xyz.atom"
   when="2010-10-26T18:29:48.687+01:00">
   <at:by>
     <atom:name>jdoe</atom:name>
@@ -277,7 +275,7 @@ A subsequent request to list the collection will behave as for deletion of norma
 A subsequent request to retrieve the media resource:
 
 {{{
-GET /atombeat/workspace/content/foo/xyz.media HTTP/1.1
+GET /atombeat/service/content/foo/xyz.media HTTP/1.1
 Host: example.org
 }}}
 
@@ -302,7 +300,7 @@ Assume the member is then deleted.
 If tombstones are *not* enabled on the collection, then a subsequent request to the history link URI for the member:
 
 {{{
-GET /atombeat/workspace/history/my-versioned-collection/xyz.atom HTTP/1.1
+GET /atombeat/service/history/my-versioned-collection/xyz.atom HTTP/1.1
 Host: example.org
 }}}
 
@@ -324,14 +322,14 @@ Transfer-Encoding: chunked
 Date: Fri, 15 Oct 2010 15:42:07 GMT
 
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:exclude-entry-content="true">
-    <atom:id>http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom</atom:id>
+    <atom:id>http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom</atom:id>
     <atom:title type="text">Version History</atom:title>
     <atom:updated>2010-10-15T16:39:35.649+01:00</atom:updated>
-    <atom:link rel="self" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom" type="application/atom+xml;type=feed"/>
-    <atom:link rel="http://purl.org/atombeat/rel/versioned" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom" type="application/atom+xml;type=entry"/>
+    <atom:link rel="self" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom" type="application/atom+xml;type=feed"/>
+    <atom:link rel="http://purl.org/atombeat/rel/versioned" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom" type="application/atom+xml;type=entry"/>
     <atom:entry>
         <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="1" when="2010-10-15T16:34:32.897+01:00" initial="yes"/>
-        <atom:id>http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom</atom:id>
+        <atom:id>http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom</atom:id>
         <atom:published>2010-10-15T16:34:32.897+01:00</atom:published>
         <atom:updated>2010-10-15T16:34:32.897+01:00</atom:updated>
         <atom:author>
@@ -346,16 +344,16 @@ Date: Fri, 15 Oct 2010 15:42:07 GMT
             <atom:updated>2010-10-15T16:34:32.897+01:00</atom:updated>
             <atom:summary>initial revision</atom:summary>
         </ar:comment>
-        <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
-        <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
-        <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
-        <atom:link rel="next-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
-        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
-        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="next-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=2"/>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
     </atom:entry>
     <atom:entry>
         <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="2" when="2010-10-15T16:39:35.649+01:00" initial="no"/>
-        <atom:id>http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom</atom:id>
+        <atom:id>http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom</atom:id>
         <atom:published>2010-10-15T16:34:32.897+01:00</atom:published>
         <atom:updated>2010-10-15T16:39:35.649+01:00</atom:updated>
         <atom:author>
@@ -370,27 +368,27 @@ Date: Fri, 15 Oct 2010 15:42:07 GMT
             <atom:updated>2010-10-15T16:39:35.649+01:00</atom:updated>
             <atom:summary/>
         </ar:comment>
-        <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
-        <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
-        <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
-        <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
-        <atom:link rel="next-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=3"/>
-        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
-        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=2"/>
+        <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=1"/>
+        <atom:link rel="next-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=3"/>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
     </atom:entry>
     <at:deleted-entry
       xmlns:at="http://purl.org/atompub/tombstones/1.0"
-      ref="http://example.org/atombeat/workspace/content/foo/xyz.atom"
+      ref="http://example.org/atombeat/service/content/foo/xyz.atom"
       when="2010-10-26T18:29:48.687+01:00">
       <ar:revision xmlns:ar="http://purl.org/atompub/revision/1.0" number="3" when="2010-10-26T18:29:48.687+01:00" initial="no" final="yes" significant="yes"/>
       <at:by>
         <name>jdoe</name>
       </at:by>
       <at:comment>Removed comment spam</at:comment>
-      <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/content/my-versioned-collection/xyz.atom"/>
-      <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=1"/>
-      <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=3"/>
-      <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/workspace/history/my-versioned-collection/xyz.atom?revision=2"/>
+      <atom:link rel="current-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/content/my-versioned-collection/xyz.atom"/>
+      <atom:link rel="initial-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=1"/>
+      <atom:link rel="this-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=3"/>
+      <atom:link rel="previous-revision" type="application/atom+xml;type=entry" href="http://example.org/atombeat/service/history/my-versioned-collection/xyz.atom?revision=2"/>
     </at:deleted-entry>
 </atom:feed>
 }}}
