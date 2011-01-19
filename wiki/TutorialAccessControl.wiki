@@ -7,11 +7,11 @@
 
 This tutorial provides an introduction to AtomBeat's support for access control.
 
-We commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules for two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.
+We commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource (which eXist implements natively). We typically found that we wanted to set different access rules for two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.
 
-To support this kind of scenario, inspired by the approach used in NFS and the WebDav ACL extension, we developed a security plugin for AtomBeat's Atom protocol engine, which can be configured to intercept all incoming requests. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. The security plugin also enables you to retrieve and update access control lists for a workspace, collections, collection members and media resources, using a subset of the Atom Protocol. 
+To support this kind of scenario, based on the approaches used in NFS and the !WebDav ACL extension, we developed a security plugin for AtomBeat's Atom protocol engine, which can be configured to intercept all incoming requests. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. The security plugin also enables you to retrieve and update access control lists via HTTP using a subset of the Atom Protocol. 
 
-Please note that AtomBeat is a work in progress and comes with no warranty. The security plugin may have bugs - use at your own risk.
+*Please note that AtomBeat is a work in progress and comes with no warranty. The security plugin may have bugs - use at your own risk.*
 
 = Prerequisites =
 
@@ -448,7 +448,7 @@ As well as Atom collections having security descriptors, every collection member
 
 Media resources also get their own security descriptors. You can find the security descriptor for a media resource by following an `atom:link` with `rel="http://purl.org/atombeat/rel/media-security-descriptor"` within the associated media-link entry document.
 
-= Workspace Security Descriptor =
+= The Workspace Security Descriptor =
 
 In addition to collections, collection members and media resources each having a security descriptor, there is also a single security descriptor for the entire workspace. 
 
@@ -986,7 +986,13 @@ The definition of a group can appear *anywhere* within the member's Atom entry d
 
 Whenever you create a new collection member or media resource via the Atom protocol, or create a new collection via AtomBeat's protocol extensions, the security plugin will automatically install a default security descriptor for that member, media resource or collection, at the time of creation. 
 
-These default security descriptors are configured in the `service/config/security.xqm` file, via the `security-config:default-collection-security-descriptor()`, `security-config:default-member-security-descriptor()` and `security-config:default-media-security-descriptor()` functions. You can modify these functions to alter the default security policy that your service implements. 
+These default security descriptors are configured in the `service/config/security.xqm` file, via the following functions:
+
+  * `security-config:default-collection-security-descriptor()`
+  * `security-config:default-member-security-descriptor()` 
+  * `security-config:default-media-security-descriptor()` 
+  
+You can modify these functions to alter the default security policy that your service implements. 
 
 = Special Considerations =
 
