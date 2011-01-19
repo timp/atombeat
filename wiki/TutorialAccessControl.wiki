@@ -7,7 +7,11 @@
 
 This tutorial provides an introduction to AtomBeat's support for access control.
 
-AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be discovered via links in Atom feeds and entries, and modified using standard Atom protocol operations (HTTP PUT).
+We commonly found we were not able to fit our security requirements into the unix model of one user and one group per resource, which eXist implements natively. We typically found that we wanted to set different access rules for two or more different roles or groups of users, e.g., we wanted to be able to configure a collection to allow "authors" to create new members but only update their own members, to allow "editors" to update any member, to allow "readers" to retrieve any member, and to allow authors to grant permission to update their members to other specified authors.
+
+To support this kind of scenario, inspired by the approach used in NFS and the WebDav ACL extension, we developed a security plugin for AtomBeat's Atom protocol engine, which can be configured to intercept all incoming requests. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. The security plugin also enables you to retrieve and update access control lists for a workspace, collections, collection members and media resources, using a subset of the Atom Protocol. 
+
+Please note that AtomBeat is a work in progress and comes with no warranty. The security plugin may have bugs - use at your own risk.
 
 = Prerequisites =
 
@@ -844,24 +848,6 @@ However, if the order of precedence were reversed to ( resource , collection , w
 
 The order of precedence is configurable in AtomBeat via the `$security-config:priority` configuration variable in the service/config/security.xqm` file. By default the precedence is ( workspace , collection , resource ), because in the use cases we've come across you typically want to define rules at a global (workspace) level that cannot be overridden at a collection or resource level by individual users. However, other situations may require the opposite, e.g., you may want to allow users to override workspace-level or collection-level rules.
 
-= Special Considerations =
-
-== Listing a Collection; Filtering Feeds ==
-
-The LIST_COLLECTION operation (i.e., a GET request to a collection URI) is handled slightly differently by the security plugin.
-
-The security plugin will first process the effective ACL for the collection to determine whether the LIST_COLLECTION operation is allowed for the current user. If the operation is denied, then processing will immediately terminate and a 403 reponse is sent. If the operation is allowed, then a further processing step occurs, where the entries in the feed are *filtered*. The feed is filtered by testing each individual Atom entry see whether a RETRIEVE_MEMBER operation would be allowed on that member for the current user. If the user is *not* allowed to retrieve that member, then the Atom entry is excluded from the feed.
-
-I.e., listing a collection is not a security hole - if a user is not allowed to retrieve a collection member directly, then the member will not appear in the feed when listing the collection.
-
-== Deleting Media Resources ==
-
-Note that there are *two ways* to deleting a media resource. Either you can send a DELETE request directly to the media resource URI, or you can send a DELETE request to the associated media-link's edit URI. In both cases the effect is the same - *both* the media resource *and* the media-link are deleted.
-
-To make this work within the (one ACE, one operation, one decision) model used by the AtomBeat security plugin, the plugin handles delete media requests by considering that *both* of the above alternatives match the DELETE_MEDIA operation, and *niether* matches the DELETE_MEMBER operation.
-
-I.e., in order to delete a media resource, either via the media resource URI or via the media-link's edit URI, you only need to be allowed the DELETE_MEDIA operation. You *do not* need to be allowed the DELETE_MEMBER operation. 
-
 = In-line and Out-of-line Groups =
 
 As mentioned above, a group can be defined *in-line* within a security descriptor, e.g.:
@@ -1001,3 +987,29 @@ The definition of a group can appear *anywhere* within the member's Atom entry d
 Whenever you create a new collection member or media resource via the Atom protocol, or create a new collection via AtomBeat's protocol extensions, the security plugin will automatically install a default security descriptor for that member, media resource or collection, at the time of creation. 
 
 These default security descriptors are configured in the `service/config/security.xqm` file, via the `security-config:default-collection-security-descriptor()`, `security-config:default-member-security-descriptor()` and `security-config:default-media-security-descriptor()` functions. You can modify these functions to alter the default security policy that your service implements. 
+
+= Special Considerations =
+
+== Listing a Collection; Filtering Feeds ==
+
+The LIST_COLLECTION operation (i.e., a GET request to a collection URI) is handled slightly differently by the security plugin.
+
+The security plugin will first process the effective ACL for the collection to determine whether the LIST_COLLECTION operation is allowed for the current user. If the operation is denied, then processing will immediately terminate and a 403 reponse is sent. If the operation is allowed, then a further processing step occurs, where the entries in the feed are *filtered*. The feed is filtered by testing each individual Atom entry see whether a RETRIEVE_MEMBER operation would be allowed on that member for the current user. If the user is *not* allowed to retrieve that member, then the Atom entry is excluded from the feed.
+
+I.e., listing a collection is not a security hole - if a user is not allowed to retrieve a collection member directly, then the member will not appear in the feed when listing the collection.
+
+== Deleting Media Resources ==
+
+Note that there are *two ways* to deleting a media resource. Either you can send a DELETE request directly to the media resource URI, or you can send a DELETE request to the associated media-link's edit URI. In both cases the effect is the same - *both* the media resource *and* the media-link are deleted.
+
+To make this work within the (one ACE, one operation, one decision) model used by the AtomBeat security plugin, the plugin handles delete media requests by considering that *both* of the above alternatives match the DELETE_MEDIA operation, and *niether* matches the DELETE_MEMBER operation.
+
+I.e., in order to delete a media resource, either via the media resource URI or via the media-link's edit URI, you only need to be allowed the DELETE_MEDIA operation. You *do not* need to be allowed the DELETE_MEMBER operation. 
+
+== Nested and Recursive Collections ==
+
+Note that, if you have one Atom collection at /foo and another collection at /foo/bar, by default AtomBeat is *not* aware of the nesting of the two collections. This means that, e.g., when retrieving a member of the collection at /foo/bar, the only ACLs that will be involved will be the member ACL, the /foo/bar collection ACL, and the workspace ACL. The ACL for the /foo collection *will not* be considered. I.e., even though the collections appear to be nested, they are not, and there is no inheritance of ACLs from the apparent parent to child. 
+
+The case of recursive collections is slightly more complicated. If you have a collection configured as a recursive collection, then when you list the recursive collection, the collection and workspace ACLs will be consulted to see if you are allowed the LIST_COLLECTION operation. If you are, then AtomBeat will generate a feed for the collection. When generating the feed, AtomBeat will filter the entries that appear in the feed. For each entry that appears in the feed, AtomBeat will include the entry if you are allowed the RETRIEVE_MEMBER operation for that entry. When determining if you have this permission, the member's ACL is consulted, along with *the ACL for the collection containing the member* (which might *not* be the collection you are listing, if the member occurs in a sub-collection) and the workspace ACL.
+
+I.e., when assembling an effective ACL, there are never more than three ACLs involved - workspace, collection and member/media resource.
