@@ -38,7 +38,7 @@ This tutorial also assumes you have a TCP proxy installed and running, listening
 
 = Downloading and Installing AtomBeat =
 
-We are going to be downloading and installing one of the *security-enabled* WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal-secure* WAR package. This package is a web application containing an AtomBeat service, overlaid with a cut-down version of the [http://exist.sourceforge.net/ eXist] web application, and with the AtomBeat security plugin enabled and pre-configured with some example settings. For more information on the different AtomBeat packages available, see TODO.
+We are going to be downloading and installing one of the *security-enabled* WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal-secure* WAR package. This package is a web application containing an AtomBeat service, overlaid with a cut-down version of the [http://exist.sourceforge.net/ eXist] web application, and with the AtomBeat security plugin enabled and pre-configured with some example settings.
 
 N.B., you will need to install atombeat-exist-minimal-secure *version 0.2-alpha-4 or later* to follow this tutorial. (Most, but not all, of this tutorial will still work with earlier versions.)
 
@@ -1019,3 +1019,9 @@ Note that, if you have one Atom collection at /foo and another collection at /fo
 The case of recursive collections is slightly more complicated. If you have a collection configured as a recursive collection, then when you list the recursive collection, the collection and workspace ACLs will be consulted to see if you are allowed the LIST_COLLECTION operation. If you are, then AtomBeat will generate a feed for the collection. When generating the feed, AtomBeat will filter the entries that appear in the feed. For each entry that appears in the feed, AtomBeat will include the entry if you are allowed the RETRIEVE_MEMBER operation for that entry. When determining if you have this permission, the member's ACL is consulted, along with *the ACL for the collection containing the member* (which might *not* be the collection you are listing, if the member occurs in a sub-collection) and the workspace ACL.
 
 I.e., when assembling an effective ACL, there are never more than three ACLs involved - workspace, collection and member/media resource.
+
+= Further Reading =
+
+For a list of other AtomBeat tutorials available, see the [AtomBeat AtomBeat wiki home page].
+
+The [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Protocol Specification] and the [http://www.atomenabled.org/developers/syndication/atom-format-spec.php Atom Format Specification] are recommended reading.

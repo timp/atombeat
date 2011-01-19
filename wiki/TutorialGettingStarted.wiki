@@ -37,24 +37,37 @@ This tutorial also assumes you have a TCP proxy installed and running, listening
 
 = Downloading and Installing AtomBeat =
 
-We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal* WAR package. This package is a web application containing an AtomBeat workspace, overlaid with a cut-down version of the [http://exist.sourceforge.net/ eXist] web application. For more information on the different AtomBeat packages available, see TODO.
+We are going to be downloading and installing one of the WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal* WAR package. This package is a web application containing an AtomBeat workspace, overlaid with a cut-down version of the [http://exist.sourceforge.net/ eXist] web application. 
 
-Go to the [http://code.google.com/p/atombeat/downloads/list AtomBeat downloads page] in your browser, click on the latest version of *atombeat-exist-minimal* and download it to your computer. Or, from the command line, e.g.:
+*For this tutorial you will need to install AtomBeat 0.2-alpha-2 or later.* 
 
-{{{
-$ wget http://atombeat.googlecode.com/files/atombeat-exist-minimal-0.1-RC7.war
-}}}
-
-Once the war file is downloaded, deploy it to your servlet container. There are usually several options for deploying a war file, e.g., on Tomcat you can usually copy the war file to the `webapps` directory and restart Tomcat, and the war will automatically be exploded and deployed. Alternatively, you can do something a bit more manual, e.g.:
+Please note that WAR packages in the 0.2 series are *not* available from the Google Code project downloads page. To obtain a WAR package, you can download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
 
 {{{
-$ sudo unzip atombeat-exist-minimal-0.1-RC7.war -d /opt/atombeat-exist-minimal-0.1-RC7
-$ sudo ln -s /opt/atombeat-exist-minimal-0.1-RC7 /var/lib/tomcat6/webapps/atombeat
-$ sudo chown -R tomcat6:tomcat6 /opt/atombeat-exist-minimal-0.1-RC7
-$ sudo service tomcat6 restart
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal/0.2-alpha-4/atombeat-exist-minimal-0.2-alpha-4.war
+}}} 
+
+...or you can check out and build it yourself (currently only works on Linux), e.g.:
+
+{{{
+svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-4
+cd atombeat-parent-0.2-alpha-4
+export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
+mvn install # might take a while first time
 }}}
 
-The rest of the tutorial assumes you have deployed the AtomBeat web application at the context path */atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from `atombeat-exist-minimal-0.1-RC7.war` to `atombeat.war` before you do, to make sure it gets deployed to the right context path.
+Once the war file is downloaded (or built), deploy it to your servlet container. There are usually several options for deploying a war file, e.g., on Tomcat you can usually copy the war file to the `webapps` directory and restart Tomcat, and the war will automatically be exploded and deployed. Alternatively, you can do something a bit more manual, e.g.:
+
+{{{
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal/0.2-alpha-4/atombeat-exist-minimal-0.2-alpha-4.war
+sudo unzip atombeat-exist-minimal-0.2-alpha-4.war -d /opt/atombeat-exist-minimal-0.2-alpha-4
+sudo rm /var/lib/tomcat6/webapps/atombeat # remove previous link if already there
+sudo ln -s /opt/atombeat-exist-minimal-0.2-alpha-4 /var/lib/tomcat6/webapps/atombeat
+sudo chown -R tomcat6:tomcat6 /opt/atombeat-exist-minimal-0.2-alpha-4
+sudo service tomcat6 restart
+}}}
+
+The rest of the tutorial assumes you have *deployed the AtomBeat web application at the context path /atombeat*. If you have deployed the war by copying the file to the webapps directory and letting tomcat automatically explode and deploy it, you might need to rename the file from `atombeat-exist-minimal-0.1-RC7.war` to `atombeat.war` before you do, to make sure it gets deployed to the right context path.
 
 Once you've done this, restart your servlet container, and point your browser to http://localhost:8080/atombeat/ - you should see a web page saying, "It works!" 
 
@@ -70,20 +83,20 @@ Once the TCP proxy is running, point your browser to http://localhost:8081/atomb
 
 There are several different ways to create an Atom collection in AtomBeat. In this tutorial, we're going to use an administration utility that comes with AtomBeat to create a pre-configured Atom collection. For more information on managing Atom collections, see TODO.
 
-Go to the following link in your browser: http://localhost:8081/atombeat/workspace/admin/install.xql
+Go to the following link in your browser: http://localhost:8081/atombeat/service/admin/install.xql
 
 You should see a page entitled "Atom Collections" and a table listing two collections.
 
 Click the "Install" button. You should see the "Available" column change from "false" to "true". You have just created two Atom collections.
 
-To retrieve an Atom feed from the Test Collection, click on the [http://localhost:8081/atombeat/workspace/content/test /test] link, or go to the following URL: http://localhost:8081/atombeat/workspace/content/test
+To retrieve an Atom feed from the Test Collection, click on the [http://localhost:8081/atombeat/service/content/test /test] link, or go to the following URL: http://localhost:8081/atombeat/service/content/test
 
 If you are using Firefox, you should see the default Firefox feed reader offering to subscribe to the feed, and below that the title of the collection: "Test Collection". What you see in other browsers will vary.
 
 Let's do the same thing - retrieve an Atom feed from the Test collection - using cURL:
 
 {{{
-$ curl --verbose http://localhost:8081/atombeat/workspace/content/test
+$ curl --verbose http://localhost:8081/atombeat/service/content/test
 }}}
 
 You should see the raw Atom XML representation of the feed document output in your console.
@@ -91,7 +104,7 @@ You should see the raw Atom XML representation of the feed document output in yo
 Finally, check the TCP proxy, you should see something like this in the most recent traffic:
 
 {{{
-GET /atombeat/workspace/content/test HTTP/1.1
+GET /atombeat/service/content/test HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -106,14 +119,14 @@ Transfer-Encoding: chunked
 Date: Thu, 14 Oct 2010 17:01:02 GMT
 
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:enable-versioning="false" atombeat:exclude-entry-content="false" atombeat:recursive="false">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test</atom:id>
     <atom:updated>2010-10-14T17:55:42.208+01:00</atom:updated>
     <atom:author>
         <atom:name/>
     </atom:author>
     <atom:title type="text">Test Collection</atom:title>
-    <atom:link rel="self" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
-    <atom:link rel="edit" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/service/content/test" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/service/content/test" type="application/atom+xml;type=feed"/>
 </atom:feed>
 }}}
 
@@ -136,7 +149,7 @@ To do this, first create a file in your current directory called "entry1.xml", w
 Next, use cURL to send an HTTP POST request, e.g.:
 
 {{{
-$ curl --verbose --header "Content-Type: application/atom+xml" --data-binary @entry1.xml http://localhost:8081/atombeat/workspace/content/test
+$ curl --verbose --header "Content-Type: application/atom+xml" --data-binary @entry1.xml http://localhost:8081/atombeat/service/content/test
 }}}
 
 You should see an Atom entry document returned to you, representing the newly created collection member.
@@ -144,7 +157,7 @@ You should see an Atom entry document returned to you, representing the newly cr
 The TCP communication trace should look something like:
 
 {{{
-POST /atombeat/workspace/content/test HTTP/1.1
+POST /atombeat/service/content/test HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -162,15 +175,15 @@ HTTP/1.1 201 Created
 Server: Apache-Coyote/1.1
 pragma: no-cache
 Cache-Control: no-cache
-Location: http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
-Content-Location: http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+Location: http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+Content-Location: http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
 ETag: "0e95efe893e345c34ab1f79c757c719f"
 Content-Type: application/atom+xml;type=entry;charset=UTF-8
 Transfer-Encoding: chunked
 Date: Thu, 14 Oct 2010 17:29:48 GMT
 
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
     <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
     <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
     <atom:author>
@@ -178,21 +191,21 @@ Date: Thu, 14 Oct 2010 17:29:48 GMT
     </atom:author>
     <atom:title>Atom-Powered Robots Run Amok</atom:title>
     <atom:content>Some text.</atom:content>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
 </atom:entry>
 }}}
 
-Once you've done this, try retrieving a feed from the collection again. E.g., go to http://localhost:8081/atombeat/workspace/content/test in your browser again, or do:
+Once you've done this, try retrieving a feed from the collection again. E.g., go to http://localhost:8081/atombeat/service/content/test in your browser again, or do:
 
 {{{
-$ curl --verbose http://localhost:8081/atombeat/workspace/content/test
+$ curl --verbose http://localhost:8081/atombeat/service/content/test
 }}}
 
 You should see the new member appearing in the feed, e.g.:
 
 {{{
-GET /atombeat/workspace/content/test HTTP/1.1
+GET /atombeat/service/content/test HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -207,16 +220,16 @@ Transfer-Encoding: chunked
 Date: Thu, 14 Oct 2010 17:33:36 GMT
 
 <atom:feed xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns" atombeat:enable-versioning="false" atombeat:exclude-entry-content="false" atombeat:recursive="false">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test</atom:id>
     <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
     <atom:author>
         <atom:name/>
     </atom:author>
     <atom:title type="text">Test Collection</atom:title>
-    <atom:link rel="self" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
-    <atom:link rel="edit" href="http://localhost:8081/atombeat/workspace/content/test" type="application/atom+xml;type=feed"/>
+    <atom:link rel="self" href="http://localhost:8081/atombeat/service/content/test" type="application/atom+xml;type=feed"/>
+    <atom:link rel="edit" href="http://localhost:8081/atombeat/service/content/test" type="application/atom+xml;type=feed"/>
     <atom:entry>
-        <atom:id>http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
+        <atom:id>http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
         <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
         <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
         <atom:author>
@@ -224,26 +237,26 @@ Date: Thu, 14 Oct 2010 17:33:36 GMT
         </atom:author>
         <atom:title>Atom-Powered Robots Run Amok</atom:title>
         <atom:content>Some text.</atom:content>
-        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
-        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+        <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+        <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
     </atom:entry>
 </atom:feed>
 }}}
 
 == Retrieve a Member ==
 
-To retrieve a collection member, you need the member URI. You can find the member URI either from the value of the `Location` header sent back when you created the member, or from the `@href` attribute on the `atom:link` with `@rel="edit"` (I'll call this the "edit link" from now on). In the example above, the member URI is http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom - but it will be different for you, because AtomBeat generates a new URI for every new member.
+To retrieve a collection member, you need the member URI. You can find the member URI either from the value of the `Location` header sent back when you created the member, or from the `@href` attribute on the `atom:link` with `@rel="edit"` (I'll call this the "edit link" from now on). In the example above, the member URI is http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom - but it will be different for you, because AtomBeat generates a new URI for every new member.
 
 Once you've found the member URI, send a GET request to the URI, e.g.:
 
 {{{
-$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+$ curl --verbose http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
 }}}
 
 You should see an Atom entry document returned, e.g.:
 
 {{{
-GET /atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
+GET /atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -259,7 +272,7 @@ Transfer-Encoding: chunked
 Date: Thu, 14 Oct 2010 17:28:29 GMT
 
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
     <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
     <atom:updated>2010-10-14T18:29:48.687+01:00</atom:updated>
     <atom:author>
@@ -267,8 +280,8 @@ Date: Thu, 14 Oct 2010 17:28:29 GMT
     </atom:author>
     <atom:title>Atom-Powered Robots Run Amok</atom:title>
     <atom:content>Some text.</atom:content>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
 </atom:entry>
 }}}
 
@@ -293,13 +306,13 @@ E.g., create a new file `entry1-updated.xml` in your current directory containin
 Then, send a PUT request using cURL, e.g.:
 
 {{{
-$ curl --verbose --header "Content-Type: application/atom+xml" --upload-file entry1-updated.xml http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+$ curl --verbose --header "Content-Type: application/atom+xml" --upload-file entry1-updated.xml http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
 }}}
 
 You should see a response containing the updated entry, e.g.:
 
 {{{
-PUT /atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
+PUT /atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -327,7 +340,7 @@ Transfer-Encoding: chunked
 Date: Thu, 14 Oct 2010 17:45:57 GMT
 
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom</atom:id>
     <atom:published>2010-10-14T18:29:48.687+01:00</atom:published>
     <atom:updated>2010-10-14T18:45:57.257+01:00</atom:updated>
     <atom:author>
@@ -341,8 +354,8 @@ Date: Thu, 14 Oct 2010 17:45:57 GMT
             </p>
         </div>
     </atom:content>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom"/>
 </atom:entry>
 }}}
 
@@ -351,13 +364,13 @@ Date: Thu, 14 Oct 2010 17:45:57 GMT
 To delete a collection member, send an HTTP DELETE request to the member URI. E.g.:
 
 {{{
-$ curl --verbose --request DELETE http://localhost:8081/atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
+$ curl --verbose --request DELETE http://localhost:8081/atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom
 }}}
  
 If successful, you should receive a 204 response without any content, e.g.:
 
 {{{
-DELETE /atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
+DELETE /atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -373,7 +386,7 @@ Date: Thu, 14 Oct 2010 17:50:14 GMT
 Any subsequent attempt to retrieve the member should result in a 404, e.g.:
 
 {{{
-GET /atombeat/workspace/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
+GET /atombeat/service/content/test/4d0ec6d9-bead-4843-bcc9-444392a55b5c.atom HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -431,7 +444,7 @@ Here we are using a text file, but you could use any file in any format (e.g., a
 Next, use cURL to send an HTTP POST request, e.g.:
 
 {{{
-$ curl --verbose --header "Content-Type: text/plain" --header "Slug: media1.txt" --data-binary @media1.txt http://localhost:8081/atombeat/workspace/content/test
+$ curl --verbose --header "Content-Type: text/plain" --header "Slug: media1.txt" --data-binary @media1.txt http://localhost:8081/atombeat/service/content/test
 }}}
 
 If you are using something other than a text file, remember to set the correct Content-Type header in the request. E.g., for a jpeg file, use `--header "Content-Type: image/jpeg"`. You can find a [http://www.iana.org/assignments/media-types/ list of registered media types at IANA].
@@ -439,7 +452,7 @@ If you are using something other than a text file, remember to set the correct C
 You should see an Atom entry document returned - this is called the "media-link entry", and it contains metadata about your newly created media resource, e.g.:
 
 {{{
-POST /atombeat/workspace/content/test HTTP/1.1
+POST /atombeat/service/content/test HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -454,25 +467,25 @@ HTTP/1.1 201 Created
 Server: Apache-Coyote/1.1
 pragma: no-cache
 Cache-Control: no-cache
-Location: http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
-Content-Location: http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
+Location: http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
+Content-Location: http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
 Content-Type: application/atom+xml;type=entry;charset=UTF-8
 Transfer-Encoding: chunked
 Date: Thu, 14 Oct 2010 18:05:18 GMT
 
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom</atom:id>
     <atom:published>2010-10-14T19:05:18.652+01:00</atom:published>
     <atom:updated>2010-10-14T19:05:18.652+01:00</atom:updated>
-    <atom:content src="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" type="text/plain"/>
+    <atom:content src="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" type="text/plain"/>
     <atom:title type="text">media1.txt</atom:title>
     <atom:summary type="text">media resource</atom:summary>
     <atom:author>
         <atom:name/>
     </atom:author>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
-    <atom:link rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" length="46"/>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
+    <atom:link rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" length="46"/>
 </atom:entry>
 }}}
 
@@ -480,18 +493,18 @@ Note that you can update this entry as you would update a normal collection memb
 
 == Retrieving a Media Resource ==
 
-To retrieve a media resource, you need to find the media resource URI. There are two places you can find this in the Atom entry document you got back when you created the resource, either from the `edit-media` link, or from the `@src` attribute on the `atom:content` element, e.g.: http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media - although this URI will be different for you, as AtomBeat creates a new URI for each new media resource.
+To retrieve a media resource, you need to find the media resource URI. There are two places you can find this in the Atom entry document you got back when you created the resource, either from the `edit-media` link, or from the `@src` attribute on the `atom:content` element, e.g.: http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media - although this URI will be different for you, as AtomBeat creates a new URI for each new media resource.
 
 Once you've found the media resource URI, send an HTTP GET request, e.g.:
 
 {{{
-$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+$ curl --verbose http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
 }}}
 
 You should see something like:
 
 {{{
-GET /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+GET /atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -523,13 +536,13 @@ This is some not-very-exciting media content - updated with some more content.
 Then, send a PUT request using cURL, e.g.:
 
 {{{
-$ curl --verbose --header "Content-Type: text/plain" --upload-file media1-updated.txt http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+$ curl --verbose --header "Content-Type: text/plain" --upload-file media1-updated.txt http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
 }}}
 
 You should see a response with the media-link entry corresponding to the media resource you just updated. Notice that the `atom:updated` element should have changed to reflect your recent update to the media resource. E.g.:
 
 {{{
-PUT /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+PUT /atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -543,37 +556,37 @@ HTTP/1.1 200 OK
 Server: Apache-Coyote/1.1
 pragma: no-cache
 Cache-Control: no-cache
-Content-Location: http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
+Content-Location: http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom
 Content-Type: application/atom+xml;type=entry;charset=UTF-8
 Transfer-Encoding: chunked
 Date: Fri, 15 Oct 2010 12:08:47 GMT
 
 <atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
-    <atom:id>http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom</atom:id>
+    <atom:id>http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom</atom:id>
     <atom:published>2010-10-14T19:05:18.652+01:00</atom:published>
     <atom:updated>2010-10-15T13:08:47.661+01:00</atom:updated>
-    <atom:content type="text/plain" src="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media"/>
+    <atom:content type="text/plain" src="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media"/>
     <atom:title type="text">media1.txt</atom:title>
     <atom:summary type="text">media resource</atom:summary>
     <atom:author>
         <atom:name/>
     </atom:author>
-    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
-    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
-    <atom:link rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" length="79"/>
+    <atom:link rel="self" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.atom"/>
+    <atom:link rel="edit-media" type="text/plain" href="http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media" length="79"/>
 </atom:entry>
 }}}
 
 A subsequent GET request to the media resource URI should return your updated content, e.g.:
 
 {{{
-$ curl --verbose http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+$ curl --verbose http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
 }}}
 
 ...should give you something like:
 
 {{{
-GET /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+GET /atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -596,13 +609,13 @@ This is some not-very-exciting media content - updated with some more content.
 To delete a media resource, send a DELETE request to the media resource URI. E.g.:
 
 {{{
-$ curl --verbose --request DELETE http://localhost:8081/atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
+$ curl --verbose --request DELETE http://localhost:8081/atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media
 }}}
 
 If successful, you should receive a 204 response without any content, e.g.: 
 
 {{{
-DELETE /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+DELETE /atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*
@@ -618,7 +631,7 @@ Date: Fri, 15 Oct 2010 12:21:11 GMT
 Any subsequent GET request to the media resource URI should return a 404, e.g.:
 
 {{{
-GET /atombeat/workspace/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
+GET /atombeat/service/content/test/c5695f1c-af7d-4d18-b21c-96940636209e.media HTTP/1.1
 User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
 Host: localhost:8081
 Accept: */*

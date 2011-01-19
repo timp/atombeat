@@ -5,9 +5,24 @@
 
 AtomBeat is an implementation of the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Publishing Protocol] with a number of extended features. 
 
-= Tutorials =
+= Downloads =
 
-To find out more, see the following tutorials:
+Please note that WAR packages in the 0.2 series are *not* available from the AtomBeat Google Code project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
+
+{{{
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-4/atombeat-exist-minimal-secure-0.2-alpha-4.war
+}}} 
+
+...or you can check out and build it yourself (currently only works on Linux), e.g.:
+
+{{{
+svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-4
+cd atombeat-parent-0.2-alpha-4
+export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
+mvn install # might take a while first time - will package and test all WARs
+}}}
+
+= Tutorials =
 
   * TutorialGettingStarted - Covers downloading and installing AtomBeat, creating a collection and retrieving an Atom feed; creating, retrieving, updating and deleting collection members; creating, retrieving, updating and deleting media resources.
 
@@ -15,29 +30,29 @@ To find out more, see the following tutorials:
  
   * TutorialAccessControl - An introduction to AtomBeat's support for access control. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be discovered via links in Atom feeds and entries, and retrieved and modified using standard Atom protocol operations (HTTP GET and PUT). 
 
-= Feature Summary =
+= Feature Overview =
 
-  * [StandardAtomProtocolSupport Standard Atom Protocol Operations]: create, retrieve, update and delete Atom entries and media resources; retrieve feeds of Atom collection members.
+  * Standard Atom Protocol Operations: create, retrieve, update and delete Atom entries and media resources; retrieve feeds of Atom collection members.
 
-  * [AtomProtocolExtensions#Managing_Collections Protocol Extensions for Managing Atom Collections]: create collections and update collection metadata; create collection hierarchies with recursive collections.
+  * Protocol Extensions for Managing Atom Collections: create collections and update collection metadata; create collection hierarchies with recursive collections.
 
-  * [AtomProtocolExtensions#Posting_Media_From_Forms Protocol Extensions for Posting Media Directly From HTML Forms or XForms]: create media resources using multipart/form-data requests.
+  * Protocol Extensions for Posting Media Directly From HTML Forms or XForms: create media resources using multipart/form-data requests.
 
-  * [AtomProtocolExtensions#Multi-Create Protocol Extensions for Creating Multiple Collection Members in a Single Request]: add one or more members to a collection in a single request; copy one collection to another, including media resources. 
+  * Protocol Extensions for Creating Multiple Collection Members in a Single Request: add one or more members to a collection in a single request; copy one collection to another, including media resources. 
 
-  * [VersioningExtension Protocol and Format Extensions for Versioning]: create versioned collections; retrieve a version history feed for any collection member; retrieve any previous revision of a member.
+  * Protocol and Format Extensions for Versioning: create versioned collections; retrieve a version history feed for any collection member; retrieve any previous revision of a member.
 
-  * [SecurityExtension Security Extensions for Access Control]: manage access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
+  * Security Extensions for Access Control: manage access control lists for Atom collections and collection members; specify fine-grained access control rules for users, groups and roles; can be integrated with external authentication and user role management systems, e.g., via Spring Security.
 
-  * [DevelopingPlugins A Plug-in Framework for Developing Custom Extensions]: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
+  * A Plug-in Framework for Developing Custom Extensions: write plugin functions that modify the behaviour of standard Atom Protocol operations, or implement custom side-effects; intercept and modify requests before and/or after main protocol operation execution. 
 
-  * [LinkExpansion Extensions for expanding links to other entries and feeds inline within an Atom entry]
-
-  * [InstallationAndConfiguration Deployment Options]: deploy as a standalone WAR, or drop into an eXist 1.4 installation.
+  * Extensions for expanding links to other entries and feeds inline within an Atom entry
 
 = Status =
 
-0.1-RC7 is the final release in the 0.1 series. See the [http://code.google.com/p/atombeat/downloads/list downloads page] to download this version. We're calling this release "stable", but bear in mind that AtomBeat is a young project, and it is early days, so caveat emptor. If you're interested developing with web services using the Atom Publishing Protocol and want to do some quick prototyping, then AtomBeat may be a good option. As yet we only have limited experience of running AtomBeat in a production setting.
+Development is currently focused on the 0.2 series. This is currently in alpha, but should be relatively stable. There are a number of fairly substantial changes since the 0.1 series, see the ReleaseNotes wiki page for more information.
+
+0.1-RC7 is the final release in the 0.1 series. See the [http://code.google.com/p/atombeat/downloads/list?can=4 downloads page] to download this version (hint: [http://code.google.com/p/atombeat/downloads/list?can=4 search deprecated downloads]).
 
 AtomBeat is being developed as part of work on scientific data repositories at the Centre for Genomics and Global Health, a joint research programme of Oxford University and the Wellcome Trust Sanger Institute. If it's of interest to you, please feel free to [mailto:atombeat@googlegroups.com get in touch] via the [http://groups.google.com/group/atombeat AtomBeat Mailing List].
 
