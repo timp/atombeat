@@ -620,7 +620,9 @@ E.g., if you send an HTTP GET request to a collection URI, then an ACE where the
 
 E.g., if you send an HTTP POST request to a collection URI, where the request header "Content-Type" is "application/atom+xml" and the request body is an Atom entry document, then an ACE where the `atombeat:permission` element contains "CREATE_MEMBER" may be matched during ACL processing.  
 
-== Recipients - Users, Roles and Groups ==
+(It would probably have been more appropriate to name this element `atombeat:operation` rather than `atombeat:permission`, as this element only service to match the current protocol operation.)
+
+== Matching Recipients - Users, Roles and Groups ==
 
 One of the components of an access control entry is the `atombeat:recipient` element. The element itself can take any value. If the value is the wildcard "`*`" then the ACE will match any recipient.
 
@@ -702,7 +704,7 @@ Groups are defined *inline* within a security descriptor, and allow you to write
 
 Groups can also be *sourced* from other security descriptors or collection members, see the section @@TODO below.
 
-== Other Conditions ==
+== Matching Other Conditions ==
 
 For some protocol operations, other conditions may be specified in an ACE. For example:
 
