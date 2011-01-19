@@ -6,7 +6,7 @@
 
 This tutorial provides an introduction to AtomBeat's support for access control.
 
-AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be modified using standard Atom protocol operations (HTTP PUT).
+AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be discovered via links in Atom feeds and entries, and modified using standard Atom protocol operations (HTTP PUT).
 
 = Prerequisites =
 
@@ -376,7 +376,7 @@ You should see something like the following from curl:
 </atom:entry>
 }}}
 
-If so, you have successfully updated the security descriptor! You can verify this by retrieving the security descriptor again, e.g.:
+If so, you have successfully updated the security descriptor. You can verify this by retrieving the security descriptor again, e.g.:
 
 {{{
 curl --user adam:test --verbose --header "Accept: application/atom+xml" http://localhost:8081/atombeat/service/security/test
@@ -937,4 +937,12 @@ E.g., if you created a member that looked like:
 }}}
 
 This means that you can use Atom collection members to manage groups if you want to. This is useful, e.g., where you want certain users to be able to add and remove group members but not to be able to alter access control lists.
+
+The definition of a group can appear *anywhere* within the member's Atom entry document. I.e., AtomBeat will use the XPath `//atombeat:group[@id='readers']` to find a "readers" group within the referenced Atom entry document.
+
+= Configuring Default Security Descriptors =
+
+Whenever you create a new collection member or media resource via the Atom protocol, or create a new collection via AtomBeat's protocol extensions, the security plugin will automatically install a default security descriptor for that member, media resource or collection, at the time of creation. 
+
+These default security descriptors are configured in the `service/config/security.xqm` file, via the `security-config:default-collection-security-descriptor()`, `security-config:default-member-security-descriptor()` and `security-config:default-media-security-descriptor()` functions. You can modify these functions to alter the default security policy that your service implements. 
 
