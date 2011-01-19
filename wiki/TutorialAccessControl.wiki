@@ -1,4 +1,5 @@
 #summary A tutorial on using AtomBeat's support for access control.
+#labels Featured
 
 <wiki:toc/>
 
@@ -1000,4 +1001,3 @@ The definition of a group can appear *anywhere* within the member's Atom entry d
 Whenever you create a new collection member or media resource via the Atom protocol, or create a new collection via AtomBeat's protocol extensions, the security plugin will automatically install a default security descriptor for that member, media resource or collection, at the time of creation. 
 
 These default security descriptors are configured in the `service/config/security.xqm` file, via the `security-config:default-collection-security-descriptor()`, `security-config:default-member-security-descriptor()` and `security-config:default-media-security-descriptor()` functions. You can modify these functions to alter the default security policy that your service implements. 
-
