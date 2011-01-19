@@ -94,7 +94,7 @@ If you want to use a different authentication configuration, you'll need to modi
 
 = Retrieving a Security Descriptor =
 
-Retrieve a feed from the test collection using curl:
+Start by retrieving an Atom feed from the test collection using curl:
 
 {{{
 curl --user adam:test --verbose --header "Accept: application/atom+xml" http://localhost:8081/atombeat/service/content/test
@@ -136,7 +136,7 @@ You should see an Atom feed document with no entries, e.g.:
 
 Notice the final `atom:link` element in the feed document, with `rel="http://purl.org/atombeat/rel/security-descriptor"`. The target of this link - http://localhost:8081/atombeat/service/security/test - is the URI of this collection's *security descriptor*. The security descriptor is a document containing an *access control list* (ACL) for the collection, in addition to some other optional security-related information.
 
-Let's retrieve the security descriptor:
+Let's retrieve the collection's security descriptor:
 
 {{{
 curl --user adam:test --verbose --header "Accept: application/atom+xml" http://localhost:8081/atombeat/service/security/test
@@ -289,7 +289,7 @@ You should see an Atom entry document, with some inline XML content, e.g.:
 </atom:entry>
 }}}
 
-What you see within the `atom:content` element is an `atombeat:security-descriptor` element. Within this is an `atombeat:acl` element - the container for the collection's access control list. The `atombeat:acl` element has a number of `atombeat:ace` elements - these are access control entries (ACEs), which make up the access control list (ACL).
+What you see within the `atom:content` element is an `atombeat:security-descriptor` element. Within this is an `atombeat:acl` element - the container for the collection's access control list. The `atombeat:acl` element has a number of `atombeat:ace` elements - these are *access control entries* (ACEs), which make up the *access control list* (ACL).
 
 Hopefully, the meaning of an ACE should be fairly obvious. E.g., the ACE:
 
@@ -301,11 +301,11 @@ Hopefully, the meaning of an ACE should be fairly obvious. E.g., the ACE:
 </atombeat:ace>
 }}}
 
-...says that any user with the role `ROLE_AUTHOR` is ALLOWed to CREATE_MEMBER. Here, the permission "CREATE_MEMBER" corresponds to the standard Atom protocol operation of creating a collection member by POSTing an Atom entry document to the collection URI.
+...says that any user with the role `ROLE_AUTHOR` is allowed to CREATE_MEMBER. Here, "CREATE_MEMBER" corresponds to the standard Atom protocol operation of creating a collection member by POSTing an Atom entry document to the collection URI.
 
 = Updating a Security Descriptor =
 
-You can update (i.e., modify) a security descriptor using the standard Atom protocol operation for updating a member, i.e., by sending an HTTP PUT request to the URL given in the `edit` link, with a modified representation of the resource.
+You can update (i.e., modify) a security descriptor using the standard Atom protocol operation for updating a collection member, i.e., by sending an HTTP PUT request to the URL given in the `edit` link, with a modified Atom entry document representing the resource.
 
 E.g., let's retrieve the security descriptor again, but this time save to a local file:
 
@@ -563,17 +563,17 @@ One of the components of an access control entry is the `atombeat:type` element.
   * ALLOW
   * DENY
   
-I.e., an ACE gives a rule for either allowing or denying a protocol operation for a given user.
+I.e., an ACE gives a rule for either allowing or denying a protocol operation for a given recipient.
 
-Broadly speaking, there are two ways you can approach the design of a set of access rules. 
+Broadly speaking, there are two ways you can approach the design of your access control rules. 
 
-One alternative is to start with the default decision to DENY, then use only ALLOW ACEs, i.e., you say by default everything is denied, except for those things I explicitly allow.
+One alternative is to start with the default decision to DENY, then use only ALLOW ACEs, i.e., everything is denied, except for those things you explicitly allow.
 
-The other alternative is to start with the default decision to ALLOW, then use DENY ACEs to say which operations are excluded. I.e., you say everything is allowed, except for those things I explicitly deny.
+The other alternative is to start with the default decision to ALLOW, then use DENY ACEs to say which operations are excluded. I.e., everything is allowed, except for those things you explicitly deny.
 
-AtomBeat gives you the option of taking either approach, by setting the `$security-config:default-decision` variable in the `service/config/security.xqm` file to either ALLOW or DENY.
+AtomBeat gives you the option of taking either approach, by setting the `$security-config:default-decision` variable in the `service/config/security.xqm` file to either ALLOW or DENY. This setting determines the access control decision for a given request in the absence of any matching ACEs.
 
-== Permissions and Protocol Operations ==
+== Matching Protocol Operations ==
 
 One of the components of an access control entry is the `atombeat:permission` element. This element can take any of the following values:
 
@@ -601,11 +601,11 @@ One of the components of an access control entry is the `atombeat:permission` el
   * RETRIEVE_REVISION
   * `*`
   
-Each of these permissions corresponds to a protocol operation that AtomBeat recognises (except for the wildcard `*` which matches any protocol operation). Some of these are standard Atom protocol operations, some of these are protocol extensions supported by AtomBeat.
+Each of these values corresponds to a protocol operation that AtomBeat recognises (except for the wildcard "`*`" which matches any protocol operation). Some of these are standard Atom protocol operations, some of these are protocol extensions supported by AtomBeat.
 
 Let's consider only the standard Atom protocol operations:
 
-|| *AtomBeat Permission* || *Protocol Operation* ||
+|| *AtomBeat Operation* || *HTTP Request Features* ||
 || LIST_COLLECTION || GET collection URI ||
 || CREATE_MEMBER || POST collection URI, content type "application/atom+xml", content body root element `atom:entry` ||
 || RETRIEVE_MEMBER || GET member URI ||
@@ -616,9 +616,9 @@ Let's consider only the standard Atom protocol operations:
 || UPDATE_MEDIA || PUT media resource URI, content type *not* "application/atom+xml" ||
 || DELETE_MEDIA || DELETE media resource URI ||
 
-E.g., if you send an HTTP GET request to a collection URI, then you will need the LIST_COLLECTION permission, otherwise you will get a `403 Forbidden` response. 
+E.g., if you send an HTTP GET request to a collection URI, then an ACE where the `atombeat:permission` element contains "LIST_COLLECTION" may be matched during ACL processing. 
 
-E.g., if you send an HTTP POST request to a collection URI, where the request header "Content-Type" is "application/atom+xml" and the request body is an Atom entry document, then you will need the CREATE_MEMBER permission, otherwise you will get a `403 Forbidden` response. 
+E.g., if you send an HTTP POST request to a collection URI, where the request header "Content-Type" is "application/atom+xml" and the request body is an Atom entry document, then an ACE where the `atombeat:permission` element contains "CREATE_MEMBER" may be matched during ACL processing.  
 
 == Recipients - Users, Roles and Groups ==
 
@@ -632,7 +632,7 @@ This element must have a `@type` attribute, which can take one of the following 
 
 === Recipient Type: User ===
   
-If the `@type` is "user" then the ACE will be matched against the authenticated user's user name. This is obtained by AtomBeat via the following Java code:
+If the `@type` is "user" then the ACE will be matched against the authenticated user's user name. This is obtained by AtomBeat via Spring Security using the following Java code:
 
 {{{
 Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -702,4 +702,102 @@ Groups are defined *inline* within a security descriptor, and allow you to write
 
 Groups can also be *sourced* from other security descriptors or collection members, see the section @@TODO below.
 
+== Other Conditions ==
 
+For some protocol operations, other conditions may be specified in an ACE. For example:
+
+{{{
+<atombeat:ace>
+    <atombeat:type>ALLOW</atombeat:type>
+    <atombeat:recipient type="role">ROLE_DATA_AUTHOR</atombeat:recipient>
+    <atombeat:permission>CREATE_MEDIA</atombeat:permission>
+    <atombeat:conditions>
+        <atombeat:condition type="mediarange">application/vnd.ms-excel</atombeat:condition>
+    </atombeat:conditions>
+</atombeat:ace>
+}}}
+
+This ACE says that any user with the role ROLE_DATA_AUTHOR can create media resources where the media type of the resource matches a given media range (here the specific media type "application/vnd.ms-excel"). 
+
+== Decisions - Processing ACLs ==
+
+For any given protocol operation, the AtomBeat security plugin will reach a decision about whether to permit the operation to proceed or not. If the decision is proceed (ALLOW), then the operation will be executed as normal. If the decision is *not* to proceed (DENY), then execution of the operation will terminate and the client will be sent a `403 Forbidden` response.
+
+To reach a decision for a particular request, the security plugin first *assembles an effective ACL* for the resource to which the request applies. How this ACL is assembled will depend on which protocol operation is requested.
+
+For example, if the operation is LIST_COLLECTION, then the effective ACL will be assembled by concatenating the ACL from the workspace security descriptor and the ACL from the collection security descriptor.
+
+The ACEs are then tested sequentially to see if the ACE matches the current request. I.e., for each ACE, an attempt is made to match the *recipient*, *permission* and any *conditions* to the current request. *The first matching ACE wins*.
+
+== Precedence & Effective ACLs ==
+
+Because the first matching ACE wins, the order in which ACLs are concatenated determines the precedence. 
+
+I.e., if the effective ACL for a collection is assembled by concatenating the workspace ACL followed by the collection ACL, then any matching ACEs in the workspace ACL will take precedence over ACEs in the collection ACL.
+
+For example, consider an AtomBeat service where the workspace security descriptor is:
+
+{{{
+<atombeat:security-descriptor>
+    <atombeat:acl>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="role">administrator</atombeat:recipient>
+            <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+    </atombeat:acl>
+</atombeat:security-descriptor>
+}}}
+
+...and the security descriptor for an Atom collection at http://localhost:8081/atombeat/service/content/test is:
+
+{{{        
+<atombeat:security-descriptor>
+    <atombeat:acl>
+        <atombeat:ace>
+            <atombeat:type>DENY</atombeat:type>
+            <atombeat:recipient type="role">administrator</atombeat:recipient>
+            <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+    </atombeat:acl>
+</atombeat:security-descriptor>
+}}}
+
+In this case, if the order of precedence is ( workspace , collection , resource ), then any user with the role ROLE_ADMINISTRATOR *will* be allowed to create members within the test collection, because the ALLOW ACE in the workspace ACL will match before the DENY ACL in the collection ACL. I.e., the *effective ACL* for a CREATE_MEMBER operation on the collection will be:
+
+{{{
+<atombeat:acl>
+    <atombeat:ace>
+        <atombeat:type>ALLOW</atombeat:type>
+        <atombeat:recipient type="role">administrator</atombeat:recipient>
+        <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+    </atombeat:ace>
+    <atombeat:ace>
+        <atombeat:type>DENY</atombeat:type>
+        <atombeat:recipient type="role">administrator</atombeat:recipient>
+        <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+    </atombeat:ace>
+</atombeat:acl>
+}}}
+
+However, if the order of precedence were reversed to ( resource , collection , workspace ) then the opposite would be true.
+
+The order of precedence is configurable in AtomBeat via the `$security-config:priority` configuration variable in the service/config/security.xqm` file. By default the precedence is ( workspace , collection , resource ), because in the use cases we've come across you typically want to define rules at a global (workspace) level that cannot be overridden at a collection or resource level by individual users. However, other situations may require the opposite, e.g., you may want to allow users to override workspace-level or collection-level rules.
+
+== Special Considerations ==
+
+=== Listing a Collection; Filtering Feeds ===
+
+The LIST_COLLECTION operation (i.e., a GET request to a collection URI) is handled slightly differently by the security plugin.
+
+The security plugin will first process the effective ACL for the collection to determine whether the LIST_COLLECTION operation is allowed for the current user. If the operation is denied, then processing will immediately terminate and a 403 reponse is sent. If the operation is allowed, then a further processing step occurs, where the entries in the feed are *filtered*. The feed is filtered by testing each individual Atom entry see whether a RETRIEVE_MEMBER operation would be allowed on that member for the current user. If the user is *not* allowed to retrieve that member, then the Atom entry is excluded from the feed.
+
+I.e., listing a collection is not a security hole - if a user is not allowed to retrieve a collection member directly, then the member will not appear in the feed when listing the collection.
+
+=== Deleting Media Resources ===
+
+Note that there are *two ways* to deleting a media resource. Either you can send a DELETE request directly to the media resource URI, or you can send a DELETE request to the associated media-link entry's edit URI. In both cases the effect is the same - *both* the media resource *and* the media-link are deleted.
+
+To make this work within the one ACE, one operation model used by the AtomBeat security plugin, the plugin handles delete media requests by considering that *both* of the above alternatives match the DELETE_MEDIA operation, and *niether* matches the DELETE_MEMBER operation.
+
+I.e., in order to delete a media resource, either via the media resource URI or via the media-link URI, you only need to be allowed the DELETE_MEDIA operation. You *do not* need to be allowed the DELETE_MEMBER operation. 
