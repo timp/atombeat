@@ -9,9 +9,11 @@ AtomBeat is an implementation of the [http://www.atomenabled.org/developers/prot
 
 To find out more, see the following tutorials:
 
-  * TutorialGettingStarted - download and install AtomBeat; create a collection and retrieve an Atom feed; create, retrieve, updated and delete collection members; create, retrieve, update and delete media resources 
+  * TutorialGettingStarted - Covers downloading and installing AtomBeat, creating a collection and retrieving an Atom feed; creating, retrieving, updating and deleting collection members; creating, retrieving, updating and deleting media resources.
 
-  * TutorialVersioning - create a versioned collection; retrieve a member history feed; retrieve member revisions; submit a revision comment
+  * TutorialVersioning - An introduction to AtomBeat's history plugin, which provides support for tracking revisions to collection members. Covers creating a versioned collection, retrieving a member history feed, retrieving member revisions and submitting a revision comment.
+ 
+  * TutorialAccessControl - An introduction to AtomBeat's support for access control. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be discovered via links in Atom feeds and entries, and retrieved and modified using standard Atom protocol operations (HTTP GET and PUT). 
 
 = Feature Summary =
 
