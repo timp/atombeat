@@ -307,7 +307,13 @@ Hopefully, the meaning of an ACE should be fairly obvious. E.g., the ACE:
 
 You can update (i.e., modify) a security descriptor using the standard Atom protocol operation for updating a collection member, i.e., by sending an HTTP PUT request to the URL given in the `edit` link, with a modified Atom entry document representing the resource.
 
-E.g., let's retrieve the test collection's security descriptor again, but this time save to a local file:
+We're going to demonstrate this, but to show that the change has had an effect, we're going to use another user called "rebecca". Rebecca has the ROLE_READER role, so she should be able to list the test collection. Check that she can list the collection by doing:
+
+{{{
+curl --user rebecca:test --verbose --header "Accept: application/atom+xml" http://localhost:8081/atombeat/service/content/test
+}}}
+
+Next, as Adam (who has the ROLE_ADMINISTRATOR role), let's retrieve the test collection's security descriptor again, but this time save to a local file:
 
 {{{
 curl --user adam:test --verbose --header "Accept: application/atom+xml" --output test-descriptor.xml http://localhost:8081/atombeat/service/security/test
@@ -376,10 +382,59 @@ You should see something like the following from curl:
 </atom:entry>
 }}}
 
-If so, you have successfully updated the security descriptor. You can verify this by retrieving the security descriptor again, e.g.:
+If so, you have successfully updated the security descriptor. You can verify this has had an effect by trying to list the collection again as Rebecca:
 
 {{{
-curl --user adam:test --verbose --header "Accept: application/atom+xml" http://localhost:8081/atombeat/service/security/test
+curl --user rebecca:test --verbose --header "Accept: application/atom+xml" http://localhost:8081/atombeat/service/content/test
+}}}
+
+You should see something like:
+
+{{{
+> GET /atombeat/service/content/test HTTP/1.1
+> Authorization: Basic cmViZWNjYTp0ZXN0
+> User-Agent: curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15
+> Host: localhost:8081
+> Accept: application/atom+xml
+> 
+< HTTP/1.1 403 Forbidden
+< Server: Apache-Coyote/1.1
+< Set-Cookie: JSESSIONID=61E72A769ACED25196DEC320FA061A02; Path=/atombeat
+< pragma: no-cache
+< Cache-Control: no-cache
+< Content-Type: application/xml;charset=UTF-8
+< Transfer-Encoding: chunked
+< Date: Wed, 19 Jan 2011 15:59:55 GMT
+< 
+<error>
+    <status>403</status>
+    <message>The server understood the request, but is refusing to fulfill it. Authorization will not help and the request SHOULD NOT be repeated.&gt;</message>
+    <request>
+        <method>GET</method>
+        <path-info>/test</path-info>
+        <parameters/>
+        <headers>
+            <header>
+                <name>authorization</name>
+                <value>Basic cmViZWNjYTp0ZXN0</value>
+            </header>
+            <header>
+                <name>user-agent</name>
+                <value>curl/7.19.7 (x86_64-pc-linux-gnu) libcurl/7.19.7 OpenSSL/0.9.8k zlib/1.2.3.3 libidn/1.15</value>
+            </header>
+            <header>
+                <name>host</name>
+                <value>localhost:8081</value>
+            </header>
+            <header>
+                <name>accept</name>
+                <value>application/atom+xml</value>
+            </header>
+        </headers>
+        <user>rebecca</user>
+        <roles>ROLE_READER ROLE_USER</roles>
+    </request>
+</error>
 }}}
 
 = Security Descriptors for Collection Members and Media Resources =
@@ -552,7 +607,7 @@ You should see something like:
 </atom:entry>
 }}}
 
-The ACL in this security descriptor allows users with the role `ROLE_ADMINISTRATOR` to perform any of AtomBeat's recognised protocol operations. So far we've been using the username "adam", and adam has this role (see `WEB-INF/security-example.xml` for the default users and role assignments), which would explain why you've been able to do everything you have so far.
+The ACL in this security descriptor allows users with the role `ROLE_ADMINISTRATOR` to perform any of AtomBeat's recognised protocol operations. So far we've been using the username "adam", and adam has this role (see `WEB-INF/security-example.xml` for the default users and role assignments), which explains why you've been able to do everything as adam.
 
 = Access Control Concepts =
 
