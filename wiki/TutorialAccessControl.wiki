@@ -577,8 +577,6 @@ AtomBeat gives you the option of taking either approach, by setting the `$securi
 
 One of the components of an access control entry is the `atombeat:permission` element. This element can take any of the following values:
 
-  * CREATE_COLLECTION
-  * UPDATE_COLLECTION
   * LIST_COLLECTION
   * CREATE_MEMBER
   * RETRIEVE_MEMBER
@@ -588,6 +586,8 @@ One of the components of an access control entry is the `atombeat:permission` el
   * RETRIEVE_MEDIA
   * UPDATE_MEDIA
   * DELETE_MEDIA
+  * CREATE_COLLECTION
+  * UPDATE_COLLECTION
   * RETRIEVE_WORKSPACE_ACL
   * UPDATE_WORKSPACE_ACL
   * RETRIEVE_COLLECTION_ACL
@@ -620,7 +620,7 @@ E.g., if you send an HTTP GET request to a collection URI, then an ACE where the
 
 E.g., if you send an HTTP POST request to a collection URI, where the request header "Content-Type" is "application/atom+xml" and the request body is an Atom entry document, then an ACE where the `atombeat:permission` element contains "CREATE_MEMBER" may be matched during ACL processing.  
 
-(It would probably have been more appropriate to name this element `atombeat:operation` rather than `atombeat:permission`, as this element only service to match the current protocol operation, see also issue 138.)
+(It would probably have been more appropriate to name this element `atombeat:operation` rather than `atombeat:permission`, as this element only serves to match the current protocol operation, see also issue 138.)
 
 == Matching Recipients - Users, Roles and Groups ==
 
@@ -788,9 +788,9 @@ However, if the order of precedence were reversed to ( resource , collection , w
 
 The order of precedence is configurable in AtomBeat via the `$security-config:priority` configuration variable in the service/config/security.xqm` file. By default the precedence is ( workspace , collection , resource ), because in the use cases we've come across you typically want to define rules at a global (workspace) level that cannot be overridden at a collection or resource level by individual users. However, other situations may require the opposite, e.g., you may want to allow users to override workspace-level or collection-level rules.
 
-== Special Considerations ==
+= Special Considerations =
 
-=== Listing a Collection; Filtering Feeds ===
+== Listing a Collection; Filtering Feeds ==
 
 The LIST_COLLECTION operation (i.e., a GET request to a collection URI) is handled slightly differently by the security plugin.
 
@@ -798,10 +798,143 @@ The security plugin will first process the effective ACL for the collection to d
 
 I.e., listing a collection is not a security hole - if a user is not allowed to retrieve a collection member directly, then the member will not appear in the feed when listing the collection.
 
-=== Deleting Media Resources ===
+== Deleting Media Resources ==
 
 Note that there are *two ways* to deleting a media resource. Either you can send a DELETE request directly to the media resource URI, or you can send a DELETE request to the associated media-link's edit URI. In both cases the effect is the same - *both* the media resource *and* the media-link are deleted.
 
 To make this work within the (one ACE, one operation, one decision) model used by the AtomBeat security plugin, the plugin handles delete media requests by considering that *both* of the above alternatives match the DELETE_MEDIA operation, and *niether* matches the DELETE_MEMBER operation.
 
 I.e., in order to delete a media resource, either via the media resource URI or via the media-link's edit URI, you only need to be allowed the DELETE_MEDIA operation. You *do not* need to be allowed the DELETE_MEMBER operation. 
+
+= In-line and Out-of-line Groups =
+
+As mentioned above, a group can be defined *in-line* within a security descriptor, e.g.:
+
+{{{
+<atombeat:security-descriptor>
+    <atombeat:groups>
+        <atombeat:group id="readers">
+            <atombeat:member>richard</atombeat:member>
+            <atombeat:member>rebecca</atombeat:member>
+        </atombeat:group>
+        <atombeat:group id="authors">
+            <atombeat:member>alice</atombeat:member>
+            <atombeat:member>austin</atombeat:member>
+        </atombeat:group>
+        <atombeat:group id="editors">
+            <atombeat:member>emma</atombeat:member>
+            <atombeat:member>edward</atombeat:member>
+        </atombeat:group>
+    </atombeat:groups>
+    <atombeat:acl>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">readers</atombeat:recipient>
+            <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">authors</atombeat:recipient>
+            <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">editors</atombeat:recipient>
+            <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+    </atombeat:acl>
+</atombeat:security-descriptor>
+}}}
+
+Groups can also be *sourced* from another security descriptor or collection member - this is also called "out-of-line" group definitions, or "referencing" groups.
+
+== Sourcing Groups from Another Security Descriptor ==
+
+E.g., if the above security descriptor was the security descriptor for the test collection we created above and had the URI http://localhost:8081/atombeat/service/security/test then you could reference these groups in another security descriptor, e.g.:
+
+{{{
+<atombeat:security-descriptor>
+    <atombeat:groups>
+        <atombeat:group id="readers" src="http://localhost:8081/atombeat/service/security/test"/>
+        <atombeat:group id="authors" src="http://localhost:8081/atombeat/service/security/test"/>
+        <atombeat:group id="editors" src="http://localhost:8081/atombeat/service/security/test"/>
+    </atombeat:groups>
+    <atombeat:acl>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">readers</atombeat:recipient>
+            <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">authors</atombeat:recipient>
+            <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">editors</atombeat:recipient>
+            <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+    </atombeat:acl>
+</atombeat:security-descriptor>
+}}}
+
+== Sourcing Groups from a Collection Member ==
+
+As well as referencing groups defined inline within another security descriptor, you can also reference groups within a plain old collection member.
+
+E.g., if you created a member that looked like:
+
+{{{
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom" xmlns:atombeat="http://purl.org/atombeat/xmlns">
+     <atom:title>TEST ENTRY WITH GROUPS</atom:title>
+     <atom:content type="application/xml">
+         <atombeat:groups>
+             <atombeat:group id="readers">
+                 <atombeat:member>richard</atombeat:member>
+                 <atombeat:member>rebecca</atombeat:member>
+             </atombeat:group>
+             <atombeat:group id="authors">
+                 <atombeat:member>alice</atombeat:member>
+                 <atombeat:member>austin</atombeat:member>
+             </atombeat:group>
+             <atombeat:group id="editors">
+                 <atombeat:member>emma</atombeat:member>
+                 <atombeat:member>edward</atombeat:member>
+             </atombeat:group>
+         </atombeat:groups>
+     </atom:content>
+ </atom:entry>
+}}}
+
+...and that member had the URI http://localhost:8081/atombeat/service/content/test/1234-56789-0123456 then you could reference these groups in another security descriptor, e.g.:
+
+{{{
+<atombeat:security-descriptor>
+    <atombeat:groups>
+        <atombeat:group id="readers" src="http://localhost:8081/atombeat/service/content/test/1234-56789-0123456"/>
+        <atombeat:group id="authors" src="http://localhost:8081/atombeat/service/content/test/1234-56789-0123456"/>
+        <atombeat:group id="editors" src="http://localhost:8081/atombeat/service/content/test/1234-56789-0123456"/>
+    </atombeat:groups>
+    <atombeat:acl>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">readers</atombeat:recipient>
+            <atombeat:permission>RETRIEVE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">authors</atombeat:recipient>
+            <atombeat:permission>CREATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+        <atombeat:ace>
+            <atombeat:type>ALLOW</atombeat:type>
+            <atombeat:recipient type="group">editors</atombeat:recipient>
+            <atombeat:permission>UPDATE_MEMBER</atombeat:permission>
+        </atombeat:ace>
+    </atombeat:acl>
+</atombeat:security-descriptor>
+}}}
+
+This means that you can use Atom collection members to manage groups if you want to. This is useful, e.g., where you want certain users to be able to add and remove group members but not to be able to alter access control lists.
+
