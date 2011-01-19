@@ -10,9 +10,34 @@ AtomBeat's security plugin has support for fine-grained access control policies 
 
 = Prerequisites =
 
-For this tutorial you need to deploy one of the security-enabled WAR packages of atombeat, e.g., atombeat-exist-minimal-secure. You will also need to deploy a version 0.2-alpha-4 or later.
+You will need to have a servlet container like [http://tomcat.apache.org/download-60.cgi Tomcat] or [http://docs.codehaus.org/display/JETTY/Downloading+Jetty Jetty] installed on your computer, and you will need to know how to deploy a WAR file. AtomBeat 0.1 has been tested with Tomcat 6.0 and Jetty 6.1.
 
-Please note that WAR packages in the 0.2 series are *not* available from the project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
+You will need to have the cURL HTTP command-line utility installed on your computer. If you're on a Linux computer, you probably already have curl installed, or can install it via a software repository, e.g.:
+
+{{{
+$ sudo apt-get install curl
+}}}
+
+If you are on a Windows or Mac computer, you can [http://curl.haxx.se/download.html download cURL] and install it manually.
+
+OPTIONAL: You might also like to install a TCP proxy so you can observe the communication between the client (cURL) and server (AtomBeat). There are a couple of options here. You can download and install [https://tcpmon.dev.java.net/ tcpmon] on any operating system. You can also install a very simple utility called [http://hathawaymix.org/Software/TCPWatch tcpwatch], e.g.:
+
+{{{
+$ sudo apt-get install tcpwatch-httpproxy
+$ tcpwatch-httpproxy -h -L 8081:8080 &
+}}}
+
+This tutorial assumes you have your servlet container installed and listening on port 8080.
+
+This tutorial also assumes you have a TCP proxy installed and running, listening on port 8081 and forwarding to port 8080. If you are doing this tutorial *without* a TCP proxy, replace "8081" with "8080" wherever you see it below.
+
+= Downloading and Installing AtomBeat =
+
+We are going to be downloading and installing one of the *security-enabled* WAR packages available for AtomBeat. Specifically, we are going to be using the *atombeat-exist-minimal-secure* WAR package. This package is a web application containing an AtomBeat service, overlaid with a cut-down version of the [http://exist.sourceforge.net/ eXist] web application, and with the AtomBeat security plugin enabled and pre-configured with some example settings. For more information on the different AtomBeat packages available, see TODO.
+
+N.B., you will need to install atombeat-exist-minimal-secure *version 0.2-alpha-4 or later* to follow this tutorial. (Most, but not all, of this tutorial will still work with AtomBeat 0.1-RC7.)
+
+Please note that WAR packages in the 0.2 series are *not* available from the Google Code project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
 
 {{{
 wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-4/atombeat-exist-minimal-secure-0.2-alpha-4.war
@@ -27,16 +52,47 @@ export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
 mvn install
 }}}
 
-This tutorial assumes you have downloaded the atombeat-exist-minimal-secure WAR package version 0.2-alpha-4 or later and deployed it to a local Tomcat or Jetty server running on port 8080, and that *you have deployed the WAR at the context path `/atombeat`*. 
+This tutorial assumes you have downloaded the atombeat-exist-minimal-secure WAR package version 0.2-alpha-4 or later and deployed it to a local Tomcat or Jetty server running on port 8080, and that *you have deployed the WAR at the context path `/atombeat`*. E.g., you might do something like:
 
-You will also need to have cURL installed. 
+{{{
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-4/atombeat-exist-minimal-secure-0.2-alpha-4.war
+sudo unzip atombeat-exist-minimal-secure-0.2-alpha-4.war -d /opt/atombeat-exist-minimal-secure-0.2-alpha-4
+sudo rm /var/lib/tomcat6/webapps/atombeat # remove previous link if already there
+sudo ln -s /opt/atombeat-exist-minimal-secure-0.2-alpha-4 /var/lib/tomcat6/webapps/atombeat
+sudo chown -R tomcat6:tomcat6 /opt/atombeat-exist-minimal-secure-0.2-alpha-4
+sudo service tomcat6 restart
+}}}
 
-This tutorial also assumes that you have a TCP proxy listening on port 8081 and forwarding to port 8080, so you can watch the HTTP traffic. If you are doing this tutorial *without* a TCP proxy, replace "8081" with "8080" wherever you see it below.
-
-To check that the AtomBeat web application is installed and running, go to http://localhost:8081/atombeat/ - you should see a web page saying, "It works!" 
+To check that the AtomBeat web application is installed and running, go to http://localhost:8081/atombeat/ (or http://localhost:8080/atombeat/ if you're not using a TCP proxy) - you should see a web page saying, "It works!" 
 
 If you have problems with any of the above, try the [TutorialGettingStarted Getting Started Tutorial] or [mailto:atombeat@googlegroups.com email the AtomBeat google group].
 
-= Concepts =
+= Configuring Collections =
+
+There are several different ways to create an Atom collection in AtomBeat. In this tutorial, we're going to use an administration utility that comes with AtomBeat to create a pre-configured Atom collection. For more information on managing Atom collections, see TODO.
+
+Go to the following link in your browser: http://localhost:8081/atombeat/workspace/admin/install.xql
+
+You will be challenged for a username and password - use "adam" as the username and "test" as the password.
+
+You should see a page entitled "Atom Collections" and a table listing two collections.
+
+Click the "Install" button. You should see the "Available" column change from "false" to "true". You have just created two Atom collections.
+
+To verify that the Test Collection has been successfully created, click on the [http://localhost:8081/atombeat/workspace/content/test /test] link, or go to the following URL: http://localhost:8081/atombeat/workspace/content/test
+
+If you are using Firefox, you should see the default Firefox feed reader offering to subscribe to the feed, and below that the title of the collection: "Test Collection". What you see in other browsers will vary.
+
+Note that the administration utility you just used to create a collection also installs some default security settings - these are needed for the tutorial to work. 
+
+= A Note on Authentication =
+
+This tutorial is *not* about authentication. AtomBeat does *not* have any custom code for implementing authentication. In the atombeat-*-secure WAR packages, authentication is implemented using [http://TODO Spring Security]. In these WAR packages there is a simple, example Spring Security configuration, using HTTP basic authentication, with a few predefined users. You can find the default Spring Security configuration in the file `WEB-INF/security-example.xml`. 
+
+If you want to use a different authentication configuration, you'll need to modify the Spring Security configuration file, see the [http://TODO Spring Security documentation] for more information. Spring Security can be configured to use just about any authentication mechanism, and to provision user credentials and authorities from a wide range of sources, including relational databases and LDAP repositories.
+
+= Retrieving a Security Descriptor =
+
+
 
 TODO
