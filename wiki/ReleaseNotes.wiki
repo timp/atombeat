@@ -35,7 +35,7 @@ To reference a group defined in an Atom collection member, use the *member's edi
  </atombeat:security-descriptor>
 }}}
 
-The definition of a group can appear *anywhere* within the member's Atom entry document. I.e., AtomBeat will use the XPath `//atombeat:group[@src='admins']` to find matching groups within the referenced document.
+The definition of a group can appear *anywhere* within the member's Atom entry document. I.e., AtomBeat will use the XPath `//atombeat:group[@id='admins']` to find matching groups within the referenced document.
 
 In previous releases, you could only reference groups defined in a security descriptor, and this was done indirectly *via* the URI of the workspace, collection or member whose descriptor you wanted to reference. Upgrading to this release will require that any URIs given in `@src` attributes on `atombeat:group` elements are *changed* to point *directly* to the URI of the security descriptor containing the group definitions.
 
