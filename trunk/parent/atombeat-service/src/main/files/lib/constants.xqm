@@ -17,6 +17,7 @@ declare variable $CONSTANT:STATUS-CLIENT-ERROR-BAD-REQUEST as xs:integer 			:= 4
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-FORBIDDEN as xs:integer 				:= 403 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-NOT-FOUND as xs:integer 				:= 404 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-METHOD-NOT-ALLOWED as xs:integer     := 405 ;
+declare variable $CONSTANT:STATUS-CLIENT-ERROR-NOT-ACCEPTABLE as xs:integer         := 406 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-PRECONDITION-FAILED as xs:integer    := 412 ;
 declare variable $CONSTANT:STATUS-CLIENT-ERROR-UNSUPPORTED-MEDIA-TYPE as xs:integer := 415 ;
 

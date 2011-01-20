@@ -18,6 +18,7 @@ declare function plugin:before() as function* {
 	(
 		util:function( QName( "http://purl.org/atombeat/xquery/logger-plugin" , "logger-plugin:before" ) , 4 ) ,
 		util:function( QName( "http://purl.org/atombeat/xquery/security-plugin" , "security-plugin:before" ) , 4 ) , 
+		util:function( QName( "http://purl.org/atombeat/xquery/conneg-plugin" , "conneg-plugin:before" ) , 4 ) , 
         util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:before" ) , 4 ) ,  
 		util:function( QName( "http://purl.org/atombeat/xquery/link-expansion-plugin" , "link-expansion-plugin:before" ) , 4 ) ,  
         util:function( QName( "http://purl.org/atombeat/xquery/link-extensions-plugin" , "link-extensions-plugin:before" ) , 4 ) ,  
