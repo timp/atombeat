@@ -294,6 +294,10 @@
     </servlet>-->
     <!-- End SQL examples -->
     <servlet-mapping>
+        <servlet-name>default</servlet-name>
+        <url-pattern>*.xslt</url-pattern> <!-- make sure orbeon doesn't serve static content -->
+    </servlet-mapping>
+    <servlet-mapping>
         <servlet-name>orbeon-main-servlet</servlet-name>
         <url-pattern>/</url-pattern>
     </servlet-mapping>
