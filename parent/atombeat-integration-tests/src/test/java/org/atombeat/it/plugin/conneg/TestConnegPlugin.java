@@ -148,6 +148,132 @@ public class TestConnegPlugin extends TestCase {
 
 	}
 	
+	
+	
+	public void testConneg() throws URISyntaxException {
+		
+		String accept, expect, actual;
+		
+		String[][] tests = {
+				
+				// if no accept header, expect atom
+				{ null, "application/atom+xml" }, 
+				
+				// if you ask for atom, that's what you get
+				{ "application/atom+xml", "application/atom+xml" },	
+				
+				// if you ask for html, that's what you get
+				{ "text/html", "text/html" },	
+				
+				// if you ask for json, that's what you get
+				{ "application/json", "application/json" },
+				
+				// if you ask for anything, you'll get html (help browsers like IE that don't know what they want)
+				{ "*/*", "text/html" },	
+				
+				// expect html is slightly preferred over atom
+				{ "application/atom+xml, text/html", "text/html" },
+				
+				// override slight server preference for html with strong client preference for atom
+				{ "application/atom+xml;q=1.0, text/html;q=0.1", "application/atom+xml" }, 
+				
+				// what happens if two variants end up with the same score? first listed variant in server variant configuration wins
+				{ "application/atom+xml;q=0.9, text/html;q=0.8", "application/atom+xml" }, 
+				
+				// make sure unsupported media types don't confuse the server
+				{ "text/html; q=1.0, text/*; q=0.8, image/gif; q=0.6, image/jpeg; q=0.6, image/*; q=0.5, */*; q=0.1", "text/html" }, 
+				
+				// make sure additional mediatype parameters don't confuse the server
+				// also, check that the quality value for */* is fiddled if no quality values are specified at all
+				// (these are abdera client's default accept header)
+				{ "application/atom+xml;type=entry, application/atom+xml;type=feed, application/atom+xml, application/atomsvc+xml, application/atomcat+xml, application/xml, text/xml, */*" , "application/atom+xml"}, 
+
+				// check that the quality value for text/* is fiddled if no quality values are specified at all 
+				{ "application/atom+xml, text/*" , "application/atom+xml"} 
+
+		};
+		
+		for (String[] test : tests) {
+			accept = test[0];
+			expect = test[1];
+			actual = doGetCollectionTest(accept); assertEquals(expect, actual);
+			actual = doGetMemberTest(accept); assertEquals(expect, actual);
+		}
+		
+	}
+	
+	
+	private String doGetMemberTest(String accept) throws URISyntaxException {
+		
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		
+		// create a new member of the test collection
+		
+		Entry e = Abdera.getInstance().getFactory().newEntry();
+		e.setTitle("conneg test");
+		ClientResponse r = adam.post(TEST_COLLECTION_URL, e);
+		assertEquals(201, r.getStatus());
+		Document<Entry> d = r.getDocument();
+		Entry f = d.getRoot();
+		String u = f.getEditLinkResolvedHref().toASCIIString();
+		r.release();
+		
+		// use http client library rather than abdera to make sure we control accept header
+		
+		GetMethod g = new GetMethod(u);
+		if (accept != null)
+			g.setRequestHeader("Accept", accept);
+		int res = executeMethod(g, ADAM, PASSWORD);
+		assertEquals(200, res);
+		assertNotNull(g.getResponseHeader("Vary"));
+		String contentType = g.getResponseHeader("Content-Type").getValue();
+		g.releaseConnection();
+
+		String mediaType = contentType.split(";")[0];
+		return mediaType;
+
+	}
+	
+	
+	
+	private String doGetCollectionTest(String accept) {
+		
+		// use http client library rather than abdera to make sure we control accept header
+		
+		GetMethod g = new GetMethod(TEST_COLLECTION_URL);
+		if (accept != null)
+			g.setRequestHeader("Accept", accept);
+		int res = executeMethod(g, ADAM, PASSWORD);
+		assertEquals(200, res);
+		assertNotNull(g.getResponseHeader("Vary"));
+		String contentType = g.getResponseHeader("Content-Type").getValue();
+		g.releaseConnection();
+		
+		String mediaType = contentType.split(";")[0];
+		return mediaType;
+		
+	}
+	
+
+	
+	
+	public void testNoAcceptableRepresentation() {
+		
+		// use http client library rather than abdera to make sure we control accept header
+		
+		GetMethod g = new GetMethod(TEST_COLLECTION_URL);
+		g.setRequestHeader("Accept", "foo/bar");
+		int res = executeMethod(g, ADAM, PASSWORD);
+		assertEquals(406, res);
+		g.releaseConnection();
+		
+	}
+	
+
+	
+	
+
 
 
 
