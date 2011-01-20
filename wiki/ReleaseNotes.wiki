@@ -5,6 +5,138 @@
 
 = 0.2-alpha-5-SNAPSHOT =
 
+== issue 57 - configurable conneg plugin ==
+
+This release includes a new content negotiation (conneg) plugin, that allows you to request and serve Atom feeds and entries in variant representation formats, including HTML and JSON. The plugin implements [http://www.w3.org/Protocols/rfc2616/rfc2616-sec12.html server-driven content negotation] based on the values provided in the Accept request header. The plugin also adds `alternate` links to entries and feeds, so you can use these links to retrieve a specific representation format if you need to without having to provide an `Accept` header.
+
+To enable the conneg plugin, the `config/plugins.xqm` file needs to be modified, to include the conneg plugin before and after functions in the respective plugin chains, e.g.:
+
+{{{
+xquery version "1.0";
+
+module namespace plugin = "http://purl.org/atombeat/xquery/plugin";
+
+import module namespace logger-plugin = "http://purl.org/atombeat/xquery/logger-plugin" at "../plugins/logger-plugin.xqm" ;
+import module namespace conneg-plugin = "http://purl.org/atombeat/xquery/conneg-plugin" at "../plugins/conneg-plugin.xqm" ;
+import module namespace security-plugin = "http://purl.org/atombeat/xquery/security-plugin" at "../plugins/security-plugin.xqm" ;
+import module namespace link-extensions-plugin = "http://purl.org/atombeat/xquery/link-extensions-plugin" at "../plugins/link-extensions-plugin.xqm" ;
+import module namespace link-expansion-plugin = "http://purl.org/atombeat/xquery/link-expansion-plugin" at "../plugins/link-expansion-plugin.xqm" ;
+import module namespace tombstones-plugin = "http://purl.org/atombeat/xquery/tombstones-plugin" at "../plugins/tombstones-plugin.xqm" ;
+import module namespace history-plugin = "http://purl.org/atombeat/xquery/history-plugin" at "../plugins/history-plugin.xqm" ;
+
+declare function plugin:before() as function* {
+	(
+		util:function( QName( "http://purl.org/atombeat/xquery/logger-plugin" , "logger-plugin:before" ) , 4 ) ,
+		util:function( QName( "http://purl.org/atombeat/xquery/security-plugin" , "security-plugin:before" ) , 4 ) , 
+		util:function( QName( "http://purl.org/atombeat/xquery/conneg-plugin" , "conneg-plugin:before" ) , 4 ) , 
+  util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:before" ) , 4 ) ,  
+		util:function( QName( "http://purl.org/atombeat/xquery/link-expansion-plugin" , "link-expansion-plugin:before" ) , 4 ) ,  
+  util:function( QName( "http://purl.org/atombeat/xquery/link-extensions-plugin" , "link-extensions-plugin:before" ) , 4 ) ,  
+		util:function( QName( "http://purl.org/atombeat/xquery/history-plugin" , "history-plugin:before" ) , 4 )   
+	)
+};
+
+declare function plugin:after() as function* {
+	(
+		util:function( QName( "http://purl.org/atombeat/xquery/security-plugin" , "security-plugin:after" ) , 3 ) , 
+  util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:after" ) , 3 ) ,
+  util:function( QName( "http://purl.org/atombeat/xquery/history-plugin" , "history-plugin:after" ) , 3 ) ,
+		util:function( QName( "http://purl.org/atombeat/xquery/link-extensions-plugin" , "link-extensions-plugin:after" ) , 3 ) , 
+		util:function( QName( "http://purl.org/atombeat/xquery/link-expansion-plugin" , "link-expansion-plugin:after" ) , 3 ) , 
+		util:function( QName( "http://purl.org/atombeat/xquery/conneg-plugin" , "conneg-plugin:after" ) , 3 ) ,
+		util:function( QName( "http://purl.org/atombeat/xquery/logger-plugin" , "logger-plugin:after" ) , 3 )
+	)
+};
+
+declare function plugin:after-error() as function* {
+    (
+        util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:after-error" ) , 3 ) 
+    )
+};
+}}}
+
+The plugin configuration is defined in the `config/conneg.xqm` file. A default version of this file is included in all AtomBeat WAR packages. E.g.:
+
+{{{
+xquery version "1.0";
+
+module namespace conneg-config = "http://purl.org/atombeat/xquery/conneg-config";
+
+(: XML namespace declarations :)
+declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
+
+(: eXist function module imports :)
+import module namespace util = "http://exist-db.org/xquery/util" ;
+import module namespace transform = "http://exist-db.org/xquery/transform" ;
+import module namespace json = "http://www.json.org" ;
+
+(: AtomBeat function module imports :)
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
+
+(:~
+ : Define variant representations.
+ :)
+declare variable $conneg-config:variants := 
+    <variants>
+        <variant>
+            <output-key>atom</output-key>
+            <media-type>application/atom+xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.8</qs>
+        </variant>
+        <variant>
+            <output-key>html</output-key>
+            <media-type>text/html</media-type>
+            <output-type>xml</output-type>
+            <qs>0.9</qs>
+        </variant>
+        <variant>
+            <output-key>json</output-key>
+            <media-type>application/json</media-type>
+            <output-type>text</output-type>
+            <qs>0.5</qs>
+        </variant>
+        <variant>
+            <output-key>xml</output-key>
+            <media-type>application/xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.3</qs>
+        </variant>
+        <variant>
+            <output-key>textxml</output-key>
+            <media-type>text/xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.2</qs>
+        </variant>
+        <variant>
+            <output-key>text</output-key>
+            <media-type>text/plain</media-type>
+            <output-type>xml</output-type>
+            <qs>0.1</qs>
+        </variant>
+    </variants>
+;
+
+(:~
+ : Define transformers for variant representations. There MUST be one transformer
+ : for each variant, and they must occur in the same position within the sequence
+ : as the corresponding variant definition above.
+ :)
+declare variable $conneg-config:transformers := (
+    <identity/> ,
+    <stylesheet>/stylesheets/atom2html4.xslt</stylesheet> , (: will be concatenated with $config:service-url-base :)
+    util:function( QName( "http://www.json.org" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
+    <identity/> ,
+    <identity/> ,
+    <identity/> 
+);
+}}}
+
+This default configuration supports content negotiation to HTML and JSON formats. If you want to add additional variant formats, you need to modify the `$conneg-config:variants` and `$conneg-config:transformers` variables. Note that these two variables need to be kept consistent with each other, i.e., the ordering of variants must correspond to the ordering of transformers.
+
+The server-driven content negotiation algorithm implemented in AtomBeat is close to that implemented in Apache, see also the [http://httpd.apache.org/docs/current/content-negotiation.html#methods Apache content negotiation documentation].
+
 = 0.2-alpha-4 =
 
 == issue 81 - reference groups where source is any atom member ==
