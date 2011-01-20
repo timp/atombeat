@@ -8,6 +8,7 @@
     <!-- disable security for eXist XML-RPC or REST endpoint (for development only) -->
     <http pattern="/xmlrpc" security="none"/>
     <http pattern="/rest/**" security="none"/>
+    <http pattern="/service/stylesheets/**" security="none"/>
     
     <http use-expressions="true" realm="AtomBeat">
 
