@@ -208,3 +208,27 @@ declare function xutil:append-child(
 
 
 
+
+declare function xutil:transform-with-stylesheet(
+    $node-tree as node()?, $stylesheet as item(), $parameters as node()?
+) as item()*
+{
+    transform:transform( $node-tree , $stylesheet , $parameters )
+};
+
+
+
+declare function xutil:identity(
+    $i as item()*
+) as item()*
+{
+    $i
+};
+
+
+
+
+
+
+
+
