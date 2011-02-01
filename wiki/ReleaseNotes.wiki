@@ -5,11 +5,75 @@
 
 = 0.2-alpha-5-SNAPSHOT =
 
+== issue 140 - ==
+
+The function used to transform from Atom XML to JSON in the default content negotiation plugin configuration has been changed to use a slightly tweaked version of the XML-to-JSON function that comes with eXist. The tweak is to use element local names to generate JSON object keys instead of node names, which means that clients asking for JSON won't get confused by inconsistent use of namespace prefixes in the source Atom XML document.
+
+E.g., an Atom entry document like:
+
+{{{
+<atom:entry xmlns:atom="http://www.w3.org/2005/Atom">
+    <atom:id>urn:uuid:0b7c7ded-0eaf-43ca-84ac-7de93ad7f636</atom:id>
+    <atom:published>2011-02-01T11:24:42.81Z</atom:published>
+    <atom:updated>2011-02-01T11:24:42.81Z</atom:updated>
+    <atom:author>
+        <atom:name>adam</atom:name>
+    </atom:author>
+    <title xmlns="http://www.w3.org/2005/Atom" type="text">testing json representstation</title>
+    <summary xmlns="http://www.w3.org/2005/Atom" type="text">this is a test to check that element local names are used in json representation</summary>
+    <atom:link rel="edit" type="application/atom+xml;type=entry" href="http://localhost:8081/atombeat-exist-minimal-secure/service/content/test/0b7c7ded-0eaf-43ca-84ac-7de93ad7f636"/>
+    <atom:link rel="alternate" type="application/atom+xml" href="http://localhost:8081/atombeat-exist-minimal-secure/service/content/test/0b7c7ded-0eaf-43ca-84ac-7de93ad7f636?output=atom"/>
+    <atom:link rel="alternate" type="application/json" href="http://localhost:8081/atombeat-exist-minimal-secure/service/content/test/0b7c7ded-0eaf-43ca-84ac-7de93ad7f636?output=json"/>
+</atom:entry>
+}}}
+
+...gets transformed to JSON like:
+
+{{{
+{
+  "id" : "urn:uuid:0b7c7ded-0eaf-43ca-84ac-7de93ad7f636", 
+  "published" : "2011-02-01T11:24:42.81Z", 
+  "updated" : "2011-02-01T11:24:42.81Z", 
+  "author" : {
+    "name" : "adam"
+  }, 
+  "title" : {
+    "@type": "text", 
+    "#text": "testing json representstation"
+  }, 
+  "summary" : {
+    "@type": "text", 
+    "#text": "this is a test to check that element local names are used in json representation"
+  }, 
+  "link" : [ 
+    {
+      "@rel": "edit", 
+      "@type": "application/atom+xml;type=entry", 
+      "@href": "http://localhost:8081/atombeat-exist-minimal-secure/service/content/test/0b7c7ded-0eaf-43ca-84ac-7de93ad7f636"
+    }, 
+    {
+      "@rel": "alternate", 
+      "@type": "application/atom+xml", 
+      "@href": "http://localhost:8081/atombeat-exist-minimal-secure/service/content/test/0b7c7ded-0eaf-43ca-84ac-7de93ad7f636?output=atom"
+    }, 
+    {
+      "@rel": "alternate", 
+      "@type": "application/json", 
+      "@href": "http://localhost:8081/atombeat-exist-minimal-secure/service/content/test/0b7c7ded-0eaf-43ca-84ac-7de93ad7f636?output=json"
+    }, 
+  ]
+}
+}}}
+
+== issue 139 - conneg plugin doesn't strip alternate links prior to create or update ==
+
+This is a bug fix in the content negotiation plugin.
+
 == issue 57 - configurable conneg plugin ==
 
 This release includes a new content negotiation (conneg) plugin, that allows you to request and serve Atom feeds and entries in variant representation formats, including HTML and JSON. The plugin implements [http://www.w3.org/Protocols/rfc2616/rfc2616-sec12.html server-driven content negotation] based on the values provided in the Accept request header. The plugin also adds `alternate` links to entries and feeds, so you can use these links to retrieve a specific representation format if you need to without having to provide an `Accept` header.
 
-To enable the conneg plugin, the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/config/plugins.xqm config/plugins.xqm] file needs to be modified, to include the conneg plugin before and after functions in the respective plugin chains, e.g.:
+To enable the conneg plugin, the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/config/plugins.xqm config/plugins.xqm] file needs to be modified, to include the conneg plugin before and after functions in the respective plugin chains.
 
 The plugin configuration is defined in the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/config/conneg.xqm config/conneg.xqm] file. A [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/config/conneg.xqm default version] of this file is included in all AtomBeat WAR packages.
 
