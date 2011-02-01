@@ -5,7 +5,7 @@
 
 = 0.2-alpha-5-SNAPSHOT =
 
-== issue 140 - make json output consistent using element local names instead of qnames ==
+== issue 140 make json output consistent using element local names instead of qnames ==
 
 The function used to transform from Atom XML to JSON in the default content negotiation plugin configuration has been changed to use a slightly tweaked version of the XML-to-JSON function that comes with eXist. The tweak is to use element local names to generate JSON object keys instead of node names, which means that clients asking for JSON won't get confused by inconsistent use of namespace prefixes in the source Atom XML document.
 
@@ -65,11 +65,11 @@ E.g., an Atom entry document like:
 }
 }}}
 
-== issue 139 - conneg plugin doesn't strip alternate links prior to create or update ==
+== issue 139 conneg plugin doesn't strip alternate links prior to create or update ==
 
 This is a bug fix in the content negotiation plugin.
 
-== issue 57 - configurable conneg plugin ==
+== issue 57 configurable conneg plugin ==
 
 This release includes a new content negotiation (conneg) plugin, that allows you to request and serve Atom feeds and entries in variant representation formats, including HTML and JSON. The plugin implements [http://www.w3.org/Protocols/rfc2616/rfc2616-sec12.html server-driven content negotation] based on the values provided in the Accept request header. The plugin also adds `alternate` links to entries and feeds, so you can use these links to retrieve a specific representation format if you need to without having to provide an `Accept` header.
 
@@ -83,7 +83,7 @@ The server-driven content negotiation algorithm implemented in AtomBeat is close
 
 = 0.2-alpha-4 =
 
-== issue 81 - reference groups where source is any atom member ==
+== issue 81 reference groups where source is any atom member ==
 
 The way that out-of-line security groups are referenced from a security descriptor has changed. In this release, you can either reference a security group defined in another security descriptor, *or* you can reference a group defined in an Atom collection member. 
 
@@ -117,7 +117,7 @@ In previous releases, you could only reference groups defined in a security desc
 
 = 0.2-alpha-3 =
 
-== issue 130 - remove references to request from atomdb xquery module ==
+== issue 130 remove references to request from atomdb xquery module ==
 
 The signature of the following functions has changed:
 
@@ -135,7 +135,7 @@ An additional parameter `$user-name` has been added to the function signature, t
 
 Upgrading to this release will require any custom XQuery modules that call any of the above functions to be modified to use the new function signature.
   
-== issue 129 - make atom:id construction configurable ==
+== issue 129 make atom:id construction configurable ==
 
 A new configuration function `config:construct-member-atom-id()` has been added to the `config/shared.xqm` configuration module. This new function allows customisation of the way in which `atom:id` elements are populated for new collection members.
 
@@ -181,13 +181,13 @@ declare function config:contruct-member-atom-id(
 };
 }}} 
 
-== issue 118 - 	implement md5 in @hash link extension attribute for media-link entries ==
+== issue 118	implement md5 in @hash link extension attribute for media-link entries ==
 
 If the FILE media storage mode is being used, an MD5 hash will automatically be calculated for every new and updated media resource, and the hash value will be added to the associated media-link entry in a @hash attribute on both the 'edit-media' link and the atom:content element.
 
 This is a backwards compatible change, in that upgrading to this release does not require any migration of the data. However, note that media-link entries created prior to upgrade will not include a @hash attribute. 
 
-== issue 114 - configure self link uri base independently from edit uri base ==
+== issue 114 configure self link uri base independently from edit uri base ==
 
 The way in which the URI base for 'self', 'edit' and 'edit-media' links is configured has changed. The variable $config:content-service-url in the config/shared.xqm configuration module has been removed. Three new variables have been added in it's place, being $config:self-link-uri-base, $config:edit-link-uri-base and $config:edit-media-link-uri-base. These new variables allow URI bases for different link types to be configured independently if desired.
 
@@ -195,9 +195,9 @@ Upgrading to this release will require modification of the config/shared.xqm to 
 
 = 0.2-alpha-2 =
 
-TODO complete release notes for this version
+TODO document me complete release notes for this version
 
-== issue 24 - provide service documents ==
+== issue 24 provide service documents ==
 
 This release implements Atom Protocol service documents. E.g., if an !AtomBeat service is located at at http://example.org/atombeat/service/ then a GET request to this URI will return an Atom Protocol service document listing available Atom collections.
 
@@ -207,7 +207,7 @@ Upgrading to this release will require modification of the config/shared.xqm to 
 
 Note also that collections created prior to upgrading to this release will not initially appear in the service document. They will appear after an update to the collection feed metadata, i.e., after a PUT to the collection URI. 
 
-== issue 97 - remove ".atom" from the end of member URIs ==
+== issue 97 remove ".atom" from the end of member URIs ==
 
 In this release the string ".atom" is no longer appending to member URIs. 
 
@@ -215,32 +215,32 @@ This is a major change, and requires that all member URIs present in the databas
 
 Note however that the documents stored in the eXist database still retain the ".atom" suffix, i.e., the documents themselves don't need to be moved.
 
-== issue 99 - TODO ==
+== issue 99 TODO document me ==
 
-== issue 104 - TODO ==
+== issue 104 TODO document me ==
 
-== issue 105 - TODO ==
+== issue 105 TODO document me ==
 
-== issue 106 - migrate workspace to service ==
+== issue 106 migrate workspace to service ==
 
 The default location for the !AtomBeat service in all WAR packages has changed from /workspace to /service. 
 
 All !AtomBeat URIs for resources (collections, members, media) created prior to upgrade will need to be modified to reflect the new URL base.
 
-== issue 111 - upgrade to spring security 3.1 ==
+== issue 111 upgrade to spring security 3.1 ==
 
 Spring Security in secure WAR packages has been upgraded to 3.1.0.M1.
 
-== issue 112 - TODO ==
+== issue 112 TODO document me ==
 
-== issue 116 - TODO ==
+== issue 116 TODO document me ==
 
 = 0.2-alpha-1 =
 
-== issue 98 - implement tombstones ==
+== issue 98 implement tombstones ==
 
-TODO
+TODO document me
 
-== issue 100 - error plugins ==
+== issue 100 error plugins ==
 
-TODO
+TODO document me
