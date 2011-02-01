@@ -1,6 +1,8 @@
 #summary notes on changes between releases
 #labels Featured
 
+See the AtomBeat wiki page for information on downloading and/or building AtomBeat.
+
 <wiki:toc/>
 
 = 0.2-alpha-6-SNAPSHOT =
