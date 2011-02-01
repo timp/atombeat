@@ -3,6 +3,7 @@
  */
 package org.atombeat.it.plugin.conneg;
 
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 import org.apache.abdera.Abdera;
@@ -14,6 +15,9 @@ import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import junit.framework.TestCase;
 import static org.atombeat.it.AtomTestUtils.SERVICE_URL;
@@ -273,7 +277,94 @@ public class TestConnegPlugin extends TestCase {
 
 	
 	
+	public void testAlternateLinksDontProliferate() throws URISyntaxException {
+		
+		// we want to verify that alternate links are stripped on PUT or POST
+		// so you don't end up with a proliferation after multiple updates
+		
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		
+		// first create a member
+		
+		Entry e = Abdera.getInstance().getFactory().newEntry();
+		e.setTitle("testing alternate links are stripped");
+		e.setSummary("this is a test to see if alternate links are stripped from request data");
+		e.addLink("http://example.org/foobar", "alternate", "text/html", "i should be stripped", "foolang", -1);
+		
+		ClientResponse r = adam.post(TEST_COLLECTION_URL, e);
+		assertEquals(201, r.getStatus());
+		Document<Entry> d = r.getDocument();
+		Entry f = d.getRoot();
+		String l = f.getEditLinkResolvedHref().toASCIIString();
 
+		// verify alternate links are present and correct
+		IRI htmliri = f.getAlternateLinkResolvedHref("text/html", null);
+		assertNotNull(htmliri);
+		assertFalse(htmliri.toASCIIString().equals("http://example.org/foobar"));
+
+		// store initial number of alternate links to test against later
+		int n = f.getLinks("alternate").size();
+		
+		r.release();
+
+		// now update member and look for proliferation
+		ClientResponse s = adam.put(l, f);
+		assertEquals(200, s.getStatus());
+		d = s.getDocument();
+		Entry g = d.getRoot();
+		assertEquals(n, g.getLinks("alternate").size());
+		
+		s.release();
+
+	}
+	
+	
+	
+	public void testJsonRepresentation() throws URISyntaxException, JSONException, IOException {
+		
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		
+		// create a new member of the test collection
+		
+		Entry e = Abdera.getInstance().getFactory().newEntry();
+		e.setTitle("testing json representstation");
+		e.setSummary("this is a test to check that element local names are used in json representation");
+		ClientResponse r = adam.post(TEST_COLLECTION_URL, e);
+		assertEquals(201, r.getStatus());
+		Document<Entry> d = r.getDocument();
+		Entry f = d.getRoot();
+		
+		IRI jsoniri = f.getAlternateLinkResolvedHref("application/json", null);
+		assertNotNull(jsoniri);
+		
+		r.release();
+		
+		// get the json
+		
+		GetMethod jsonget = new GetMethod(jsoniri.toASCIIString());
+		int jsonres = executeMethod(jsonget, ADAM, PASSWORD);
+		assertEquals(200, jsonres);
+		assertTrue(jsonget.getResponseHeader("Content-Type").getValue().startsWith("application/json"));
+
+		JSONObject jo = new JSONObject(jsonget.getResponseBodyAsString());
+		assertNotNull(jo);
+		assertNotNull(jo.get("id"));
+		assertNotNull(jo.get("published"));
+		assertNotNull(jo.get("updated"));
+		JSONArray links = jo.getJSONArray("link");
+		assertNotNull(links);
+		assertTrue(links.length()>0);
+		for (int i=0; i<links.length(); i++) {
+			JSONObject link = links.getJSONObject(i);
+			assertNotNull(link.get("@rel"));
+			assertNotNull(link.get("@href"));
+		}
+			
+		jsonget.releaseConnection();
+
+	}
 
 
 

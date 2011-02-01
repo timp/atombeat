@@ -9,7 +9,7 @@ declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 (: eXist function module imports :)
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace transform = "http://exist-db.org/xquery/transform" ;
-import module namespace json = "http://www.json.org" ;
+import module namespace json = "http://purl.org/atombeat/xquery/json" at "../lib/json.xqm" ;
 
 (: AtomBeat function module imports :)
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
@@ -71,7 +71,7 @@ declare variable $conneg-config:variants :=
 declare variable $conneg-config:transformers := (
     <identity/> ,
     <stylesheet>/stylesheets/atom2html4.xslt</stylesheet> , (: will be concatenated with $config:service-url-base :)
-    util:function( QName( "http://www.json.org" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
+    util:function( QName( "http://purl.org/atombeat/xquery/json" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
     <identity/> ,
     <identity/> ,
     <identity/> 

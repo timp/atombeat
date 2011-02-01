@@ -1,10 +1,11 @@
 xquery version "1.0";
 
-module namespace conneg-plugin = "http://purl.org/atombeat/xquery/conneg-plugin";
+module namespace conneg-plugin = "http://purl.org/atombeat/xquery/conneg-plugin" ;
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace conneg-config = "http://purl.org/atombeat/xquery/conneg-config" at "../config/conneg.xqm" ;
 
@@ -52,6 +53,7 @@ declare function conneg-plugin:before(
 
             let $log := util:log( "debug" , "preparing for conneg" )
             
+        	(: look for output param and accept header :)
         	let $output-param := request:get-parameter( "output" , "" )
         	let $accept := request:get-header( "Accept" )
         	
@@ -59,13 +61,14 @@ declare function conneg-plugin:before(
         	    if ( not( $output-param eq "" ) ) then $output-param (: output param trumps accept header :)
         	    else conneg-plugin:negotiate( $accept )
         	
+        	(: store output key for use in after phase :)
             let $store-output-key :=
                 if ( exists( $output-key ) ) then request:set-attribute( "conneg.output-key" , $output-key )
                 else ()
                 
             return
             
-                if ( exists( $output-key ) ) then $request-data (: proceed with request processing :)
+                if ( exists( $output-key ) ) then conneg-plugin:filter-request-data( $request-data ) (: proceed with request processing, but filter alternate links from feeds and entries first :)
                 
                 else 
 
@@ -102,6 +105,71 @@ declare function conneg-plugin:before(
 
 	    else $request-data
 	
+};
+
+
+
+declare function conneg-plugin:filter-request-data(
+    $request-data as item()*
+) as item()*
+{
+
+    if ( $request-data instance of element(atom:entry) ) then conneg-plugin:filter-entry( $request-data )
+    
+    else if ( $request-data instance of element(atom:feed) ) then conneg-plugin:filter-feed( $request-data )
+    
+    else $request-data
+    
+};
+
+
+
+
+declare function conneg-plugin:filter-entry(
+    $entry as element(atom:entry)
+) as element(atom:entry)
+{
+
+    let $reserved :=
+        <reserved>
+            <atom-links>
+                <link rel="alternate"/>
+            </atom-links>
+        </reserved>
+    
+    let $filtered-entry := atomdb:filter( $entry , $reserved )
+    
+    return $filtered-entry
+
+};
+
+
+
+
+declare function conneg-plugin:filter-feed(
+    $feed as element(atom:feed)
+) as element(atom:feed)
+{
+
+    let $reserved :=
+        <reserved>
+            <atom-links>
+                <link rel="alternate"/>
+            </atom-links>
+        </reserved>
+    
+    let $filtered-feed := atomdb:filter( $feed , $reserved )
+    
+    return
+    
+        <atom:feed>
+        {
+            $filtered-feed/attribute::* ,
+            $filtered-feed/child::*[not( . instance of element(atom:entry) )] ,
+            for $entry in $filtered-feed/atom:entry return conneg-plugin:filter-entry($entry)
+        }
+        </atom:feed>
+    
 };
 
 
