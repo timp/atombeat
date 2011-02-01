@@ -1,7 +1,7 @@
 #summary notes on changes between releases
 #labels Featured
 
-See the AtomBeat wiki page for information on downloading and/or building AtomBeat.
+*See the AtomBeat wiki page for information on downloading and/or building AtomBeat.*
 
 <wiki:toc/>
 
