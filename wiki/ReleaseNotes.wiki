@@ -5,7 +5,7 @@
 
 = 0.2-alpha-5-SNAPSHOT =
 
-== issue 140 - ==
+== issue 140 - make json output consistent using element local names instead of qnames ==
 
 The function used to transform from Atom XML to JSON in the default content negotiation plugin configuration has been changed to use a slightly tweaked version of the XML-to-JSON function that comes with eXist. The tweak is to use element local names to generate JSON object keys instead of node names, which means that clients asking for JSON won't get confused by inconsistent use of namespace prefixes in the source Atom XML document.
 
