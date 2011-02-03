@@ -437,6 +437,20 @@ declare function common-protocol:respond( $response as element(response) ) as it
         else if ( $response/body/@type = "text" )
         then $response/body/text()
 
+        else if ( $response/body/@type = "xml" )
+        then
+            let $serialize-option := string-join(
+                ( 
+                    'method=xml' , 
+                    if ( exists( $response/body/@doctype-public ) ) then concat( 'doctype-public=' , $response/body/@doctype-public cast as xs:string ) else () ,
+                    if ( exists( $response/body/@doctype-system ) ) then concat( 'doctype-system=' , $response/body/@doctype-system cast as xs:string ) else () 
+                ) ,
+                ' '
+            )
+            let $log := util:log( "debug" , $serialize-option )
+            let $set-serialize-option := util:declare-option( 'exist:serialize' , $serialize-option )
+            return $response/body/*
+            
         else $response/body/*
         
 };
