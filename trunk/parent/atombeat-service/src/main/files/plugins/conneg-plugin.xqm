@@ -296,7 +296,9 @@ declare function conneg-plugin:transform-response(
                     let $transformed-data := 
                         if ( $transformer instance of element(identity) ) then $data
                         else if ( $transformer instance of element(stylesheet) ) then
-                            let $stylesheet := concat( $config:service-url-base , $transformer/text() )
+                            let $stylesheet := 
+                                if ( matches( $transformer/text() , "^(http:|file:|ftp:)" ) ) then $transformer/text()
+                                else concat( $config:service-url-base , $transformer/text() )
                             return transform:transform( $data , $stylesheet , () )
                         else
                             util:call( $transformer , $data )
@@ -335,7 +337,13 @@ declare function conneg-plugin:transform-response(
                                     <value>Accept</value>
                                 </header>
                             </headers>
-                            <body type="{$output-type}">{$transformed-data}</body>
+                            <body type="{$output-type}">
+                            {
+                                if ( exists( $variant/doctype-public ) ) then attribute doctype-public { $variant/doctype-public/text() } else () ,
+                                if ( exists( $variant/doctype-system ) ) then attribute doctype-system { $variant/doctype-system/text() } else () ,
+                                $transformed-data
+                            }
+                            </body>
                         </response>
                         
                 else $response
