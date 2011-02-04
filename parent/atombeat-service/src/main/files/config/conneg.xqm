@@ -23,18 +23,18 @@ import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../l
 declare variable $conneg-config:variants := 
     <variants>
         <variant>
-            <output-key>atom</output-key>
-            <media-type>application/atom+xml</media-type>
-            <output-type>xml</output-type>
-            <qs>0.8</qs>
-        </variant>
-        <variant>
             <output-key>html</output-key>
             <media-type>text/html</media-type>
             <output-type>xml</output-type>
             <doctype-public>-//W3C//DTD&#160;XHTML&#160;1.0&#160;Strict//EN</doctype-public>
             <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</doctype-system>
-            <qs>0.9</qs>
+            <qs>0.95</qs>
+        </variant>
+        <variant>
+            <output-key>atom</output-key>
+            <media-type>application/atom+xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.8</qs>
         </variant>
         <variant>
             <output-key>json</output-key>
@@ -71,8 +71,8 @@ declare variable $conneg-config:variants :=
  : as the corresponding variant definition above.
  :)
 declare variable $conneg-config:transformers := (
-    <identity/> ,
     <stylesheet>/stylesheets/atom2html4.xslt</stylesheet> , (: if not absolute URI will be concatenated with $config:service-url-base :)
+    <identity/> ,
     util:function( QName( "http://purl.org/atombeat/xquery/json" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
     <identity/> ,
     <identity/> ,

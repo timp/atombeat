@@ -30,35 +30,23 @@ declare function local:content() as item()*
 {
     <html>
         <head>
-            <title>AtomBeat Installation</title>
+            <title>AtomBeat - Pre-configured Collections</title>
+            <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.3.0/build/cssreset/reset-min.css&amp;3.3.0/build/cssfonts/fonts-min.css&amp;3.3.0/build/cssgrids/grids-min.css&amp;3.3.0/build/cssbase/base-min.css"/>
             <style type="text/css">
-            
-                th {{
-                    text-align: left;
-                }}
-                
-                table {{ 
-                    border: 1px solid black;
-                }}
-                
-                td {{ 
-                    border: 1px solid black;
-                    padding: .3em;
-                }}
-                
-                th {{ 
-                    border: 1px solid black;
-                    padding: .3em;
-                }}
-                
-                form {{
-                    display: inline;
-                }}
-                
+      body {{
+        margin: auto;
+        width: 960px;
+      }}
+      #icon {{
+        float: right;
+      }}
             </style>
         </head>
         <body>
-            <h1>Atom Collections</h1>
+          <div id="icon">
+            <a href="http://code.google.com/p/atombeat/"><img src="http://farm6.static.flickr.com/5051/5415906232_a26853fd64_o.png" alt="AtomBeat logo"/></a>
+          </div>
+            <h1>AtomBeat - Pre-configured Collections</h1>
             <p>This page is a utility for managing pre-configured Atom collections.</p>
             <p>Note this page <strong>does not</strong> show all Atom collections available, only those declared explicitly in the service/admin/collections.xqm file.</p>
                 <table>
