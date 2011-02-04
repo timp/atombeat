@@ -299,7 +299,7 @@ declare function conneg-plugin:transform-response(
                             let $stylesheet := 
                                 if ( matches( $transformer/text() , "^(http:|file:|ftp:)" ) ) then $transformer/text()
                                 else concat( $config:service-url-base , $transformer/text() )
-                            return transform:transform( $data , $stylesheet , () )
+                            return transform:transform( $data , xs:anyURI($stylesheet) , () )
                         else
                             util:call( $transformer , $data )
                     
