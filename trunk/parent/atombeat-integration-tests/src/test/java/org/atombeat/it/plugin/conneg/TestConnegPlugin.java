@@ -182,18 +182,21 @@ public class TestConnegPlugin extends TestCase {
 				{ "application/atom+xml;q=1.0, text/html;q=0.1", "application/atom+xml" }, 
 				
 				// what happens if two variants end up with the same score? first listed variant in server variant configuration wins
-				{ "application/atom+xml;q=0.9, text/html;q=0.8", "application/atom+xml" }, 
+				{ "application/atom+xml;q=0.95, text/html;q=0.8", "text/html" }, 
 				
 				// make sure unsupported media types don't confuse the server
 				{ "text/html; q=1.0, text/*; q=0.8, image/gif; q=0.6, image/jpeg; q=0.6, image/*; q=0.5, */*; q=0.1", "text/html" }, 
 				
 				// make sure additional mediatype parameters don't confuse the server
 				// also, check that the quality value for */* is fiddled if no quality values are specified at all
-				// (these are abdera client's default accept header)
+				// (these are abdera 1.1.1 client's default accept header)
 				{ "application/atom+xml;type=entry, application/atom+xml;type=feed, application/atom+xml, application/atomsvc+xml, application/atomcat+xml, application/xml, text/xml, */*" , "application/atom+xml"}, 
 
 				// check that the quality value for text/* is fiddled if no quality values are specified at all 
-				{ "application/atom+xml, text/*" , "application/atom+xml"} 
+				{ "application/atom+xml, text/*" , "application/atom+xml"} ,
+				
+				// firefox 3.6.13
+				{ "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" , "text/html" }
 
 		};
 		
