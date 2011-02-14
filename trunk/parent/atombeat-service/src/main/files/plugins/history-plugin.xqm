@@ -28,27 +28,30 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 
 declare function history-plugin:before(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 	
-	if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
-	
-	then history-plugin:before-create-collection( $request-path-info , $request-data )
-	
-	else if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
-	
-	then history-plugin:before-create-member( $request-path-info , $request-data )
-	
-	else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
-	
-	then history-plugin:before-update-member( $request-path-info , $request-data )
-	
-	else
-
-		$request-data
+    let $request-path-info := $request/path-info/text()
+    
+    return
+    
+    	if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
+    	
+    	then history-plugin:before-create-collection( $request , $entity )
+    	
+    	else if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
+    	
+    	then history-plugin:before-create-member( $request , $entity )
+    	
+    	else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
+    	
+    	then history-plugin:before-update-member( $request , $entity )
+    	
+    	else
+    
+    		$entity
 
 };
 
@@ -56,12 +59,13 @@ declare function history-plugin:before(
 
 
 declare function history-plugin:before-create-collection(
-	$request-path-info as xs:string ,
-	$request-data as element(atom:feed)
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 
-	let $enable-versioning := xs:boolean( $request-data/@atombeat:enable-versioning )
+    let $request-path-info := $request/path-info/text()
+	let $enable-versioning := xs:boolean( $entity/@atombeat:enable-versioning )
 	
 	let $history-enabled :=
 		
@@ -75,7 +79,7 @@ declare function history-plugin:before-create-collection(
 
 		else ()		
 	
-	return $request-data
+	return $entity (: unchanged :)
 
 };
 
@@ -83,11 +87,12 @@ declare function history-plugin:before-create-collection(
 
 
 declare function history-plugin:before-create-member(
-	$request-path-info as xs:string ,
-	$request-data as element(atom:entry)
+	$request as element(request) ,
+	$entity as element(atom:entry)
 ) as item()*
 {
 
+    let $request-path-info := $request/path-info/text()
     let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
     let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
 
@@ -99,14 +104,14 @@ declare function history-plugin:before-create-member(
         
         	(: add a revision comment to the incoming entry :)
         	
-            let $comment := request:get-header("X-Atom-Revision-Comment")
+            let $comment := xutil:get-header("X-Atom-Revision-Comment", $request )
             let $comment := if ( empty( $comment ) or $comment = "" ) then "initial revision" else $comment
             
-        	let $prepared-entry := history-plugin:prepare-entry( $request-data , $comment )
+        	let $prepared-entry := history-plugin:prepare-entry( $entity , $comment )
         	
         	return $prepared-entry
 
-        else $request-data
+        else $entity
 
 };
 
@@ -114,11 +119,12 @@ declare function history-plugin:before-create-member(
 
 
 declare function history-plugin:before-update-member(
-	$request-path-info as xs:string ,
-	$request-data as element(atom:entry)
+	$request as element(request) ,
+	$entity as element(atom:entry)
 ) as item()*
 {
 
+    let $request-path-info := $request/path-info/text()
     let $collection-path-info := text:groups( $request-path-info , "^(.+)/[^/]+$" )[2]
     let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
     let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
@@ -131,12 +137,12 @@ declare function history-plugin:before-update-member(
         
         	(: add a revision comment to the incoming entry :)
         	
-            let $comment := request:get-header("X-Atom-Revision-Comment")
-        	let $prepared-entry := history-plugin:prepare-entry( $request-data , $comment )
+            let $comment := xutil:get-header("X-Atom-Revision-Comment", $request )
+        	let $prepared-entry := history-plugin:prepare-entry( $entity , $comment )
         	
         	return $prepared-entry
 
-        else $request-data
+        else $entity
 
 };
 
@@ -165,7 +171,7 @@ declare function history-plugin:prepare-entry(
     
     (: modify incoming entry to include revision comment :)
     
-    let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
+    let $user-name := $request/user/text()
     let $published := current-dateTime()
 
     let $revision-comment := 
@@ -200,30 +206,34 @@ declare function history-plugin:prepare-entry(
 
 declare function history-plugin:after(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$response as element(response) 
+	$request as element(request) ,
+	$response as element(response)
 ) as element(response)
 {
 
-	if ( $operation = $CONSTANT:OP-RETRIEVE-MEMBER )
-	
-	then history-plugin:after-retrieve-member( $request-path-info , $response )
+    let $request-path-info := $request/path-info/text()
 
-	else if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
-	
-	then history-plugin:after-create-member( $request-path-info , $response )
-
-	else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
-	
-	then history-plugin:after-update-member( $request-path-info , $response )
-	
-	else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
-	
-	then history-plugin:after-list-collection( $request-path-info , $response )
-
-	else 
-
-		$response
+    return
+    
+        if ( $operation = $CONSTANT:OP-RETRIEVE-MEMBER )
+    	
+    	then history-plugin:after-retrieve-member( $request , $response )
+    
+    	else if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
+    	
+    	then history-plugin:after-create-member( $request , $response )
+    
+    	else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
+    	
+    	then history-plugin:after-update-member( $request , $response )
+    	
+    	else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
+    	
+    	then history-plugin:after-list-collection( $request , $response )
+    
+    	else 
+    
+    		$response
 
 }; 
 
@@ -231,7 +241,7 @@ declare function history-plugin:after(
 
 
 declare function history-plugin:after-retrieve-member(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
@@ -254,7 +264,7 @@ declare function history-plugin:after-retrieve-member(
 
 
 declare function history-plugin:after-create-member(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
@@ -277,7 +287,7 @@ declare function history-plugin:after-create-member(
 
 
 declare function history-plugin:after-update-member(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
@@ -300,11 +310,12 @@ declare function history-plugin:after-update-member(
 
 
 declare function history-plugin:after-list-collection(
-	$collection-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
 
+    let $collection-path-info := $request/path-info/text()
     let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
     let $versioning-enabled := xutil:is-versioning-enabled( $collection-db-path )
     

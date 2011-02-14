@@ -289,12 +289,12 @@ declare function atomsec:decide(
  : Optimised function to filter a feed.
  :)
 declare function atomsec:filter-feed(
-    $feed as element(atom:feed)
+    $feed as element(atom:feed) ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:feed)
 {
 
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
     let $collection-path-info := substring-after( $feed/atom:link[@rel="self"]/@href , $config:self-link-uri-base )
     
     (: 
@@ -633,13 +633,12 @@ declare function atomsec:match-request-path-info-condition(
 declare function atomsec:is-denied(
     $operation as xs:string ,
     $request-path-info as xs:string ,
-    $request-media-type as xs:string?
+    $request-media-type as xs:string? ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as xs:boolean
 {
 
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    
     let $denied := 
         if ( not( $security-config:enable-security ) ) then false()
         else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-deny )
@@ -654,13 +653,12 @@ declare function atomsec:is-denied(
 declare function atomsec:is-allowed(
     $operation as xs:string ,
     $request-path-info as xs:string ,
-    $request-media-type as xs:string?
+    $request-media-type as xs:string? ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as xs:boolean
 {
 
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $roles := request:get-attribute( $config:user-roles-request-attribute-key )
-    
     let $allowed := 
         if ( not( $security-config:enable-security ) ) then false()
         else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-allow )

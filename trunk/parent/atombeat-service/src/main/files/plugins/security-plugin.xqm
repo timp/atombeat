@@ -28,9 +28,8 @@ import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security
 
 declare function security-plugin:before(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 	
@@ -38,7 +37,12 @@ declare function security-plugin:before(
 	
 	then
 
-    	let $forbidden := atomsec:is-denied( $operation , $request-path-info , $request-media-type )
+        let $request-path-info := $request/path-info/text()
+    	let $request-content-type := xutil:get-header( $CONSTANT:HEADER-CONTENT-TYPE , $request )
+    	let $request-media-type := substring-before( $request-content-type , ';' )
+    	let $user := $request/user/text()
+    	let $roles := for $role in $request/roles/role return $role cast as xs:string
+    	let $forbidden := atomsec:is-denied( $operation , $request-path-info , $request-media-type , $user , $roles )
     	
     	return 
     	
@@ -70,8 +74,8 @@ declare function security-plugin:before(
             
             then 
             
-                let $request-data := security-plugin:strip-descriptor-links( $request-data )
-    			return $request-data
+                let $modified-entity := security-plugin:strip-descriptor-links( $entity )
+    			return $modified-entity
     			
             else if (
                 $operation = $CONSTANT:OP-MULTI-CREATE
@@ -79,19 +83,19 @@ declare function security-plugin:before(
             
             then 
 
-                let $request-data := 
+                let $modified-entity := 
                     <atom:feed>
                     {
-                        for $entry in $request-data/atom:entry
-                        return security-plugin:filter-entry-before-multi-create( $entry )
+                        for $entry in $entity/atom:entry
+                        return security-plugin:filter-entry-before-multi-create( $entry , $user , $roles )
                     }
                     </atom:feed>
 
-                return $request-data
+                return $modified-entity
     			
-    		else $request-data
+    		else $entity
 
-    else $request-data
+    else $entity
 
 };
 
@@ -121,7 +125,9 @@ declare function security-plugin:strip-descriptor-links(
 
 
 declare function security-plugin:filter-entry-before-multi-create(
-    $entry as element(atom:entry)
+    $entry as element(atom:entry) ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element()
 {
 
@@ -134,7 +140,7 @@ declare function security-plugin:filter-entry-before-multi-create(
     let $local-media-available := ( 
         exists( $media-path-info ) 
         and atomdb:media-resource-available( $media-path-info )
-        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () ) 
+        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $media-path-info , () , $user , $roles ) 
     )
             
     let $reserved :=
@@ -160,55 +166,61 @@ declare function security-plugin:filter-entry-before-multi-create(
 
 declare function security-plugin:after(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
 
-    if ( $security-config:enable-security )
-
-    then
+    let $request-path-info := $request/path-info/text()
+    let $user := $request/user/text()
+    let $roles := for $role in $request/roles/role return $role cast as xs:string
+    
+    return
+    
+        if ( $security-config:enable-security )
+    
+        then
+                
+        	if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
+        	
+        	then security-plugin:after-create-member( $request-path-info , $user , $response)
+    
+            else if ( $operation = $CONSTANT:OP-CREATE-MEDIA )
             
-    	if ( $operation = $CONSTANT:OP-CREATE-MEMBER )
-    	
-    	then security-plugin:after-create-member( $request-path-info , $response)
-
-        else if ( $operation = $CONSTANT:OP-CREATE-MEDIA )
-        
-        then security-plugin:after-create-media( $request-path-info , $response )
-
-        else if ( $operation = $CONSTANT:OP-UPDATE-MEDIA )
-        
-        then security-plugin:after-update-media( $request-path-info , $response )
-
-    	else if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
-    	
-    	then security-plugin:after-create-collection( $request-path-info , $response )
-
-    	else if ( $operation = $CONSTANT:OP-UPDATE-COLLECTION )
-    	
-    	then security-plugin:after-update-collection( $request-path-info , $response )
-
-    	else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
-    	
-    	then security-plugin:after-list-collection( $request-path-info , $response )
-    	
-    	else if ( $operation = $CONSTANT:OP-RETRIEVE-MEMBER )
-    	
-    	then security-plugin:after-retrieve-member( $request-path-info , $response )
-
-    	else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
-    	
-    	then security-plugin:after-update-member( $request-path-info , $response )
-    	
-    	else if ( $operation = $CONSTANT:OP-MULTI-CREATE ) 
-    	
-    	then security-plugin:after-multi-create( $request-path-info , $response )
-
+            then security-plugin:after-create-media( $request-path-info , $user , $response )
+    
+            else if ( $operation = $CONSTANT:OP-UPDATE-MEDIA )
+            
+            then security-plugin:after-update-media( $request-path-info , $response )
+    
+        	else if ( $operation = $CONSTANT:OP-CREATE-COLLECTION )
+        	
+        	then security-plugin:after-create-collection( $request-path-info , $user , $roles , $response )
+    
+        	else if ( $operation = $CONSTANT:OP-UPDATE-COLLECTION )
+        	
+        	then security-plugin:after-update-collection( $request-path-info , $user , $roles , $response )
+    
+        	else if ( $operation = $CONSTANT:OP-LIST-COLLECTION )
+        	
+        	then security-plugin:after-list-collection( $request-path-info , $user , $roles , $response )
+        	
+        	else if ( $operation = $CONSTANT:OP-RETRIEVE-MEMBER )
+        	
+        	then security-plugin:after-retrieve-member( $request-path-info , $response )
+    
+        	else if ( $operation = $CONSTANT:OP-UPDATE-MEMBER )
+        	
+        	then security-plugin:after-update-member( $request-path-info , $response )
+        	
+        	else if ( $operation = $CONSTANT:OP-MULTI-CREATE ) 
+        	
+        	then security-plugin:after-multi-create( $request-path-info , $user , $response )
+    
+            else $response
+    
         else $response
-
-    else $response
-
+    
 }; 
 
 
@@ -216,6 +228,7 @@ declare function security-plugin:after(
 
 declare function security-plugin:after-create-member(
 	$request-path-info as xs:string ,
+	$user as xs:string ,
 	$response as element(response)
 ) as element(response)
 {
@@ -227,7 +240,7 @@ declare function security-plugin:after-create-member(
 	let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
 
 	(: if security is enabled, install default resource ACL :)
-	let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
+	let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info , $user )
 	
     let $response-data := security-plugin:augment-entry( $response-data )
 
@@ -247,6 +260,7 @@ declare function security-plugin:after-create-member(
 
 declare function security-plugin:after-multi-create(
 	$request-path-info as xs:string ,
+	$user as xs:string ,
 	$response as element(response)
 ) as element(response)
 {
@@ -260,12 +274,12 @@ declare function security-plugin:after-multi-create(
             let $entry-uri := $entry/atom:link[@rel="edit"]/@href
             let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
             (: if security is enabled, install default resource ACL :)
-            let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
+            let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info , $user )
             let $media-uri := $entry/atom:link[@rel="edit-media"]/@href
             let $media-path-info := substring-after( $media-uri , $config:edit-media-link-uri-base )
             (: if security is enabled, install default resource ACL :)
             let $media-descriptor-installed := 
-                if ( exists( $media-path-info ) and $media-path-info != "" ) then security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
+                if ( exists( $media-path-info ) and $media-path-info != "" ) then security-plugin:install-media-descriptor( $request-path-info , $media-path-info , $user )
                 else () 
             return security-plugin:augment-entry( $entry )
         }
@@ -312,6 +326,7 @@ declare function security-plugin:after-update-member(
 
 declare function security-plugin:after-create-media(
     $request-path-info as xs:string ,
+	$user as xs:string ,
 	$response as element(response)
 ) as element(response)
 {
@@ -323,14 +338,14 @@ declare function security-plugin:after-create-media(
     let $entry-path-info := substring-after( $entry-uri , $config:edit-link-uri-base )
 
     (: if security is enabled, install default resource ACL :)
-    let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info )
+    let $member-descriptor-installed := security-plugin:install-member-descriptor( $request-path-info , $entry-path-info , $user )
 
     let $media-uri := $response-data/atom:link[@rel="edit-media"]/@href
     
     let $media-path-info := substring-after( $media-uri , $config:edit-media-link-uri-base )
 
     (: if security is enabled, install default resource ACL :)
-    let $media-descriptor-installed := security-plugin:install-media-descriptor( $request-path-info , $media-path-info )
+    let $media-descriptor-installed := security-plugin:install-media-descriptor( $request-path-info , $media-path-info , $user )
     
     let $response-data := security-plugin:augment-entry( $response-data )
 
@@ -375,6 +390,8 @@ declare function security-plugin:after-update-media(
 
 declare function security-plugin:after-create-collection(
 	$request-path-info as xs:string ,
+	$user as xs:string ,
+	$roles as xs:string ,
 	$response as element(response)
 ) as element(response)
 {
@@ -386,10 +403,10 @@ declare function security-plugin:after-create-collection(
         let $response-data := $response/body/atom:feed
     
     	(: if security is enabled, install default collection ACL :)
-    	let $collection-descriptor-installed := security-plugin:install-collection-descriptor( $request-path-info )
+    	let $collection-descriptor-installed := security-plugin:install-collection-descriptor( $request-path-info , $user )
     	
     	(: no filtering necessary because no members yet, but adds acl link :)
-    	let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data )
+    	let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data , $user , $roles )
     
     	return
     	
@@ -410,13 +427,15 @@ declare function security-plugin:after-create-collection(
 
 declare function security-plugin:after-update-collection(
 	$request-path-info as xs:string ,
+	$user as xs:string? ,
+	$roles as xs:string* ,
 	$response as element(response)
 ) as element(response)
 {
 
     let $response-data := $response/body/atom:feed
     
-	let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data )
+	let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data , $user , $roles )
 
 	return
 	
@@ -435,13 +454,15 @@ declare function security-plugin:after-update-collection(
 
 declare function security-plugin:after-list-collection(
 	$request-path-info as xs:string ,
+	$user as xs:string? ,
+	$roles as xs:string* ,
 	$response as element(response)
 ) as element(response)
 {
 
     let $response-data := $response/body/atom:feed
     
-    let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data )
+    let $response-data := security-plugin:filter-feed-by-permissions( $request-path-info , $response-data , $user , $roles )
 
 	return
 	
@@ -531,13 +552,13 @@ declare function security-plugin:augment-entry(
 
 
 declare function security-plugin:install-member-descriptor(
-    $request-path-info as xs:string,
-    $resource-path-info as xs:string
+    $request-path-info as xs:string ,
+    $resource-path-info as xs:string , 
+	$user as xs:string 
 ) as xs:string?
 {
     if ( $security-config:enable-security )
     then 
-        let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := security-config:default-member-security-descriptor( $request-path-info , $user )
         let $acl-db-path := atomsec:store-descriptor( $resource-path-info , $acl )
     	return $acl-db-path
@@ -549,12 +570,12 @@ declare function security-plugin:install-member-descriptor(
 
 declare function security-plugin:install-media-descriptor(
     $request-path-info as xs:string,
-    $resource-path-info as xs:string
+    $resource-path-info as xs:string , 
+	$user as xs:string 
 ) as xs:string?
 {
     if ( $security-config:enable-security )
     then 
-        let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := security-config:default-media-security-descriptor( $request-path-info , $user )
         let $acl-db-path := atomsec:store-descriptor( $resource-path-info , $acl )
     	return $acl-db-path
@@ -564,11 +585,13 @@ declare function security-plugin:install-media-descriptor(
 
 
 
-declare function security-plugin:install-collection-descriptor( $request-path-info as xs:string ) as xs:string?
+declare function security-plugin:install-collection-descriptor( 
+    $request-path-info as xs:string ,
+	$user as xs:string 
+) as xs:string?
 {
     if ( $security-config:enable-security )
     then 
-        let $user := request:get-attribute( $config:user-name-request-attribute-key )
         let $acl := security-config:default-collection-security-descriptor( $request-path-info , $user )
         return atomsec:store-descriptor( $request-path-info , $acl )
     else ()
@@ -579,7 +602,9 @@ declare function security-plugin:install-collection-descriptor( $request-path-in
 
 declare function security-plugin:filter-feed-by-permissions(
     $request-path-info as xs:string ,
-    $feed as element(atom:feed)
+    $feed as element(atom:feed) ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:feed)
 {
     if ( not( $security-config:enable-security ) )
@@ -592,7 +617,7 @@ declare function security-plugin:filter-feed-by-permissions(
                 href="{concat( $config:security-service-url , $request-path-info )}" 
                 type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
             
-        let $filtered-feed := atomsec:filter-feed( $feed )
+        let $filtered-feed := atomsec:filter-feed( $feed , $user , $roles )
         
         let $augmented-feed :=
             <atom:feed>

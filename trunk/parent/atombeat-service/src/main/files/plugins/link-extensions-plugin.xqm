@@ -29,23 +29,22 @@ import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security
 
 declare function link-extensions-plugin:before(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 	
-	if ( $request-data instance of element(atom:entry) )
+	if ( $entity instance of element(atom:entry) )
 	
-	then link-extensions-plugin:filter-entry( $request-data )
+	then link-extensions-plugin:filter-entry( $entity )
 	
-	else if ( $request-data instance of element(atom:feed) )
+	else if ( $entity instance of element(atom:feed) )
 	
-	then link-extensions-plugin:filter-feed( $request-data )
+	then link-extensions-plugin:filter-feed( $entity )
 	
 	else
 
-		$request-data
+		$entity
 
 };
 
@@ -110,18 +109,20 @@ declare function link-extensions-plugin:undecorate-link(
 
 declare function link-extensions-plugin:after(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
     
     let $body := $response/body
+    let $user := $request/user/text()
+    let $roles := for $role in $request/roles/role return $role cast as xs:string
     
     let $augmented-body :=
         if ( $body/atom:feed )
-        then <body>{link-extensions-plugin:augment-feed( $body/atom:feed )}</body>
+        then <body>{link-extensions-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
         else if ( $body/atom:entry )
-        then <body>{link-extensions-plugin:augment-entry( $body/atom:entry )}</body>
+        then <body>{link-extensions-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
         else $body
         
     return
@@ -140,7 +141,9 @@ declare function link-extensions-plugin:after(
 
 
 declare function link-extensions-plugin:augment-feed(
-    $feed as element(atom:feed)
+    $feed as element(atom:feed) ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:feed)
 {
 
@@ -154,9 +157,9 @@ declare function link-extensions-plugin:augment-feed(
         {
             $feed/attribute::* ,
             $feed/child::*[ not( . instance of element(atom:link) ) and not( . instance of element(atom:entry) ) ] ,
-            link-extensions-plugin:decorate-links( $feed/atom:link , $match-feed-rels ) ,
+            link-extensions-plugin:decorate-links( $feed/atom:link , $match-feed-rels , $user , $roles ) ,
             for $entry in $feed/atom:entry
-            return link-extensions-plugin:augment-entry( $entry , $match-entry-in-feed-rels )
+            return link-extensions-plugin:augment-entry( $entry , $match-entry-in-feed-rels , $user , $roles )
         }        
         </atom:feed>
 
@@ -165,7 +168,9 @@ declare function link-extensions-plugin:augment-feed(
 
 
 declare function link-extensions-plugin:augment-entry(
-    $entry as element(atom:entry)
+    $entry as element(atom:entry) ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:entry)
 {
     if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:edit-link-uri-base ) ) then
@@ -173,7 +178,7 @@ declare function link-extensions-plugin:augment-entry(
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $match-entry-rels := tokenize( $feed/atombeat:config-link-extensions/atombeat:extension-attribute[@name="allow" and @namespace="http://purl.org/atombeat/xmlns"]/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
             
-        return link-extensions-plugin:augment-entry( $entry , $match-entry-rels )
+        return link-extensions-plugin:augment-entry( $entry , $match-entry-rels , $user , $roles )
 
     else $entry
 };
@@ -183,14 +188,16 @@ declare function link-extensions-plugin:augment-entry(
 
 declare function link-extensions-plugin:augment-entry(
     $entry as element(atom:entry) ,
-    $match-rels as xs:string*
+    $match-rels as xs:string* ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:entry)
 {
     <atom:entry>
     {
         $entry/attribute::* ,
         $entry/child::*[ not( . instance of element(atom:link) ) ] ,
-        link-extensions-plugin:decorate-links( $entry/atom:link , $match-rels )
+        link-extensions-plugin:decorate-links( $entry/atom:link , $match-rels , $user , $roles )
     }        
     </atom:entry>
 };
@@ -200,7 +207,9 @@ declare function link-extensions-plugin:augment-entry(
 
 declare function link-extensions-plugin:decorate-links(
     $links as element(atom:link)* ,
-    $match-rels as xs:string*
+    $match-rels as xs:string* ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:link)*
 {
 
@@ -217,9 +226,9 @@ declare function link-extensions-plugin:decorate-links(
                 
                     if ( atomdb:member-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () )
-                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER , $path-info , () )
-                        let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEMBER , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () , $user , $roles )
+                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER , $path-info , () , $user , $roles )
+                        let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEMBER , $path-info , () , $user , $roles )
                         let $allow := string-join( (
                             if ( $can-get ) then "GET" else () ,
                             if ( $can-put ) then "PUT" else () ,
@@ -229,9 +238,9 @@ declare function link-extensions-plugin:decorate-links(
                         
                     else if ( atomdb:media-resource-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $path-info , () )
-                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA , $path-info , () )
-                        let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEDIA , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA , $path-info , () , $user , $roles )
+                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA , $path-info , () , $user , $roles )
+                        let $can-delete := atomsec:is-allowed( $CONSTANT:OP-DELETE-MEDIA , $path-info , () , $user , $roles )
                         let $allow := string-join( (
                             if ( $can-get ) then "GET" else () ,
                             if ( $can-put ) then "PUT" else () ,
@@ -241,12 +250,12 @@ declare function link-extensions-plugin:decorate-links(
                         
                     else if ( atomdb:collection-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () )
-                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () , $user , $roles )
+                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION , $path-info , () , $user , $roles )
                         let $can-post := (
-                            atomsec:is-allowed( $CONSTANT:OP-CREATE-MEMBER , $path-info , () )
-                            or atomsec:is-allowed( $CONSTANT:OP-CREATE-MEDIA , $path-info , () )
-                            or atomsec:is-allowed( $CONSTANT:OP-MULTI-CREATE , $path-info , () )
+                            atomsec:is-allowed( $CONSTANT:OP-CREATE-MEMBER , $path-info , () , $user , $roles )
+                            or atomsec:is-allowed( $CONSTANT:OP-CREATE-MEDIA , $path-info , () , $user , $roles )
+                            or atomsec:is-allowed( $CONSTANT:OP-MULTI-CREATE , $path-info , () , $user , $roles )
                         )
                         let $allow := string-join( (
                             if ( $can-get ) then "GET" else () ,
@@ -265,8 +274,8 @@ declare function link-extensions-plugin:decorate-links(
                 
                     if ( atomdb:member-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $path-info , () )
-                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER-ACL , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $path-info , () , $user , $roles )
+                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEMBER-ACL , $path-info , () , $user , $roles )
                         let $allow := string-join( (
                             if ( $can-get ) then "GET" else () ,
                             if ( $can-put ) then "PUT" else ()
@@ -275,8 +284,8 @@ declare function link-extensions-plugin:decorate-links(
                         
                     else if ( atomdb:media-resource-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $path-info , () )
-                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA-ACL , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $path-info , () , $user , $roles )
+                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-MEDIA-ACL , $path-info , () , $user , $roles )
                         let $allow := string-join( (
                             if ( $can-get ) then "GET" else () ,
                             if ( $can-put ) then "PUT" else ()
@@ -285,8 +294,8 @@ declare function link-extensions-plugin:decorate-links(
                         
                     else if ( atomdb:collection-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $path-info , () )
-                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION-ACL , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $path-info , () , $user , $roles )
+                        let $can-put := atomsec:is-allowed( $CONSTANT:OP-UPDATE-COLLECTION-ACL , $path-info , () , $user , $roles )
                         let $allow := string-join( (
                             if ( $can-get ) then "GET" else () ,
                             if ( $can-put ) then "PUT" else ()
@@ -303,7 +312,7 @@ declare function link-extensions-plugin:decorate-links(
                 
                     if ( atomdb:member-available( $path-info ) ) then
 
-                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-HISTORY , $path-info , () )
+                        let $can-get := atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-HISTORY , $path-info , () , $user , $roles )
                         let $allow := 
                             if ( $can-get ) then "GET" else () 
                         return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
