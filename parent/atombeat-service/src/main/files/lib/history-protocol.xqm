@@ -37,8 +37,15 @@ declare variable $history-protocol:param-name-revision-index as xs:string := "re
 
 declare function history-protocol:main() as item()*
 {
-    let $response := history-protocol:do-service()
-    return common-protocol:respond( $response )
+
+    let $request := common-protocol:get-request()
+        
+    (: process the request :)
+    let $response := history-protocol:do-service( $request )
+    
+    (: return a response :)
+    return common-protocol:respond( $request, $response )
+
 };
 
 
@@ -47,20 +54,17 @@ declare function history-protocol:main() as item()*
 (:
  : TODO doc me
  :)
-declare function history-protocol:do-service()
+declare function history-protocol:do-service(
+    $request as element(request)
+)
 as element(response)
 {
 
-	let $request-path-info := request:get-attribute( $common-protocol:param-request-path-info )
-	let $request-method := request:get-method()
+	if ( $request/method = $CONSTANT:METHOD-GET )
 	
-	return
+	then history-protocol:do-get( $request )
 	
-		if ( $request-method = $CONSTANT:METHOD-GET )
-		
-		then history-protocol:do-get( $request-path-info )
-		
-		else common-protocol:do-method-not-allowed( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , ( "GET" ) )
+	else common-protocol:do-method-not-allowed( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request , ( "GET" ) )
 
 };
 
@@ -71,15 +75,19 @@ as element(response)
  : TODO doc me 
  :)
 declare function history-protocol:do-get(
-	$request-path-info as xs:string 
+    $request as element(request)
 ) as element(response)
 {
 
-	if ( atomdb:member-available( $request-path-info ) or tombstone-db:tombstone-available( $request-path-info ) )
-	
-	then history-protocol:do-get-member( $request-path-info )
-	
-	else common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info )
+    let $request-path-info := $request/path-info/text() 
+    
+    return
+    
+    	if ( atomdb:member-available( $request-path-info ) or tombstone-db:tombstone-available( $request-path-info ) )
+    	
+    	then history-protocol:do-get-member( $request )
+    	
+    	else common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request )
 	
 };
 
@@ -87,23 +95,24 @@ declare function history-protocol:do-get(
 
 
 declare function history-protocol:do-get-member(
-	$request-path-info as xs:string 
+    $request as element(request)
 ) as element(response)
 {
 
-    let $revision-index := request:get-parameter( $history-protocol:param-name-revision-index , "" )
+    let $revision-index := xutil:get-parameter( $history-protocol:param-name-revision-index , $request )
 	
 	return
 	
-		if ( $revision-index = "" )
+		if ( $revision-index = "" or empty( $revision-index ) )
 		
-		then history-protocol:do-get-member-history( $request-path-info )
+		then history-protocol:do-get-member-history( $request )
 		
 		else if ( $revision-index castable as xs:integer )
 		
-		then history-protocol:do-get-member-revision( $request-path-info , xs:integer( $revision-index ) )
+		then history-protocol:do-get-member-revision( $request , xs:integer( $revision-index ) )
 		
-		else common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , "Revision index parameter must be an integer." )
+		else common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request , "Revision index parameter must be an integer." )
+
 };
 
 
@@ -113,14 +122,14 @@ declare function history-protocol:do-get-member(
  : TODO doc me
  :)
 declare function history-protocol:do-get-member-history(
-	$request-path-info as xs:string
+    $request as element(request)
 ) as element(response)
 {
 
-    let $op := util:function( QName( "http://purl.org/atombeat/xquery/history-protocol" , "history-protocol:op-retrieve-member-history" ) , 3 )
+    let $op := util:function( QName( "http://purl.org/atombeat/xquery/history-protocol" , "history-protocol:op-retrieve-member-history" ) , 2 )
     
     (: enable plugins to intercept the request :)
-    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-HISTORY , $op , $request-path-info , () )
+    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-HISTORY , $op , $request , () )
 
 };
 
@@ -128,12 +137,12 @@ declare function history-protocol:do-get-member-history(
 
 
 declare function history-protocol:op-retrieve-member-history(
-	$request-path-info as xs:string ,
-	$request-data as element(atom:entry)? ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()* (: expect this to be empty, but have to include to get consistent function signature :)
 ) as element(response)
 {
 
+    let $request-path-info := $request/path-info/text()
     let $self-uri := concat( $config:history-service-url , $request-path-info )
     let $versioned-uri := concat( $config:self-link-uri-base , $request-path-info )
     
@@ -147,10 +156,10 @@ declare function history-protocol:op-retrieve-member-history(
 
     let $doc := doc( $doc-path )
     
-    let $vhist := v:history( $doc )
+(:    let $vhist := v:history( $doc ) :)
     
-    let $vvers := v:versions( $doc )
-    
+(:    let $vvers := v:versions( $doc ) :)
+
     let $revisions := v:revisions( $doc )
     
     let $feed := 
@@ -169,7 +178,7 @@ declare function history-protocol:op-retrieve-member-history(
 (:				$vvers , :)
 				
 				for $i in 1 to ( count( $revisions ) + 1 )
-				return history-protocol:construct-member-revision( $request-path-info , $doc , $i , $revisions , true() )
+				return history-protocol:construct-member-revision( $request , $doc , $i , $revisions , true() )
 				
 			}
 		</atom:feed>
@@ -184,7 +193,7 @@ declare function history-protocol:op-retrieve-member-history(
                     <value>{$CONSTANT:MEDIA-TYPE-ATOM-FEED}</value>
                 </header>
             </headers>
-            <body>{$feed}</body>
+            <body type='xml'>{$feed}</body>
         </response>
         
 };
@@ -193,31 +202,29 @@ declare function history-protocol:op-retrieve-member-history(
 
 
 declare function history-protocol:do-get-member-revision(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$revision-index as xs:integer 
 ) as element(response)
 {
 
-    let $op := util:function( QName( "http://purl.org/atombeat/xquery/history-protocol" , "history-protocol:op-retrieve-member-revision" ) , 3 )
+    let $op := util:function( QName( "http://purl.org/atombeat/xquery/history-protocol" , "history-protocol:op-retrieve-member-revision" ) , 2 )
     
     (: enable plugins to intercept the request :)
-    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-REVISION , $op , $request-path-info , () )
+    return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-REVISION , $op , $request , () )
 
 };
 
 
 
 declare function history-protocol:op-retrieve-member-revision(
-	$request-path-info as xs:string ,
-	$request-data as element(atom:entry)? ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()* (: expect this to be empty, but have to include to get consistent function signature :)
 ) as element(response)
 {
 
-    let $revision-index := xs:integer( request:get-parameter( $history-protocol:param-name-revision-index , "" ) )
-	
+    let $request-path-info := $request/path-info/text()
+    let $revision-index := xutil:get-parameter( $history-protocol:param-name-revision-index , $request ) cast as xs:integer
     let $entry-doc-path := concat( atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" )
-
     let $entry-doc := doc( $entry-doc-path )
 
 	(: 
@@ -237,15 +244,15 @@ declare function history-protocol:op-retrieve-member-revision(
     
         if ( $revision-index <= 0 )
         
-        then common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info , "Revision index parameter must be an integer equal to or greater than 1." )
+        then common-protocol:do-bad-request( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request , "Revision index parameter must be an integer equal to or greater than 1." )
         
         else if ( $revision-index > ( count($revision-numbers) + 1 ) )
         
-        then common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request-path-info )
+        then common-protocol:do-not-found( $CONSTANT:OP-HISTORY-PROTOCOL-ERROR , $request )
         
         else 
         
-        	let $entry-revision := history-protocol:construct-member-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , false() )
+        	let $entry-revision := history-protocol:construct-member-revision( $request , $entry-doc , $revision-index , $revision-numbers , false() )
 
             return 
             
@@ -263,7 +270,7 @@ declare function history-protocol:op-retrieve-member-revision(
                             </value>
                         </header>
                     </headers>
-                    <body>{$entry-revision}</body>
+                    <body type='xml'>{$entry-revision}</body>
                 </response>
 
 };
@@ -271,7 +278,7 @@ declare function history-protocol:op-retrieve-member-revision(
 
 
 declare function history-protocol:construct-member-revision(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
 	$revision-numbers as xs:integer* ,
@@ -285,9 +292,9 @@ declare function history-protocol:construct-member-revision(
      
     if ( $revision-index = 1 )
     
-    then history-protocol:construct-member-base-revision( $request-path-info , $entry-doc , $revision-numbers , $exclude-content )
+    then history-protocol:construct-member-base-revision( $request , $entry-doc , $revision-numbers , $exclude-content )
     
-    else history-protocol:construct-member-specified-revision( $request-path-info , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
+    else history-protocol:construct-member-specified-revision( $request , $entry-doc , $revision-index , $revision-numbers , $exclude-content )
     
 };
 
@@ -295,12 +302,14 @@ declare function history-protocol:construct-member-revision(
 
 
 declare function history-protocol:construct-member-base-revision(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$entry-doc as node() ,
 	$revision-numbers as xs:integer* ,
 	$exclude-content as xs:boolean?
 ) as element(atom:entry)
 {
+
+    let $request-path-info := $request/path-info/text()
 
     (: 
      : N.B. if no updates on the doc yet, then base revision won't have been
@@ -357,7 +366,7 @@ declare function history-protocol:construct-member-base-revision(
 
 
 declare function history-protocol:construct-member-specified-revision(
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$entry-doc as node() ,
 	$revision-index as xs:integer ,
 	$revision-numbers as xs:integer* ,
@@ -365,8 +374,8 @@ declare function history-protocol:construct-member-specified-revision(
 ) as element(atom:entry)
 { 
 
+    let $request-path-info := $request/path-info/text()
     let $revision-number := $revision-numbers[$revision-index -1] 
-    
 	let $revision := v:doc( $entry-doc , $revision-number )
 	
 	return

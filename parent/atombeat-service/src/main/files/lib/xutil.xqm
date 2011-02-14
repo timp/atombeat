@@ -227,8 +227,82 @@ declare function xutil:identity(
 
 
 
+declare function xutil:get-header(
+    $header-name as xs:string ,
+    $request as element(request)
+) as xs:string?
+{
+    $request/headers/header[lower-case(@name) = lower-case($header-name)]/value cast as xs:string
+};
 
 
 
+
+declare function xutil:get-parameter(
+    $parameter-name as xs:string ,
+    $request as element(request)
+) as xs:string?
+{
+    $request/parameters/parameter[lower-case(@name) = lower-case($parameter-name)]/value cast as xs:string
+};
+
+
+
+
+declare function common-protocol:get-request-headers() as element(headers)
+{
+    <headers>
+    {
+        for $header-name in request:get-header-names()
+        return
+            <header>
+                <name>{$header-name}</name>
+                <value>{request:get-header($header-name)}</value>
+            </header>
+    }
+    </headers>
+};
+
+
+
+
+declare function common-protocol:get-request-parameters() as element(parameters)
+{
+    <parameters>
+    {
+        for $parameter-name in request:get-parameter-names()
+        return
+            <parameter>
+                <name>{$parameter-name}</name>
+                <value>{request:get-parameter($parameter-name, '')}</value>
+            </parameter>
+    }
+    </parameters>
+};
+
+
+
+
+declare function xutil:match-etag(
+    $header-value as xs:string ,
+    $etag as xs:string
+) as xs:string*
+{
+
+    let $match-etags := tokenize( $header-value , "\s*,\s*" )
+    
+    let $matches :=
+        for $match-etag in $match-etags
+        where (
+            $match-etag = "*"
+            or ( 
+                starts-with( $match-etag , '"' ) 
+                and ends-with( $match-etag , '"' )
+                and $etag = substring( $match-etag , 2 , string-length( $match-etag ) - 2 )
+            )  
+        )
+        return $match-etag
+
+};
 
 

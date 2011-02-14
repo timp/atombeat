@@ -17,12 +17,12 @@ import module namespace tombstone-db = "http://purl.org/atombeat/xquery/tombston
 
 declare function tombstones-plugin:before(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 
+    let $request-path-info := $request/path-info/text()
 	let $message := concat( "before: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	
@@ -30,13 +30,13 @@ declare function tombstones-plugin:before(
 	
         if ( $operation = ( $CONSTANT:OP-DELETE-MEMBER , $CONSTANT:OP-DELETE-MEDIA ) )
         then 
-            let $prepare := tombstones-plugin:before-delete-member-or-media( $request-path-info )
-            return $request-data
+            let $prepare := tombstones-plugin:before-delete-member-or-media( $request )
+            return $entity
             
-        else if ( $request-data instance of element(atom:feed) )
-        then tombstones-plugin:filter-feed($request-data) 
+        else if ( $entity instance of element(atom:feed) )
+        then tombstones-plugin:filter-feed($entity) 
         
-	    else $request-data
+	    else $entity
 	
 };
 
@@ -44,10 +44,12 @@ declare function tombstones-plugin:before(
 
 
 declare function tombstones-plugin:before-delete-member-or-media(
-    $request-path-info as xs:string 
+	$request as element(request) 
 ) as empty()
 {
 
+    let $request-path-info := $request/path-info/text()
+    
     let $member-path-info :=
         if ( ends-with( $request-path-info , ".media" ) )
 (:        then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" ) :)
@@ -64,10 +66,10 @@ declare function tombstones-plugin:before-delete-member-or-media(
         
         then
     
-            let $user-name := request:get-attribute( $config:user-name-request-attribute-key )
-            let $comment := request:get-header( "X-Atom-Tombstone-Comment" )
+            let $user-name := $request/user/text()
+            let $comment := xutil:get-header( "X-Atom-Tombstone-Comment" , $request )
             let $deleted-entry := tombstone-db:create-deleted-entry( $member-path-info , $user-name , $comment )
-            return request:set-attribute( "tombstone" , $deleted-entry )
+            return request:set-attribute( "tombstone" , $deleted-entry ) (: pass to after phase so tombstone can be stored :)
             
         else ()
         
@@ -95,11 +97,12 @@ declare function tombstones-plugin:filter-feed(
 
 declare function tombstones-plugin:after(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
 
+    let $request-path-info := $request/path-info/text()
 	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	
@@ -200,37 +203,41 @@ declare function tombstones-plugin:after-list-collection(
 
 
 declare function tombstones-plugin:after-error(
-    $operation as xs:string ,
-    $request-path-info as xs:string ,
-    $response as element(response)
+	$operation as xs:string ,
+	$request as element(request) ,
+	$response as element(response)
 ) as element(response)
 {
 
-    if ( 
-        $operation = $CONSTANT:OP-ATOM-PROTOCOL-ERROR
-        and $response/status = 404
-        and tombstone-db:tombstone-available( $request-path-info )
-        (: TODO check tombstones enabled on collection? :)
-    )
-    then
-
-        let $deleted-entry := tombstone-db:retrieve-tombstone( $request-path-info )
-        
-        return
+    let $request-path-info := $request/path-info/text()
     
-            (: modify the response from 404 to 410 :)
-            <response>
-                <status>410</status>
-                <headers>
-                    <header>
-                        <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
-                        <value>application/atomdeleted+xml</value>
-                    </header>
-                </headers>
-                <body>{$deleted-entry}</body>
-            </response>
+    return
         
-    else $response
+        if ( 
+            $operation = $CONSTANT:OP-ATOM-PROTOCOL-ERROR
+            and $response/status = 404
+            and tombstone-db:tombstone-available( $request-path-info )
+            (: TODO check tombstones enabled on collection? :)
+        )
+        then
+    
+            let $deleted-entry := tombstone-db:retrieve-tombstone( $request-path-info )
+            
+            return
+        
+                (: modify the response from 404 to 410 :)
+                <response>
+                    <status>410</status>
+                    <headers>
+                        <header>
+                            <name>{$CONSTANT:HEADER-CONTENT-TYPE}</name>
+                            <value>application/atomdeleted+xml</value>
+                        </header>
+                    </headers>
+                    <body>{$deleted-entry}</body>
+                </response>
+            
+        else $response
     
 }; 
 

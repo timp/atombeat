@@ -29,23 +29,22 @@ import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security
 
 declare function link-expansion-plugin:before(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 	
-	if ( $request-data instance of element(atom:entry) )
+	if ( $entity instance of element(atom:entry) )
 	
-	then link-expansion-plugin:filter-entry( $request-data )
+	then link-expansion-plugin:filter-entry( $entity )
 	
-	else if ( $request-data instance of element(atom:feed) )
+	else if ( $entity instance of element(atom:feed) )
 	
-	then link-expansion-plugin:filter-feed( $request-data )
+	then link-expansion-plugin:filter-feed( $entity )
 	
 	else
 
-		$request-data
+		$entity
 
 };
 
@@ -109,18 +108,20 @@ declare function link-expansion-plugin:unexpand-link(
 
 declare function link-expansion-plugin:after(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
     
     let $body := $response/body
+    let $user := $request/user/text()
+    let $roles := for $role in $request/roles/role return $role cast as xs:string
     
     let $augmented-body :=
         if ( $body/atom:feed )
-        then <body>{link-expansion-plugin:augment-feed( $body/atom:feed )}</body>
+        then <body>{link-expansion-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
         else if ( $body/atom:entry )
-        then <body>{link-expansion-plugin:augment-entry( $body/atom:entry )}</body>
+        then <body>{link-expansion-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
         else $body
         
     return
@@ -139,7 +140,9 @@ declare function link-expansion-plugin:after(
 
 
 declare function link-expansion-plugin:augment-feed(
-    $feed as element(atom:feed)
+    $feed as element(atom:feed) , 
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:feed)
 {
 
@@ -153,9 +156,9 @@ declare function link-expansion-plugin:augment-feed(
         {
             $feed/attribute::* ,
             $feed/child::*[ not( . instance of element(atom:link) ) and not( . instance of element(atom:entry) ) ] ,
-            link-expansion-plugin:expand-links( $feed/atom:link , $match-feed-rels ) ,
+            link-expansion-plugin:expand-links( $feed/atom:link , $match-feed-rels , $user , $roles ) ,
             for $entry in $feed/atom:entry
-            return link-expansion-plugin:augment-entry( $entry , $match-entry-in-feed-rels )
+            return link-expansion-plugin:augment-entry( $entry , $match-entry-in-feed-rels , $user , $roles )
         }        
         </atom:feed>
 
@@ -164,7 +167,9 @@ declare function link-expansion-plugin:augment-feed(
 
 
 declare function link-expansion-plugin:augment-entry(
-    $entry as element(atom:entry)
+    $entry as element(atom:entry) , 
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:entry)
 {
     if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:edit-link-uri-base ) ) then
@@ -172,7 +177,7 @@ declare function link-expansion-plugin:augment-entry(
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $match-entry-rels := tokenize( $feed/atombeat:config-link-expansion/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
             
-        return link-expansion-plugin:augment-entry( $entry , $match-entry-rels )
+        return link-expansion-plugin:augment-entry( $entry , $match-entry-rels , $user , $roles )
 
     else $entry
 };
@@ -182,14 +187,16 @@ declare function link-expansion-plugin:augment-entry(
 
 declare function link-expansion-plugin:augment-entry(
     $entry as element(atom:entry) ,
-    $match-rels as xs:string*
+    $match-rels as xs:string* ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:entry)
 {
     <atom:entry>
     {
         $entry/attribute::* ,
         $entry/child::*[ not( . instance of element(atom:link) ) ] ,
-        link-expansion-plugin:expand-links( $entry/atom:link , $match-rels )
+        link-expansion-plugin:expand-links( $entry/atom:link , $match-rels , $user , $roles )
     }        
     </atom:entry>
 };
@@ -199,7 +206,9 @@ declare function link-expansion-plugin:augment-entry(
 
 declare function link-expansion-plugin:expand-links(
     $links as element(atom:link)* ,
-    $match-rels as xs:string*
+    $match-rels as xs:string* ,
+    $user as xs:string? ,
+    $roles as xs:string*
 ) as element(atom:link)*
 {
 
@@ -216,7 +225,7 @@ declare function link-expansion-plugin:expand-links(
                 
                     if ( 
                         atomdb:member-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () )
+                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () , $user , $roles )
                     ) then
                     
                         <atom:link>
@@ -229,14 +238,14 @@ declare function link-expansion-plugin:expand-links(
                         
                     else if ( 
                         atomdb:collection-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () )
+                        and atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () , $user , $roles )
                     ) then
 
                         <atom:link>
                         {
                             $link/attribute::* ,
                             $link/child::* ,
-                            <ae:inline>{atomsec:filter-feed(atomdb:retrieve-feed( $path-info ))}</ae:inline>
+                            <ae:inline>{atomsec:filter-feed(atomdb:retrieve-feed( $path-info , $user , $roles ))}</ae:inline>
                         }
                         </atom:link>
 
@@ -250,7 +259,7 @@ declare function link-expansion-plugin:expand-links(
                 
                     if ( 
                         atomdb:member-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $path-info , () )
+                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $path-info , () , $user , $roles )
                     ) then
                     
                         <atom:link>
@@ -265,7 +274,7 @@ declare function link-expansion-plugin:expand-links(
                         
                     else if ( 
                         atomdb:media-resource-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $path-info , () )
+                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $path-info , () , $user , $roles )
                     ) then
                     
                         <atom:link>
@@ -280,7 +289,7 @@ declare function link-expansion-plugin:expand-links(
                         
                     else if ( 
                         atomdb:collection-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $path-info , () )
+                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $path-info , () , $user , $roles )
                     ) then
 
                         <atom:link>

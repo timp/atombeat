@@ -24,9 +24,47 @@ declare variable $common-protocol:param-request-path-info := "request-path-info"
 
 
 
+
+declare function common-protocol:get-request() as element(request)
+{
+
+    (: build a representation of the request, except for request entity (allow functions to consume directly to support streaming) :)
+    
+	let $request-method := upper-case( request:get-method() )
+	let $request-path-info := lower-case( request:get-attribute( $atom-protocol:param-request-path-info ) )
+	let $request-headers := common-protocol:get-request-headers()
+	let $request-parameters := common-protocol:get-request-parameters()
+    let $user := request:get-attribute( $config:user-name-request-attribute-key )
+    let $roles :=
+        <roles>
+        {
+            for $role in request:get-attribute($config:user-roles-request-attribute-key) return <role>{$role}</role>
+        }
+        </roles>
+    
+    let $request :=
+        <request>
+            <method>{$request-method}</method>
+            <path-info>{$request-path-info}</path-info>
+        {
+            $request-headers ,
+            $request-parameters ,
+            if ( exists( $user ) ) then <user>{$user}</user> else () ,
+            $roles
+        }
+        </request>
+        
+    return $request
+    
+};
+
+
+
+
+
 declare function common-protocol:do-not-modified(
     $op-name as xs:string? ,
-    $request-path-info as xs:string
+    $request as element(request)
 ) as element(response)
 {
 
@@ -44,7 +82,7 @@ declare function common-protocol:do-not-modified(
 
 declare function common-protocol:do-not-found(
     $op-name as xs:string? ,
-    $request-path-info as xs:string
+    $request as element(request)
 ) as element(response)
 {
 
@@ -63,7 +101,7 @@ declare function common-protocol:do-not-found(
             <body type="text">{$message}</body>
         </response>
 
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request , $response )
 
 };
 
@@ -71,7 +109,7 @@ declare function common-protocol:do-not-found(
 
 declare function common-protocol:do-precondition-failed(
     $op-name as xs:string? ,
-    $request-path-info as xs:string ,
+    $request as element(request) ,
     $message as xs:string?
 ) as element(response)
 {
@@ -89,7 +127,7 @@ declare function common-protocol:do-precondition-failed(
             <body type="text">{concat( $message , " The precondition given in one or more of the request-header fields evaluated to false when it was tested on the server." )}</body>
         </response>
 
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request , $response )
 
 };
 
@@ -97,8 +135,8 @@ declare function common-protocol:do-precondition-failed(
 
 declare function common-protocol:do-bad-request(
     $op-name as xs:string? ,
-	$request-path-info as xs:string ,
-	$message as xs:string?
+    $request as element(request) ,
+    $message as xs:string?
 ) as element(response)
 {
 
@@ -117,7 +155,7 @@ declare function common-protocol:do-bad-request(
             <body type="text">{$message}</body>
         </response>
         
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request , $response )
 
 };
 
@@ -127,7 +165,7 @@ declare function common-protocol:do-bad-request(
 
 declare function common-protocol:do-method-not-allowed(
     $op-name as xs:string? ,
-	$request-path-info as xs:string ,
+    $request as element(request) ,
 	$allow as xs:string*
 ) as element(response)
 {
@@ -151,7 +189,7 @@ declare function common-protocol:do-method-not-allowed(
             <body type="text">{$message}</body>
         </response>
     
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request , $response )
     
 };
 
@@ -161,7 +199,7 @@ declare function common-protocol:do-method-not-allowed(
 
 declare function common-protocol:do-forbidden(
     $op-name as xs:string? ,
-    $request-path-info as xs:string
+    $request as element(request) 
 ) as element(response)
 {
 
@@ -180,7 +218,7 @@ declare function common-protocol:do-forbidden(
             <body type="text">{$message}</body>
         </response>
 
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request , $response )
     
 };
 
@@ -189,7 +227,7 @@ declare function common-protocol:do-forbidden(
 
 declare function common-protocol:do-unsupported-media-type(
     $op-name as xs:string? ,
-    $request-path-info as xs:string ,
+    $request as element(request) ,
 	$message as xs:string? 
 ) as element(response)
 {
@@ -209,7 +247,7 @@ declare function common-protocol:do-unsupported-media-type(
             <body type="text">{$message}</body>
         </response>
 
-    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response )
+    return common-protocol:apply-after( plugin:after-error() , $op-name , $request , $response )
 
 };
 
@@ -218,7 +256,7 @@ declare function common-protocol:do-unsupported-media-type(
 
 declare function common-protocol:do-unsupported-media-type(
     $op-name as xs:string? ,
-    $request-path-info as xs:string
+    $request as element(request)
 ) as element(response)
 {
 
@@ -235,31 +273,12 @@ declare function common-protocol:do-unsupported-media-type(
 declare function common-protocol:apply-op(
 	$op-name as xs:string ,
 	$op as function ,
-	$request-path-info as xs:string ,
-	$request-data as item()*
+	$request as element(request ,
+	$entity as item()* 
 ) as element(response)
 {
 
-	common-protocol:apply-op( $op-name , $op , $request-path-info , $request-data , () )
-	
-};
-
-
-
-
-(:
- : Main request processing function.
- :)
-declare function common-protocol:apply-op(
-	$op-name as xs:string ,
-	$op as function ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
-) as element(response)
-{
-
-	let $before-advice := common-protocol:apply-before( plugin:before() , $op-name , $request-path-info , $request-data , $request-media-type )
+	let $before-advice := common-protocol:apply-before( plugin:before() , $op-name , $request , $entity )
 	
 	return 
 	 
@@ -269,11 +288,11 @@ declare function common-protocol:apply-op(
 		  
 		else
 		
-			let $request-data := $before-advice (: request data may have been modified by plugins :)
+			let $modified-entity := $before-advice (: request data may have been modified by plugins :)
 
-			let $response := util:call( $op , $request-path-info , $request-data , $request-media-type )
+			let $response := util:call( $op , $request , $modified-entity )
 			 
-			let $after-advice := common-protocol:apply-after( plugin:after() , $op-name , $request-path-info , $response )
+			let $after-advice := common-protocol:apply-after( plugin:after() , $op-name , $request , $response )
 			
 			let $response := $after-advice
 					    
@@ -291,9 +310,8 @@ declare function common-protocol:apply-op(
 declare function common-protocol:apply-before(
 	$functions as function* ,
 	$op-name as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request ,
+	$entity as item()* 
 ) as item()* 
 {
 	
@@ -307,11 +325,11 @@ declare function common-protocol:apply-before(
 	 
 	if ( empty( $functions ) )
 	
-	then $request-data
+	then $entity
 	
 	else
 	
-		let $advice := util:call( $functions[1] , $op-name , $request-path-info , $request-data , $request-media-type )
+		let $advice := util:call( $functions[1] , $op-name , $request , $entity )
 		
 		(: what happens next depends on advice :)
 		
@@ -323,10 +341,10 @@ declare function common-protocol:apply-before(
 
 			else 
 			
-			    let $request-data := $advice
+			    let $modified-entity := $advice
 			    
 			    (: recursively call until before functions are exhausted :)
-			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $op-name , $request-path-info , $request-data , $request-media-type )
+			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $op-name , $request , $modified-entity )
 
 };
 
@@ -339,7 +357,7 @@ declare function common-protocol:apply-before(
 declare function common-protocol:apply-after(
 	$functions as function* ,
 	$op-name as xs:string ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as item()* {
 	
@@ -349,17 +367,17 @@ declare function common-protocol:apply-after(
 	
 	else
 	
-		let $advice := util:call( $functions[1] , $op-name , $request-path-info , $response )
+		let $advice := util:call( $functions[1] , $op-name , $request , $response )
 		
-		let $response := $advice
+		let $modified-response := $advice
 		
 		return
 		
-		    if ( exists( $response ) and $response instance of element(response) ) 
+		    if ( exists( $modified-response ) and $modified-response instance of element(response) ) 
 		    
-		    then common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $request-path-info , $response )
+		    then common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $request , $modified-response )
 		    
-		    else common-protocol:do-internal-server-error( $op-name , $request-path-info , "A plugin function failed to return a valid response; expected element(response)." )
+		    else common-protocol:do-internal-server-error( $op-name , $request , "A plugin function failed to return a valid response; expected element(response)." )
 
 };
 
@@ -368,7 +386,7 @@ declare function common-protocol:apply-after(
 
 declare function common-protocol:do-internal-server-error(
     $op-name as xs:string? ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$message as xs:string 
 ) as element(response)
 {
@@ -403,11 +421,14 @@ declare function common-protocol:do-internal-server-error(
 
 
 
-declare function common-protocol:respond( $response as element(response) ) as item()*
+declare function common-protocol:respond( 
+	$request as element(request) ,
+    $response as element(response) 
+) as item()*
 {
 
     (: TODO migrate augment errors to after-error plugin :)
-    let $response := common-protocol:augment-errors( $response )
+    let $response := common-protocol:augment-errors( $request, $response )
     
     let $set-headers :=
         for $header in $response/headers/header
@@ -459,6 +480,7 @@ declare function common-protocol:respond( $response as element(response) ) as it
 
 
 declare function common-protocol:augment-errors(
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
@@ -492,7 +514,10 @@ declare function common-protocol:augment-errors(
             		<error>
             		    <status>{$status}</status>
             			<message>{$response/body/text()}</message>
-            			<request>
+            			{$request}
+
+(:
+                        <request>
                 			<method>{request:get-method()}</method>
                 			<path-info>{$request-path-info}</path-info>
                 			<parameters>
@@ -517,7 +542,8 @@ declare function common-protocol:augment-errors(
                 			</headers>
                 			<user>{request:get-attribute($config:user-name-request-attribute-key)}</user>
                 			<roles>{string-join(request:get-attribute($config:user-roles-request-attribute-key), " ")}</roles>
-                        </request>    		
+                        </request>
+:)                        
             		</error>
     	        </body>
     	    </response>
@@ -525,6 +551,7 @@ declare function common-protocol:augment-errors(
         else $response        
 
 }; 
+
 
 
 

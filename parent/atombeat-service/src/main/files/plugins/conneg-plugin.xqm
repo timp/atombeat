@@ -14,12 +14,12 @@ import module namespace conneg-config = "http://purl.org/atombeat/xquery/conneg-
 
 declare function conneg-plugin:before(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
-	$request-data as item()* ,
-	$request-media-type as xs:string?
+	$request as element(request) ,
+	$entity as item()*
 ) as item()*
 {
 
+    let $request-path-info := $request/path-info/text()
 	let $message := concat( "conneg-plugin - before: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	
@@ -54,11 +54,15 @@ declare function conneg-plugin:before(
             let $log := util:log( "debug" , "preparing for conneg" )
             
         	(: look for output param and accept header :)
-        	let $output-param := request:get-parameter( "output" , "" )
-        	let $accept := request:get-header( "Accept" )
+        	let $output-param := xutil:get-parameter( "output" , $request )
+        	let $accept := xutil:get-header( "Accept" , $request )
+        	
+        	(: N.B. it is VERY IMPORTANT to pull the accept header and output param from the supplied 
+        	 : request fragment, and NOT directly from the request, because this might have been called
+        	 : as part of another XQuery, not the main Atom protocol engine :)
         	
         	let $output-key :=
-        	    if ( not( $output-param eq "" ) ) then $output-param (: output param trumps accept header :)
+        	    if ( exists( $output-param ) and not( $output-param eq "" ) ) then $output-param (: output param trumps accept header :)
         	    else conneg-plugin:negotiate( $accept )
         	
         	(: store output key for use in after phase :)
@@ -68,7 +72,7 @@ declare function conneg-plugin:before(
                 
             return
             
-                if ( exists( $output-key ) ) then conneg-plugin:filter-request-data( $request-data ) (: proceed with request processing, but filter alternate links from feeds and entries first :)
+                if ( exists( $output-key ) ) then conneg-plugin:filter-request-data( $entity ) (: proceed with request processing, but filter alternate links from feeds and entries first :)
                 
                 else 
 
@@ -84,7 +88,7 @@ declare function conneg-plugin:before(
         			                <value>{$CONSTANT:MEDIA-TYPE-HTML}</value>
         			            </header>
         			        </headers>
-        			        <body>
+        			        <body type='xml'>
         			            <html>
         			                <head><title>406 Not Acceptable</title></head>
         			                <body>
@@ -103,7 +107,7 @@ declare function conneg-plugin:before(
         			        </body>
         			    </response>
 
-	    else $request-data
+	    else $entity
 	
 };
 
@@ -177,11 +181,12 @@ declare function conneg-plugin:filter-feed(
 
 declare function conneg-plugin:after(
 	$operation as xs:string ,
-	$request-path-info as xs:string ,
+	$request as element(request) ,
 	$response as element(response)
 ) as element(response)
 {
 
+    let $request-path-info := $request/path-info/text()
 	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	

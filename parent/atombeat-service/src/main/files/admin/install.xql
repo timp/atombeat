@@ -107,7 +107,15 @@ declare function local:do-post() as item()*
 
     (: INSTALL THE workspace ACL :)
     let $workspace-descriptor-installed := atomsec:store-workspace-descriptor( $security-config:default-workspace-security-descriptor )
-    
+
+    let $user := request:get-attribute( $config:user-name-request-attribute-key )
+    let $roles :=
+        <roles>
+        {
+            for $role in request:get-attribute($config:user-roles-request-attribute-key) return <role>{$role}</role>
+        }
+        </roles>
+
     (: INSTALL THE COLLECTIONS :)
     let $collections-installed :=
 
@@ -116,7 +124,24 @@ declare function local:do-post() as item()*
 
         (: CREATE THE COLLECTION :)
         let $feed := $collection/atom:feed
-        let $put-feed-response := atom-protocol:do-put-atom-feed( $path-info , $feed )                                    
+        let $request := 
+            <request>
+                <path-info>{$path-info}</path-info>
+                <headers>
+                    <header>
+                        <name>Content-Type</name>
+                        <value>application/atom+xml</value>
+                    </header>
+                    <header>
+                        <name>Accept</name>
+                        <value>application/atom+xml</value>
+                    </header>
+                </headers>
+                <user>{$user}</user>
+                {$roles}
+            </request>
+            
+        let $put-feed-response := atom-protocol:do-put-atom-feed( $request , $feed )                                    
         return $put-feed-response
         
     let $log := util:log( "debug" , $collections-installed )
