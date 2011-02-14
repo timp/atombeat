@@ -232,7 +232,10 @@ declare function xutil:get-header(
     $request as element(request)
 ) as xs:string?
 {
-    $request/headers/header[lower-case(@name) = lower-case($header-name)]/value cast as xs:string
+
+    let $value := $request/headers/header[name = lower-case($header-name)]/value/text()
+    return if ( $value castable as xs:string ) then xs:string( $value ) else () 
+
 };
 
 
@@ -243,20 +246,23 @@ declare function xutil:get-parameter(
     $request as element(request)
 ) as xs:string?
 {
-    $request/parameters/parameter[lower-case(@name) = lower-case($parameter-name)]/value cast as xs:string
+
+    let $value := $request/parameters/parameter[name = lower-case($parameter-name)]/value/text()
+    return if ( $value castable as xs:string ) then xs:string( $value ) else () 
+    
 };
 
 
 
 
-declare function common-protocol:get-request-headers() as element(headers)
+declare function xutil:get-request-headers() as element(headers)
 {
     <headers>
     {
         for $header-name in request:get-header-names()
         return
             <header>
-                <name>{$header-name}</name>
+                <name>{lower-case($header-name)}</name>
                 <value>{request:get-header($header-name)}</value>
             </header>
     }
@@ -266,14 +272,14 @@ declare function common-protocol:get-request-headers() as element(headers)
 
 
 
-declare function common-protocol:get-request-parameters() as element(parameters)
+declare function xutil:get-request-parameters() as element(parameters)
 {
     <parameters>
     {
         for $parameter-name in request:get-parameter-names()
         return
             <parameter>
-                <name>{$parameter-name}</name>
+                <name>{lower-case($parameter-name)}</name>
                 <value>{request:get-parameter($parameter-name, '')}</value>
             </parameter>
     }
@@ -302,6 +308,8 @@ declare function xutil:match-etag(
             )  
         )
         return $match-etag
+        
+    return $matches
 
 };
 

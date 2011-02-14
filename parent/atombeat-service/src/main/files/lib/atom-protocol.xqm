@@ -13,14 +13,13 @@ import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtomBeatUtilModule";
 
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
-
-declare variable $atom-protocol:param-request-path-info := "request-path-info" ;
 
 
 
@@ -30,24 +29,6 @@ declare variable $atom-protocol:param-request-path-info := "request-path-info" ;
  :)
 declare function atom-protocol:main() as item()*
 {    
-
-(:
-    let $request-method := upper-case( request:get-method() )
-	let $request-path-info := lower-case( request:get-attribute( $atom-protocol:param-request-path-info ) )
-	let $request-headers := common-protocol:get-request-headers()
-	let $request-parameters := common-protocol:get-request-parameters()
-    let $user := request:get-attribute( $config:user-name-request-attribute-key )
-    let $request :=
-        <request>
-            <method>{$request-method}</method>
-            <path-info>{$request-path-info}</path-info>
-        {
-            $request-headers ,
-            $request-parameters ,
-            if ( exists( $user ) ) then <user>{$user}</user> else ()
-        }
-        </request>
-:)
 
     let $request := common-protocol:get-request()
         
@@ -233,7 +214,7 @@ declare function atom-protocol:op-create-collection(
 
         	let $feed := atomdb:retrieve-feed( $request-path-info )
                     
-            let $location := $feed/atom:link[@rel="edit"]/@href cast as xs:string
+            let $location := $feed/atom:link[@rel='self']/@href cast as xs:string
                 	
         	return
         	
@@ -492,7 +473,7 @@ declare function atom-protocol:op-create-media(
     let $request-path-info := $request/path-info/text()
     let $user-name := $request/user/text()
 	let $request-content-type := xutil:get-header( $CONSTANT:HEADER-CONTENT-TYPE , $request )
-	let $request-media-type := substring-before( $request-content-type , ';' )
+	let $request-media-type := tokenize( $request-content-type , ';' )[1]
 
     (: check for slug to use as title :)
 	let $slug := xutil:get-header( $CONSTANT:HEADER-SLUG , $request )
@@ -1049,7 +1030,7 @@ declare function atom-protocol:op-update-media(
 	
     let $request-path-info := $request/path-info/text()
 	let $request-content-type := xutil:get-header( $CONSTANT:HEADER-CONTENT-TYPE , $request )
-	let $request-media-type := substring-before( $request-content-type , ';' )
+	let $request-media-type := tokenize( $request-content-type , ';' )[1]
 
 	let $media-link :=
 	    if ( $config:media-storage-mode = "DB" ) then

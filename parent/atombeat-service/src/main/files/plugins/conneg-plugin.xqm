@@ -5,6 +5,7 @@ declare namespace atom = "http://www.w3.org/2005/Atom" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace conneg-config = "http://purl.org/atombeat/xquery/conneg-config" at "../config/conneg.xqm" ;
@@ -114,15 +115,15 @@ declare function conneg-plugin:before(
 
 
 declare function conneg-plugin:filter-request-data(
-    $request-data as item()*
+    $entity as item()*
 ) as item()*
 {
 
-    if ( $request-data instance of element(atom:entry) ) then conneg-plugin:filter-entry( $request-data )
+    if ( $entity instance of element(atom:entry) ) then conneg-plugin:filter-entry( $entity )
     
-    else if ( $request-data instance of element(atom:feed) ) then conneg-plugin:filter-feed( $request-data )
+    else if ( $entity instance of element(atom:feed) ) then conneg-plugin:filter-feed( $entity )
     
-    else $request-data
+    else $entity
     
 };
 

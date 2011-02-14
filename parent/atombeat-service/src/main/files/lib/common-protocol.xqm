@@ -13,6 +13,7 @@ import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtomBeatUtilModule";
 
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
 
@@ -31,9 +32,9 @@ declare function common-protocol:get-request() as element(request)
     (: build a representation of the request, except for request entity (allow functions to consume directly to support streaming) :)
     
 	let $request-method := upper-case( request:get-method() )
-	let $request-path-info := lower-case( request:get-attribute( $atom-protocol:param-request-path-info ) )
-	let $request-headers := common-protocol:get-request-headers()
-	let $request-parameters := common-protocol:get-request-parameters()
+	let $request-path-info := lower-case( request:get-attribute( $common-protocol:param-request-path-info ) )
+	let $request-headers := xutil:get-request-headers()
+	let $request-parameters := xutil:get-request-parameters()
     let $user := request:get-attribute( $config:user-name-request-attribute-key )
     let $roles :=
         <roles>
@@ -273,7 +274,7 @@ declare function common-protocol:do-unsupported-media-type(
 declare function common-protocol:apply-op(
 	$op-name as xs:string ,
 	$op as function ,
-	$request as element(request ,
+	$request as element(request) ,
 	$entity as item()* 
 ) as element(response)
 {
@@ -310,7 +311,7 @@ declare function common-protocol:apply-op(
 declare function common-protocol:apply-before(
 	$functions as function* ,
 	$op-name as xs:string ,
-	$request as element(request ,
+	$request as element(request) ,
 	$entity as item()* 
 ) as item()* 
 {
@@ -515,35 +516,6 @@ declare function common-protocol:augment-errors(
             		    <status>{$status}</status>
             			<message>{$response/body/text()}</message>
             			{$request}
-
-(:
-                        <request>
-                			<method>{request:get-method()}</method>
-                			<path-info>{$request-path-info}</path-info>
-                			<parameters>
-                			{
-                				for $parameter-name in request:get-parameter-names()
-                				return
-                				    <parameter>
-                				        <name>{$parameter-name}</name>
-                				        <value>{request:get-parameter( $parameter-name , "" )}</value>						
-                					</parameter>
-                			}
-                			</parameters>
-                			<headers>
-                			{
-                				for $header-name in request:get-header-names()
-                				return
-                				    <header>
-                				        <name>{$header-name}</name>
-                				        <value>{request:get-header( $header-name )}</value>						
-                					</header>
-                			}
-                			</headers>
-                			<user>{request:get-attribute($config:user-name-request-attribute-key)}</user>
-                			<roles>{string-join(request:get-attribute($config:user-roles-request-attribute-key), " ")}</roles>
-                        </request>
-:)                        
             		</error>
     	        </body>
     	    </response>
