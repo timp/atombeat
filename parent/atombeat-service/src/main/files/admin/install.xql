@@ -168,7 +168,10 @@ return
     
     then local:do-post()
     
-    else common-protocol:respond( common-protocol:do-method-not-allowed( "/admin/install.xql" , "/admin/install.xql" , ( "GET" , "POST" ) ) )
+    else 
+    
+        let $request := common-protocol:get-request() 
+        return common-protocol:respond( $request , common-protocol:do-method-not-allowed( "/admin/install.xql" , $request , ( "GET" , "POST" ) ) )
     
     
 
