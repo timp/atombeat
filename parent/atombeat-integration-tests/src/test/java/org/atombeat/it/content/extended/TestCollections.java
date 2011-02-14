@@ -196,7 +196,7 @@ public class TestCollections extends TestCase {
 		// expect the Location header is set with an absolute URI
 		String responseLocation = method.getResponseHeader("Location").getValue();
 		assertNotNull(responseLocation);
-		assertEquals(collectionUri, responseLocation);
+		assertEquals("expected "+collectionUri+" got "+responseLocation, collectionUri, responseLocation);
 		
 		// expect no Content-Type header 
 		Header contentTypeHeader = method.getResponseHeader("Content-Type");
