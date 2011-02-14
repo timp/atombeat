@@ -42,8 +42,8 @@ declare function security-protocol:do-service(
 as element(response)
 {
 
-	let $request-path-info := request/path-info/text()
-	let $request-method := request/method/text()
+	let $request-path-info := $request/path-info/text()
+	let $request-method := $request/method/text()
 	
 	return
 	

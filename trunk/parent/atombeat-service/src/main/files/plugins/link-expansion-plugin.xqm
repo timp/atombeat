@@ -245,7 +245,7 @@ declare function link-expansion-plugin:expand-links(
                         {
                             $link/attribute::* ,
                             $link/child::* ,
-                            <ae:inline>{atomsec:filter-feed(atomdb:retrieve-feed( $path-info , $user , $roles ))}</ae:inline>
+                            <ae:inline>{atomsec:filter-feed( atomdb:retrieve-feed( $path-info ) , $user , $roles )}</ae:inline>
                         }
                         </atom:link>
 

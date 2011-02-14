@@ -39,7 +39,7 @@ declare function security-plugin:before(
 
         let $request-path-info := $request/path-info/text()
     	let $request-content-type := xutil:get-header( $CONSTANT:HEADER-CONTENT-TYPE , $request )
-    	let $request-media-type := substring-before( $request-content-type , ';' )
+    	let $request-media-type := tokenize( $request-content-type , ';' )[1]
     	let $user := $request/user/text()
     	let $roles := for $role in $request/roles/role return $role cast as xs:string
     	let $forbidden := atomsec:is-denied( $operation , $request-path-info , $request-media-type , $user , $roles )
@@ -103,7 +103,7 @@ declare function security-plugin:before(
 
 
 declare function security-plugin:strip-descriptor-links(
-    $request-data as element()
+    $entity as element()
 ) as element()
 {
 
@@ -115,7 +115,7 @@ declare function security-plugin:strip-descriptor-links(
             </atom-links>
         </reserved>
         
-    let $filtered := atomdb:filter( $request-data , $reserved )
+    let $filtered := atomdb:filter( $entity , $reserved )
     
     return $filtered
 
@@ -390,8 +390,8 @@ declare function security-plugin:after-update-media(
 
 declare function security-plugin:after-create-collection(
 	$request-path-info as xs:string ,
-	$user as xs:string ,
-	$roles as xs:string ,
+	$user as xs:string? ,
+	$roles as xs:string* ,
 	$response as element(response)
 ) as element(response)
 {
@@ -554,7 +554,7 @@ declare function security-plugin:augment-entry(
 declare function security-plugin:install-member-descriptor(
     $request-path-info as xs:string ,
     $resource-path-info as xs:string , 
-	$user as xs:string 
+	$user as xs:string?
 ) as xs:string?
 {
     if ( $security-config:enable-security )
@@ -571,7 +571,7 @@ declare function security-plugin:install-member-descriptor(
 declare function security-plugin:install-media-descriptor(
     $request-path-info as xs:string,
     $resource-path-info as xs:string , 
-	$user as xs:string 
+	$user as xs:string?
 ) as xs:string?
 {
     if ( $security-config:enable-security )
@@ -587,7 +587,7 @@ declare function security-plugin:install-media-descriptor(
 
 declare function security-plugin:install-collection-descriptor( 
     $request-path-info as xs:string ,
-	$user as xs:string 
+	$user as xs:string?
 ) as xs:string?
 {
     if ( $security-config:enable-security )

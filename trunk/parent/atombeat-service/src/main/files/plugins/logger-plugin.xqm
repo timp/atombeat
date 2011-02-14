@@ -19,7 +19,7 @@ declare function logger-plugin:before(
 	let $log := util:log( "info" , $message )
 	let $log := util:log( "info" , $request )
 	
-	return $request-data
+	return $entity
 	
 };
 

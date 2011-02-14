@@ -107,7 +107,7 @@ declare function history-plugin:before-create-member(
             let $comment := xutil:get-header("X-Atom-Revision-Comment", $request )
             let $comment := if ( empty( $comment ) or $comment = "" ) then "initial revision" else $comment
             
-        	let $prepared-entry := history-plugin:prepare-entry( $entity , $comment )
+        	let $prepared-entry := history-plugin:prepare-entry( $request , $entity , $comment )
         	
         	return $prepared-entry
 
@@ -138,7 +138,7 @@ declare function history-plugin:before-update-member(
         	(: add a revision comment to the incoming entry :)
         	
             let $comment := xutil:get-header("X-Atom-Revision-Comment", $request )
-        	let $prepared-entry := history-plugin:prepare-entry( $entity , $comment )
+        	let $prepared-entry := history-plugin:prepare-entry( $request , $entity , $comment )
         	
         	return $prepared-entry
 
@@ -150,7 +150,8 @@ declare function history-plugin:before-update-member(
 
 
 declare function history-plugin:prepare-entry(
-    $request-data as element(atom:entry) ,
+    $request as element(request) ,
+    $entity as element(atom:entry) ,
     $comment as xs:string?
 ) as element(atom:entry)
 {
@@ -167,7 +168,7 @@ declare function history-plugin:prepare-entry(
             </atom-links>
         </reserved>
     
-    let $filtered-entry := atomdb:filter( $request-data , $reserved )
+    let $filtered-entry := atomdb:filter( $entity , $reserved )
     
     (: modify incoming entry to include revision comment :)
     
