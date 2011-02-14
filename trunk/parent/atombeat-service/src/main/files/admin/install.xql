@@ -89,7 +89,7 @@ declare function local:content( $responses ) as item()*
                         {
                             for $response in $responses
                             return
-                                <li>{$response/status} {$response/body}</li>
+                                <li>{$response/status} {$response/body/text()}</li>
                         }
                         </ul>
                     else ()
