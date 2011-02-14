@@ -21,12 +21,12 @@ declare function local:do-get() as item()*
 {
     let $response-code-set := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
     let $response-content-type-set := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , "text/html" )
-    return local:content()
+    return local:content(())
 };
 
 
 
-declare function local:content() as item()*
+declare function local:content( $responses ) as item()*
 {
     <html>
         <head>
@@ -83,6 +83,19 @@ declare function local:content() as item()*
                         <input type="submit" value="Refresh"></input>
                     </form>
                 </p>
+                {
+                    if ( exists( $responses ) ) then
+                        <ul>
+                        {
+                            for $response in $responses
+                            return
+                                <li>{$response/status} {$response/body}</li>
+                        }
+                        </ul>
+                    else ()
+                    
+                    
+                }
         </body>
     </html>
 };
@@ -105,11 +118,14 @@ declare function local:do-post() as item()*
         let $feed := $collection/atom:feed
         let $put-feed-response := atom-protocol:do-put-atom-feed( $path-info , $feed )                                    
         return $put-feed-response
+        
+    let $log := util:log( "debug" , $collections-installed )
                 
     (: SEND RESPONSE :)        
     let $response-code-set := response:set-status-code( $CONSTANT:STATUS-SUCCESS-OK )
     let $response-content-type-set := response:set-header( $CONSTANT:HEADER-CONTENT-TYPE , "text/html" )
-    return local:content()
+    return local:content( $collections-installed )
+    
 };
 
 
