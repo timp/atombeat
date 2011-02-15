@@ -414,7 +414,7 @@ declare function atomdb:sanitize-slug(
 ) as xs:string
 {
 
-    let $sanitized-slug := replace( lower-case( $slug ) , '[^a-z0-9]' , '-' )
+    let $sanitized-slug := replace( $slug , '[^A-Za-z0-9\-_.~]' , '-' ) (: URI unreserved characters :)
     let $member-path-info := concat( $collection-path-info , '/' , $sanitized-slug )
     return
         if ( atomdb:member-available( $member-path-info ) ) then 

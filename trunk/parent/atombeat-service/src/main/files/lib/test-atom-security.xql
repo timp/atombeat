@@ -19,8 +19,8 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 
 
 declare variable $test-collection-path as xs:string := "/test-security" ;
-declare variable $test-member-id as xs:string := "XYZ" ;
-declare variable $another-test-member-id as xs:string := "ABC" ;
+declare variable $test-member-id as xs:string := "xyz" ;
+declare variable $another-test-member-id as xs:string := "abc" ;
 declare variable $test-member-path as xs:string := concat( $test-collection-path , "/" , $test-member-id ) ;
 declare variable $another-test-member-path as xs:string := concat( $test-collection-path , "/" , $another-test-member-id ) ;
 declare variable $workspace-uri := concat( $config:edit-link-uri-base , "/" ) ;
