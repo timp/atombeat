@@ -31,6 +31,7 @@
  				<user name="rebecca" password="test" authorities="ROLE_USER, ROLE_READER" />
  				<user name="ursula" password="test" authorities="ROLE_USER" />
  				<user name="daniel" password="test" authorities="ROLE_USER, ROLE_DATA_AUTHOR" />
+                <user name="laura" password="test" authorities="ROLE_USER, ROLE_LIMITED_READER" />
             </user-service>
         </authentication-provider>
     </authentication-manager>

@@ -70,6 +70,8 @@ public class AtomTestUtils {
 	public static final String ADAM = "adam";
 	public static final String AUDREY = "audrey";
 	public static final String AUSTIN = "austin";
+	public static final String URSULA = "ursula";
+	public static final String LAURA = "laura";
 
 	public static final String SCHEME_BASIC = "BASIC";
 
