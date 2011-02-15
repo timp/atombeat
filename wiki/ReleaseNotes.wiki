@@ -7,6 +7,188 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
+== issue 149 cannot use atom-protocol:do-* from within xquery as headers from host page are interpreted as headers in nested request ==
+
+The signature of all plugin functions has been changed, to provide better support for calling the Atom protocol library functions (e.g., `atom-protocol:do-post-atom-entry()`) programmatically from within other XQueries. 
+
+Plugins in the *before* chain now must have the following signature:
+
+{{{
+declare function example-plugin:before(
+    $operation as xs:string ,
+    $request as element(request) ,
+    $entity as item()*
+) as item()*
+{
+
+    (: any side-effects :)	
+    let $modified-entity := ... (: transform the request entity, if desired :)
+    return $modified-entity
+    
+};
+}}}
+
+The `$operation` argument is the name of the protocol operation being executed, as in previous versions.
+
+The `$request` argument is an XML fragment representing the HTTP request being executed. It has the general form:
+
+{{{
+<request>
+    <path-info>/test/xyz</path-info>
+    <method>POST</method>
+    <headers>
+        <header>
+            <name>Accept</name>
+            <value>application/atom+xml</value>
+        </header>
+        <header>
+            <name>Content-Type</name>
+            <value>application/atom+xml</value>
+        </header>
+    </headers>
+    <parameters>
+        <parameter>
+            <name>foo</name>
+            <value>bar</value>
+        </parameter>
+    </parameters>
+    <user>someone@example.org</user>
+    <roles>
+        <role>ROLE_FOO</role>
+    </roles>
+</request>
+}}}
+
+So, whereas previously $request-path-info was supplied as a function argument, now the path-info can be accessed (along with other features of the request) via the $request argument, e.g.:
+
+{{{
+    let $request-path-info := $request/path-info/text()
+}}}
+
+The `$entity` argument is the request payload, if available. This will also be empty in the case of media operations, as media payloads may be streamed directly from the context request.
+
+The return type of *before* plugins is not changed. Either the request entity is returned, possibly with modifications, in which case request processing will continue, or a `<response>` element is returned, in which case request processing will terminate and a response be sent immediately.
+
+Plugins in the *after* chain now must have the following signature:
+
+{{{
+declare function logger-plugin:after(
+	$operation as xs:string ,
+	$request as element(request) ,
+	$response as element(response)
+) as element(response)
+{
+
+    (: any side-effects :)	
+    let $modified-response := ... (: modify the response, if desired :)
+    return $modified-response
+
+}; 
+}}}
+
+The `$operation` and `$request` arguments are as described above for the *before* plugins. The `$response` argument is as in previous versions. The return type is as in previous versions, being an XML fragment representing the response, either unmodified or with modifications if desired.
+
+*Plugin functions in either before or after chains should now access request headers and parameters via the $request variable, and should not call `request:get-header()` or `request:get-parameter()` directly, as this can lead to confusion and incorrect behaviour when an Atom protocol library function such as `atom-protocol:do-post-atom-entry()` is called programmatically from another XQuery.*
+
+For convenience, the xutil module has some functions for accessing request headers and parameters, e.g.:
+
+{{{
+    let $content-type-header := xutil:get-header( "Content-Type" , $request )
+    let $foo-parameter := xutil:get-parameter( "foo" , $request )
+}}}
+
+Because the number of arguments supplied to plugin functions in the *before* chain has changed from 4 to 3, the plugin configuration file (`config/plugins.xqm`) will need to be changed accordingly, e.g.:
+
+{{{
+declare function plugin:before() as function* {
+    (
+        util:function( QName( "http://purl.org/atombeat/xquery/logger-plugin" , "logger-plugin:before" ) , 3 ) ,
+        util:function( QName( "http://purl.org/atombeat/xquery/security-plugin" , "security-plugin:before" ) , 3 ) , 
+        util:function( QName( "http://purl.org/atombeat/xquery/conneg-plugin" , "conneg-plugin:before" ) , 3 ) , 
+        util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:before" ) , 3 ) ,  
+       	util:function( QName( "http://purl.org/atombeat/xquery/link-expansion-plugin" , "link-expansion-plugin:before" ) , 3 ) ,  
+        util:function( QName( "http://purl.org/atombeat/xquery/link-extensions-plugin" , "link-extensions-plugin:before" ) , 3 ) ,  
+      		util:function( QName( "http://purl.org/atombeat/xquery/history-plugin" , "history-plugin:before" ) , 3 )   
+    )
+};
+}}}
+
+The number of arguments supplied to plugin functions in the *after* chain has not changed.
+
+The upshot of all this is that now it should be safe to write XQueries that do things like combining multiple virtual Atom protocol requests, e.g. (trivial example, hopefully you get the general idea):
+
+{{{
+declare namespace atom = "http://www.w3.org/2005/Atom" ;
+import module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
+
+let $request1 :=
+    <request>
+        <path-info>/foo</path-info>
+        <method>POST</method>
+        <headers>
+            <header>
+                <name>Accept</name>
+                <value>application/atom+xml</value>
+            </header>
+            <header>
+                <name>Content-Type</name>
+                <value>application/atom+xml</value>
+            </header>
+        </headers>
+        <parameters/>
+        <user>someone@example.org</user>
+        <roles/>
+    </request>
+
+let $entity1 :=
+    <atom:entry>
+        <atom:title>foo entry</atom:title>
+    </atom:entry>
+    
+let $response1 := atom-protocol:do-post-atom-entry( $request1 , $entity1 ) (: will perform protocol operation including plugin execution :)
+
+return
+
+    if ( $response1/status = 201 ) then
+    
+        let $request2 :=
+            <request>
+                <path-info>/bar</path-info>
+                <method>POST</method>
+                <headers>
+                    <header>
+                        <name>Accept</name>
+                        <value>application/atom+xml</value>
+                    </header>
+                    <header>
+                        <name>Content-Type</name>
+                        <value>application/atom+xml</value>
+                    </header>
+                </headers>
+                <parameters/>
+                <user>someone@example.org</user>
+                <roles/>
+            </request>
+
+        let $entity2 :=
+            <atom:entry>
+                <atom:title>bar entry</atom:title>
+                <atom:link rel='related' href='{$response1/body/atom:entry/atom:link[@rel="edit"]/@href cast as xs:string}'/>
+            </atom:entry>
+            
+        let $response2 := atom-protocol:do-post-atom-entry( $request2 , $entity2 ) (: will perform protocol operation including plugin execution :)
+
+        return
+                
+            if ( $response2/status = 201 ) then ... (: handle success :)
+                
+            else ... (: handle failure :)
+    
+    else ... (: handle failure :)
+}}}
+
+Another example of an XQuery that makes use of this pattern is the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/admin/install.xql admin/install.xql] page.
+
 = 0.2-alpha-5 =
 
 == issue 140 make json output consistent using element local names instead of qnames ==
