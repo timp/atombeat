@@ -7,9 +7,9 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
-== issue 149 cannot use atom-protocol:do-* from within xquery as headers from host page are interpreted as headers in nested request ==
+== issue 149 cannot use atom-protocol:do-`*` from within xquery as headers from host page are interpreted as headers in nested request ==
 
-The signature of all plugin functions has been changed, to provide better support for calling the Atom protocol library functions (e.g., `atom-protocol:do-post-atom-entry()`) programmatically from within other XQueries. 
+The signature of all plugin functions has been changed, to provide better support for calling the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/atom-protocol.xqm Atom protocol library functions] (e.g., `atom-protocol:do-post-atom-entry()`) programmatically from within other XQueries. 
 
 Plugins in the *before* chain now must have the following signature:
 
@@ -108,7 +108,7 @@ declare function plugin:before() as function* {
         util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:before" ) , 3 ) ,  
        	util:function( QName( "http://purl.org/atombeat/xquery/link-expansion-plugin" , "link-expansion-plugin:before" ) , 3 ) ,  
         util:function( QName( "http://purl.org/atombeat/xquery/link-extensions-plugin" , "link-extensions-plugin:before" ) , 3 ) ,  
-      		util:function( QName( "http://purl.org/atombeat/xquery/history-plugin" , "history-plugin:before" ) , 3 )   
+        util:function( QName( "http://purl.org/atombeat/xquery/history-plugin" , "history-plugin:before" ) , 3 )   
     )
 };
 }}}
@@ -182,12 +182,25 @@ return
                 
             if ( $response2/status = 201 ) then ... (: handle success :)
                 
-            else ... (: handle failure :)
+            else ... (: handle failure after second sub-request :)
     
-    else ... (: handle failure :)
+    else ... (: handle failure after first sub-request :)
 }}}
 
 Another example of an XQuery that makes use of this pattern is the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/admin/install.xql admin/install.xql] page.
+
+Please note that *not all functions in the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/atom-protocol.xqm atom-protocol XQuery module] can be called in this way*. Some functions, in particular those processing media content, need to access the context request, and thus can only be used via direct HTTP request to the /service/content endpoint. Those functions that *can* safely be called from within another XQuery include:
+
+  * atom-protocol:do-get-member()
+  * atom-protocol:do-get-collection()
+  * atom-protocol:do-post-atom()
+  * atom-protocol:do-post-atom-entry()
+  * atom-protocol:do-post-atom-feed()
+  * atom-protocol:do-put-atom()
+  * atom-protocol:do-put-atom-entry()
+  * atom-protocol:do-put-atom-feed()
+  * atom-protocol:do-delete-member()
+  * atom-protocol:do-delete-media()
 
 = 0.2-alpha-5 =
 
