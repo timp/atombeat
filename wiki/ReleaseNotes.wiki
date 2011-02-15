@@ -7,9 +7,13 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
+== issue 120 filter service documents using permissions ==
+
+In a security-enabled AtomBeat service, service documents will now be filtered to include only `<app:collection>` elements where the requesting user is allowed to list that collection.
+
 == issue 152 access control for service documents ==
 
-Retrieval of service documents can now be controlled via access control lists. The new operation name RETRIEVE_SERVICE can be used in access control entries to allow or deny access to the service document.
+In security-enabled AtomBeat service, retrieval of service documents can now be controlled via access control lists. The new operation name RETRIEVE_SERVICE can be used in access control entries to allow or deny access to the service document.
 
 Note that this feature has been implemented by passing the RETRIEVE_SERVICE operation through the plugin functions. I.e., any plugin functions can now intercept the RETRIEVE_SERVICE operation and execute side-effects and/or transform the response.
 
