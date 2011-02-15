@@ -39,6 +39,7 @@ declare variable $CONSTANT:MEDIA-TYPE-XML as xs:string					:= "application/xml" 
 declare variable $CONSTANT:MEDIA-TYPE-ATOM as xs:string					:= "application/atom+xml" ;
 declare variable $CONSTANT:MEDIA-TYPE-ATOM-FEED as xs:string			:= "application/atom+xml;type=feed" ;
 declare variable $CONSTANT:MEDIA-TYPE-ATOM-ENTRY as xs:string			:= "application/atom+xml;type=entry" ;
+declare variable $CONSTANT:MEDIA-TYPE-ATOMSVC as xs:string				:= "application/atomsvc+xml" ;
 declare variable $CONSTANT:MEDIA-TYPE-TEXT as xs:string         := "text/plain" ;
 declare variable $CONSTANT:MEDIA-TYPE-HTML as xs:string         := "text/html" ;
 declare variable $CONSTANT:MEDIA-TYPE-CSV as xs:string                  := "text/csv" ;
@@ -82,6 +83,7 @@ declare variable $CONSTANT:OP-UPDATE-MEDIA-ACL as xs:string           := "UPDATE
 declare variable $CONSTANT:OP-MULTI-CREATE as xs:string               := "MULTI_CREATE" ;
 declare variable $CONSTANT:OP-RETRIEVE-HISTORY as xs:string           := "RETRIEVE_HISTORY" ;
 declare variable $CONSTANT:OP-RETRIEVE-REVISION as xs:string          := "RETRIEVE_REVISION" ;
+declare variable $CONSTANT:OP-RETRIEVE-SERVICE as xs:string           := "RETRIEVE_SERVICE" ;
 
 declare variable $CONSTANT:OP-ATOM-PROTOCOL-ERROR as xs:string          := "ATOM_PROTOCOL_ERROR" ;
 declare variable $CONSTANT:OP-SECURITY-PROTOCOL-ERROR as xs:string          := "SECURITY_PROTOCOL_ERROR" ;
