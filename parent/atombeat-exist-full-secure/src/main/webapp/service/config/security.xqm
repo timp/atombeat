@@ -47,6 +47,11 @@ declare variable $security-config:default-workspace-security-descriptor :=
             <atombeat:ace>
                 <atombeat:type>ALLOW</atombeat:type>
                 <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
+                <atombeat:permission>RETRIEVE_SERVICE</atombeat:permission>
+            </atombeat:ace>
+            <atombeat:ace>
+                <atombeat:type>ALLOW</atombeat:type>
+                <atombeat:recipient type="role">ROLE_ADMINISTRATOR</atombeat:recipient>
                 <atombeat:permission>CREATE_COLLECTION</atombeat:permission>
             </atombeat:ace>
             <atombeat:ace>

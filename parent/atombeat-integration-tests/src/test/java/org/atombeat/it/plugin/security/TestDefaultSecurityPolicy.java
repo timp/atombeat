@@ -74,6 +74,25 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	
 	
+	public void testUserWithAdministratorRoleCanRetrieveService() {
+		
+		GetMethod get = new GetMethod(SERVICE_URL);
+		int result = executeMethod(get, "adam", "test");
+		assertEquals(200, result);
+		
+	}
+	
+	
+	
+	public void testUserWithoutAdministratorRoleCannotRetrieveService() {
+		
+		GetMethod get = new GetMethod(SERVICE_URL);
+		int result = executeMethod(get, "ursula", "test");
+		assertEquals(403, result);
+		
+	}
+	
+	
 	
 	public void testUserWithAdministratorRoleCanCreateCollections() {
 		
