@@ -2,8 +2,16 @@ package org.atombeat.it.plugin.security;
 
 import java.io.File;
 import java.io.InputStream;
+import java.net.URISyntaxException;
 import java.util.List;
 
+import org.apache.abdera.model.Collection;
+import org.apache.abdera.model.Service;
+import org.apache.abdera.model.Workspace;
+import org.apache.abdera.protocol.client.AbderaClient;
+import org.apache.abdera.protocol.client.ClientResponse;
+import org.apache.abdera.protocol.client.RequestOptions;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.DeleteMethod;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
@@ -74,23 +82,83 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	
 	
-	public void testUserWithAdministratorRoleCanRetrieveService() {
+	public void testUserWithAdministratorRoleCanRetrieveService() throws URISyntaxException {
 		
-		GetMethod get = new GetMethod(SERVICE_URL);
-		int result = executeMethod(get, "adam", "test");
-		assertEquals(200, result);
+//		GetMethod get = new GetMethod(SERVICE_URL);
+//		int result = executeMethod(get, "adam", "test");
+//		assertEquals(200, result);
 		
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		
+		RequestOptions request = new RequestOptions();
+		ClientResponse response = adam.get(SERVICE_URL, request);
+		
+		assertEquals(200, response.getStatus());
+		
+	}
+	
+	
+	
+	public void testUserWithoutAdministratorRoleCannotRetrieveService() throws URISyntaxException {
+		
+//		GetMethod get = new GetMethod(SERVICE_URL);
+//		int result = executeMethod(get, "ursula", "test");
+//		assertEquals(403, result);
+		
+		AbderaClient ursula = new AbderaClient();
+		ursula.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(URSULA, PASSWORD));
+		
+		RequestOptions request = new RequestOptions();
+		ClientResponse response = ursula.get(SERVICE_URL, request);
+		
+		assertEquals(403, response.getStatus());
+		
+		response.release();
+
 	}
 	
 	
 	
-	public void testUserWithoutAdministratorRoleCannotRetrieveService() {
+	public void testCollectionsFilteredInServiceDocument() throws URISyntaxException {
+
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
 		
-		GetMethod get = new GetMethod(SERVICE_URL);
-		int result = executeMethod(get, "ursula", "test");
-		assertEquals(403, result);
+		RequestOptions request = new RequestOptions();
+		ClientResponse response = adam.get(SERVICE_URL, request);
 		
+		assertEquals(200, response.getStatus());
+		
+		org.apache.abdera.model.Document<Service> doc = response.getDocument();
+		Service service = doc.getRoot();
+		Workspace workspace = service.getWorkspaces().get(0);
+		List<Collection> collections = workspace.getCollections();
+		assertTrue(collections.size()>0);
+		
+		response.release();
+		
+		// laura (limited reader) should be able to retrieve the service doc but collections should be filtered out
+		
+		AbderaClient laura = new AbderaClient();
+		laura.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(LAURA, PASSWORD));
+		
+		request = new RequestOptions();
+		response = laura.get(SERVICE_URL, request);
+		
+		assertEquals(200, response.getStatus());
+		
+		doc = response.getDocument();
+		service = doc.getRoot();
+		workspace = service.getWorkspaces().get(0);
+		collections = workspace.getCollections();
+		assertEquals(0, collections.size());
+		
+		response.release();
+
 	}
+
+	
 	
 	
 	
@@ -1167,10 +1235,6 @@ public class TestDefaultSecurityPolicy extends TestCase {
 
 	}
 	
-	
-	
-	
-
 	
 	
 }
