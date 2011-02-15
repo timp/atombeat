@@ -7,6 +7,12 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
+== issue 150 use slug to allow client preference for member uri ==
+
+In this release the "Slug" request header can be used when POSTing an Atom entry document to a collection URI to indicate a client preference for the URI of the new collection member to be created. 
+
+E.g., if the header "Slug: foo" is included in a request to create a new member in the http://localhost:8081/atombeat/service/content/test collection, then the URI of the new member will be http://localhost:8081/atombeat/service/content/test/foo - if no member at that URI already exists. If a member does already exist at that URI, AtomBeat will try foo1, foo2 ... foo5, and then fall back to using the `config:generate-identifier()` function as if no Slug header were present.
+
 == issue 141 conneg for service documents ==
 
 Content negotiation can now be configured for the Atom service document. Transformations to HTML and JSON are supported in the default configuration, and additional variants can be configured in a similar way to configuration of content negotiation for Atom feeds and entries.
