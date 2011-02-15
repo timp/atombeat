@@ -1107,7 +1107,6 @@ declare function atom-protocol:do-get-member(
 ) as element(response)
 {
     
-    let $request-path-info := $request/path-info/text() 
     let $header-if-none-match := xutil:get-header( "If-None-Match" , $request )
     
     return 

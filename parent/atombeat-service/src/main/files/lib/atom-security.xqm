@@ -200,11 +200,11 @@ declare function atomsec:retrieve-workspace-descriptor() as element(atombeat:sec
 
 
 declare function atomsec:retrieve-collection-descriptor(
-    $request-path-info as xs:string
+    $request-path-info as xs:string?
 ) as element(atombeat:security-descriptor)?
 {
 
-    if ( atomdb:collection-available( $request-path-info ) )
+    if ( exists( $request-path-info ) and atomdb:collection-available( $request-path-info ) )
     
     then
 
@@ -216,7 +216,7 @@ declare function atomsec:retrieve-collection-descriptor(
         
         return $descriptor-doc/atombeat:security-descriptor
 
-    else if ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) )
+    else if ( exists( $request-path-info ) and ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) ) )
     
     then 
     
@@ -234,11 +234,17 @@ declare function atomsec:retrieve-collection-descriptor(
 
 
 declare function atomsec:retrieve-resource-descriptor(
-    $request-path-info as xs:string
+    $request-path-info as xs:string?
 ) as element(atombeat:security-descriptor)?
 {
 
-    if ( atomdb:media-resource-available( $request-path-info ) or atomdb:member-available( $request-path-info ) )
+    if ( 
+            exists( $request-path-info ) 
+            and ( 
+                atomdb:media-resource-available( $request-path-info ) 
+                or atomdb:member-available( $request-path-info ) 
+            ) 
+       )
     
     then
 
@@ -276,7 +282,7 @@ declare function atomsec:retrieve-member-descriptor-nocheck(
 declare function atomsec:decide(
     $user as xs:string? ,
     $roles as xs:string* ,
-    $request-path-info as xs:string ,
+    $request-path-info as xs:string? ,
     $operation as xs:string
 ) as xs:string
 {
@@ -353,7 +359,7 @@ declare function atomsec:filter-feed(
 declare function atomsec:decide(
     $user as xs:string? ,
     $roles as xs:string* ,
-    $request-path-info as xs:string ,
+    $request-path-info as xs:string? ,
     $operation as xs:string ,
     $media-type as xs:string?
 ) as xs:string
@@ -375,7 +381,7 @@ declare function atomsec:decide(
 declare function atomsec:decide(
     $user as xs:string? ,
     $roles as xs:string* ,
-    $request-path-info as xs:string ,
+    $request-path-info as xs:string? ,
     $operation as xs:string ,
     $media-type as xs:string? , 
     $resource-descriptor as element(atombeat:security-descriptor)? ,
@@ -437,7 +443,7 @@ declare function atomsec:apply-acl(
     $media-type as xs:string? ,
     $user as xs:string? ,
     $roles as xs:string* ,
-    $request-path-info as xs:string
+    $request-path-info as xs:string?
 ) as xs:string?
 {
 
@@ -459,7 +465,7 @@ declare function atomsec:match-acl(
     $media-type as xs:string? ,
     $user as xs:string? ,
     $roles as xs:string* ,
-    $request-path-info as xs:string
+    $request-path-info as xs:string?
 ) as element(atombeat:ace)*
 {
 
@@ -632,7 +638,7 @@ declare function atomsec:match-request-path-info-condition(
 
 declare function atomsec:is-denied(
     $operation as xs:string ,
-    $request-path-info as xs:string ,
+    $request-path-info as xs:string? ,
     $request-media-type as xs:string? ,
     $user as xs:string? ,
     $roles as xs:string*
@@ -652,7 +658,7 @@ declare function atomsec:is-denied(
 
 declare function atomsec:is-allowed(
     $operation as xs:string ,
-    $request-path-info as xs:string ,
+    $request-path-info as xs:string? ,
     $request-media-type as xs:string? ,
     $user as xs:string? ,
     $roles as xs:string*
