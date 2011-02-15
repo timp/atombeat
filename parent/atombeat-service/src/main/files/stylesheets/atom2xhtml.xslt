@@ -2,6 +2,7 @@
 <xsl:stylesheet version="1.0"
   xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
   xmlns:atom="http://www.w3.org/2005/Atom"
+  xmlns:atombeat="http://purl.org/atombeat/xmlns"
   xmlns:xhtml="http://www.w3.org/1999/xhtml" 
   xmlns="http://www.w3.org/1999/xhtml"
   exclude-result-prefixes="atom xhtml">
@@ -17,6 +18,7 @@
     <html>
       <head>
         <title><xsl:value-of select="atom:title"/></title>
+        <link rel="icon" type="image/png" href="http://farm6.static.flickr.com/5051/5415906232_a26853fd64_o.png"/>
         <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.3.0/build/cssreset/reset-min.css&amp;3.3.0/build/cssfonts/fonts-min.css&amp;3.3.0/build/cssgrids/grids-min.css&amp;3.3.0/build/cssbase/base-min.css"/>
         <style type="text/css">
       body {
@@ -105,10 +107,49 @@
           </xsl:if>
         </p>
       </xsl:when>
+      <xsl:when test="atombeat:security-descriptor">
+        <xsl:apply-templates select="atombeat:security-descriptor"/>
+      </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="." mode="text-construct"/>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+  
+  
+  
+  <xsl:template match="atombeat:security-descriptor">
+    <h3>Groups</h3>
+    <xsl:for-each select="atombeat:groups/atombeat:group">
+      <h4><xsl:value-of select="@id"/></h4>
+      <xsl:if test="@src">
+        <p>Source: <xsl:value-of select="@src"/></p>
+      </xsl:if>
+      <xsl:if test="count(atombeat:member)>0">
+        <ul>
+          <xsl:for-each select="atombeat:member">
+            <li><xsl:value-of select="."/></li>
+          </xsl:for-each>
+        </ul>
+      </xsl:if>
+    </xsl:for-each>
+    <h3>Acess Control List</h3>
+    <xsl:for-each select="atombeat:acl/atombeat:ace">
+      <p>
+        Type: <xsl:value-of select="atombeat:type"/><br/>
+        Recipient: <xsl:value-of select="atombeat:recipient"/><br/>
+        Recipient Type: <xsl:value-of select="atombeat:recipient/@type"/><br/>
+        Permission: <xsl:value-of select="atombeat:permission"/><br/>
+        <xsl:if test="atombeat:conditions">
+          Conditions: 
+          <xsl:for-each select="atombeat:conditions/atombeat:condition">
+            <xsl:value-of select="@type"/> = <xsl:value-of select="."/>;
+          </xsl:for-each>
+          <br/>
+        </xsl:if>
+      </p>
+    </xsl:for-each>
+    
   </xsl:template>
 
 
