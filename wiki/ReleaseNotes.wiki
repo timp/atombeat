@@ -7,6 +7,86 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
+== issue 141 conneg for service documents ==
+
+Content negotiation can now be configured for the Atom service document. Transformations to HTML and JSON are supported in the default configuration, and additional variants can be configured in a similar way to configuration of content negotiation for Atom feeds and entries.
+
+To upgrade to this release two additional configuration variables need to be added to the `config/conneg.xqm` configuration file. These are `$conneg-config:service-variants` and `$conneg-config:service-transformers`. An example configuration from the default configuration is given below:
+
+{{{
+xquery version "1.0";
+
+module namespace conneg-config = "http://purl.org/atombeat/xquery/conneg-config";
+
+...
+
+(:~
+ : Define variant representations for service document.
+ :)
+declare variable $conneg-config:service-variants := 
+    <variants>
+        <variant>
+            <output-key>html</output-key>
+            <media-type>text/html</media-type>
+            <output-type>xml</output-type>
+            <doctype-public>-//W3C//DTD&#160;XHTML&#160;1.0&#160;Strict//EN</doctype-public>
+            <doctype-system>http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd</doctype-system>
+            <qs>0.95</qs>
+        </variant>
+        <variant>
+            <output-key>atomsvc</output-key>
+            <media-type>application/atomsvc+xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.8</qs>
+        </variant>
+        <variant>
+            <output-key>json</output-key>
+            <media-type>application/json</media-type>
+            <output-type>text</output-type>
+            <qs>0.5</qs>
+        </variant>
+        <variant>
+            <output-key>xml</output-key>
+            <media-type>application/xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.3</qs>
+        </variant>
+        <variant>
+            <output-key>textxml</output-key>
+            <media-type>text/xml</media-type>
+            <output-type>xml</output-type>
+            <qs>0.2</qs>
+        </variant>
+        <variant>
+            <output-key>text</output-key>
+            <media-type>text/plain</media-type>
+            <output-type>xml</output-type>
+            <qs>0.1</qs>
+        </variant>
+    </variants>
+;
+
+
+
+(:~
+ : Define transformers for variant representations. There MUST be one transformer
+ : for each variant, and they must occur in the same position within the sequence
+ : as the corresponding variant definition above.
+ :)
+declare variable $conneg-config:service-transformers := (
+    <stylesheet>/stylesheets/atomsvc2html4.xslt</stylesheet> , (: if not absolute URI will be concatenated with $config:service-url-base :)
+    <identity/> ,
+    util:function( QName( "http://purl.org/atombeat/xquery/json" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
+    <identity/> ,
+    <identity/> ,
+    <identity/> 
+);
+}}}
+
+== issue 137 link from service document to workspace security descriptor ==
+
+The service document in a security-enabled AtomBeat service now includes a link from within the singleton `<app:workspace>` element to the workspace security descriptor.
+
 == issue 120 filter service documents using permissions ==
 
 In a security-enabled AtomBeat service, service documents will now be filtered to include only `<app:collection>` elements where the requesting user is allowed to list that collection.
