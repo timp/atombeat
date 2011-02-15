@@ -338,13 +338,11 @@ declare function atomdb:generate-member-identifier(
 ) as xs:string
 {
     let $id := config:generate-identifier( $collection-path-info )
-    return
-(:        let $member-path-info := concat( $collection-path-info , "/" , $id , ".atom" ):)
-        let $member-path-info := concat( $collection-path-info , "/" , $id )
-        return 
-            if ( atomdb:member-available( $member-path-info ) )
-            then atomdb:generate-member-identifier( $collection-path-info ) (: try again :)
-            else $id
+    let $member-path-info := concat( $collection-path-info , "/" , $id )
+    return 
+        if ( atomdb:member-available( $member-path-info ) )
+        then atomdb:generate-member-identifier( $collection-path-info ) (: try again :)
+        else $id
 };
 
 
@@ -363,9 +361,7 @@ declare function atomdb:create-member(
 ) as element(atom:entry)?
 {
 
-    let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
-
-    return atomdb:create-member( $collection-path-info , $member-id , $request-data , $user-name )
+    atomdb:create-member( $collection-path-info , () , $request-data , $user-name )
 		
 };
 
@@ -381,7 +377,7 @@ declare function atomdb:create-member(
  :)
 declare function atomdb:create-member(
 	$collection-path-info as xs:string ,
-	$member-id as xs:string ,
+	$slug as xs:string? ,
 	$request-data as element(atom:entry) ,
 	$user-name as xs:string?
 ) as element(atom:entry)?
@@ -393,6 +389,10 @@ declare function atomdb:create-member(
 	
 	else
 
+        let $member-id := 
+            if ( empty( $slug ) or $slug = '' ) then atomdb:generate-member-identifier( $collection-path-info )
+            else atomdb:sanitize-slug( $collection-path-info , $slug )
+            
 	    let $entry := atomdb:create-entry( $collection-path-info, $request-data , $member-id , $user-name )
 	    
 		(:
@@ -404,6 +404,44 @@ declare function atomdb:create-member(
         
 	    return doc( $entry-doc-db-path )/atom:entry
 		
+};
+
+
+
+declare function atomdb:sanitize-slug(
+	$collection-path-info as xs:string ,
+	$slug as xs:string
+) as xs:string
+{
+
+    let $sanitized-slug := replace( lower-case( $slug ) , '[^a-z0-9]' , '-' )
+    let $member-path-info := concat( $collection-path-info , '/' , $sanitized-slug )
+    return
+        if ( atomdb:member-available( $member-path-info ) ) then 
+            atomdb:find-slug( $collection-path-info , $sanitized-slug , 1 )
+        else $sanitized-slug
+        
+};
+
+
+
+declare function atomdb:find-slug(
+	$collection-path-info as xs:string ,
+	$slug as xs:string ,
+	$count as xs:integer
+) as xs:string
+{
+
+    let $new-slug := concat( $slug , xs:string( $count ) )
+    let $member-path-info := concat( $collection-path-info , '/' , $new-slug )
+    let $used := atomdb:member-available( $member-path-info )
+    return
+        if ( $used and $count < 5 ) then atomdb:find-slug( $collection-path-info , $slug , $count+1 ) (: try again :)
+        else if ( $used and $count >= 5 ) then
+            (: only get 5 tries, fall back to generating identifier :)
+            atomdb:generate-member-identifier( $collection-path-info )
+        else $new-slug
+        
 };
 
 
