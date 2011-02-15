@@ -2,6 +2,7 @@ xquery version "1.0";
 
 module namespace conneg-plugin = "http://purl.org/atombeat/xquery/conneg-plugin" ;
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace app = "http://www.w3.org/2007/app" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace request = "http://exist-db.org/xquery/request" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
@@ -48,7 +49,8 @@ declare function conneg-plugin:before(
                 $CONSTANT:OP-UPDATE-MEDIA-ACL , 
                 $CONSTANT:OP-MULTI-CREATE ,
                 $CONSTANT:OP-RETRIEVE-HISTORY ,
-                $CONSTANT:OP-RETRIEVE-REVISION 
+                $CONSTANT:OP-RETRIEVE-REVISION ,
+                $CONSTANT:OP-RETRIEVE-SERVICE
             ) 
 	    ) then
 
@@ -64,8 +66,11 @@ declare function conneg-plugin:before(
         	
         	let $output-key :=
         	    if ( exists( $output-param ) and not( $output-param eq "" ) ) then $output-param (: output param trumps accept header :)
+        	    else if ( $operation = $CONSTANT:OP-RETRIEVE-SERVICE ) then conneg-plugin:negotiate-service( $accept ) (: different variants for service document :)
         	    else conneg-plugin:negotiate( $accept )
-        	
+
+            let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
+            
         	(: store output key for use in after phase :)
             let $store-output-key :=
                 if ( exists( $output-key ) ) then request:set-attribute( "conneg.output-key" , $output-key )
@@ -191,7 +196,7 @@ declare function conneg-plugin:after(
 	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
 	
-	let $atom-data := $response/body/*[. instance of element(atom:entry) or . instance of element(atom:feed)]
+	let $atom-data := $response/body/(atom:entry|atom:feed|app:service)
 
     return
     
@@ -200,15 +205,16 @@ declare function conneg-plugin:after(
     	else
     	
         	let $augmented-data :=
-        	    if ( exists( $response/body/atom:entry) ) then conneg-plugin:augment-entry( $response/body/atom:entry )
-        	    else if ( exists( $response/body/atom:feed ) ) then conneg-plugin:augment-feed( $response/body/atom:feed )
-        	    else $response/body/*
+        	    if ( $atom-data instance of element(atom:entry) ) then conneg-plugin:augment-entry( $atom-data )
+        	    else if ( $atom-data instance of element(atom:feed) ) then conneg-plugin:augment-feed( $atom-data )
+        	    else if ( $atom-data instance of element(app:service) ) then conneg-plugin:augment-service( $atom-data )
+        	    else $atom-data
         	
             let $augmented-response := conneg-plugin:replace-response-body( $response, $augmented-data )
             
         	let $output-key := request:get-attribute( "conneg.output-key" )
         	
-        	let $log := util:log( "debug" , $output-key )
+        	let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
         	
             return 
                 if ( exists( $output-key ) and not( $output-key eq "" ) ) then
@@ -261,6 +267,25 @@ declare function conneg-plugin:augment-feed(
 
 
 
+declare function conneg-plugin:augment-service(
+    $service as element(app:service)
+) as element(app:service)
+{
+    <app:service>
+    {
+        $service/attribute::* ,
+        $service/child::* ,
+        for $variant in $conneg-config:service-variants/variant
+        let $baseuri := concat( $config:service-url-base , '/' )
+        let $alturi := concat( $baseuri , if ( contains( $baseuri , "?" ) ) then "&amp;" else "?" , "output=" , $variant/output-key )
+        return
+            <atom:link rel="alternate" type="{$variant/media-type}" href="{$alturi}"/>
+    }    
+    </app:service>
+};
+
+
+
 declare function conneg-plugin:replace-response-body(
     $response as element(response) , $new-body as element()
 ) as element(response)
@@ -283,17 +308,25 @@ declare function conneg-plugin:transform-response(
 ) as item()*
 {
     
-    let $variant := $conneg-config:variants/variant[output-key eq $output-key]
+    let $variants := 
+        if ( exists( $response/body/app:service ) ) then $conneg-config:service-variants
+        else $conneg-config:variants
+        
+    let $transformers := 
+        if ( exists( $response/body/app:service ) ) then $conneg-config:service-transformers
+        else $conneg-config:transformers
+        
+    let $variant := $variants/variant[output-key eq $output-key]
     
     return 
     
         if ( exists( $variant ) ) then
         
-            let $index := index-of( $conneg-config:variants/variant , $variant )
-            let $transformer := $conneg-config:transformers[$index]
+            let $index := index-of( $variants/variant , $variant )
+            let $transformer := $transformers[$index]
             let $media-type := $variant/media-type cast as xs:string
             let $output-type := $variant/output-type cast as xs:string
-            let $data := $response/body/*[. instance of element(atom:entry) or . instance of element(atom:feed)]
+            let $data := $response/body/(atom:entry|atom:feed|app:service)
             
             let $transformed-response :=
         
@@ -318,7 +351,7 @@ declare function conneg-plugin:transform-response(
                                 for $header in $response/headers/header
                                 return
                                 
-                                    (: if we're doing atom, pass the header through so we preserver the type attribute :)
+                                    (: if we're doing atom, pass the header through so we preserve the type parameter :)
                                     if ( $header/name eq "Content-Type" and $media-type eq "application/atom+xml" ) then $header
             
                                     (: override content-type header :)
@@ -362,21 +395,49 @@ declare function conneg-plugin:transform-response(
 
 
 
-
 declare function conneg-plugin:negotiate(
     $accept-header as xs:string?
+) as xs:string? 
+{
+
+    let $variants := $conneg-config:variants
+    let $header := if ( empty( $accept-header ) or $accept-header = "" ) then $CONSTANT:MEDIA-TYPE-ATOM else $accept-header
+    return conneg-plugin:negotiate-common( $header , $variants )
+    
+};
+
+
+
+declare function conneg-plugin:negotiate-service(
+    $accept-header as xs:string?
+) as xs:string?
+{
+
+    let $variants := $conneg-config:service-variants
+    let $header := if ( empty( $accept-header ) or $accept-header = "" ) then $CONSTANT:MEDIA-TYPE-ATOMSVC else $accept-header
+    return conneg-plugin:negotiate-common( $header , $variants )
+
+};
+
+
+
+declare function conneg-plugin:negotiate-common(
+    $accept-header as xs:string? ,
+    $variants-config as element(variants)
 ) as xs:string? {
 
     let $log := util:log( "debug" , $accept-header )
 
     (: first parse the accept header :)
     let $accepts :=
+(:
         if ( empty( $accept-header ) ) then
             <accept>
                 <media-range>application/atom+xml</media-range>
                 <quality>1</quality>
             </accept>
         else
+:)
             for $accept-token in tokenize( $accept-header , "," )
             let $normalized-accept-token := normalize-space( $accept-token )
             let $media-tokens := tokenize( $normalized-accept-token , ";" )
@@ -401,7 +462,7 @@ declare function conneg-plugin:negotiate(
             
     (: next, try to find variants that match the accept header :)
     let $variants :=
-        for $variant in $conneg-config:variants/variant
+        for $variant in $variants-config/variant
         let $type := tokenize( $variant/media-type , "/" )[1]
         let $subtype := tokenize( $variant/media-type , "/" )[1]
         where 

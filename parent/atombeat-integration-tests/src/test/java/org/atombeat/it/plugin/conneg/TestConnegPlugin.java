@@ -5,12 +5,17 @@ package org.atombeat.it.plugin.conneg;
 
 import java.io.IOException;
 import java.net.URISyntaxException;
+import java.util.List;
+
+import javax.xml.namespace.QName;
 
 import org.apache.abdera.Abdera;
 import org.apache.abdera.i18n.iri.IRI;
 import org.apache.abdera.model.Document;
+import org.apache.abdera.model.Element;
 import org.apache.abdera.model.Entry;
 import org.apache.abdera.model.Feed;
+import org.apache.abdera.model.Service;
 import org.apache.abdera.protocol.client.AbderaClient;
 import org.apache.abdera.protocol.client.ClientResponse;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
@@ -145,6 +150,56 @@ public class TestConnegPlugin extends TestCase {
 		htmlget.releaseConnection();
 
 		GetMethod jsonget = new GetMethod(jsoniri.toASCIIString());
+		int jsonres = executeMethod(jsonget, ADAM, PASSWORD);
+		assertEquals(200, jsonres);
+		assertTrue(jsonget.getResponseHeader("Content-Type").getValue().startsWith("application/json"));
+		jsonget.releaseConnection();
+
+	}
+	
+	
+	
+	public void testAlternateLinksInService() throws URISyntaxException {
+		
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		
+		// retrieve the service document
+		
+		ClientResponse r = adam.get(SERVICE_URL);
+		Document<Service> d = r.getDocument();
+		Service s = d.getRoot();
+		
+		// verify alternate links are present
+		
+		List<Element> links = s.getExtensions(new QName("http://www.w3.org/2005/Atom", "link"));
+		String htmliri = null, jsoniri = null;
+		for (Element l : links) {
+			String rel = l.getAttributeValue("rel");
+			String type = l.getAttributeValue("type");
+			String href = l.getAttributeValue("href");
+			if (rel.equals("alternate") && type.equals("text/html")) {
+				htmliri = href;
+			}
+			if (rel.equals("alternate") && type.equals("application/json")) {
+				jsoniri = href;
+			}
+		}
+		
+		assertNotNull(htmliri);
+		assertNotNull(jsoniri);
+		
+		r.release();
+		
+		// verify alternate links can be dereferenced
+		
+		GetMethod htmlget = new GetMethod(htmliri);
+		int htmlres = executeMethod(htmlget, ADAM, PASSWORD);
+		assertEquals(200, htmlres);
+		assertTrue(htmlget.getResponseHeader("Content-Type").getValue().startsWith("text/html"));
+		htmlget.releaseConnection();
+
+		GetMethod jsonget = new GetMethod(jsoniri);
 		int jsonres = executeMethod(jsonget, ADAM, PASSWORD);
 		assertEquals(200, jsonres);
 		assertTrue(jsonget.getResponseHeader("Content-Type").getValue().startsWith("application/json"));
@@ -368,6 +423,86 @@ public class TestConnegPlugin extends TestCase {
 		jsonget.releaseConnection();
 
 	}
+
+
+	
+	public void testServiceConneg() throws URISyntaxException {
+		
+		String accept, expect, actual;
+		
+		String[][] tests = {
+				
+				// if no accept header, expect atomsvc
+				{ null, "application/atomsvc+xml" }, 
+				
+				// if you ask for atomsvc, that's what you get
+				{ "application/atomsvc+xml", "application/atomsvc+xml" },	
+				
+				// if you ask for html, that's what you get
+				{ "text/html", "text/html" },	
+				
+				// if you ask for json, that's what you get
+				{ "application/json", "application/json" },
+				
+				// if you ask for anything, you'll get html (help browsers like IE that don't know what they want)
+				{ "*/*", "text/html" },	
+				
+				// expect html is slightly preferred over atomsvc
+				{ "application/atomsvc+xml, text/html", "text/html" },
+				
+				// override slight server preference for html with strong client preference for atom
+				{ "application/atomsvc+xml;q=1.0, text/html;q=0.1", "application/atomsvc+xml" }, 
+				
+				// what happens if two variants end up with the same score? first listed variant in server variant configuration wins
+				{ "application/atomsvc+xml;q=0.95, text/html;q=0.8", "text/html" }, 
+				
+				// make sure unsupported media types don't confuse the server
+				{ "text/html; q=1.0, text/*; q=0.8, image/gif; q=0.6, image/jpeg; q=0.6, image/*; q=0.5, */*; q=0.1", "text/html" }, 
+				
+				// make sure additional mediatype parameters don't confuse the server
+				// also, check that the quality value for */* is fiddled if no quality values are specified at all
+				// (these are abdera 1.1.1 client's default accept header)
+				{ "application/atom+xml;type=entry, application/atom+xml;type=feed, application/atom+xml, application/atomsvc+xml, application/atomcat+xml, application/xml, text/xml, */*" , "application/atomsvc+xml"}, 
+
+				// check that the quality value for text/* is fiddled if no quality values are specified at all 
+				{ "application/atomsvc+xml, text/*" , "application/atomsvc+xml"} ,
+				
+				// firefox 3.6.13
+				{ "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8" , "text/html" }
+
+		};
+		
+		for (String[] test : tests) {
+			accept = test[0];
+			expect = test[1];
+			actual = doGetServiceTest(accept); assertEquals(expect, actual);
+		}
+		
+	}
+	
+	
+	
+	private String doGetServiceTest(String accept) {
+		
+		// use http client library rather than abdera to make sure we control accept header
+		
+		GetMethod g = new GetMethod(SERVICE_URL);
+		if (accept != null)
+			g.setRequestHeader("Accept", accept);
+		int res = executeMethod(g, ADAM, PASSWORD);
+		assertEquals(200, res);
+		assertNotNull(g.getResponseHeader("Vary"));
+		String contentType = g.getResponseHeader("Content-Type").getValue();
+		g.releaseConnection();
+		
+		String mediaType = contentType.split(";")[0];
+		return mediaType;
+		
+	}
+	
+
+	
+	
 
 
 
