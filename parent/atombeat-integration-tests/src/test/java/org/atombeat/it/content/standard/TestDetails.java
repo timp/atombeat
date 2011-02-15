@@ -1,9 +1,16 @@
 package org.atombeat.it.content.standard;
 
 import java.io.InputStream;
+import java.net.URISyntaxException;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.protocol.client.AbderaClient;
+import org.apache.abdera.protocol.client.ClientResponse;
+import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -235,6 +242,45 @@ public class TestDetails extends TestCase {
 	}
 
 
+	
+	public void testPostAtomEntryWithSlug() throws URISyntaxException {
+
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		
+		Entry e = Abdera.getInstance().getFactory().newEntry();
+		e.setTitle("test with slug");
+		
+		RequestOptions request = new RequestOptions();
+		request.setHeader("Slug", "test");
+		ClientResponse response = adam.post(TEST_COLLECTION_URI, e, request);
+		assertEquals(201, response.getStatus());
+		String expectedLocation = TEST_COLLECTION_URI + "/test";
+		assertEquals(expectedLocation, response.getLocation().toASCIIString()); // should work first time
+		response.release();
+		
+		// try again
+		e.setTitle("test with slug again, should get adapted");
+		request = new RequestOptions();
+		request.setHeader("Slug", "test");
+		response = adam.post(TEST_COLLECTION_URI, e, request);
+		assertEquals(201, response.getStatus());
+		assertFalse(expectedLocation.equals(response.getLocation().toASCIIString())); // server should adapt second time
+		response.release();
+
+		// try again with dodgy slug
+		e.setTitle("test with dodgy slug");
+		request = new RequestOptions();
+		request.setHeader("Slug", "test!£$%^&*()#';");
+		response = adam.post(TEST_COLLECTION_URI, e, request);
+		assertEquals(201, response.getStatus());
+		String token = response.getLocation().toASCIIString().substring(TEST_COLLECTION_URI.length()+1);
+		System.out.println(token);
+		assertTrue(token.matches("[a-z0-9\\-]+")); 
+		response.release();
+
+	}
+	
 
 
 	

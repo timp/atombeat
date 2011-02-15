@@ -370,9 +370,10 @@ declare function atom-protocol:op-create-member(
 
     let $collection-path-info := $request/path-info/text()
     let $user-name := $request/user/text()
+    let $slug := xutil:get-header( "Slug" , $request )
 
     (: create the member :)
-	let $entry := atomdb:create-member( $collection-path-info , $entity , $user-name )
+	let $entry := atomdb:create-member( $collection-path-info , $slug , $entity , $user-name )
 
     (: set the location and content-location headers :)
     let $location := $entry/atom:link[@rel="edit"]/@href cast as xs:string
