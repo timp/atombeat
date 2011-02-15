@@ -271,12 +271,12 @@ public class TestDetails extends TestCase {
 		// try again with dodgy slug
 		e.setTitle("test with dodgy slug");
 		request = new RequestOptions();
-		request.setHeader("Slug", "test!£$%^&*()#';");
+		request.setHeader("Slug", "test-_.~!*'();:@=+$,/?#[]<>\"{}|\\`^%£& \t");
 		response = adam.post(TEST_COLLECTION_URI, e, request);
 		assertEquals(201, response.getStatus());
 		String token = response.getLocation().toASCIIString().substring(TEST_COLLECTION_URI.length()+1);
 		System.out.println(token);
-		assertTrue(token.matches("[a-z0-9\\-]+")); 
+		assertTrue(token.matches("[A-Za-z0-9\\-_.~]+")); // URI unreserved characters
 		response.release();
 
 	}
