@@ -71,7 +71,7 @@ declare variable $conneg-config:variants :=
  : as the corresponding variant definition above.
  :)
 declare variable $conneg-config:transformers := (
-    <stylesheet>/stylesheets/atom2html4.xslt</stylesheet> , (: if not absolute URI will be concatenated with $config:service-url-base :)
+    <stylesheet>/stylesheets/atom2xhtml.xslt</stylesheet> , (: if not absolute URI will be concatenated with $config:service-url-base :)
     <identity/> ,
     util:function( QName( "http://purl.org/atombeat/xquery/json" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
     <identity/> ,
@@ -135,7 +135,7 @@ declare variable $conneg-config:service-variants :=
  : as the corresponding variant definition above.
  :)
 declare variable $conneg-config:service-transformers := (
-    <stylesheet>/stylesheets/atomsvc2html4.xslt</stylesheet> , (: if not absolute URI will be concatenated with $config:service-url-base :)
+    <stylesheet>/stylesheets/atomsvc2xhtml.xslt</stylesheet> , (: if not absolute URI will be concatenated with $config:service-url-base :)
     <identity/> ,
     util:function( QName( "http://purl.org/atombeat/xquery/json" , "json:xml-to-json" ) , 1 ) , (: if you use a function as a transformer, then the function's module MUST be imported into this module, see imports at the top of this file :)
     <identity/> ,
