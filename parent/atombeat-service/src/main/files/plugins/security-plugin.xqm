@@ -256,7 +256,7 @@ declare function security-plugin:after-create-member(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 	
 };
@@ -298,7 +298,7 @@ declare function security-plugin:after-multi-create(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 	
 };
@@ -321,7 +321,7 @@ declare function security-plugin:after-update-member(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 	
 };
@@ -361,7 +361,7 @@ declare function security-plugin:after-create-media(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 
 };
@@ -385,7 +385,7 @@ declare function security-plugin:after-update-media(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 
 };
@@ -420,7 +420,7 @@ declare function security-plugin:after-create-collection(
                 $response/status ,
                 $response/headers
             }
-                <body>{$response-data}</body>
+                <body type='xml'>{$response-data}</body>
             </response>
             
     else $response
@@ -449,7 +449,7 @@ declare function security-plugin:after-update-collection(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 
 };
@@ -476,7 +476,7 @@ declare function security-plugin:after-list-collection(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 
 };
@@ -501,7 +501,7 @@ declare function security-plugin:after-retrieve-member(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 
 };

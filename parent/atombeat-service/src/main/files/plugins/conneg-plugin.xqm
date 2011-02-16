@@ -295,7 +295,7 @@ declare function conneg-plugin:replace-response-body(
         $response/status ,
         $response/headers
     }
-        <body>{$new-body}</body>
+        <body type='xml'>{$new-body}</body>
     </response>
 };
 

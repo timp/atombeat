@@ -120,9 +120,9 @@ declare function link-extensions-plugin:after(
     
     let $augmented-body :=
         if ( $body/atom:feed )
-        then <body>{link-extensions-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
+        then <body type='xml'>{link-extensions-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
         else if ( $body/atom:entry )
-        then <body>{link-extensions-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
+        then <body type='xml'>{link-extensions-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
         else $body
         
     return

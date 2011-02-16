@@ -152,7 +152,7 @@ declare function tombstones-plugin:after-delete-member-or-media(
                             <value>application/atomdeleted+xml</value>
                         </header>
                     </headers>
-                    <body>{$deleted-entry}</body>
+                    <body type='xml'>{$deleted-entry}</body>
                 </response>
                 
         else $response
@@ -193,7 +193,7 @@ declare function tombstones-plugin:after-list-collection(
                     $response/status ,
                     $response/headers
                 }
-                    <body>{$augmented-feed}</body>
+                    <body type='xml'>{$augmented-feed}</body>
                 </response>
         
         else $response
@@ -235,7 +235,7 @@ declare function tombstones-plugin:after-error(
                             <value>application/atomdeleted+xml</value>
                         </header>
                     </headers>
-                    <body>{$deleted-entry}</body>
+                    <body type='xml'>{$deleted-entry}</body>
                 </response>
             
         else $response
