@@ -50,13 +50,13 @@
   <xsl:template match="app:workspace">
     <h2><xsl:apply-templates select="atom:title" mode="text-construct"/></h2>
     <xsl:apply-templates select="atom:summary"/>
-    <xsl:apply-templates select="app:collection"/>
     <p>
       Links: 
       <ul>
         <xsl:apply-templates select="atom:link" mode="links"/> 
       </ul>
     </p>
+    <xsl:apply-templates select="app:collection"/>
   </xsl:template>
   
   
