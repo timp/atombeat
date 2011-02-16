@@ -7,6 +7,33 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
+== issue 123 auto-categorise feature ==
+
+In this release AtomBeat implements support for the app:categories element within collection definitions. The [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php#categories-elem Atom protocol spec] is a bit vague on how exactly this should work, so AtomBeat's behaviour is as follows. 
+
+If an app:collection contains an app:categories element where the @fixed='yes' but there is no @scheme attribute, then any category in an Atom entry not within the given list is stripped automatically on create or update.
+
+If an app:collection contains an app:categories element where the @fixed='yes' and there *is* a @scheme attribute, then any category in an Atom entry *with the given scheme* but not within the given list is stripped automatically on create or update. Any categories in a different scheme are allowed to remain. This enables collections to specify control of categories within a given scheme but also allow uncontrolled use of categories from other schemes.
+
+AtomBeat also supports an extension attribute @default on at most one atom:category element within an app:categories element. The default category will be automatically added if no categories match the given list.
+
+E.g., a collection defined like:
+
+{{{
+<app:collection xmlns:app='http://www.w3.org/2007/app' href='http://localhost:8081/atombeat/service/content/test'>
+  <app:categories scheme='http://example.org/scheme' fixed='yes'>
+    <atom:category term='foo' label='Foo'/>
+ 			<atom:category term='bar' label='Bar' default='yes'/>
+		</app:categories>
+</app:collection>
+}}}
+
+...will mean that any member of the collection must contain one category with scheme http://example.org/scheme from the given list. Any categories with scheme http://example.org/scheme but not in this list will be stripped automatically. If no categories from this list are given, the default category will be automatically added. Categories in schemes other than http://example.org/scheme will be uncontrolled, i.e., clients are free to do what they want.
+
+== issue 151 service links ==
+
+Atom entries and feeds now include an atom:link with rel='service' pointing to the service document location.
+
 == issue 150 use slug to allow client preference for member uri ==
 
 In this release the "Slug" request header can be used when POSTing an Atom entry document to a collection URI to indicate a client preference for the URI of the new collection member to be created. 
