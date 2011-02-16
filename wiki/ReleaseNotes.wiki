@@ -558,11 +558,17 @@ This is a major change, and requires that all member URIs present in the databas
 
 Note however that the documents stored in the eXist database still retain the ".atom" suffix, i.e., the documents themselves don't need to be moved.
 
-== issue 99 TODO document me ==
+== issue 99 wrong content type param on list collection ==
 
-== issue 104 TODO document me ==
+This was a bug in the response content-type when listing a collection, now fixed.
 
-== issue 105 TODO document me ==
+== issue 104 attributes are stripped on updated feed ==
+
+This was a bug on updating collection metadata, now fixed.
+
+== issue 105 maven looks at atombeat repo first ==
+
+This was a bug in the maven configuration, now fixed.
 
 == issue 106 migrate workspace to service ==
 
@@ -570,20 +576,32 @@ The default location for the !AtomBeat service in all WAR packages has changed f
 
 All !AtomBeat URIs for resources (collections, members, media) created prior to upgrade will need to be modified to reflect the new URL base.
 
-== issue 111 upgrade to spring security 3.1 ==
+== issue 111 deleted entries should get stripped on request with feed ==
+
+This was a bug on requests involving Atom feeds as the request entity, where any deleted entries were not previously stripped from the request, now fixed.
+
+== issue 112 plugin returns empty in after or after-error ==
+
+Reporting of bad return values from plugin functions in after and after-error chains has been improved. Plugin functions that do not return element(response) should now result in a more helpful error.
+
+== issue 116 upgrade to spring security 3.1 ==
 
 Spring Security in secure WAR packages has been upgraded to 3.1.0.M1.
-
-== issue 112 TODO document me ==
-
-== issue 116 TODO document me ==
 
 = 0.2-alpha-1 =
 
 == issue 98 implement tombstones ==
 
-TODO document me
+This release includes an implementation of the Atom Tombstones draft - http://tools.ietf.org/html/draft-snell-atompub-tombstones-11. See the TombstonesDesign wiki page for more information on configuring a collection with support for tombstones.
 
 == issue 100 error plugins ==
 
-TODO document me
+A new plugin chain has been added in this release, allowing plugin functions to intercept protocol error responses and possibly modify the response or invoke side-effects. Upgrading to this release requires that a new function `plugin:after-error()` be defined in the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/config/plugins.xqm config/plugins.xqm] configuration module. The syntax is the same as for the `plugin:after()` configuration function. An example is below:
+
+{{{
+declare function plugin:after-error() as function* {
+    (
+        util:function( QName( "http://purl.org/atombeat/xquery/tombstones-plugin" , "tombstones-plugin:after-error" ) , 3 ) 
+    )
+};
+}}}
