@@ -2,8 +2,16 @@ package org.atombeat.it.content.extended;
 
 import java.util.List;
 
+import org.apache.abdera.Abdera;
+import org.apache.abdera.factory.Factory;
+import org.apache.abdera.model.Category;
+import org.apache.abdera.model.Entry;
+import org.apache.abdera.protocol.client.AbderaClient;
+import org.apache.abdera.protocol.client.ClientResponse;
+import org.apache.abdera.protocol.client.RequestOptions;
 import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.methods.GetMethod;
 import org.apache.commons.httpclient.methods.PostMethod;
 import org.apache.commons.httpclient.methods.PutMethod;
@@ -352,7 +360,150 @@ public class TestCollections extends TestCase {
 	
 	
 
+	public void testCollectionWithFixedCategoriesSchemeAndDefaultCategory() throws Exception {
+		
+		// we handle app:categories[exists(@scheme) and fixed='yes] in a special way:
+		// 1. any category in the given scheme where the term is NOT in the list is stripped
+		// 2. if no categories in the give scheme, the default is added
+		// 3. categories in other schemes are still allowed
+		// i.e., we want to support restriction of categories on a per-scheme basis
+		// where some schemes are fixed and others are not
+		
+		String feed = 
+			"<atom:feed \n" +
+			"	xmlns:atom='http://www.w3.org/2005/Atom'\n" +
+			"	xmlns:app='http://www.w3.org/2007/app'>\n" +
+			"	<atom:title type='text'>Collection Testing Fixed Categories</atom:title>\n" +
+			"	<app:collection>\n" +
+			"		<app:categories scheme='http://example.org/scheme' fixed='yes'>\n" +
+			"			<atom:category term='foo' label='Foo'/>\n" +
+			"			<atom:category term='bar' label='Bar' default='yes'/>\n" +
+			"		</app:categories>" +
+			"	</app:collection>" +
+			"</atom:feed>";
+		
+		// create the collection
+		
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
+		PutMethod put = new PutMethod(collectionUri);
+		setAtomRequestEntity(put, feed);
+		int putResult = executeMethod(put);
+		assertEquals(201, putResult);
+		
+		// create a member
+		
+		AbderaClient adam = new AbderaClient();
+		adam.addCredentials(SERVICE_URL, REALM, SCHEME_BASIC, new UsernamePasswordCredentials(ADAM, PASSWORD));
+		Factory factory = Abdera.getInstance().getFactory();
+		
+		Entry e1 = factory.newEntry();
+		e1.setTitle("test 1"); 
+		e1.addCategory("http://other.org/scheme", "dogs", "Dogs");
+		RequestOptions request = new RequestOptions();
+		ClientResponse response = adam.post(collectionUri, e1, request);
+		assertEquals(201, response.getStatus());
+		org.apache.abdera.model.Document<Entry> d = response.getDocument();
+		e1 = d.getRoot();
+		String memberLocation = e1.getEditLinkResolvedHref().toASCIIString();
+		// has the default category been added?
+		List<Category> cats = e1.getCategories("http://example.org/scheme");
+		assertEquals(1, cats.size());
+		assertEquals("bar", cats.get(0).getTerm());
+		assertEquals("Bar", cats.get(0).getLabel());
+		// has the other category been kept? 
+		List<Category> othercats = e1.getCategories("http://other.org/scheme");
+		assertEquals(1, othercats.size());
+		assertEquals("dogs", othercats.get(0).getTerm());
+		assertEquals("Dogs", othercats.get(0).getLabel());
+		response.release();
+		
+		// try to remove default, and unlisted category in scheme, and add other 
+		
+		Entry e2 = factory.newEntry();
+		e2.setTitle("test 2");
+		e2.addCategory("http://example.org/scheme", "spong", "Spong");
+		e2.addCategory("http://other.org/scheme", "dogs", "Dogs");
+		request = new RequestOptions();
+		response = adam.put(memberLocation, e2, request);
+		assertEquals(200, response.getStatus());
+		d = response.getDocument();
+		e2 = d.getRoot();
+		// has bad category been removed and default re-added?
+		cats = e2.getCategories("http://example.org/scheme");
+		assertEquals(1, cats.size());
+		assertEquals("bar", cats.get(0).getTerm());
+		assertEquals("Bar", cats.get(0).getLabel());
+		// has the other category been kept? 
+		othercats = e2.getCategories("http://other.org/scheme");
+		assertEquals(1, othercats.size());
+		assertEquals("dogs", othercats.get(0).getTerm());
+		assertEquals("Dogs", othercats.get(0).getLabel());
+		response.release();
+		
+		// create a media resource
+		
+		PostMethod method = new PostMethod(collectionUri);
+		String media = "This is a test.";
+		setTextPlainRequestEntity(method, media);
+		int result = executeMethod(method);
+		assertEquals(201, result);
+		String mediaLinkLocation = method.getResponseHeader("Location").getValue();
+		response = adam.get(mediaLinkLocation);
+		d = response.getDocument();
+		Entry e3 = d.getRoot();
+		// has the default category been added?
+		cats = e3.getCategories("http://example.org/scheme");
+		assertEquals(1, cats.size());
+		assertEquals("bar", cats.get(0).getTerm());
+		assertEquals("Bar", cats.get(0).getLabel());
+		response.release();
+
+		// try to remove default, and unlisted category in scheme, and add other 
+		
+		Entry e4 = factory.newEntry();
+		e4.setTitle("test 4");
+		e4.addCategory("http://example.org/scheme", "spong", "Spong");
+		e4.addCategory("http://other.org/scheme", "dogs", "Dogs");
+		request = new RequestOptions();
+		response = adam.put(mediaLinkLocation, e4, request);
+		assertEquals(200, response.getStatus());
+		d = response.getDocument();
+		e4 = d.getRoot();
+		// has bad category been removed and default re-added?
+		cats = e4.getCategories("http://example.org/scheme");
+		assertEquals(1, cats.size());
+		assertEquals("bar", cats.get(0).getTerm());
+		assertEquals("Bar", cats.get(0).getLabel());
+		// has the other category been kept? 
+		othercats = e4.getCategories("http://other.org/scheme");
+		assertEquals(1, othercats.size());
+		assertEquals("dogs", othercats.get(0).getTerm());
+		assertEquals("Dogs", othercats.get(0).getLabel());
+		response.release();
+		
+		// try non-default category in fixed scheme
+		
+		Entry e5 = factory.newEntry();
+		e5.setTitle("test 5");
+		e5.addCategory("http://example.org/scheme", "foo", "Foo");
+		request = new RequestOptions();
+		response = adam.put(memberLocation, e5, request);
+		assertEquals(200, response.getStatus());
+		d = response.getDocument();
+		e5 = d.getRoot();
+		// has category been kept?
+		cats = e5.getCategories("http://example.org/scheme");
+		assertEquals(1, cats.size());
+		assertEquals("foo", cats.get(0).getTerm());
+		assertEquals("Foo", cats.get(0).getLabel());
+		response.release();
+		
+	}
 	
+	
+
+	
+
 	
 }
 
