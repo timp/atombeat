@@ -5,6 +5,16 @@
 
 AtomBeat is an implementation of the [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php Atom Publishing Protocol] with a number of extended features. 
 
+= Tutorials =
+
+  * TutorialGettingStarted - Covers downloading and installing AtomBeat, creating a collection and retrieving an Atom feed; creating, retrieving, updating and deleting collection members; creating, retrieving, updating and deleting media resources.
+
+  * TutorialVersioning - An introduction to AtomBeat's history plugin, which provides support for tracking revisions to collection members. Covers creating a versioned collection, retrieving a member history feed, retrieving member revisions and submitting a revision comment.
+ 
+  * TutorialAccessControl - An introduction to AtomBeat's support for access control. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be discovered via links in Atom feeds and entries, and retrieved and modified using standard Atom protocol operations (HTTP GET and PUT). 
+ 
+Some other documentation, may be part-baked: TombstonesDesign DevelopingPlugins
+
 = Downloads =
 
 Please note that WAR packages in the 0.2 series are *not* available from the AtomBeat Google Code project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
@@ -59,16 +69,6 @@ To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/or
 
 </project>
 }}}
-
-= Tutorials =
-
-  * TutorialGettingStarted - Covers downloading and installing AtomBeat, creating a collection and retrieving an Atom feed; creating, retrieving, updating and deleting collection members; creating, retrieving, updating and deleting media resources.
-
-  * TutorialVersioning - An introduction to AtomBeat's history plugin, which provides support for tracking revisions to collection members. Covers creating a versioned collection, retrieving a member history feed, retrieving member revisions and submitting a revision comment.
- 
-  * TutorialAccessControl - An introduction to AtomBeat's support for access control. AtomBeat's security plugin has support for fine-grained access control policies via access control lists (ACLs). ACLs can be defined at workspace, collection and member levels, with configurable precedence. Atom protocol operations can be allowed or denied based on users, roles and groups. ACLs can be discovered via links in Atom feeds and entries, and retrieved and modified using standard Atom protocol operations (HTTP GET and PUT). 
- 
-Some other documentation, may be part-baked: TombstonesDesign DevelopingPlugins
 
 = News =
 
