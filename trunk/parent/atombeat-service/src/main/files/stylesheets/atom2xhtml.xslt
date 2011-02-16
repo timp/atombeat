@@ -4,8 +4,10 @@
   xmlns:atom="http://www.w3.org/2005/Atom"
   xmlns:atombeat="http://purl.org/atombeat/xmlns"
   xmlns:xhtml="http://www.w3.org/1999/xhtml" 
+  xmlns:ar="http://purl.org/atompub/revision/1.0"
+  xmlns:at="http://purl.org/atompub/tombstones/1.0"
   xmlns="http://www.w3.org/1999/xhtml"
-  exclude-result-prefixes="atom xhtml">
+  exclude-result-prefixes="atom xhtml atombeat ar">
 
 
 
@@ -61,6 +63,7 @@
       </ul>
     </p>
     <xsl:apply-templates select="atom:entry"/>
+    <xsl:apply-templates select="at:deleted-entry"/>
   </xsl:template>
 
 
@@ -72,6 +75,15 @@
         ID: <xsl:value-of select="atom:id"/><br/>
         Published: <xsl:value-of select="atom:published"/><br/>
         Updated: <xsl:value-of select="atom:updated"/><br/>
+        <xsl:if test="ar:revision">
+          Revision: <xsl:value-of select="ar:revision/@number"/> 
+          <xsl:if test="ar:revision/@initial='yes'"> (initial)</xsl:if>
+          <br/>        
+        </xsl:if>
+        <xsl:if test="ar:comment">
+          Revision Comment: <xsl:value-of select="ar:comment/atom:summary"/> <br/>
+          Revised By: <xsl:value-of select="ar:comment/atom:author/atom:name"/> <xsl:value-of select="ar:comment/atom:author/atom:email"/>
+        </xsl:if>
       </p>
       <xsl:apply-templates select="atom:summary"/>
       <p>
@@ -83,10 +95,30 @@
       <xsl:apply-templates select="atom:content"/>
     </div>
   </xsl:template>
-
-
-
-
+  
+  
+  
+  
+  <xsl:template match="at:deleted-entry">
+    <div class="entry">
+      <h2>Deleted Entry</h2>
+      <p>
+        ID: <xsl:value-of select="@ref"/><br/>
+        Deleted: <xsl:value-of select="@when"/><br/>
+        Deleted By: <xsl:value-of select="at:by/atom:name"/> <xsl:value-of select="at:by/atom:email"/>
+      </p>
+      <p>
+        Links: 
+        <ul>
+          <xsl:apply-templates select="atom:link" mode="links"/> 
+        </ul>
+      </p>
+    </div>
+  </xsl:template>
+  
+  
+  
+  
   <xsl:template match="atom:summary">
     <p>
       <xsl:apply-templates select="." mode="text-construct"/>
