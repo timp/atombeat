@@ -72,8 +72,9 @@ declare function conneg-plugin:before(
             let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
             
         	(: store output key for use in after phase :)
+        	let $attribute-name := concat( "atombeat.conneg.output-key." , $operation , "." , $request-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
             let $store-output-key :=
-                if ( exists( $output-key ) ) then request:set-attribute( "conneg.output-key" , $output-key )
+                if ( exists( $output-key ) ) then request:set-attribute( $attribute-name , $output-key )
                 else ()
                 
             return
@@ -212,7 +213,8 @@ declare function conneg-plugin:after(
         	
             let $augmented-response := conneg-plugin:replace-response-body( $response, $augmented-data )
             
-        	let $output-key := request:get-attribute( "conneg.output-key" )
+        	let $attribute-name := concat( "atombeat.conneg.output-key." , $operation , "." , $request-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
+        	let $output-key := request:get-attribute( $attribute-name )
         	
         	let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
         	

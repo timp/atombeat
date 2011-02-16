@@ -70,7 +70,8 @@ declare function tombstones-plugin:before-delete-member-or-media(
             let $user-name := $request/user/text()
             let $comment := xutil:get-header( "X-Atom-Tombstone-Comment" , $request )
             let $deleted-entry := tombstone-db:create-deleted-entry( $member-path-info , $user-name , $comment )
-            return request:set-attribute( "tombstone" , $deleted-entry ) (: pass to after phase so tombstone can be stored :)
+        	let $attribute-name := concat( "atombeat.tombstone-plugin.tombstone." , $member-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
+            return request:set-attribute( $attribute-name , $deleted-entry ) (: pass to after phase so tombstone can be stored :)
             
         else ()
         
@@ -126,7 +127,14 @@ declare function tombstones-plugin:after-delete-member-or-media(
 ) as element(response)
 {
 
-    let $deleted-entry := request:get-attribute("tombstone")
+    let $member-path-info :=
+        if ( ends-with( $request-path-info , ".media" ) )
+        (: then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" ) :)
+        then replace( $request-path-info , "^(.*)\.media$" , "$1" )
+        else $request-path-info
+
+    let $attribute-name := concat( "atombeat.tombstone-plugin.tombstone." , $member-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
+    let $deleted-entry := request:get-attribute( $attribute-name )
     
     return 
     
@@ -134,12 +142,6 @@ declare function tombstones-plugin:after-delete-member-or-media(
         
         then
 
-            let $member-path-info :=
-                if ( ends-with( $request-path-info , ".media" ) )
-                (: then replace( $request-path-info , "^(.*)\.media$" , "$1.atom" ) :)
-                then replace( $request-path-info , "^(.*)\.media$" , "$1" )
-                else $request-path-info
-        
             let $tombstone-stored := tombstone-db:erect-tombstone( $member-path-info , $deleted-entry )
             
             return
