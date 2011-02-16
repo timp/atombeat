@@ -114,19 +114,21 @@ declare function link-expansion-plugin:after(
 ) as element(response)
 {
     
+    let $log := util:log( "debug" , "link-expansion-plugin:after ... response before processing:")
+    let $log := util:log( "debug" , $response)
+
     let $body := $response/body
     let $user := $request/user/text()
     let $roles := for $role in $request/roles/role return $role cast as xs:string
     
     let $augmented-body :=
         if ( $body/atom:feed )
-        then <body>{link-expansion-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
+        then <body type='xml'>{link-expansion-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
         else if ( $body/atom:entry )
-        then <body>{link-expansion-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
+        then <body type='xml'>{link-expansion-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
         else $body
         
-    return
-    
+    let $modified-response :=
         <response>
         {
             $response/status ,
@@ -134,7 +136,12 @@ declare function link-expansion-plugin:after(
             $augmented-body
         }
         </response>
-            
+
+    let $log := util:log( "debug" , "link-expansion-plugin:after ... response after processing:" )
+    let $log := util:log( "debug" , $modified-response )
+
+    return $modified-response
+    
 }; 
 
 
@@ -261,7 +268,9 @@ declare function link-expansion-plugin:expand-atom-link(
         
             (: TODO what if href uri has query params, need to parse out? :)
             
-            let $path-info := substring-after( $link/@href , $config:self-link-uri-base )
+            let $log := util:log( "debug" , "not visited, expanding..." )
+            let $remember := request:set-attribute( 'atombeat.link-expansion-plugin.visited' , ( $visited , $uri ) )
+            let $path-info := substring-after( $uri , $config:self-link-uri-base )
             
             let $request :=
                 <request>
@@ -282,8 +291,11 @@ declare function link-expansion-plugin:expand-atom-link(
                     </roles>
                 </request>
                 
-            let $remember := request:set-attribute( 'atombeat.link-expansion-plugin.visited' , ( $visited , $uri ) )
+            let $log := util:log( "debug" , "making internal request..." )
+            let $log := util:log( "debug" , $request )
             let $response := plugin-util:atom-protocol-do-get( $request )
+            let $log := util:log( "debug" , "response to internal request..." )
+            let $log := util:log( "debug" , $response )
             
             return
                 
@@ -332,7 +344,8 @@ declare function link-expansion-plugin:expand-security-link(
         
             (: TODO what if href uri has query params, need to parse out? :)
             
-            let $path-info := substring-after( $link/@href , $config:security-service-url )
+            let $log := util:log( "debug" , "not visited, expanding..." )
+            let $path-info := substring-after( $uri , $config:security-service-url )
             
             let $request :=
                 <request>

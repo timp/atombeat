@@ -15,7 +15,7 @@ declare function plugin-util:atom-protocol-do-get(
 ) as element(response)
 {
     let $query :=
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-get-member($request)"
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-get($request)"
     return util:eval( $query , true() )
 };
 
@@ -23,7 +23,7 @@ declare function plugin-util:atom-protocol-do-get-member(
     $request as element(request)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-get-member($request)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-get-member($request)"
     return util:eval( $query , true() )
 };
 
@@ -31,7 +31,7 @@ declare function plugin-util:atom-protocol-do-get-collection(
     $request as element(request)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-get-collection($request)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-get-collection($request)"
     return util:eval( $query , true() )
 };
 
@@ -41,7 +41,7 @@ declare function plugin-util:atom-protocol-do-post(
     $entity as element(atom:entry)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-post($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-post($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -50,7 +50,7 @@ declare function plugin-util:atom-protocol-do-post-atom(
     $entity as element(atom:entry)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-post-atom($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-post-atom($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -59,7 +59,7 @@ declare function plugin-util:atom-protocol-do-post-atom-entry(
     $entity as element(atom:entry)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-post-atom-entry($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-post-atom-entry($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -68,7 +68,7 @@ declare function plugin-util:atom-protocol-do-post-atom-feed(
     $entity as element(atom:feed)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-post-atom-feed($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-post-atom-feed($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -78,7 +78,7 @@ declare function plugin-util:atom-protocol-do-put(
     $entity as element(atom:entry)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-put($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-put($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -87,7 +87,7 @@ declare function plugin-util:atom-protocol-do-put-atom(
     $entity as element(atom:entry)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-put-atom($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-put-atom($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -96,7 +96,7 @@ declare function plugin-util:atom-protocol-do-put-atom-entry(
     $entity as element(atom:entry)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-put-atom-entry($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-put-atom-entry($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -105,7 +105,7 @@ declare function plugin-util:atom-protocol-do-put-atom-feed(
     $entity as element(atom:feed)
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-put-atom-feed($request, $entity)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-put-atom-feed($request, $entity)"
     return util:eval( $query , true() )
 };
 
@@ -113,7 +113,7 @@ declare function plugin-util:atom-protocol-do-delete(
     $request as element(request) 
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-delete($request)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-delete($request)"
     return util:eval( $query , true() )
 };
 
@@ -121,7 +121,7 @@ declare function plugin-util:atom-protocol-do-delete-member(
     $request as element(request) 
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-delete-member($request)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-delete-member($request)"
     return util:eval( $query , true() )
 };
 
@@ -129,7 +129,7 @@ declare function plugin-util:atom-protocol-do-delete-media(
     $request as element(request) 
 ) as element(response)
 {
-    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm'; atom-protocol:do-delete-media($request)"
+    let $query := "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm'; atom-protocol:do-delete-media($request)"
     return util:eval( $query , true() )
 };
 
@@ -138,7 +138,7 @@ declare function plugin-util:security-protocol-do-get(
 ) as element(response)
 {
     let $query :=
-        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at '../lib/security-protocol.xqm'; security-protocol:do-get($request)"
+        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at 'security-protocol.xqm'; security-protocol:do-get($request)"
     return util:eval( $query , true() )
 };
 
@@ -148,7 +148,7 @@ declare function plugin-util:security-protocol-do-put(
 ) as element(response)
 {
     let $query :=
-        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at '../lib/security-protocol.xqm'; security-protocol:do-put($request, $entity)"
+        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at 'security-protocol.xqm'; security-protocol:do-put($request, $entity)"
     return util:eval( $query , true() )
 };
 

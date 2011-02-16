@@ -1068,7 +1068,6 @@ declare function atom-protocol:op-update-media(
 
 
 
-
 (: 
  : TODO doc me 
  :)
@@ -1077,6 +1076,9 @@ declare function atom-protocol:do-get(
 ) as element(response)
 {
 
+    let $log := util:log( "debug" , "atom-protocol:do-get" )
+    let $log := util:log( "debug" , $request )
+    
     let $request-path-info := $request/path-info/text() 
 
     return
