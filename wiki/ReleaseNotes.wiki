@@ -7,6 +7,24 @@
 
 = 0.2-alpha-6-SNAPSHOT =
 
+== issue 155 proper link expansion using internal sub-requests ==
+
+Previously, it was not possible to use any of the protocol query modules ([http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/atom-protocol.xqm atom-protocol.xqm], [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/security-protocol.xqm security-protocol.xqm], [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/history-protocol.xqm history-protocol.xqm]) from within a plugin, because this created an import cycle, which is not permitted in XQuery 1.0.
+
+This was unfortunate as it meant, among other things, that the link expansion plugin could not properly simulate retrieval of the link target (including execution of plugins which may augment the response), all it could do was retrieve and inline the content actually stored in the database.
+
+This release includes a work-around for the import cycle limitation. A new module [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/plugin-util.xqm plugin-util.xqm] contains functions that can safely be called from within a plugin function, in either before or after chains. For example, the plugin-util:atom-protocol-do-get() function is a proxy for the atom-protocol:do-get() function, and can be used to make internal protocol requests that return the same response as if making an external HTTP GET request.
+
+The link expansion plugin has been updated to make use of this new facility. This means that, now, the inline content provided in expanded links will be identical to that which would have been obtained via an HTTP GET request on the link @href. 
+
+Note that this means inline content may also be expanded itself, but link cycles will be detected and any URI already expanded once will not be expanded where it appears subsequently.
+
+== issue 74 catch errors ==
+
+Any dynamic errors are now caught in Atom protocol queries, and will result in a 500 response with the error message as text/plain response entity. 
+
+(Static query compilation errors will still be reported by eXist as 400 with an HTML error trace.)
+
 == issue 123 auto-categorise feature ==
 
 In this release AtomBeat implements support for the app:categories element within collection definitions. The [http://www.atomenabled.org/developers/protocol/atom-protocol-spec.php#categories-elem Atom protocol spec] is a bit vague on how exactly this should work, so AtomBeat's behaviour is as follows. 
@@ -314,6 +332,7 @@ Another example of an XQuery that makes use of this pattern is the [http://code.
 
 Please note that *not all functions in the [http://code.google.com/p/atombeat/source/browse/trunk/parent/atombeat-service/src/main/files/lib/atom-protocol.xqm atom-protocol XQuery module] can be called in this way*. Some functions, in particular those processing media content, need to access the context request, and thus can only be used via direct HTTP request to the /service/content endpoint. Those functions that *can* safely be called from within another XQuery include:
 
+  * atom-protocol:do-get()
   * atom-protocol:do-get-member()
   * atom-protocol:do-get-collection()
   * atom-protocol:do-post-atom()
