@@ -10,16 +10,54 @@ AtomBeat is an implementation of the [http://www.atomenabled.org/developers/prot
 Please note that WAR packages in the 0.2 series are *not* available from the AtomBeat Google Code project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
 
 {{{
-wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-5/atombeat-exist-minimal-secure-0.2-alpha-5.war
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-6/atombeat-exist-minimal-secure-0.2-alpha-6.war
 }}} 
 
 ...or you can check out and build it yourself (currently only works on Linux), e.g.:
 
 {{{
-svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-5
-cd atombeat-parent-0.2-alpha-5
+svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-6
+cd atombeat-parent-0.2-alpha-6
 export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
 mvn install # might take a while first time - will package and test all WARs
+}}}
+
+== AtomBeat as a Maven WAR Overlay ==
+
+To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/ atombeat-exist-minimal-secure]) as a Maven WAR overlay, do something like...
+
+{{{
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <!-- ... -->
+    
+  <dependencies>
+  
+    <dependency>
+      <groupId>org.atombeat</groupId>
+      <artifactId>atombeat-exist-minimal-secure</artifactId>
+      <version>0.2-alpha-6</version>
+      <type>war</type>
+      <scope>runtime</scope>
+    </dependency>
+    
+  </dependencies>
+
+  <repositories>
+
+    <repository>
+      <id>cggh</id>
+      <name>CGGH Maven Repository</name>
+      <url>http://cloud1.cggh.org/maven2</url>
+    </repository>
+
+  </repositories>
+
+  <!-- ... -->
+
+</project>
 }}}
 
 = Tutorials =
