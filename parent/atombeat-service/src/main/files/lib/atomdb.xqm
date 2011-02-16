@@ -636,18 +636,98 @@ declare function atomdb:mutable-entry-children(
     $request-data as element(atom:entry)
 ) as element()*
 {
-    for $child in $request-data/*
-    where
-        not( $child instance of element(atom:id) )
-        and not( $child instance of element(atom:updated) )
-        and not( $child instance of element(atom:published) )
-        and not( $child instance of element(atom:link) and $child/@rel = "self" )
-        and not( $child instance of element(atom:link) and $child/@rel = "edit" )
-        and not( $child instance of element(atom:link) and $child/@rel = "edit-media" )
-        and not( $config:auto-author and $child instance of element(atom:author) )
-        and not( atomdb:media-link-available( $request-path-info ) and $child instance of element(atom:content) )
-    return $child
+    let $mutable-children :=
+    
+        for $child in $request-data/*
+        where
+            not( $child instance of element(atom:id) )
+            and not( $child instance of element(atom:updated) )
+            and not( $child instance of element(atom:published) )
+            and not( $child instance of element(atom:category) )
+            and not( $child instance of element(atom:link) and $child/@rel = "self" )
+            and not( $child instance of element(atom:link) and $child/@rel = "edit" )
+            and not( $child instance of element(atom:link) and $child/@rel = "edit-media" )
+            and not( $child instance of element(atom:link) and $child/@rel = "service" )
+            and not( $config:auto-author and $child instance of element(atom:author) )
+            and not( atomdb:media-link-available( $request-path-info ) and $child instance of element(atom:content) )
+        return $child
+        
+    let $collection-path-info := text:groups( $request-path-info , "^(.+)/[^/]+$" )[2]
+    
+    (: handle categories in a special way :)
+    let $categories := atomdb:mutable-categories( $collection-path-info , $request-data/atom:category )
+    
+    return ( $mutable-children , $categories )
+    
 };
+
+
+
+declare function atomdb:mutable-categories(
+    $collection-path-info as xs:string ,
+    $cats as element(atom:category)*
+) as element(atom:category)*
+{
+
+    let $collection := atomdb:retrieve-app-collection( $collection-path-info )
+    let $filtered-cats := atomdb:recursive-filter-categories( $cats , $collection/app:categories )
+    return $filtered-cats
+    
+};
+
+
+
+
+declare function atomdb:recursive-filter-categories(
+    $cats as element(atom:category)* ,
+    $lists as element(app:categories)*    
+) as element(atom:category)*
+{
+    if ( empty( $lists) ) then $cats
+    else
+        let $list := $lists[1]
+        let $filtered := atomdb:filter-categories( $cats , $list )
+        return atomdb:recursive-filter-categories( $filtered , subsequence( $lists , 2 ) )
+};
+
+
+
+
+declare function atomdb:filter-categories( 
+    $cats as element(atom:category)* ,
+    $list as element(app:categories)
+) as element(atom:category)*
+{
+
+    if ( $list/@fixed = 'yes' and exists( $list/@scheme ) ) then (: assume filtering within the given scheme only - other schemes are allowed :)
+
+        let $filtered := $cats[not( @scheme = $list/@scheme ) or @term = $list/atom:category/@term] (: either you're not in the fixed scheme, or your term matches one of the categories in the list :)
+        let $filteredinscheme := $filtered[@scheme = $list/@scheme]
+        let $default := $list/atom:category[@default='yes'] (: add a default if present - non-standard extension :)
+        let $added := 
+            if ( empty( $filteredinscheme ) and exists( $default ) ) then
+                <atom:category scheme="{$list/@scheme}" term="{$default/@term}" label="{$default/@label}"/>
+            else ()
+        return ( $filtered , $added )
+                
+    else if ( $list/@fixed = 'yes' and empty( $list/@scheme ) ) then (: assume filtering across any scheme, in which case having multiple app:categories[@fixed='yes] elements is a bit pointless, unless they overlap, which is also a bit pointless :)
+
+        let $filtered := 
+            for $cat in $cats
+            where exists( $list/atom:category[@scheme=$cat/@scheme and @term=$cat/@term] )
+            return $cat
+        let $default := $list/atom:category[@default='yes'] (: add a default if present - non-standard extension :)
+        let $added := 
+            if ( empty( $filtered ) and exists( $default ) ) then 
+                <atom:category scheme="{$default/@scheme}" term="{$default/@term}" label="{$default/@label}"/>
+            else ()
+        return ( $filtered , $added )
+
+    else $cats (: return unfiltered :)
+
+};
+
+
 
 
 
@@ -678,6 +758,7 @@ declare function atomdb:create-feed(
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" href="{$self-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-FEED}"/>
             <atom:link rel="edit" href="{$edit-uri}" type="{$CONSTANT:MEDIA-TYPE-ATOM-FEED}"/>
+            <atom:link rel="service" type="{$CONSTANT:MEDIA-TYPE-ATOMSVC}" href="{concat( $config:service-url-base , '/' )}"/>
         {
             if ( $config:auto-author )
             then
@@ -788,6 +869,7 @@ declare function atomdb:create-entry(
             <atom:updated>{$updated}</atom:updated>
             <atom:link rel="self" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$self-uri}"/>
             <atom:link rel="edit" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$edit-uri}"/>
+            <atom:link rel="service" type="{$CONSTANT:MEDIA-TYPE-ATOMSVC}" href="{concat( $config:service-url-base , '/' )}"/>
         {
             if ( $config:auto-author )
             then
@@ -845,6 +927,8 @@ declare function atomdb:create-media-link-entry(
             let $label := text:groups( $media-link-category , 'label="([^"]+)"' )[2]
             return <atom:category scheme="{$scheme}" term="{$term}" label="{$label}"/>
         else ()        
+        
+    let $categories := atomdb:mutable-categories( $collection-path-info , ( $category ) )
     	
 	let $media-size := atomdb:get-media-resource-length( concat( $collection-path-info , "/" , $member-id , ".media" ) )
 	
@@ -863,6 +947,7 @@ declare function atomdb:create-media-link-entry(
                 else ()
             }
             </atom:link>
+            <atom:link rel="service" type="{$CONSTANT:MEDIA-TYPE-ATOMSVC}" href="{concat( $config:service-url-base , '/' )}"/>
             <atom:content src="{$media-uri}" type="{$media-type}" length="{$media-size}">
             {
                 if ( exists( $md5 ) )
@@ -873,7 +958,7 @@ declare function atomdb:create-media-link-entry(
             <atom:title type="text">{$title}</atom:title>
             <atom:summary type="text">{$summary}</atom:summary>
         {
-            $category , 
+            $categories , 
             if ( $config:auto-author )
             then
                 <atom:author>
@@ -914,6 +999,7 @@ declare function atomdb:update-entry(
                 $entry/atom:link[@rel="self"] ,
                 $entry/atom:link[@rel="edit"] ,
                 $entry/atom:link[@rel="edit-media"] ,
+                $entry/atom:link[@rel="service"] ,
                 if ( $config:auto-author ) then $entry/atom:author else () ,
                 if ( atomdb:media-link-available( $path-info ) ) then $entry/atom:content else () ,
                 atomdb:mutable-entry-children( $path-info , $request-data )
@@ -1238,6 +1324,17 @@ declare function atomdb:retrieve-feed-without-entries(
 		return $feed
 
 };
+
+
+
+
+declare function atomdb:retrieve-app-collection(
+	$collection-path-info as xs:string 
+) as element(app:collection)?
+{
+    atomdb:retrieve-feed-without-entries( $collection-path-info )/app:collection
+};
+
 
 
 
