@@ -47,16 +47,7 @@ as element(response)
 	
 	return
 	
-        if (
-            not( $request-path-info = "/" )
-            and not( atomdb:collection-available( $request-path-info ) )
-            and not( atomdb:member-available( $request-path-info ) )
-            and not( atomdb:media-resource-available( $request-path-info ) )
-        )
-        
-        then common-protocol:do-not-found( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request )
-        
-		else if ( $request-method = $CONSTANT:METHOD-GET )
+		if ( $request-method = $CONSTANT:METHOD-GET )
 		
 		then security-protocol:do-get( $request )
 		
@@ -85,11 +76,17 @@ declare function security-protocol:do-get(
         else if ( atomdb:collection-available( $request-path-info ) ) then $CONSTANT:OP-RETRIEVE-COLLECTION-ACL
         else if ( atomdb:member-available( $request-path-info ) ) then $CONSTANT:OP-RETRIEVE-MEMBER-ACL
         else if ( atomdb:media-resource-available( $request-path-info ) ) then $CONSTANT:OP-RETRIEVE-MEDIA-ACL
-        else () (: should never be reached :)
+        else ()
+        
+    return
     
-    let $op := util:function( QName( "http://purl.org/atombeat/xquery/security-protocol" , "atom-protocol:op-retrieve-descriptor" ) , 2 )
+        if ( empty( $op-name ) ) then common-protocol:do-not-found( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request )
+        
+        else
     
-    return common-protocol:apply-op( $op-name , $op , $request , () )
+            let $op := util:function( QName( "http://purl.org/atombeat/xquery/security-protocol" , "security-protocol:op-retrieve-descriptor" ) , 2 )
+            
+            return common-protocol:apply-op( $op-name , $op , $request , () )
 
 };
 
@@ -120,32 +117,38 @@ declare function security-protocol:do-put(
 ) as element(response)
 {
 
-	let $request-content-type := xutil:get-header( $CONSTANT:HEADER-CONTENT-TYPE , $request )
-	
-	return
-	
-	    if ( not( starts-with( $request-content-type, $CONSTANT:MEDIA-TYPE-ATOM ) ) ) then
-	    
-	        common-protocol:do-unsupported-media-type( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request , "Only application/atom+xml is supported." )
-	        
-	    else if ( not( $entity instance of element(atom:entry) ) ) then
+    let $request-path-info := $request/path-info/text() 
 
-            common-protocol:do-bad-request( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request , "Request entity must be well-formed XML and the root element must be an Atom entry element." )
-
-	    else 
-
-            let $request-path-info := $request/path-info/text()
+    let $op-name := 
+        if ( $request-path-info = "/" ) then $CONSTANT:OP-UPDATE-WORKSPACE-ACL
+        else if ( atomdb:collection-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-COLLECTION-ACL
+        else if ( atomdb:member-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-MEMBER-ACL
+        else if ( atomdb:media-resource-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-MEDIA-ACL
+        else ()
         
-            let $op-name := 
-                if ( $request-path-info = "/" ) then $CONSTANT:OP-UPDATE-WORKSPACE-ACL
-                else if ( atomdb:collection-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-COLLECTION-ACL
-                else if ( atomdb:member-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-MEMBER-ACL
-                else if ( atomdb:media-resource-available( $request-path-info ) ) then $CONSTANT:OP-UPDATE-MEDIA-ACL
-                else () (: should never be reached :)
+    return
+    
+        if ( empty( $op-name ) ) then common-protocol:do-not-found( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request )
         
-            let $op := util:function( QName( "http://purl.org/atombeat/xquery/security-protocol" , "atom-protocol:op-update-descriptor" ) , 2 )
+        else
             
-            return common-protocol:apply-op( $op-name , $op , $request , $entity )
+        	let $request-content-type := xutil:get-header( $CONSTANT:HEADER-CONTENT-TYPE , $request )
+        	
+        	return
+        	
+        	    if ( not( starts-with( $request-content-type, $CONSTANT:MEDIA-TYPE-ATOM ) ) ) then
+        	    
+        	        common-protocol:do-unsupported-media-type( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request , "Only application/atom+xml is supported." )
+        	        
+        	    else if ( not( $entity instance of element(atom:entry) ) ) then
+        
+                    common-protocol:do-bad-request( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request , "Request entity must be well-formed XML and the root element must be an Atom entry element." )
+        
+        	    else 
+        
+                    let $op := util:function( QName( "http://purl.org/atombeat/xquery/security-protocol" , "security-protocol:op-update-descriptor" ) , 2 )
+                    
+                    return common-protocol:apply-op( $op-name , $op , $request , $entity )
         
 };
 

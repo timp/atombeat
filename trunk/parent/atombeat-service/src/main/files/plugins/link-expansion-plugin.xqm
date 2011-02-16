@@ -22,6 +22,7 @@ import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../l
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security" at "../lib/atom-security.xqm" ;
+import module namespace plugin-util = "http://purl.org/atombeat/xquery/plugin-util" at "../lib/plugin-util.xqm" ;
 
 
 
@@ -219,99 +220,159 @@ declare function link-expansion-plugin:expand-links(
         
             if ( starts-with( $link/@href , $config:self-link-uri-base ) ) then
 
-                let $path-info := substring-after( $link/@href , $config:self-link-uri-base )
+                link-expansion-plugin:expand-atom-link( $link , $user , $roles )
                 
-                return 
-                
-                    if ( 
-                        atomdb:member-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER , $path-info , () , $user , $roles )
-                    ) then
-                    
-                        <atom:link>
-                        {
-                            $link/attribute::* ,
-                            $link/child::* ,
-                            <ae:inline>{atomdb:retrieve-member( $path-info )}</ae:inline>
-                        }
-                        </atom:link>
-                        
-                    else if ( 
-                        atomdb:collection-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-LIST-COLLECTION , $path-info , () , $user , $roles )
-                    ) then
-
-                        <atom:link>
-                        {
-                            $link/attribute::* ,
-                            $link/child::* ,
-                            <ae:inline>{atomsec:filter-feed( atomdb:retrieve-feed( $path-info ) , $user , $roles )}</ae:inline>
-                        }
-                        </atom:link>
-
-                    else $link
-
             else if ( starts-with( $link/@href , $config:security-service-url ) ) then
+            
+                link-expansion-plugin:expand-security-link( $link , $user , $roles )
 
-                let $path-info := substring-after( $link/@href , $config:security-service-url )
-                
-                return
-                
-                    if ( 
-                        atomdb:member-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEMBER-ACL , $path-info , () , $user , $roles )
-                    ) then
-                    
-                        <atom:link>
-                        {
-                            $link/attribute::* ,
-                            $link/child::* ,
-                            <ae:inline>
-                            { atomsec:wrap-with-entry( $path-info , atomsec:retrieve-descriptor( $path-info ) ) }
-                            </ae:inline>
-                        }
-                        </atom:link>
-                        
-                    else if ( 
-                        atomdb:media-resource-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-MEDIA-ACL , $path-info , () , $user , $roles )
-                    ) then
-                    
-                        <atom:link>
-                        {
-                            $link/attribute::* ,
-                            $link/child::* ,
-                            <ae:inline>
-                            { atomsec:wrap-with-entry( $path-info , atomsec:retrieve-descriptor( $path-info ) ) }
-                            </ae:inline>
-                        }
-                        </atom:link>
-                        
-                    else if ( 
-                        atomdb:collection-available( $path-info ) 
-                        and atomsec:is-allowed( $CONSTANT:OP-RETRIEVE-COLLECTION-ACL , $path-info , () , $user , $roles )
-                    ) then
-
-                        <atom:link>
-                        {
-                            $link/attribute::* ,
-                            $link/child::* ,
-                            <ae:inline>
-                            { atomsec:wrap-with-entry( $path-info , atomsec:retrieve-descriptor( $path-info ) ) }
-                            </ae:inline>
-                        }
-                        </atom:link>
-
-                    else $link
-                    
             else $link
             
         else $link        
   
+};
+
+
+
+
+declare function link-expansion-plugin:expand-atom-link(
+    $link as element(atom:link) ,
+    $user as xs:string? ,
+    $roles as xs:string*
+) as element(atom:link)
+{
+
+    (: deal with cyclic expansion :)
+    
+    let $log := util:log( "debug" , "expand-atom-link" )
+    let $log := util:log( "debug" , $link )
+    let $visited := request:get-attribute( 'atombeat.link-expansion-plugin.visited' )
+    let $uri := $link/@href cast as xs:string
+    let $log := util:log( "debug" , $visited )
+    
+    return
+    
+        if ( $uri = $visited ) then 
+        
+            let $log := util:log( "debug" , "not expanding, already visited" )
+            return $link (: do not expand :) 
+        
+        else
+        
+            (: TODO what if href uri has query params, need to parse out? :)
+            
+            let $path-info := substring-after( $link/@href , $config:self-link-uri-base )
+            
+            let $request :=
+                <request>
+                    <path-info>{$path-info}</path-info>
+                    <method>GET</method>
+                    <headers>
+                        <header>
+                            <name>Accept</name>
+                            <value>application/atom+xml</value>
+                        </header>
+                    </headers>
+                    <parameters/>
+                    <user>{$user}</user>
+                    <roles>
+                    {
+                        for $role in $roles return <role>{$role}</role>
+                    }
+                    </roles>
+                </request>
+                
+            let $remember := request:set-attribute( 'atombeat.link-expansion-plugin.visited' , ( $visited , $uri ) )
+            let $response := plugin-util:atom-protocol-do-get( $request )
+            
+            return
+                
+                if (
+                    $response/status = 200 
+                    and $response/body/@type='xml'        
+                ) then
+                    <atom:link>
+                    {
+                        $link/attribute::* ,
+                        $link/child::* ,
+                        <ae:inline>{$response/body/*}</ae:inline>
+                    }
+                    </atom:link>
+                else $link
 
 };
 
 
+
+
+
+declare function link-expansion-plugin:expand-security-link(
+    $link as element(atom:link) ,
+    $user as xs:string? ,
+    $roles as xs:string*
+) as element(atom:link)
+{
+
+    (: deal with cyclic expansion :)
+    
+    let $log := util:log( "debug" , "expand-security-link" )
+    let $log := util:log( "debug" , $link )
+    let $visited := request:get-attribute( 'atombeat.link-expansion-plugin.visited' )
+    let $uri := $link/@href cast as xs:string
+    let $log := util:log( "debug" , $visited )
+    
+    return
+    
+        if ( $uri = $visited ) then 
+        
+            let $log := util:log( "debug" , "not expanding, already visited" )
+            return $link (: do not expand :) 
+        
+        else
+        
+            (: TODO what if href uri has query params, need to parse out? :)
+            
+            let $path-info := substring-after( $link/@href , $config:security-service-url )
+            
+            let $request :=
+                <request>
+                    <path-info>{$path-info}</path-info>
+                    <method>GET</method>
+                    <headers>
+                        <header>
+                            <name>Accept</name>
+                            <value>application/atom+xml</value>
+                        </header>
+                    </headers>
+                    <parameters/>
+                    <user>{$user}</user>
+                    <roles>
+                    {
+                        for $role in $roles return <role>{$role}</role>
+                    }
+                    </roles>
+                </request>
+                
+            let $remember := request:set-attribute( 'atombeat.link-expansion-plugin.visited' , ( $visited , $uri ) )
+            let $response := plugin-util:security-protocol-do-get( $request )
+            let $log := util:log( "debug" , $response )
+            
+            return
+                
+                if (
+                    $response/status = 200 
+                    and $response/body/@type='xml'        
+                ) then
+                    <atom:link>
+                    {
+                        $link/attribute::* ,
+                        $link/child::* ,
+                        <ae:inline>{$response/body/*}</ae:inline>
+                    }
+                    </atom:link>
+                else $link
+
+};
 
 
 

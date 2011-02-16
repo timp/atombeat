@@ -1108,24 +1108,32 @@ declare function atom-protocol:do-get-member(
 ) as element(response)
 {
     
-    let $header-if-none-match := xutil:get-header( "If-None-Match" , $request )
+    (: additional check here in case function is called directly from an external XQuery :)
     
-    return 
+    if ( not( atomdb:member-available( $request/path-info/text() ) ) ) then
     
-        if ( exists( $header-if-none-match ) )
+        common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request )
         
-        then atom-protocol:do-conditional-get-member( $request )
-        
-        else
+    else
 
-            (: 
-             : Here we bottom out at the "retrieve-member" operation.
-             :)
+        let $header-if-none-match := xutil:get-header( "If-None-Match" , $request )
         
-        	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-retrieve-member" ) , 2 )
-        	
-            return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request , () )
-
+        return 
+        
+            if ( exists( $header-if-none-match ) )
+            
+            then atom-protocol:do-conditional-get-member( $request )
+            
+            else
+    
+                (: 
+                 : Here we bottom out at the "retrieve-member" operation.
+                 :)
+            
+            	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-retrieve-member" ) , 2 )
+            	
+                return common-protocol:apply-op( $CONSTANT:OP-RETRIEVE-MEMBER , $op , $request , () )
+    
 };
 
 
@@ -1275,13 +1283,21 @@ declare function atom-protocol:do-get-collection(
 ) as element(response)
 {
 
-    (: 
-     : Here we bottom out at the LIST_COLLECTION operation.
-     :)
+    (: additional check here in case function is called directly from an external XQuery :)
+    
+    if ( not( atomdb:collection-available( $request/path-info/text() ) ) ) then
+    
+        common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request )
+        
+    else
 
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-list-collection" ) , 2 )
-	
-    return common-protocol:apply-op( $CONSTANT:OP-LIST-COLLECTION , $op , $request , () )
+        (: 
+         : Here we bottom out at the LIST_COLLECTION operation.
+         :)
+    
+    	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-list-collection" ) , 2 )
+    	
+        return common-protocol:apply-op( $CONSTANT:OP-LIST-COLLECTION , $op , $request , () )
     
 };
 
@@ -1384,15 +1400,20 @@ declare function atom-protocol:do-delete-member(
          : resource.
          :)
          
-        if ( atomdb:media-link-available( $request-path-info ) )
+        if ( atomdb:media-link-available( $request-path-info ) ) then
         
-        then 
         	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-delete-media" ) , 2 )
         	return common-protocol:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op, $request, () )
         
-        else 
-        	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-delete-member" ) , 2 )
+        else if ( atomdb:member-available( $request-path-info ) ) then
+
+            let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-delete-member" ) , 2 )
         	return common-protocol:apply-op( $CONSTANT:OP-DELETE-MEMBER , $op , $request , () )
+        	
+        else
+        
+            (: additional check here in case function is called directly from an external XQuery :)
+            common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request )
 			
 };
 
@@ -1435,11 +1456,19 @@ declare function atom-protocol:do-delete-media(
 ) as element(response)
 {
 
-    (: here we bottom out at the "delete-media" operation :)
+    (: additional check here in case function is called directly from an external XQuery :)
     
-	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-delete-media" ) , 2 )
-	
-	return common-protocol:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op , $request , () )
+    if ( not( atomdb:media-resource-available( $request/path-info/text() ) ) ) then
+    
+        common-protocol:do-not-found( $CONSTANT:OP-ATOM-PROTOCOL-ERROR , $request )
+        
+    else
+
+        (: here we bottom out at the "delete-media" operation :)
+        
+    	let $op := util:function( QName( "http://purl.org/atombeat/xquery/atom-protocol" , "atom-protocol:op-delete-media" ) , 2 )
+    	
+    	return common-protocol:apply-op( $CONSTANT:OP-DELETE-MEDIA , $op , $request , () )
 
 };
 
