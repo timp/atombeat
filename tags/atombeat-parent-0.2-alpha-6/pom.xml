@@ -1,0 +1,87 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>org.atombeat</groupId>
+  <artifactId>atombeat-parent</artifactId>
+  <version>0.2-alpha-6</version>
+  <packaging>pom</packaging>
+  <name>atombeat-parent</name>
+  <modules>
+    <module>atombeat-xquery-functions</module>
+    <module>atombeat-servlet-filters</module>
+    <module>atombeat-service</module>
+    <module>atombeat-exist-full</module>
+    <module>atombeat-exist-minimal</module>
+    <module>atombeat-exist-full-secure</module>
+    <module>atombeat-exist-minimal-secure</module>
+    <module>atombeat-orbeon-full</module>
+    <module>atombeat-orbeon-minimal</module>
+    <module>atombeat-orbeon-full-secure</module>
+    <module>atombeat-orbeon-minimal-secure</module>
+    <module>atombeat-integration-tests</module>
+  </modules>
+  <scm>
+    <connection>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-6</connection>
+    <developerConnection>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-6</developerConnection>
+    <url>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-6</url>
+  </scm>  
+  <repositories>
+    <repository>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+      <id>central</id>
+      <name>Maven Repository Switchboard</name>
+      <url>http://repo1.maven.org/maven2</url>
+    </repository>
+    <repository>
+      <id>repository.springframework.maven.release</id>
+      <name>Spring Framework Maven Release Repository</name>
+      <url>http://maven.springframework.org/release</url>
+    </repository>
+    <repository>
+     <id>repository.springframework.maven.milestone</id>
+     <name>Spring Framework Maven Milestone Repository</name>
+     <url>http://maven.springframework.org/milestone</url>
+    </repository>
+    <repository>
+      <id>atombeat</id>
+      <name>AtomBeat Non-Maven Dependencies Repository</name>
+      <url>http://atombeat.googlecode.com/svn/repository</url>
+    </repository>
+    <repository>
+      <id>cggh</id>
+      <name>CGGH Maven Repository</name>
+      <url>http://cloud1.cggh.org/maven2/</url>
+    </repository>
+  </repositories>
+  
+  <distributionManagement>
+    <repository>
+      <id>cggh</id>
+      <url>scp://cloud1.cggh.org/var/www/maven2/</url>
+    </repository>
+    <snapshotRepository>
+      <id>cggh</id>
+      <url>scp://cloud1.cggh.org/var/www/maven2/</url>
+    </snapshotRepository>
+  </distributionManagement>
+  
+  <properties>
+   	<org.springsecurity.version>3.1.0.M1</org.springsecurity.version>
+   	<org.exist-db.version>1.4.0</org.exist-db.version>
+   	<com.orbeon.version>3.8.0-CE-exist-1.4.0</com.orbeon.version>
+  </properties>
+  <build>
+    <plugins>
+     	<plugin>
+      		<groupId>org.apache.maven.plugins</groupId>
+      		<artifactId>maven-compiler-plugin</artifactId>
+		      <configuration>
+          <source>1.6</source>
+          <target>1.6</target>
+		      </configuration>
+     	</plugin>
+    </plugins>
+  </build>
+</project>
+
