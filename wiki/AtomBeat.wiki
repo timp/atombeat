@@ -36,7 +36,9 @@ Some other documentation, may be part-baked: TombstonesDesign DevelopingPlugins
 
 See also the ReleaseNotes wiki page and the [http://groups.google.com/group/atombeat AtomBeat mailing list].
 
-  * *1 February 2011* - 0.2-alpha-5 is released, including support for server-driven content negotiation.
+  * *16 February 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/eb47abe8e3d9cbda 0.2-alpha-6 is released], including support for content negotiation and access control extended to service documents, an improved link expansions plugin, and improved support for programmatically invoking Atom protocol operations from AtomBeat plugins and other XQueries.
+
+  * *1 February 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/56771c4536ce502 0.2-alpha-5 is released], including support for server-driven content negotiation.
 
   * *19 January 2011* - 0.2-alpha-4 is released, including support for referencing security groups defined in Atom collection members, A first draft of a TutorialAccessControl is also available.
   
