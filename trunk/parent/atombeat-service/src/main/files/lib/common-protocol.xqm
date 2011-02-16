@@ -511,7 +511,7 @@ declare function common-protocol:augment-errors(
     	                <value>{$CONSTANT:MEDIA-TYPE-XML}</value>
     	            </header>
     	        </headers>
-    	        <body>
+    	        <body type='xml'>
             		<error>
             		    <status>{$status}</status>
             			<message>{$response/body/text()}</message>

@@ -256,7 +256,7 @@ declare function history-plugin:after-retrieve-member(
 	        $response/status ,
 	        $response/headers
 	    }
-	        <body>{$response-data}</body>
+	        <body type='xml'>{$response-data}</body>
 	    </response>
 
 };
@@ -279,7 +279,7 @@ declare function history-plugin:after-create-member(
 	        $response/status ,
 	        $response/headers
 	    }
-	        <body>{$response-data}</body>
+	        <body type='xml'>{$response-data}</body>
 	    </response>
 
 };
@@ -302,7 +302,7 @@ declare function history-plugin:after-update-member(
             $response/status ,
             $response/headers
         }
-            <body>{$response-data}</body>
+            <body type='xml'>{$response-data}</body>
         </response>
 	
 };
@@ -345,7 +345,7 @@ declare function history-plugin:after-list-collection(
                     $response/status ,
                     $response/headers
                 }
-                    <body>{$response-data}</body>
+                    <body type='xml'>{$response-data}</body>
                 </response>
                 
         else $response        

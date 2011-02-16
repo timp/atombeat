@@ -163,10 +163,14 @@ declare function atomdb:db-path-to-request-path-info(
 
 declare function atomdb:edit-path-info( $entry as element(atom:entry) ) as xs:string?
 {
-    let $uri := $entry/atom:link[@rel='edit']/@href
+    let $href := $entry/atom:link[@rel='edit']/@href
     return
-        if ( starts-with( $uri , $config:edit-link-uri-base ) )
-        then substring-after( $uri , $config:edit-link-uri-base )
+        if ( exists( $href ) ) then 
+            let $uri := $href cast as xs:string
+            return
+                if ( starts-with( $uri , $config:edit-link-uri-base ) )
+                then substring-after( $uri , $config:edit-link-uri-base )
+                else ()
         else ()
 };
 
@@ -174,11 +178,16 @@ declare function atomdb:edit-path-info( $entry as element(atom:entry) ) as xs:st
 
 declare function atomdb:edit-media-path-info( $entry as element(atom:entry) ) as xs:string?
 {
-    let $uri := $entry/atom:link[@rel='edit-media']/@href
+    let $href := $entry/atom:link[@rel='edit-media']/@href
     return
-        if ( starts-with( $uri , $config:edit-media-link-uri-base ) )
-        then substring-after( $uri , $config:edit-media-link-uri-base )
+        if ( exists( $href ) ) then 
+            let $uri := $href cast as xs:string
+            return
+                if ( starts-with( $uri , $config:edit-media-link-uri-base ) )
+                then substring-after( $uri , $config:edit-media-link-uri-base )
+                else ()
         else ()
+
 };
 
 
