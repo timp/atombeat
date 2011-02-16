@@ -23,12 +23,12 @@ E.g., a collection defined like:
 <app:collection xmlns:app='http://www.w3.org/2007/app' href='http://localhost:8081/atombeat/service/content/test'>
   <app:categories scheme='http://example.org/scheme' fixed='yes'>
     <atom:category term='foo' label='Foo'/>
- 			<atom:category term='bar' label='Bar' default='yes'/>
-		</app:categories>
+    <atom:category term='bar' label='Bar' default='yes'/>
+  </app:categories>
 </app:collection>
 }}}
 
-...will mean that any member of the collection must contain one category with scheme http://example.org/scheme from the given list. Any categories with scheme http://example.org/scheme but not in this list will be stripped automatically. If no categories from this list are given, the default category will be automatically added. Categories in schemes other than http://example.org/scheme will be uncontrolled, i.e., clients are free to do what they want.
+...will mean that any member of the collection must contain one category with scheme http://example.org/scheme from the given list (either 'foo' or 'bar). Any categories with scheme http://example.org/scheme but not in this list will be stripped automatically. If no categories from this list are given, the default category ('bar') will be automatically added. Categories in schemes other than http://example.org/scheme will be uncontrolled, i.e., clients are free to do what they want.
 
 == issue 151 service links ==
 
