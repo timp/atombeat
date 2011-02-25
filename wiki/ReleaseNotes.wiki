@@ -15,7 +15,7 @@ This bug highlights the fact that it is *not safe* to use the eXist request: fun
 
 Note that, in order to allow plugins to pass data safely from the before phase of execution to the after phase, the return signature of plugin functions has been slightly modified. 
 
-Any existing plugin executing in the before phase now has a choice. Before plugins can return a single item, which will be treated as the (possibly modified) request entity, as in previous releases. This means that this release should be backwards-compatible with most existing plugin code. In addition, in this release, before plugins can also return a sequence of two items, in which case the first item will be treated as the (possibly modified) request entity, and the second item will be treated as a set of request attributes to be incorporated into the request. E.g.:
+Any existing plugin executing in the before phase now has a choice. Plugin functions in the before phase can return a single item, which will be treated as the (possibly modified) request entity, as in previous releases. This means that this release should be backwards-compatible with plugin functions written to the 0.2-alpha-6 signature. In addition, in this release, before plugins can also return a sequence of two items, in which case the first item will be treated as the (possibly modified) request entity, and the second item will be treated as a set of request attributes to be incorporated into the request. E.g.:
 
 {{{
 declare function example-plugin:before(
