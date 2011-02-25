@@ -22,8 +22,6 @@ declare function conneg-plugin:before(
 {
 
     let $request-path-info := $request/path-info/text()
-	let $message := concat( "conneg-plugin - before: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := util:log( "info" , $message )
 	
 	return
 	
@@ -54,8 +52,6 @@ declare function conneg-plugin:before(
             ) 
 	    ) then
 
-            let $log := util:log( "debug" , "preparing for conneg" )
-            
         	(: look for output param and accept header :)
         	let $output-param := xutil:get-parameter( "output" , $request )
         	let $accept := xutil:get-header( "Accept" , $request )
@@ -69,8 +65,6 @@ declare function conneg-plugin:before(
         	    else if ( $operation = $CONSTANT:OP-RETRIEVE-SERVICE ) then conneg-plugin:negotiate-service( $accept ) (: different variants for service document :)
         	    else conneg-plugin:negotiate( $accept )
 
-            let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
-            
             return
             
                 if ( exists( $output-key ) ) then 
@@ -201,11 +195,6 @@ declare function conneg-plugin:after(
 {
 
     let $request-path-info := $request/path-info/text()
-	let $message := concat( "conneg-plugin after: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := util:log( "info" , $message )
-	let $log := util:log( "debug" , "request..." )
-	let $log := util:log( "debug" , $request )
-	
 	let $atom-data := $response/body/(atom:entry|atom:feed|app:service)
 
     return
@@ -223,8 +212,6 @@ declare function conneg-plugin:after(
             let $augmented-response := conneg-plugin:replace-response-body( $response, $augmented-data )
             
         	let $output-key := $request/attributes/attribute[name='atombeat.conneg-plugin.output-key']/value/text()
-        	
-        	let $log := util:log( "debug" , concat( "output key: " , if ( exists( $output-key ) ) then $output-key else "empty" ) )
         	
             return 
                 if ( exists( $output-key ) and not( $output-key eq "" ) ) then
@@ -436,8 +423,6 @@ declare function conneg-plugin:negotiate-common(
     $variants-config as element(variants)
 ) as xs:string? {
 
-    let $log := util:log( "debug" , $accept-header )
-
     (: first parse the accept header :)
     let $accepts :=
 (:
@@ -468,8 +453,6 @@ declare function conneg-plugin:negotiate-common(
                     <quality>{$quality}</quality>
                 </accept>
                 
-    let $log := util:log( "debug" , $accepts )
-            
     (: next, try to find variants that match the accept header :)
     let $variants :=
         for $variant in $variants-config/variant
@@ -481,8 +464,6 @@ declare function conneg-plugin:negotiate-common(
             or ( $accepts/media-range = '*/*' ) (: match any :)
         return $variant
         
-    let $log := util:log( "debug" , $variants )
-    
     return
     
         if ( empty( $variants ) ) then () (: bug out, not acceptable :)
@@ -501,26 +482,16 @@ declare function conneg-plugin:negotiate-common(
                 )[1]
                 return xs:float( $variant/qs ) * xs:float( $accept/quality )
         
-            let $log := util:log( "debug" , $scores )
-                    
             let $top-score := max( $scores )
-        
-            let $log := util:log( "debug" , $top-score )
         
             let $indexes := index-of ( $scores , $top-score )
             
-            let $log := util:log( "debug" , $indexes )
-                        
             let $index := 
                 if ( $indexes instance of xs:integer ) then $indexes
                 else $indexes[1]
                 
-            let $log := util:log( "debug" , $index )
-                        
             let $winner := $variants[$index]
         
-            let $log := util:log( "debug" , $winner )
-                        
             return $winner/output-key cast as xs:string
     
 };

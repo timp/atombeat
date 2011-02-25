@@ -354,11 +354,6 @@ declare function common-protocol:apply-before(
 			            common-protocol:set-request-attributes( $request , $advice[2] )
 			        else $request
 			        
-			    let $log := util:log( "debug" , "common-protocol:apply-before() entity advice...")
-			    let $log := util:log( "debug" , $entity-advice )
-			    let $log := util:log( "debug" , "common-protocol:apply-before() request advice...")
-			    let $log := util:log( "debug" , $request-advice )
-			    
 			    (: recursively call until before functions are exhausted :)
 			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $op-name , $request-advice , $entity-advice )
 
@@ -511,7 +506,6 @@ declare function common-protocol:respond(
                 ) ,
                 ' '
             )
-            let $log := util:log( "debug" , $serialize-option )
             let $set-serialize-option := util:declare-option( 'exist:serialize' , $serialize-option )
             return $response/body/*
             

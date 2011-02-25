@@ -24,8 +24,6 @@ declare function tombstones-plugin:before(
 {
 
     let $request-path-info := $request/path-info/text()
-	let $message := concat( "before: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := util:log( "info" , $message )
 	
 	return 
 	
@@ -109,8 +107,6 @@ declare function tombstones-plugin:after(
 {
 
     let $request-path-info := $request/path-info/text()
-	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
-	let $log := util:log( "info" , $message )
 	
     return 
     
