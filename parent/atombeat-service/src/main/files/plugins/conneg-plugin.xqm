@@ -32,7 +32,6 @@ declare function conneg-plugin:before(
                 $CONSTANT:OP-CREATE-MEMBER ,
                 $CONSTANT:OP-RETRIEVE-MEMBER ,
                 $CONSTANT:OP-UPDATE-MEMBER , 
-                $CONSTANT:OP-DELETE-MEMBER ,
                 $CONSTANT:OP-CREATE-MEDIA ,
                 $CONSTANT:OP-UPDATE-MEDIA ,
                 $CONSTANT:OP-CREATE-COLLECTION ,
