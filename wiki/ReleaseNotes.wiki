@@ -7,6 +7,47 @@
 
 = 0.2-alpha-7-SNAPSHOT =
 
+== issue 157 null pointer exception during internal request call to request:set-attribute ==
+
+In the previous release (0.2-alpha-6) there is a bug related to internal requests (e.g., direct calls to atom-protocol:do-`*` or plugin-util:`*`), where some modules or plugins executing during an internal requests attempt to access the context HTTP request object via the eXist request: function module. This bug can manifest as a 500 response and a null pointer exception in the server's stack trace.
+
+This bug highlights the fact that it is *not safe* to use the eXist request: function module in *any* code that might execute as part of an internal request. This includes plugin functions and configuration modules such as `config/shared.xqm`. Any information required from the request *must* be obtained from the $request variable passed in to protocol and plugin functions. In particular, it is *not* safe to use request:set-attribute() to pass data from the before phase of execution to the after phase. All uses of request:set-attribute() within AtomBeat plugins has been removed.
+
+Note that, in order to allow plugins to pass data safely from the before phase of execution to the after phase, the return signature of plugin functions has been slightly modified. 
+
+Any existing plugin executing in the before phase now has a choice. Before plugins can return a single item, which will be treated as the (possibly modified) request entity, as in previous releases. This means that this release should be backwards-compatible with most existing plugin code. In addition, in this release, before plugins can also return a sequence of two items, in which case the first item will be treated as the (possibly modified) request entity, and the second item will be treated as a set of request attributes to be incorporated into the request. E.g.:
+
+{{{
+declare function example-plugin:before(
+    $operation as xs:string ,
+    $request as element(request) ,
+    $entity as item()*
+) as item()*
+{
+
+    let $modified-entity := 
+        if ( empty( $entity) ) then <void/>
+        else local:do-something-to-request-entity( $entity )
+    
+    let $set-request-attributes :=
+        <attributes>
+            <attribute>
+                <name>example-plugin.foo</name>
+                <value>bar</value>
+            </attribute>
+        </attributes>
+            
+    return ( $modified-entity , $set-request-attributes )
+    
+};
+}}}
+
+The set request attribute can be accessed in downstream plugins via the $request variable, e.g., `$request/attributes/attribute[name='example-plugin.foo']/value/text()`. You can include XML fragments within the attribute value as well as atomic datatypes.
+
+Note that any attributes already in the request with the same attribute name(s) as those returned by the plugin funciton will be replaced, but any other request attributes already present will be retained in the request. I.e., this is not a complete replacement of all request attributes, just an instruction to set given named request attributes.
+
+Note also that care must be taken to handle cases where the request entity is empty (e.g., for a GET or DELETE request) and you also want to set some request attributes. In this case, use a `<void/>` XML fragment in place of the entity in the response sequence.
+
 = 0.2-alpha-6 =
 
 == issue 155 proper link expansion using internal sub-requests ==
