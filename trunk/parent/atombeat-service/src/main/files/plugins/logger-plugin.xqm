@@ -29,7 +29,7 @@ declare function logger-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()

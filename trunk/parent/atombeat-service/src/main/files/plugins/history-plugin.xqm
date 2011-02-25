@@ -209,7 +209,7 @@ declare function history-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()
@@ -244,7 +244,7 @@ declare function history-plugin:after(
 declare function history-plugin:after-retrieve-member(
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
 	let $response-data := history-plugin:append-history-link( $response/body/atom:entry )
@@ -267,7 +267,7 @@ declare function history-plugin:after-retrieve-member(
 declare function history-plugin:after-create-member(
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
 	let $response-data := history-plugin:append-history-link( $response/body/atom:entry )
@@ -290,7 +290,7 @@ declare function history-plugin:after-create-member(
 declare function history-plugin:after-update-member(
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
 	let $response-data := history-plugin:append-history-link( $response/body/atom:entry ) 
@@ -313,7 +313,7 @@ declare function history-plugin:after-update-member(
 declare function history-plugin:after-list-collection(
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $collection-path-info := $request/path-info/text()

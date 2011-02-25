@@ -111,21 +111,19 @@ declare function link-expansion-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
     
     let $log := util:log( "debug" , "link-expansion-plugin:after ... response before processing:")
     let $log := util:log( "debug" , $response)
 
     let $body := $response/body
-    let $user := $request/user/text()
-    let $roles := for $role in $request/roles/role return $role cast as xs:string
     
     let $augmented-body :=
-        if ( $body/atom:feed )
-        then <body type='xml'>{link-expansion-plugin:augment-feed( $body/atom:feed , $user , $roles )}</body>
-        else if ( $body/atom:entry )
-        then <body type='xml'>{link-expansion-plugin:augment-entry( $body/atom:entry , $user , $roles )}</body>
+        if ( exists( $body/atom:feed ) )
+        then <body type='xml'>{link-expansion-plugin:augment-feed( $body/atom:feed , $request )}</body>
+        else if ( exists( $body/atom:entry ) )
+        then <body type='xml'>{link-expansion-plugin:augment-entry( $body/atom:entry , $request )}</body>
         else $body
         
     let $modified-response :=
@@ -149,13 +147,11 @@ declare function link-expansion-plugin:after(
 
 declare function link-expansion-plugin:augment-feed(
     $feed as element(atom:feed) , 
-    $user as xs:string? ,
-    $roles as xs:string*
+	$request as element(request) 
 ) as element(atom:feed)
 {
 
     let $match-feed-rels := tokenize( $feed/atombeat:config-link-expansion/atombeat:config[@context="feed"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
-    
     let $match-entry-in-feed-rels := tokenize( $feed/atombeat:config-link-expansion/atombeat:config[@context="entry-in-feed"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
     
     return
@@ -164,9 +160,9 @@ declare function link-expansion-plugin:augment-feed(
         {
             $feed/attribute::* ,
             $feed/child::*[ not( . instance of element(atom:link) ) and not( . instance of element(atom:entry) ) ] ,
-            link-expansion-plugin:expand-links( $feed/atom:link , $match-feed-rels , $user , $roles ) ,
+            link-expansion-plugin:expand-links( $feed/atom:link , $match-feed-rels , $request ) ,
             for $entry in $feed/atom:entry
-            return link-expansion-plugin:augment-entry( $entry , $match-entry-in-feed-rels , $user , $roles )
+            return link-expansion-plugin:augment-entry( $entry , $match-entry-in-feed-rels , $request )
         }        
         </atom:feed>
 
@@ -176,16 +172,14 @@ declare function link-expansion-plugin:augment-feed(
 
 declare function link-expansion-plugin:augment-entry(
     $entry as element(atom:entry) , 
-    $user as xs:string? ,
-    $roles as xs:string*
+	$request as element(request) 
 ) as element(atom:entry)
 {
     if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:edit-link-uri-base ) ) then
         let $collection-path-info := atomdb:collection-path-info( $entry )
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $match-entry-rels := tokenize( $feed/atombeat:config-link-expansion/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
-            
-        return link-expansion-plugin:augment-entry( $entry , $match-entry-rels , $user , $roles )
+        return link-expansion-plugin:augment-entry( $entry , $match-entry-rels , $request )
 
     else $entry
 };
@@ -196,15 +190,14 @@ declare function link-expansion-plugin:augment-entry(
 declare function link-expansion-plugin:augment-entry(
     $entry as element(atom:entry) ,
     $match-rels as xs:string* ,
-    $user as xs:string? ,
-    $roles as xs:string*
+	$request as element(request) 
 ) as element(atom:entry)
 {
     <atom:entry>
     {
         $entry/attribute::* ,
         $entry/child::*[ not( . instance of element(atom:link) ) ] ,
-        link-expansion-plugin:expand-links( $entry/atom:link , $match-rels , $user , $roles )
+        link-expansion-plugin:expand-links( $entry/atom:link , $match-rels , $request )
     }        
     </atom:entry>
 };
@@ -215,8 +208,7 @@ declare function link-expansion-plugin:augment-entry(
 declare function link-expansion-plugin:expand-links(
     $links as element(atom:link)* ,
     $match-rels as xs:string* ,
-    $user as xs:string? ,
-    $roles as xs:string*
+	$request as element(request) 
 ) as element(atom:link)*
 {
 
@@ -227,11 +219,11 @@ declare function link-expansion-plugin:expand-links(
         
             if ( starts-with( $link/@href , $config:self-link-uri-base ) ) then
 
-                link-expansion-plugin:expand-atom-link( $link , $user , $roles )
+                link-expansion-plugin:expand-atom-link( $link , $request )
                 
             else if ( starts-with( $link/@href , $config:security-service-url ) ) then
             
-                link-expansion-plugin:expand-security-link( $link , $user , $roles )
+                link-expansion-plugin:expand-security-link( $link , $request )
 
             else $link
             
@@ -244,8 +236,7 @@ declare function link-expansion-plugin:expand-links(
 
 declare function link-expansion-plugin:expand-atom-link(
     $link as element(atom:link) ,
-    $user as xs:string? ,
-    $roles as xs:string*
+	$request as element(request) 
 ) as element(atom:link)
 {
 
@@ -253,9 +244,9 @@ declare function link-expansion-plugin:expand-atom-link(
     
     let $log := util:log( "debug" , "expand-atom-link" )
     let $log := util:log( "debug" , $link )
-    let $visited := request:get-attribute( 'atombeat.link-expansion-plugin.visited' )
-    let $uri := $link/@href cast as xs:string
+    let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
     let $log := util:log( "debug" , $visited )
+    let $uri := $link/@href cast as xs:string
     
     return
     
@@ -269,10 +260,13 @@ declare function link-expansion-plugin:expand-atom-link(
             (: TODO what if href uri has query params, need to parse out? :)
             
             let $log := util:log( "debug" , "not visited, expanding..." )
-            let $remember := request:set-attribute( 'atombeat.link-expansion-plugin.visited' , ( $visited , $uri ) )
+            let $new-visited := (
+                $visited ,
+                <visited>{$uri}</visited>
+            )
             let $path-info := substring-after( $uri , $config:self-link-uri-base )
             
-            let $request :=
+            let $internal-request :=
                 <request>
                     <path-info>{$path-info}</path-info>
                     <method>GET</method>
@@ -283,17 +277,21 @@ declare function link-expansion-plugin:expand-atom-link(
                         </header>
                     </headers>
                     <parameters/>
-                    <user>{$user}</user>
-                    <roles>
+                    <attributes>
+                        <attribute>
+                            <name>atombeat.link-expansion-plugin.visited</name>
+                            <value>{$new-visited}</value>
+                        </attribute>
+                    </attributes>
                     {
-                        for $role in $roles return <role>{$role}</role>
+                        $request/user ,
+                        $request/roles
                     }
-                    </roles>
                 </request>
                 
             let $log := util:log( "debug" , "making internal request..." )
             let $log := util:log( "debug" , $request )
-            let $response := plugin-util:atom-protocol-do-get( $request )
+            let $response := plugin-util:atom-protocol-do-get( $internal-request )
             let $log := util:log( "debug" , "response to internal request..." )
             let $log := util:log( "debug" , $response )
             
@@ -301,13 +299,13 @@ declare function link-expansion-plugin:expand-atom-link(
                 
                 if (
                     $response/status = 200 
-                    and $response/body/@type='xml'        
+                    and exists( $response/body/element() )        
                 ) then
                     <atom:link>
                     {
                         $link/attribute::* ,
                         $link/child::* ,
-                        <ae:inline>{$response/body/*}</ae:inline>
+                        <ae:inline>{$response/body/element()}</ae:inline>
                     }
                     </atom:link>
                 else $link
@@ -320,8 +318,7 @@ declare function link-expansion-plugin:expand-atom-link(
 
 declare function link-expansion-plugin:expand-security-link(
     $link as element(atom:link) ,
-    $user as xs:string? ,
-    $roles as xs:string*
+	$request as element(request) 
 ) as element(atom:link)
 {
 
@@ -329,9 +326,9 @@ declare function link-expansion-plugin:expand-security-link(
     
     let $log := util:log( "debug" , "expand-security-link" )
     let $log := util:log( "debug" , $link )
-    let $visited := request:get-attribute( 'atombeat.link-expansion-plugin.visited' )
-    let $uri := $link/@href cast as xs:string
+    let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
     let $log := util:log( "debug" , $visited )
+    let $uri := $link/@href cast as xs:string
     
     return
     
@@ -345,9 +342,13 @@ declare function link-expansion-plugin:expand-security-link(
             (: TODO what if href uri has query params, need to parse out? :)
             
             let $log := util:log( "debug" , "not visited, expanding..." )
+            let $new-visited := (
+                $visited ,
+                <visited>{$uri}</visited>
+            )
             let $path-info := substring-after( $uri , $config:security-service-url )
             
-            let $request :=
+            let $internal-request :=
                 <request>
                     <path-info>{$path-info}</path-info>
                     <method>GET</method>
@@ -358,29 +359,32 @@ declare function link-expansion-plugin:expand-security-link(
                         </header>
                     </headers>
                     <parameters/>
-                    <user>{$user}</user>
-                    <roles>
+                    <attributes>
+                        <attribute>
+                            <name>atombeat.link-expansion-plugin.visited</name>
+                            <value>{$new-visited}</value>
+                        </attribute>
+                    </attributes>
                     {
-                        for $role in $roles return <role>{$role}</role>
+                        $request/user ,
+                        $request/roles
                     }
-                    </roles>
                 </request>
                 
-            let $remember := request:set-attribute( 'atombeat.link-expansion-plugin.visited' , ( $visited , $uri ) )
-            let $response := plugin-util:security-protocol-do-get( $request )
+            let $response := plugin-util:security-protocol-do-get( $internal-request )
             let $log := util:log( "debug" , $response )
             
             return
                 
                 if (
                     $response/status = 200 
-                    and $response/body/@type='xml'        
+                    and exists( $response/body/element() )        
                 ) then
                     <atom:link>
                     {
                         $link/attribute::* ,
                         $link/child::* ,
-                        <ae:inline>{$response/body/*}</ae:inline>
+                        <ae:inline>{$response/body/element()}</ae:inline>
                     }
                     </atom:link>
                 else $link

@@ -71,15 +71,20 @@ declare function conneg-plugin:before(
 
             let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
             
-        	(: store output key for use in after phase :)
-        	let $attribute-name := concat( "atombeat.conneg.output-key." , $operation , "." , $request-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
-            let $store-output-key :=
-                if ( exists( $output-key ) ) then request:set-attribute( $attribute-name , $output-key )
-                else ()
-                
             return
             
-                if ( exists( $output-key ) ) then conneg-plugin:filter-request-data( $entity ) (: proceed with request processing, but filter alternate links from feeds and entries first :)
+                if ( exists( $output-key ) ) then 
+                
+                    let $modified-entity := conneg-plugin:filter-request-data( $entity )
+                	(: store output key for use in after phase :)
+                	let $set-request-attributes :=
+                        <attributes>
+                            <attribute>
+                                <name>atombeat.conneg-plugin.output-key</name>
+                                <value>{$output-key}</value>
+                            </attribute>
+                        </attributes>
+                    return ( $modified-entity , $set-request-attributes ) (: proceed with request processing, but filter alternate links from feeds and entries first :)
                 
                 else 
 
@@ -128,6 +133,8 @@ declare function conneg-plugin:filter-request-data(
     if ( $entity instance of element(atom:entry) ) then conneg-plugin:filter-entry( $entity )
     
     else if ( $entity instance of element(atom:feed) ) then conneg-plugin:filter-feed( $entity )
+    
+    else if ( empty( $entity ) ) then <void/>
     
     else $entity
     
@@ -190,12 +197,14 @@ declare function conneg-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()
-	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
+	let $message := concat( "conneg-plugin after: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
+	let $log := util:log( "debug" , "request..." )
+	let $log := util:log( "debug" , $request )
 	
 	let $atom-data := $response/body/(atom:entry|atom:feed|app:service)
 
@@ -213,10 +222,9 @@ declare function conneg-plugin:after(
         	
             let $augmented-response := conneg-plugin:replace-response-body( $response, $augmented-data )
             
-        	let $attribute-name := concat( "atombeat.conneg.output-key." , $operation , "." , $request-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
-        	let $output-key := request:get-attribute( $attribute-name )
+        	let $output-key := $request/attributes/attribute[name='atombeat.conneg-plugin.output-key']/value/text()
         	
-        	let $log := util:log( "debug" , concat( "output key: " , $output-key ) )
+        	let $log := util:log( "debug" , concat( "output key: " , if ( exists( $output-key ) ) then $output-key else "empty" ) )
         	
             return 
                 if ( exists( $output-key ) and not( $output-key eq "" ) ) then

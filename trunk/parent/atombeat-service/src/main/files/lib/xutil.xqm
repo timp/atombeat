@@ -289,6 +289,23 @@ declare function xutil:get-request-parameters() as element(parameters)
 
 
 
+declare function xutil:get-request-attributes() as element(parameters)
+{
+    <attributes>
+    {
+        for $name in request:attribute-names()
+        return
+            <attribute>
+                <name>{lower-case($name)}</name>
+                <value>{request:get-attribute($name)}</value>
+            </attribute>
+    }
+    </attributes>
+};
+
+
+
+
 declare function xutil:match-etag(
     $header-value as xs:string ,
     $etag as xs:string

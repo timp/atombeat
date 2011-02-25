@@ -30,9 +30,7 @@ declare function tombstones-plugin:before(
 	return 
 	
         if ( $operation = ( $CONSTANT:OP-DELETE-MEMBER , $CONSTANT:OP-DELETE-MEDIA ) )
-        then 
-            let $prepare := tombstones-plugin:before-delete-member-or-media( $request )
-            return $entity
+        then tombstones-plugin:before-delete-member-or-media( $request )
             
         else if ( $entity instance of element(atom:feed) )
         then tombstones-plugin:filter-feed($entity) 
@@ -46,7 +44,7 @@ declare function tombstones-plugin:before(
 
 declare function tombstones-plugin:before-delete-member-or-media(
 	$request as element(request) 
-) as empty()
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()
@@ -61,7 +59,7 @@ declare function tombstones-plugin:before-delete-member-or-media(
     
     let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
     
-    let $prepared :=
+    let $set-request-attributes :=
     
         if ( xs:boolean( $feed/@atombeat:enable-tombstones ) )
         
@@ -70,12 +68,18 @@ declare function tombstones-plugin:before-delete-member-or-media(
             let $user-name := $request/user/text()
             let $comment := xutil:get-header( "X-Atom-Tombstone-Comment" , $request )
             let $deleted-entry := tombstone-db:create-deleted-entry( $member-path-info , $user-name , $comment )
-        	let $attribute-name := concat( "atombeat.tombstone-plugin.tombstone." , $member-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
-            return request:set-attribute( $attribute-name , $deleted-entry ) (: pass to after phase so tombstone can be stored :)
+            (: pass to after phase via request attribute so tombstone can be stored :)
+            return 
+                <attributes>
+                    <attribute>
+                        <name>atombeat.tombstone-plugin.tombstone</name>
+                        <value>{$deleted-entry}</value>
+                    </attribute>
+                </attributes>
             
         else ()
         
-    return ()
+    return ( <void/> , $set-request-attributes )
     
 };
 
@@ -101,7 +105,7 @@ declare function tombstones-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()
@@ -111,7 +115,7 @@ declare function tombstones-plugin:after(
     return 
     
         if ( $operation = $CONSTANT:OP-DELETE-MEMBER or $operation = $CONSTANT:OP-DELETE-MEDIA )
-        then tombstones-plugin:after-delete-member-or-media( $request-path-info , $response )
+        then tombstones-plugin:after-delete-member-or-media( $request , $response )
         else if ( $operation = $CONSTANT:OP-LIST-COLLECTION ) 
         then tombstones-plugin:after-list-collection( $request-path-info , $response )
         else $response
@@ -122,10 +126,12 @@ declare function tombstones-plugin:after(
 
 
 declare function tombstones-plugin:after-delete-member-or-media(
-    $request-path-info as xs:string ,
+	$request as element(request) ,
     $response as element(response)
-) as element(response)
+) as item()*
 {
+
+    let $request-path-info := $request/path-info/text()
 
     let $member-path-info :=
         if ( ends-with( $request-path-info , ".media" ) )
@@ -133,8 +139,7 @@ declare function tombstones-plugin:after-delete-member-or-media(
         then replace( $request-path-info , "^(.*)\.media$" , "$1" )
         else $request-path-info
 
-    let $attribute-name := concat( "atombeat.tombstone-plugin.tombstone." , $member-path-info ) (: make this unique, so it doesn't foul up other requests if called internall :)
-    let $deleted-entry := request:get-attribute( $attribute-name )
+    let $deleted-entry := $request/attributes/attribute[name eq 'atombeat.tombstone-plugin.tombstone']/value/at:deleted-entry
     
     return 
     
@@ -167,7 +172,7 @@ declare function tombstones-plugin:after-delete-member-or-media(
 declare function tombstones-plugin:after-list-collection(
     $request-path-info as xs:string ,
     $response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $feed := $response/body/atom:feed
@@ -209,7 +214,7 @@ declare function tombstones-plugin:after-error(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()
