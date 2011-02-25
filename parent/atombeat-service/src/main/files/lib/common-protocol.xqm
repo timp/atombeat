@@ -35,6 +35,7 @@ declare function common-protocol:get-request() as element(request)
 	let $request-path-info := lower-case( request:get-attribute( $common-protocol:param-request-path-info ) )
 	let $request-headers := xutil:get-request-headers()
 	let $request-parameters := xutil:get-request-parameters()
+	let $request-attributes := xutil:get-request-attributes()
     let $user := request:get-attribute( $config:user-name-request-attribute-key )
     let $roles :=
         <roles>
@@ -50,6 +51,7 @@ declare function common-protocol:get-request() as element(request)
         {
             $request-headers ,
             $request-parameters ,
+            $request-attributes ,
             if ( exists( $user ) ) then <user>{$user}</user> else () ,
             $roles
         }
@@ -289,11 +291,13 @@ declare function common-protocol:apply-op(
 		  
 		else
 		
-			let $modified-entity := $before-advice (: request data may have been modified by plugins :)
+		    let $request-advice := $before-advice[1] 
 
-			let $response := util:call( $op , $request , $modified-entity )
+		    let $entity-advice := $before-advice[2] 
+		        
+			let $response := util:call( $op , $request-advice , $entity-advice )
 			 
-			let $after-advice := common-protocol:apply-after( plugin:after() , $op-name , $request , $response )
+			let $after-advice := common-protocol:apply-after( plugin:after() , $op-name , $request-advice , $response )
 			
 			let $response := $after-advice
 					    
@@ -326,7 +330,7 @@ declare function common-protocol:apply-before(
 	 
 	if ( empty( $functions ) )
 	
-	then $entity
+	then ( $request , $entity )
 	
 	else
 	
@@ -342,13 +346,46 @@ declare function common-protocol:apply-before(
 
 			else 
 			
-			    let $modified-entity := $advice
+			    let $entity-advice := 
+			        if ( $advice[1] instance of element(void) ) then () else $advice[1]
+			        
+			    let $request-advice := 
+			        if ( $advice[2] instance of element(attributes) ) then 
+			            common-protocol:set-request-attributes( $request , $advice[2] )
+			        else $request
+			        
+			    let $log := util:log( "debug" , "common-protocol:apply-before() entity advice...")
+			    let $log := util:log( "debug" , $entity-advice )
+			    let $log := util:log( "debug" , "common-protocol:apply-before() request advice...")
+			    let $log := util:log( "debug" , $request-advice )
 			    
 			    (: recursively call until before functions are exhausted :)
-			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $op-name , $request , $modified-entity )
+			    return common-protocol:apply-before( subsequence( $functions , 2 ) , $op-name , $request-advice , $entity-advice )
 
 };
 
+
+
+declare function common-protocol:set-request-attributes(
+    $request as element(request) ,
+    $set-attributes as element(attributes)
+) as element(request)
+{
+    <request>
+    {
+        $request/attribute::* ,
+        $request/child::*[not( . instance of element(attributes) )] ,
+        <attributes>
+        {
+            for $attribute in $request/attributes/attribute
+            where empty( $set-attributes/attribute[name eq $attribute/name] )
+            return $attribute ,
+            $set-attributes/attribute
+        }
+        </attributes>
+    }
+    </request>
+};
 
 
 
@@ -370,13 +407,18 @@ declare function common-protocol:apply-after(
 	
 		let $advice := util:call( $functions[1] , $op-name , $request , $response )
 		
-		let $modified-response := $advice
-		
+		let $modified-response := $advice[1]
+
+	    let $modified-request := 
+	        if ( $advice[2] instance of element(attributes) ) then 
+	            common-protocol:set-request-attributes( $request , $advice[2] )
+	        else $request
+
 		return
 		
 		    if ( exists( $modified-response ) and $modified-response instance of element(response) ) 
 		    
-		    then common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $request , $modified-response )
+		    then common-protocol:apply-after( subsequence( $functions , 2 ) , $op-name , $modified-request , $modified-response )
 		    
 		    else common-protocol:do-internal-server-error( $op-name , $request , "A plugin function failed to return a valid response; expected element(response)." )
 

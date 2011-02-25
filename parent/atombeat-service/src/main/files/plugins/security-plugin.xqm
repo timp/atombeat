@@ -169,7 +169,7 @@ declare function security-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $request-path-info := $request/path-info/text()
@@ -235,7 +235,7 @@ declare function security-plugin:after-create-member(
 	$request-path-info as xs:string ,
 	$user as xs:string ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:entry
@@ -267,7 +267,7 @@ declare function security-plugin:after-multi-create(
 	$request-path-info as xs:string ,
 	$user as xs:string ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:feed
@@ -308,7 +308,7 @@ declare function security-plugin:after-multi-create(
 declare function security-plugin:after-update-member(
 	$request-path-info as xs:string ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:entry
@@ -333,7 +333,7 @@ declare function security-plugin:after-create-media(
     $request-path-info as xs:string ,
 	$user as xs:string ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:entry
@@ -371,7 +371,7 @@ declare function security-plugin:after-create-media(
 declare function security-plugin:after-update-media(
     $request-path-info as xs:string ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:entry
@@ -398,7 +398,7 @@ declare function security-plugin:after-create-collection(
 	$user as xs:string? ,
 	$roles as xs:string* ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     if ( $response/status cast as xs:integer = $CONSTANT:STATUS-SUCCESS-CREATED )
@@ -435,7 +435,7 @@ declare function security-plugin:after-update-collection(
 	$user as xs:string? ,
 	$roles as xs:string* ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:feed
@@ -462,7 +462,7 @@ declare function security-plugin:after-list-collection(
 	$user as xs:string? ,
 	$roles as xs:string* ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:feed
@@ -487,7 +487,7 @@ declare function security-plugin:after-list-collection(
 declare function security-plugin:after-retrieve-member(
 	$request-path-info as xs:string ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $response-data := $response/body/atom:entry
@@ -645,7 +645,7 @@ declare function security-plugin:after-retrieve-service(
 	$user as xs:string? ,
 	$roles as xs:string* ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
 
     let $service := $response/body/app:service

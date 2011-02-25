@@ -111,7 +111,7 @@ declare function link-extensions-plugin:after(
 	$operation as xs:string ,
 	$request as element(request) ,
 	$response as element(response)
-) as element(response)
+) as item()*
 {
     
     let $body := $response/body
