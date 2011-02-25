@@ -114,9 +114,6 @@ declare function link-expansion-plugin:after(
 ) as item()*
 {
     
-    let $log := util:log( "debug" , "link-expansion-plugin:after ... response before processing:")
-    let $log := util:log( "debug" , $response)
-
     let $body := $response/body
     
     let $augmented-body :=
@@ -134,9 +131,6 @@ declare function link-expansion-plugin:after(
             $augmented-body
         }
         </response>
-
-    let $log := util:log( "debug" , "link-expansion-plugin:after ... response after processing:" )
-    let $log := util:log( "debug" , $modified-response )
 
     return $modified-response
     
@@ -242,24 +236,19 @@ declare function link-expansion-plugin:expand-atom-link(
 
     (: deal with cyclic expansion :)
     
-    let $log := util:log( "debug" , "expand-atom-link" )
-    let $log := util:log( "debug" , $link )
     let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
-    let $log := util:log( "debug" , $visited )
     let $uri := $link/@href cast as xs:string
     
     return
     
         if ( $uri = $visited ) then 
         
-            let $log := util:log( "debug" , "not expanding, already visited" )
             return $link (: do not expand :) 
         
         else
         
             (: TODO what if href uri has query params, need to parse out? :)
             
-            let $log := util:log( "debug" , "not visited, expanding..." )
             let $new-visited := (
                 $visited ,
                 <visited>{$uri}</visited>
@@ -289,11 +278,7 @@ declare function link-expansion-plugin:expand-atom-link(
                     }
                 </request>
                 
-            let $log := util:log( "debug" , "making internal request..." )
-            let $log := util:log( "debug" , $request )
             let $response := plugin-util:atom-protocol-do-get( $internal-request )
-            let $log := util:log( "debug" , "response to internal request..." )
-            let $log := util:log( "debug" , $response )
             
             return
                 
@@ -324,24 +309,19 @@ declare function link-expansion-plugin:expand-security-link(
 
     (: deal with cyclic expansion :)
     
-    let $log := util:log( "debug" , "expand-security-link" )
-    let $log := util:log( "debug" , $link )
     let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
-    let $log := util:log( "debug" , $visited )
     let $uri := $link/@href cast as xs:string
     
     return
     
         if ( $uri = $visited ) then 
         
-            let $log := util:log( "debug" , "not expanding, already visited" )
             return $link (: do not expand :) 
         
         else
         
             (: TODO what if href uri has query params, need to parse out? :)
             
-            let $log := util:log( "debug" , "not visited, expanding..." )
             let $new-visited := (
                 $visited ,
                 <visited>{$uri}</visited>
@@ -372,7 +352,6 @@ declare function link-expansion-plugin:expand-security-link(
                 </request>
                 
             let $response := plugin-util:security-protocol-do-get( $internal-request )
-            let $log := util:log( "debug" , $response )
             
             return
                 
