@@ -241,9 +241,7 @@ declare function link-expansion-plugin:expand-atom-link(
     
     return
     
-        if ( $uri = $visited ) then 
-        
-            return $link (: do not expand :) 
+        if ( $uri = $visited ) then $link (: do not expand :) 
         
         else
         
@@ -314,9 +312,7 @@ declare function link-expansion-plugin:expand-security-link(
     
     return
     
-        if ( $uri = $visited ) then 
-        
-            return $link (: do not expand :) 
+        if ( $uri = $visited ) then $link (: do not expand :) 
         
         else
         
