@@ -20,14 +20,14 @@ Some other documentation, may be part-baked: TombstonesDesign DevelopingPlugins
 Please note that WAR packages in the 0.2 series are *not* available from the AtomBeat Google Code project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
 
 {{{
-wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-6/atombeat-exist-minimal-secure-0.2-alpha-6.war
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-7/atombeat-exist-minimal-secure-0.2-alpha-7.war
 }}} 
 
 ...or you can check out and build it yourself (currently only works on Linux), e.g.:
 
 {{{
-svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-6
-cd atombeat-parent-0.2-alpha-6
+svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-7
+cd atombeat-parent-0.2-alpha-7
 export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
 mvn install # might take a while first time - will package and test all WARs
 }}}
@@ -48,7 +48,7 @@ To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/or
     <dependency>
       <groupId>org.atombeat</groupId>
       <artifactId>atombeat-exist-minimal-secure</artifactId>
-      <version>0.2-alpha-6</version>
+      <version>0.2-alpha-7</version>
       <type>war</type>
       <scope>runtime</scope>
     </dependency>
@@ -73,6 +73,8 @@ To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/or
 = News =
 
 See also the ReleaseNotes wiki page and the [http://groups.google.com/group/atombeat AtomBeat mailing list].
+
+  * *28 February 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/40fec419294661a5 0.2-alpha-7 is released] - this is a bug-fix release, correcting a problem introduced in 0.2-alpha-6 relating to use of the new plugin-util module.
 
   * *16 February 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/eb47abe8e3d9cbda 0.2-alpha-6 is released], including support for content negotiation and access control extended to service documents, an improved link expansions plugin, and improved support for programmatically invoking Atom protocol operations from AtomBeat plugins and other XQueries.
 
