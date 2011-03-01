@@ -5,6 +5,7 @@ module namespace service-protocol = "http://purl.org/atombeat/xquery/service-pro
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
 declare namespace app = "http://www.w3.org/2007/app" ;
 declare namespace xhtml = "http://www.w3.org/1999/xhtml" ;
+declare namespace f = "http://purl.org/atompub/features/1.0" ;
 
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
 import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
@@ -90,7 +91,9 @@ declare function service-protocol:op-retrieve-service(
                 else ()            
             }
             {
-                collection( $config:base-collection-path )/atom:feed/app:collection
+                for $collection in collection( $config:base-collection-path )/atom:feed/app:collection
+                where not( $collection/f:features/f:feature/@ref = 'http://purl.org/atombeat/feature/HiddenFromServiceDocument' )
+                return $collection
             }
             </app:workspace>
         </app:service>
