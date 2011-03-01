@@ -20,7 +20,7 @@ declare function plugin-util:atom-protocol-do-get(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-get($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-get-member(
@@ -33,7 +33,7 @@ declare function plugin-util:atom-protocol-do-get-member(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-get-member($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-get-collection(
@@ -46,7 +46,7 @@ declare function plugin-util:atom-protocol-do-get-collection(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-get-collection($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-post-atom(
@@ -60,7 +60,7 @@ declare function plugin-util:atom-protocol-do-post-atom(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-post-atom($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-post-atom-entry(
@@ -74,7 +74,7 @@ declare function plugin-util:atom-protocol-do-post-atom-entry(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-post-atom-entry($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-post-atom-feed(
@@ -88,7 +88,7 @@ declare function plugin-util:atom-protocol-do-post-atom-feed(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-post-atom-feed($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-put-atom(
@@ -102,7 +102,7 @@ declare function plugin-util:atom-protocol-do-put-atom(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-put-atom($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-put-atom-entry(
@@ -116,7 +116,7 @@ declare function plugin-util:atom-protocol-do-put-atom-entry(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-put-atom-entry($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-put-atom-feed(
@@ -130,7 +130,7 @@ declare function plugin-util:atom-protocol-do-put-atom-feed(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-put-atom-feed($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-delete(
@@ -143,7 +143,7 @@ declare function plugin-util:atom-protocol-do-delete(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-delete($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-delete-member(
@@ -156,7 +156,7 @@ declare function plugin-util:atom-protocol-do-delete-member(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-delete-member($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:atom-protocol-do-delete-media(
@@ -169,7 +169,7 @@ declare function plugin-util:atom-protocol-do-delete-media(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-delete-media($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:security-protocol-do-get(
@@ -182,7 +182,7 @@ declare function plugin-util:security-protocol-do-get(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return security-protocol:do-get($request)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 declare function plugin-util:security-protocol-do-put(
@@ -196,7 +196,7 @@ declare function plugin-util:security-protocol-do-put(
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return security-protocol:do-put($request, $entity)"
     )
-    return util:eval( $query , true() )
+    return util:eval( $query , false() )
 };
 
 
