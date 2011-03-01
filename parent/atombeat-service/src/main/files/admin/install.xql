@@ -11,7 +11,7 @@ import module namespace atomsec = "http://purl.org/atombeat/xquery/atom-security
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace atom-protocol = "http://purl.org/atombeat/xquery/atom-protocol" at "../lib/atom-protocol.xqm" ;
 import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "../lib/common-protocol.xqm" ;
-import module namespace config-collections = "http://purl.org/atombeat/xquery/config-collections" at "collections.xqm" ;
+import module namespace config-collections = "http://purl.org/atombeat/xquery/config-collections" at "../admin/collections.xqm" ;
 
 
 

@@ -14,7 +14,7 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace v="http://exist-db.org/versioning" ;
 
-import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;

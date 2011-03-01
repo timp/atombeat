@@ -15,13 +15,13 @@ import module namespace text = "http://exist-db.org/xquery/text" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace v="http://exist-db.org/versioning" ;
 
-import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 
-import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "xutil.xqm" ;
-import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
-import module namespace tombstone-db = "http://purl.org/atombeat/xquery/tombstone-db" at "tombstone-db.xqm" ;
-import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "common-protocol.xqm" ;
+import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
+import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
+import module namespace tombstone-db = "http://purl.org/atombeat/xquery/tombstone-db" at "../lib/tombstone-db.xqm" ;
+import module namespace common-protocol = "http://purl.org/atombeat/xquery/common-protocol" at "../lib/common-protocol.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
