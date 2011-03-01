@@ -5,7 +5,23 @@
 
 <wiki:toc/>
 
-= 0.2-alpha-8-SNAPSHOT =
+= 0.2-alpha-9-SNAPSHOT =
+
+= 0.2-alpha-8 =
+
+== issue 164 request-path-info is coerced to lower-case, which is not backwards-compatible with existing data ==
+
+In the previous release the request path-info was coerced to lower case, which is clearly not backwards-compatible with any resources that used capital letters in the resource ID. 
+
+The request path-info is now compared in a *case-sensitive* manner, which means that this release should be backwards-compatible with existing data created by previous releases in the 0.2-alpha-* series.
+
+== issue 163 security-protocol:do-get($request). XPDY0002 : variable '$CONSTANT:OP-RETRIEVE-COLLECTION-ACL' is not set ==
+
+This is a bug fix, in the previous release there was a problem related to the use of the plugin-util module (e.g., as used by the link expansion plugin).
+
+== issue 160	xutil:get-header does not do case-insensitive match ==
+
+This is a minor bug fix, the xutil:get-header() function now does a case-insensitive comparison when looking up header names. The xutil:get-parameter() function also does a case-insensitive comparison.
 
 == issue 134 allow a collection to be configured to not appear in the service document ==
 
