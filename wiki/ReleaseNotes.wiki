@@ -7,6 +7,34 @@
 
 = 0.2-alpha-8-SNAPSHOT =
 
+== issue 134 allow a collection to be configured to not appear in the service document ==
+
+In this release, a collection can be configured to *not* appear in the service document by including the following markup within the `<app:collection>` element when you create or update the collection:
+
+{{{
+<f:features xmlns:f="http://purl.org/atompub/features/1.0">
+  <f:feature ref="http://purl.org/atombeat/feature/HiddenFromServiceDocument"/>
+</f:features>
+}}}
+
+...e.g.:
+
+{{{
+<atom:feed 
+    xmlns:atom="http://www.w3.org/2005/Atom"
+    xmlns:app="http://www.w3.org/2007/app"
+    xmlns:f="http://purl.org/atompub/features/1.0">
+    <atom:title type='text'>A Hidden Collection</atom:title>
+    <app:collection>
+        <atom:title type='text'>A Hidden Collection</atom:title>
+        <app:accept>application/atom+xml;type=entry</app:accept>
+        <f:features>
+            <f:feature ref="http://purl.org/atombeat/feature/HiddenFromServiceDocument"/>
+        </f:features>
+    </app:collection>
+</atom:feed>
+}}}
+
 = 0.2-alpha-7 =
 
 == issue 157 null pointer exception during internal request call to request:set-attribute ==
