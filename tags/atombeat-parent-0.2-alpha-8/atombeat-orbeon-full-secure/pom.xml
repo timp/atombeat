@@ -1,0 +1,119 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+
+  <parent>
+  	<groupId>org.atombeat</groupId>
+  	<artifactId>atombeat-parent</artifactId>
+  	<version>0.2-alpha-8</version>
+  </parent>
+
+  <artifactId>atombeat-orbeon-full-secure</artifactId>
+  <packaging>war</packaging>
+  <name>${project.artifactId}</name>
+  <description>AtomBeat with Orbeon (Full) and Spring Security</description>
+
+  <dependencies>
+  
+    <dependency>
+			   <groupId>org.springframework.security</groupId>
+			   <artifactId>spring-security-core</artifactId>
+			   <version>${org.springsecurity.version}</version>
+			   <scope>runtime</scope>
+	   </dependency>
+
+	   <dependency>
+			   <groupId>org.springframework.security</groupId>
+			   <artifactId>spring-security-config</artifactId>
+			   <version>${org.springsecurity.version}</version>
+			   <scope>runtime</scope>
+	   </dependency>
+      
+    <dependency>
+			   <groupId>org.springframework.security</groupId>
+			   <artifactId>spring-security-web</artifactId>
+			   <version>${org.springsecurity.version}</version>
+			   <scope>runtime</scope>
+	   </dependency>
+
+    <!-- the core AtomBeat Java library -->
+    <dependency>
+      <groupId>org.atombeat</groupId>
+      <artifactId>atombeat-xquery-functions</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>runtime</scope>
+    </dependency>
+    
+    <!-- AtomBeat servlet filters to enable security -->
+    <dependency>
+      <groupId>org.atombeat</groupId>
+      <artifactId>atombeat-servlet-filters</artifactId>
+      <version>${project.version}</version>
+      <type>jar</type>
+      <scope>runtime</scope>
+    </dependency>
+    
+    <!-- the eXist versioning module (not provided by Orbeon) -->
+    <dependency>
+      <groupId>org.exist-db</groupId>
+      <artifactId>exist-versioning-module</artifactId>
+      <version>${org.exist-db.version}</version>
+      <type>jar</type>
+      <scope>runtime</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.exist-db</groupId>
+          <artifactId>exist</artifactId>
+        </exclusion>
+      </exclusions>
+    </dependency>
+    
+    <!-- overlay Orbeon -->
+    <dependency>
+     	<groupId>com.orbeon</groupId>
+     	<artifactId>orbeon</artifactId>
+     	<version>${com.orbeon.version}</version>
+     	<type>war</type>
+     	<scope>runtime</scope>
+    </dependency>
+    
+    <!-- overlay an AtomBeat service -->
+    <dependency>
+      <groupId>org.atombeat</groupId>
+      <artifactId>atombeat-service</artifactId>
+      <version>${project.version}</version>
+      <type>zip</type>
+      <scope>runtime</scope>
+    </dependency>
+    
+  </dependencies>
+  
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-war-plugin</artifactId>
+        <configuration>
+	       	<failOnMissingWebXml>false</failOnMissingWebXml>
+	       	<warName>${project.build.finalName}</warName>
+	       	<webappDirectory>${project.build.directory}/${project.artifactId}</webappDirectory>
+	        <overlays>
+	         <!-- overlay an AtomBeat service -->
+	         <overlay>
+	           <groupId>org.atombeat</groupId>
+	           <artifactId>atombeat-service</artifactId>
+	           <type>zip</type>
+	           <targetPath>service</targetPath>
+	         </overlay>
+	         <!-- overlay the whole of Orbeon -->
+	         <overlay>
+	           <groupId>com.orbeon</groupId>
+	           <artifactId>orbeon</artifactId>
+	         </overlay>
+	        </overlays>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
