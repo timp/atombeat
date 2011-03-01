@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.atombeat</groupId>
   <artifactId>atombeat-parent</artifactId>
-  <version>0.2-alpha-8-SNAPSHOT</version>
+  <version>0.2-alpha-8</version>
   <packaging>pom</packaging>
   <name>atombeat-parent</name>
   <modules>
@@ -20,9 +20,9 @@
     <module>atombeat-integration-tests</module>
   </modules>
   <scm>
-    <connection>scm:svn:https://atombeat.googlecode.com/svn/trunk</connection>
-    <developerConnection>scm:svn:https://atombeat.googlecode.com/svn/trunk</developerConnection>
-    <url>scm:svn:https://atombeat.googlecode.com/svn/trunk</url>
+    <connection>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-8</connection>
+    <developerConnection>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-8</developerConnection>
+    <url>scm:svn:https://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-8</url>
   </scm>  
   <repositories>
     <repository>
