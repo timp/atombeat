@@ -233,7 +233,7 @@ declare function xutil:get-header(
 ) as xs:string?
 {
 
-    let $value := $request/headers/header[lower-case(name) = lower-case($header-name)]/value/text()
+    let $value := $request/headers/header[lower-case(name) eq lower-case($header-name)]/value/text()
     return if ( $value castable as xs:string ) then xs:string( $value ) else () 
 
 };
@@ -247,7 +247,7 @@ declare function xutil:get-parameter(
 ) as xs:string?
 {
 
-    let $value := $request/parameters/parameter[name = lower-case($parameter-name)]/value/text()
+    let $value := $request/parameters/parameter[lower-case(name) eq lower-case($parameter-name)]/value/text()
     return if ( $value castable as xs:string ) then xs:string( $value ) else () 
     
 };
