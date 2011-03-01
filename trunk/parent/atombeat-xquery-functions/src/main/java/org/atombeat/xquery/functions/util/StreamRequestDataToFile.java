@@ -78,7 +78,9 @@ public class StreamRequestDataToFile extends BasicFunction {
 	 */
 	public Sequence eval(Sequence[] args, Sequence contextSequence) throws XPathException
 	{
+		logger.debug("begin stream request data to file eval");
 		
+		logger.debug("access request module from context");
 		RequestModule reqModule = (RequestModule) context.getModule(RequestModule.NAMESPACE_URI);
 
 		// request object is read from global variable $request
@@ -96,35 +98,56 @@ public class StreamRequestDataToFile extends BasicFunction {
 			throw new XPathException(this, "Variable $request is not bound to a Request object.");
 		}
 
+		logger.debug("access wrapped request");
 		RequestWrapper request = (RequestWrapper) value.getObject();	
-			
-		// if the content length is unknown, return
-		if (request.getContentLength() == -1)
+		
+		// we have to access the content-length header directly, rather than do request.getContentLength(), in case it's bigger than an int
+		String contentLengthHeader = request.getHeader("Content-Length");
+		
+		if (contentLengthHeader == null)
 		{
+			logger.debug("content length header is null, returning empty sequence");
 			return Sequence.EMPTY_SEQUENCE;
 		}
+		
+		long contentLength = Long.parseLong(contentLengthHeader);
+		logger.debug("content length via header: "+contentLength);
+		logger.debug("request.getContentLength(): "+request.getContentLength()); // will be -1 if value is greater than an int
 			
 		// try to stream request content to file
 		try
 		{
+			logger.debug("try to stream request data to file...");
+			logger.debug("open request input stream");
 			InputStream in = request.getInputStream();
 			MessageDigest md5 = MessageDigest.getInstance("MD5");
+			logger.debug("create digest input stream");
 			in = new DigestInputStream(in, md5);
 			String path = args[0].getStringValue();
+			logger.debug("creating file at path: "+path);
 			File file = new File(path);
+			logger.debug("creating file output stream");
 			FileOutputStream out = new FileOutputStream(file);
-			
-			Stream.copy(in, out);
-			
-			String signature = new BigInteger(1, md5.digest()).toString(16);		    
+			logger.debug("begin streaming data");
+			Stream.copy(in, out, contentLength);
+			logger.debug("end streaming data");
+			logger.debug("create md5 signature");
+			String signature = new BigInteger(1, md5.digest()).toString(16);	
+			logger.debug("return signature");
 		    return new StringValue(signature);
 
 		}
 		catch(IOException ioe)
 		{
 			throw new XPathException(this, "An IO exception ocurred: " + ioe.getMessage(), ioe);
-		} catch (NoSuchAlgorithmException e) {
+		} 
+		catch (NoSuchAlgorithmException e) 
+		{
 			throw new XPathException(this, "A message digest exception ocurred: " + e.getMessage(), e);
+		}
+		catch (Exception e) 
+		{
+			throw new XPathException(this, "An unexpected exception ocurred: " + e.getMessage(), e);
 		}
 
 	}
