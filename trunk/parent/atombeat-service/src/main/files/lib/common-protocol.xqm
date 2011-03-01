@@ -12,10 +12,10 @@ import module namespace util = "http://exist-db.org/xquery/util" ;
 
 import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtomBeatUtilModule";
 
-import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "constants.xqm" ;
+import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
-import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "mime.xqm" ;
-import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "atomdb.xqm" ;
+import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
+import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 import module namespace plugin = "http://purl.org/atombeat/xquery/plugin" at "../config/plugins.xqm" ;
@@ -32,7 +32,7 @@ declare function common-protocol:get-request() as element(request)
     (: build a representation of the request, except for request entity (allow functions to consume directly to support streaming) :)
     
 	let $request-method := upper-case( request:get-method() )
-	let $request-path-info := lower-case( request:get-attribute( $common-protocol:param-request-path-info ) )
+	let $request-path-info := request:get-attribute( $common-protocol:param-request-path-info )
 	let $request-headers := xutil:get-request-headers()
 	let $request-parameters := xutil:get-request-parameters()
 	let $request-attributes := xutil:get-request-attributes()
@@ -450,11 +450,6 @@ declare function common-protocol:do-internal-server-error(
 (:    return common-protocol:apply-after( plugin:after-error() , $op-name , $request-path-info , $response ) :)
 
 };
-
-
-
-
-
 
 
 

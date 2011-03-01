@@ -8,7 +8,7 @@ declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
-import module namespace config = "http://purl.org/atombeat/xquery/config" at "config.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
 
 

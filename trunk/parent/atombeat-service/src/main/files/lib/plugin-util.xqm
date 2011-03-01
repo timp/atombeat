@@ -15,7 +15,7 @@ declare function plugin-util:atom-protocol-do-get(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-get($request)"
@@ -28,7 +28,7 @@ declare function plugin-util:atom-protocol-do-get-member(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-get-member($request)"
@@ -41,7 +41,7 @@ declare function plugin-util:atom-protocol-do-get-collection(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-get-collection($request)"
@@ -55,7 +55,7 @@ declare function plugin-util:atom-protocol-do-post-atom(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-post-atom($request, $entity)"
@@ -69,7 +69,7 @@ declare function plugin-util:atom-protocol-do-post-atom-entry(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-post-atom-entry($request, $entity)"
@@ -83,7 +83,7 @@ declare function plugin-util:atom-protocol-do-post-atom-feed(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-post-atom-feed($request, $entity)"
@@ -97,7 +97,7 @@ declare function plugin-util:atom-protocol-do-put-atom(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-put-atom($request, $entity)"
@@ -111,7 +111,7 @@ declare function plugin-util:atom-protocol-do-put-atom-entry(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-put-atom-entry($request, $entity)"
@@ -125,7 +125,7 @@ declare function plugin-util:atom-protocol-do-put-atom-feed(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-put-atom-feed($request, $entity)"
@@ -138,7 +138,7 @@ declare function plugin-util:atom-protocol-do-delete(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-delete($request)"
@@ -151,7 +151,7 @@ declare function plugin-util:atom-protocol-do-delete-member(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-delete-member($request)"
@@ -164,7 +164,7 @@ declare function plugin-util:atom-protocol-do-delete-media(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at 'atom-protocol.xqm' ; " ,
+        "import module namespace atom-protocol = 'http://purl.org/atombeat/xquery/atom-protocol' at '../lib/atom-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return atom-protocol:do-delete-media($request)"
@@ -177,7 +177,7 @@ declare function plugin-util:security-protocol-do-get(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at 'security-protocol.xqm' ; " ,
+        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at '../lib/security-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return security-protocol:do-get($request)"
@@ -191,7 +191,7 @@ declare function plugin-util:security-protocol-do-put(
 ) as element(response)
 {
     let $query := concat( 
-        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at 'security-protocol.xqm' ; " ,
+        "import module namespace security-protocol = 'http://purl.org/atombeat/xquery/security-protocol' at '../lib/security-protocol.xqm' ; " ,
         "import module namespace config = 'http://purl.org/atombeat/xquery/config' at '../config/shared.xqm' ; " ,
         "let $login := xmldb:login( '/' , $config:exist-user , $config:exist-password ) " ,
         "return security-protocol:do-put($request, $entity)"
