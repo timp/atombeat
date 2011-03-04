@@ -2,11 +2,11 @@
 <metadata>
   <groupId>com.orbeon</groupId>
   <artifactId>orbeon</artifactId>
-  <version>3.8.0-CE-exist-1.4.0</version>
+  <version>3.8.0.201005141856-CE</version>
   <versioning>
     <versions>
-      <version>3.8.0-CE-exist-1.4.0</version>
+      <version>3.8.0.201005141856-CE</version>
     </versions>
-    <lastUpdated>20101013170717</lastUpdated>
+    <lastUpdated>20110304122948</lastUpdated>
   </versioning>
 </metadata>
