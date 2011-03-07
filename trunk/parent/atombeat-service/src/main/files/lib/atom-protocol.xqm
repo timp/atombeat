@@ -619,6 +619,10 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
     let $media-type := $mime:mappings//mime-mapping[extension=$extension]/mime-type
     
     let $media-type := if ( empty( $media-type ) ) then "application/octet-stream" else $media-type
+    
+    (: check for title param :)
+    let $title-param := xutil:get-parameter( "title" , $request )
+    let $title := if ( exists( $title-param ) ) then $title-param else $file-name
 
 	(: check for summary param :)
 	let $summary := xutil:get-parameter( "summary" , $request )
@@ -630,9 +634,9 @@ declare function atom-protocol:op-create-media-from-multipart-form-data (
     let $media-link :=
 	    if ( $config:media-storage-mode = "DB" ) then
 	        let $entity := request:get-uploaded-file-data( "media" ) 
-	        return atomdb:create-media-resource( $request-path-info , $entity , $media-type , $user-name , $file-name , $summary , $category ) 
+	        return atomdb:create-media-resource( $request-path-info , $entity , $media-type , $user-name , $title , $summary , $category ) 
         else if ( $config:media-storage-mode = "FILE" ) then        
-	        atomdb:create-file-backed-media-resource-from-upload( $request-path-info , $media-type , $user-name , $file-name , $summary , $category )
+	        atomdb:create-file-backed-media-resource-from-upload( $request-path-info , $media-type , $user-name , $title , $summary , $category )
 	    else ()
 	    
     let $feed-date-updated := atomdb:touch-collection( $request-path-info )
