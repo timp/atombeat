@@ -1365,6 +1365,37 @@ declare function atomdb:retrieve-members(
 
 
 
+declare function atomdb:count-members(
+    $collection-path-info as xs:string 
+) as xs:integer? 
+{
+	if ( not( atomdb:collection-available( $collection-path-info ) ) ) then ()
+	else
+        let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
+		let $recursive := xs:boolean( $feed/@atombeat:recursive )
+		return atomdb:count-members( $collection-path-info , $recursive )
+};
+
+
+
+
+declare function atomdb:count-members(
+    $collection-path-info as xs:string ,
+    $recursive as xs:boolean?
+) as xs:integer?
+{
+    
+    let $db-collection-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+    return
+        if ( $recursive )
+        then count( collection( $db-collection-path )/atom:entry ) (: recursive :)
+        else count( xmldb:xcollection( $db-collection-path )/atom:entry ) (: not recursive :)
+
+};
+
+
+
+
 declare function atomdb:exclude-entry-content(
     $entry as element(atom:entry)
 ) as element(atom:entry)
