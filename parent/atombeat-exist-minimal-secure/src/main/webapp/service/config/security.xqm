@@ -8,7 +8,7 @@ declare namespace atombeat = "http://purl.org/atombeat/xmlns" ;
 import module namespace util = "http://exist-db.org/xquery/util" ;
 
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
-import module namespace config = "http://purl.org/atombeat/xquery/config" at "config.xqm" ;
+import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
 
 
 
@@ -336,7 +336,7 @@ declare function security-config:default-collection-security-descriptor(
  :)
 declare function security-config:default-member-security-descriptor(
     $collection-path-info as xs:string ,
-    $user as xs:string
+    $user as xs:string?
 ) as element(atombeat:security-descriptor)
 {
 
@@ -424,7 +424,7 @@ declare function security-config:default-member-security-descriptor(
  :)
 declare function security-config:default-media-security-descriptor(
     $collection-path-info as xs:string ,
-    $user as xs:string
+    $user as xs:string?
 ) as element(atombeat:security-descriptor)
 {
 
