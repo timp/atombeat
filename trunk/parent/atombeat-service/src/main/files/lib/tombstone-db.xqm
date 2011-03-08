@@ -92,7 +92,7 @@ declare function tombstone-db:create-deleted-entry(
         let $self := $condemned/atom:link[@rel="self"]/@href cast as xs:string
         let $ref := $condemned/atom:id
         let $when := current-dateTime()
-        let $collection-path-info := atomdb:collection-path-info( $condemned )
+        let $collection-path-info := let $entry-path-info := substring-after($condemned/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $ghost-atom-elements := $feed/atombeat:config-tombstones/atombeat:config/atombeat:param[@name="ghost-atom-elements"]/@value
         

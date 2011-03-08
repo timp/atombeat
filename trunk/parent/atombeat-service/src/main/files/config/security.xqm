@@ -336,7 +336,7 @@ declare function security-config:default-collection-security-descriptor(
  :)
 declare function security-config:default-member-security-descriptor(
     $collection-path-info as xs:string ,
-    $user as xs:string
+    $user as xs:string?
 ) as element(atombeat:security-descriptor)
 {
 
@@ -424,7 +424,7 @@ declare function security-config:default-member-security-descriptor(
  :)
 declare function security-config:default-media-security-descriptor(
     $collection-path-info as xs:string ,
-    $user as xs:string
+    $user as xs:string?
 ) as element(atombeat:security-descriptor)
 {
 

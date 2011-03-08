@@ -132,7 +132,7 @@ declare function security-plugin:filter-entry-before-multi-create(
 ) as element()
 {
 
-    let $media-path-info := atomdb:edit-media-path-info( $entry )
+    let $media-path-info := substring-after($entry/atom:link[@rel='edit-media']/@href/string(), $config:edit-media-link-uri-base)
     
     (: need to check if local media is available and user can retrieve...
      : if so, retain edit-media link and allow copy of media
@@ -233,7 +233,7 @@ declare function security-plugin:after(
 
 declare function security-plugin:after-create-member(
 	$request-path-info as xs:string ,
-	$user as xs:string ,
+	$user as xs:string? ,
 	$response as element(response)
 ) as item()*
 {
@@ -265,7 +265,7 @@ declare function security-plugin:after-create-member(
 
 declare function security-plugin:after-multi-create(
 	$request-path-info as xs:string ,
-	$user as xs:string ,
+	$user as xs:string? ,
 	$response as element(response)
 ) as item()*
 {
@@ -331,7 +331,7 @@ declare function security-plugin:after-update-member(
 
 declare function security-plugin:after-create-media(
     $request-path-info as xs:string ,
-	$user as xs:string ,
+	$user as xs:string? ,
 	$response as element(response)
 ) as item()*
 {

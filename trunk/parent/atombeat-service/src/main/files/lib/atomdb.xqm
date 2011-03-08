@@ -161,44 +161,44 @@ declare function atomdb:db-path-to-request-path-info(
 
 
 
-declare function atomdb:edit-path-info( $entry as element(atom:entry) ) as xs:string?
+(:~
+ : N.B., it is recommended that YOU DO NOT USE THIS FUNCTION. It has been found
+ : to lead to unpredictable behaviour in eXist 1.4.0 when called under certain
+ : circumstances, probably due to some remaining use of temporary XML fragments
+ : stored in the database. Instead, you can declare an equivalent function in your
+ : local XQuery, or use the expression given below. 
+ :)
+declare function atomdb:deprecated-edit-path-info( $entry as element(atom:entry) ) as xs:string?
 {
-    let $href := $entry/atom:link[@rel='edit']/@href
-    return
-        if ( exists( $href ) ) then 
-            let $uri := $href cast as xs:string
-            return
-                if ( starts-with( $uri , $config:edit-link-uri-base ) )
-                then substring-after( $uri , $config:edit-link-uri-base )
-                else ()
-        else ()
+    substring-after($entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base)
 };
 
 
 
-declare function atomdb:edit-media-path-info( $entry as element(atom:entry) ) as xs:string?
+(:~
+ : N.B., it is recommended that YOU DO NOT USE THIS FUNCTION. It has been found
+ : to lead to unpredictable behaviour in eXist 1.4.0 when called under certain
+ : circumstances, probably due to some remaining use of temporary XML fragments
+ : stored in the database. Instead, you can declare an equivalent function in your
+ : local XQuery, or use the expression given below. 
+ :)
+declare function atomdb:deprecated-edit-media-path-info( $entry as element(atom:entry) ) as xs:string?
 {
-    let $href := $entry/atom:link[@rel='edit-media']/@href
-    return
-        if ( exists( $href ) ) then 
-            let $uri := $href cast as xs:string
-            return
-                if ( starts-with( $uri , $config:edit-media-link-uri-base ) )
-                then substring-after( $uri , $config:edit-media-link-uri-base )
-                else ()
-        else ()
-
+    substring-after($entry/atom:link[@rel='edit-media']/@href/string(), $config:edit-media-link-uri-base)
 };
 
 
 
-declare function atomdb:collection-path-info( $entry as element(atom:entry) ) as xs:string?
+(:~
+ : N.B., it is recommended that YOU DO NOT USE THIS FUNCTION. It has been found
+ : to lead to unpredictable behaviour in eXist 1.4.0 when called under certain
+ : circumstances, probably due to some remaining use of temporary XML fragments
+ : stored in the database. Instead, you can declare an equivalent function in your
+ : local XQuery, or use the expression given below. 
+ :)
+declare function atomdb:deprecated-collection-path-info( $entry as element(atom:entry) ) as xs:string?
 {
-    let $entry-path-info := atomdb:edit-path-info( $entry )
-    return
-        if ( exists( $entry-path-info ) )
-        then text:groups( $entry-path-info , "^(.+)/[^/]+$" )[2]
-        else ()
+    let $entry-path-info := substring-after($entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
 };
 
 

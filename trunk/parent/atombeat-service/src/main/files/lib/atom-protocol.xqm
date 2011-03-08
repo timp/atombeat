@@ -270,7 +270,7 @@ declare function atom-protocol:op-multi-create(
         <atom:feed>
         {
             for $entry in $entity/atom:entry
-            let $media-path-info := atomdb:edit-media-path-info( $entry )
+            let $media-path-info := substring-after($entry/atom:link[@rel='edit-media']/@href/string(), $config:edit-media-link-uri-base)
             let $local-media-available := ( 
                 exists( $media-path-info ) 
                 and atomdb:media-resource-available( $media-path-info )
@@ -287,7 +287,7 @@ declare function atom-protocol:op-multi-create(
                         else if ( $config:media-storage-mode = "FILE" ) then        
                 	        atomdb:create-file-backed-media-resource-from-existing-media-resource( $collection-path-info , $media-type , $media-path-info , $user-name )
                 	    else ()
-                    let $media-link-path-info := atomdb:edit-path-info( $media-link )
+                    let $media-link-path-info := substring-after($media-link/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base)
                     let $media-link := atomdb:update-member( $media-link-path-info , $entry )
                     return $media-link
                 else atomdb:create-member( $collection-path-info , $entry , $user-name )
@@ -368,19 +368,28 @@ declare function atom-protocol:op-create-member(
 ) as element(response)
 {
 
+    let $log := util:log("debug", "atom-protocol:op-create-member")
     let $collection-path-info := $request/path-info/text()
+    let $log := util:log("debug", $collection-path-info)
     let $user-name := $request/user/text()
+    let $log := util:log("debug", $user-name)
     let $slug := xutil:get-header( "Slug" , $request )
+    let $log := util:log("debug", $slug)
 
     (: create the member :)
 	let $entry := atomdb:create-member( $collection-path-info , $slug , $entity , $user-name )
+    let $log := util:log("debug", $entry)
 
     (: set the location and content-location headers :)
-    let $location := $entry/atom:link[@rel="edit"]/@href cast as xs:string
+    let $location := $entry/atom:link[@rel="edit"]/@href/string()
+    let $log := util:log("debug", $location)
 
 	(: set the etag header :)
-    let $entry-path-info := atomdb:edit-path-info( $entry )
+    let $entry-path-info := substring-after($entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base)
+    let $log := util:log("debug", 'entry-path-info...')
+    let $log := util:log("debug", $entry-path-info)
     let $etag := concat( '"' , atomdb:generate-etag( $entry-path-info ) , '"' )
+    let $log := util:log("debug", $etag)
         
     (: update the feed date updated :)    
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
@@ -965,7 +974,7 @@ declare function atom-protocol:op-update-member(
     let $request-path-info := $request/path-info/text()
 	let $entry := atomdb:update-member( $request-path-info , $entity )
     let $etag := concat( '"' , atomdb:generate-etag( $request-path-info ) , '"' )
-    let $collection-path-info := atomdb:collection-path-info( $entry )
+    let $collection-path-info := let $entry-path-info := substring-after($entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     
 	return
@@ -1044,7 +1053,7 @@ declare function atom-protocol:op-update-media(
 	        atomdb:update-file-backed-media-resource( $request-path-info , $request-media-type )
 	    else ()
 
-    let $collection-path-info := atomdb:collection-path-info( $media-link )
+    let $collection-path-info := let $entry-path-info := substring-after($media-link/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
     
     let $feed-date-updated := atomdb:touch-collection( $collection-path-info )
     

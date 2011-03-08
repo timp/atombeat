@@ -360,8 +360,8 @@ declare function history-plugin:append-history-link (
 ) as element(atom:entry)
 {
 
-    let $entry-path-info := atomdb:edit-path-info( $response-entry )
-	let $collection-path-info := atomdb:collection-path-info( $response-entry )
+    let $entry-path-info := substring-after($response-entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base)
+	let $collection-path-info := let $entry-path-info := substring-after($response-entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
 	
 	return
 	

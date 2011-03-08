@@ -181,7 +181,7 @@ declare function link-extensions-plugin:augment-entry(
 ) as element(atom:entry)
 {
     if ( starts-with( $entry/atom:link[@rel="edit"]/@href , $config:edit-link-uri-base ) ) then
-        let $collection-path-info := atomdb:collection-path-info( $entry )
+        let $collection-path-info := let $entry-path-info := substring-after($entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
         let $feed := atomdb:retrieve-feed-without-entries( $collection-path-info )
         let $match-entry-rels-allow := tokenize( $feed/atombeat:config-link-extensions/atombeat:extension-attribute[@name="allow" and @namespace="http://purl.org/atombeat/xmlns"]/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
         let $match-entry-rels-count := tokenize( $feed/atombeat:config-link-extensions/atombeat:extension-attribute[@name="count" and @namespace="http://purl.org/atombeat/xmlns"]/atombeat:config[@context="entry"]/atombeat:param[@name="match-rels"]/@value , "\s+" )
