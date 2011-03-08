@@ -7,6 +7,48 @@
 
 = 0.2-alpha-9-SNAPSHOT =
 
+== issue 169 use of atomdb:edit-path-info() causes cardinality issues ==
+
+It has been found that use of the atomdb:edit-path-info() function under some circumstances causes unpredictable behaviour, which we believe is related to an issue in eXist 1.4.0 regarding storage of temporary XML fragments in the database. All use of the atomdb:edit-path-info() function within AtomBeat has been removed, and it is strongly recommended that any third-party extensions or plugins do likewise.
+
+If you need this utility function, then it appears safe to create an equivalent function in your module's local namespace and use that instead.
+
+== issue 168 issue 168	recognise "title" field in multipart/form-data post to create media ==
+
+When using the AtomBeat protocol extension to create a media resource via a multipart/form-data POST request, you can now include a "title" field in the request data, and this will be used to populate the title of the new media-link entry. If not provided, AtomBeat will fall back to using the "media" field's filename as the title.
+
+== issue 167	@count link extension ==
+
+Support has been added in the link extensions plugin for an @atombeat:count attribute on links referring to collections. When configured to appear, the attribute will report the number of members in the linked collection.
+
+To configure the attribute to appear on one or more links, add markup like the following to an Atom feed document when creating or updating a collection:
+
+{{{
+<atombeat:config-link-extensions xmlns:atombeat="http://purl.org/atombeat/xmlns">
+    <atombeat:extension-attribute
+        name="count"
+        namespace="http://purl.org/atombeat/xmlns">
+        <atombeat:config context="feed">
+            <atombeat:param name="match-rels" value="foo http://example.org/rel/bar"/>
+        </atombeat:config>
+        <atombeat:config context="entry">
+            <atombeat:param name="match-rels" value="*"/>
+        </atombeat:config>
+        <atombeat:config context="entry-in-feed">
+            <atombeat:param name="match-rels" value="baz http://example.org/rel/quux"/>
+        </atombeat:config>
+    </atombeat:extension-attribute>
+</atombeat:config-link-extensions>
+}}}
+
+The link extensions plugin must also be enabled in the config/plugins.xqm module.
+
+== issue 165	2G limit on creating media ==
+
+In previous releases there was a bug causing an unintended limit on the size of media resource that could be created by POSTing the media content to a collection URI. The limit was 2G, and any request above this size would appear to succeed but no data would actually be stored. 
+
+There is now no limit on the size of media resource that can be created by direct POST. 
+
 = 0.2-alpha-8 =
 
 == issue 164 request-path-info is coerced to lower-case, which is not backwards-compatible with existing data ==
