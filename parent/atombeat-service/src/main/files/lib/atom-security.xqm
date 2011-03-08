@@ -328,10 +328,10 @@ declare function atomsec:filter-feed(
             
                 if ( $child instance of element(atom:entry) ) then
                 
-                    let $child-path-info := atomdb:edit-path-info( $child )
+                    let $child-path-info := substring-after($child/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base)
                     
                     (: cope with recursive collections :)
-                    let $owner-collection-path-info := atomdb:collection-path-info( $child )
+                    let $owner-collection-path-info := let $entry-path-info := substring-after($child/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base) return text:groups($entry-path-info, "^(.+)/[^/]+$")[2]
                     let $owner-collection-descriptor :=
                         if ( $owner-collection-path-info = $collection-path-info )
                         then $collection-descriptor
