@@ -15,7 +15,7 @@ It has been found that use of the atomdb:edit-path-info() function under some ci
 
 If you need this utility function, then it appears safe to create an equivalent function in your module's local namespace and use that instead.
 
-== issue 168 issue 168	recognise "title" field in multipart/form-data post to create media ==
+== issue 168 recognise "title" field in multipart/form-data post to create media ==
 
 When using the AtomBeat protocol extension to create a media resource via a multipart/form-data POST request, you can now include a "title" field in the request data, and this will be used to populate the title of the new media-link entry. If not provided, AtomBeat will fall back to using the "media" field's filename as the title.
 
