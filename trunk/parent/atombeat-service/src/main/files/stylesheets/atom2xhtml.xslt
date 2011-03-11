@@ -19,7 +19,7 @@
     
     <html>
       <head>
-        <title><xsl:value-of select="atom:title"/></title>
+        <title>AtomBeat - <xsl:value-of select="atom:feed/atom:title"/></title>
         <link rel="icon" type="image/png" href="http://farm6.static.flickr.com/5051/5415906232_a26853fd64_o.png"/>
         <link rel="stylesheet" type="text/css" href="http://yui.yahooapis.com/combo?3.3.0/build/cssreset/reset-min.css&amp;3.3.0/build/cssfonts/fonts-min.css&amp;3.3.0/build/cssgrids/grids-min.css&amp;3.3.0/build/cssbase/base-min.css"/>
         <style type="text/css">
