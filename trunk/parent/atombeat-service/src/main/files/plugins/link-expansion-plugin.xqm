@@ -212,14 +212,19 @@ declare function link-expansion-plugin:expand-links(
         if ( $match-rels = "*" or $link/@rel = $match-rels ) then
         
             if ( starts-with( $link/@href , $config:self-link-uri-base ) ) then
-
-                link-expansion-plugin:expand-atom-link( $link , $request )
+                link-expansion-plugin:expand-atom-link($link, $request, ())
                 
             else if ( starts-with( $link/@href , $config:security-service-url ) ) then
-            
                 link-expansion-plugin:expand-security-link( $link , $request )
 
-            else $link
+            else 
+                (: try treating link @href as a member ID :)
+                let $uri := atomdb:lookup-member-by-id($link/@href/string())
+                return
+                    if (exists($uri) and starts-with($uri, $config:self-link-uri-base)) then
+                        link-expansion-plugin:expand-atom-link($link, $request, $uri)
+                    else
+                        $link
             
         else $link        
   
@@ -230,14 +235,16 @@ declare function link-expansion-plugin:expand-links(
 
 declare function link-expansion-plugin:expand-atom-link(
     $link as element(atom:link) ,
-	$request as element(request) 
+	$request as element(request) ,
+	$override-uri as xs:string?
 ) as element(atom:link)
 {
 
     (: deal with cyclic expansion :)
     
     let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
-    let $uri := $link/@href cast as xs:string
+    let $uri := 
+        if (exists($override-uri)) then $override-uri else $link/@href/string()
     
     return
     
