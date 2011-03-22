@@ -921,11 +921,11 @@ declare function atomdb:create-media-link-entry(
     let $updated := $published
     
     let $title :=
-    	if ( $media-link-title ) then $media-link-title
+    	if ( exists($media-link-title) ) then $media-link-title
     	else concat( $member-id , ".media" )
     	
     let $summary :=
-    	if ( $media-link-summary ) then $media-link-summary
+    	if ( exists($media-link-summary) ) then $media-link-summary
     	else "media resource"
     	
     let $category :=
@@ -961,6 +961,89 @@ declare function atomdb:create-media-link-entry(
             {
                 if ( exists( $md5 ) )
                 then attribute hash { concat( "md5:" , $md5 ) }
+                else ()
+            }
+            </atom:content>
+            <atom:title type="text">{$title}</atom:title>
+            <atom:summary type="text">{$summary}</atom:summary>
+        {
+            $categories , 
+            if ( $config:auto-author )
+            then
+                <atom:author>
+                {
+                    if ( $config:user-name-is-email ) then <atom:email>{$user-name}</atom:email>
+                    else <atom:name>{$user-name}</atom:name>
+                }                
+                </atom:author>
+            else ()
+        }
+        </atom:entry>  
+     
+};
+
+
+
+declare function atomdb:create-media-link-entry-with-media-uri(
+	$collection-path-info as xs:string ,
+    $member-id as xs:string ,
+    $media-uri as xs:string ,
+    $media-type as xs:string ,
+    $media-size as xs:integer ,
+    $user-name as xs:string? ,
+    $media-link-title as xs:string? ,
+    $media-link-summary as xs:string? ,
+    $media-link-category as xs:string? ,
+    $hash as xs:string?
+) as element(atom:entry)
+{
+
+    let $self-uri := concat( $config:self-link-uri-base , $collection-path-info , "/" , $member-id ) 
+    let $edit-uri := concat( $config:edit-link-uri-base , $collection-path-info , "/" , $member-id ) 
+    let $id := config:contruct-member-atom-id( $member-id , $collection-path-info )
+    
+    let $published := current-dateTime()
+    let $updated := $published
+    
+    let $title :=
+    	if ( exists($media-link-title) ) then $media-link-title
+    	else $id
+    	
+    let $summary :=
+    	if ( exists($media-link-summary) ) then $media-link-summary
+    	else "media resource"
+    	
+    let $category :=
+        if ( exists( $media-link-category ) )
+        then 
+            let $scheme := text:groups( $media-link-category , 'scheme="([^"]+)"' )[2]
+            let $term := text:groups( $media-link-category , 'term="([^"]+)"' )[2]
+            let $label := text:groups( $media-link-category , 'label="([^"]+)"' )[2]
+            return <atom:category scheme="{$scheme}" term="{$term}" label="{$label}"/>
+        else ()        
+        
+    let $categories := atomdb:mutable-categories( $collection-path-info , ( $category ) )
+    	
+	return
+	
+        <atom:entry>
+            <atom:id>{$id}</atom:id>
+            <atom:published>{$published}</atom:published>
+            <atom:updated>{$updated}</atom:updated>
+            <atom:link rel="self" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$self-uri}"/>
+            <atom:link rel="edit" type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}" href="{$edit-uri}"/>
+            <atom:link rel="edit-media" type="{$media-type}" href="{$media-uri}" length="{$media-size}">
+            {
+                if ( exists( $hash ) )
+                then attribute hash { $hash }
+                else ()
+            }
+            </atom:link>
+            <atom:link rel="service" type="{$CONSTANT:MEDIA-TYPE-ATOMSVC}" href="{concat( $config:service-url-base , '/' )}"/>
+            <atom:content src="{$media-uri}" type="{$media-type}" length="{$media-size}">
+            {
+                if ( exists( $hash ) )
+                then attribute hash { $hash }
                 else ()
             }
             </atom:content>
@@ -1032,7 +1115,7 @@ declare function atomdb:create-media-resource(
 
 
 declare function atomdb:create-media-resource(
-	$request-path-info as xs:string , 
+	$collection-path-info as xs:string , 
 	$request-data as item()* , 
 	$media-type as xs:string ,
 	$user-name as xs:string? ,
@@ -1042,15 +1125,43 @@ declare function atomdb:create-media-resource(
 ) as element(atom:entry)?
 {
 
-	let $collection-db-path := atomdb:request-path-info-to-db-path( $request-path-info )
+	let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
 
-    let $member-id := atomdb:generate-member-identifier( $request-path-info ) 
+    let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
     
 	let $media-resource-name := concat( $member-id , ".media" )
 
 	let $media-resource-db-path := xmldb:store( $collection-db-path , $media-resource-name , $request-data , $media-type )
 	
-    let $media-link-entry := atomdb:create-media-link-entry( $request-path-info, $member-id , $media-type , $user-name , $media-link-title , $media-link-summary , $media-link-category , () )
+    let $media-link-entry := atomdb:create-media-link-entry( $collection-path-info, $member-id , $media-type , $user-name , $media-link-title , $media-link-summary , $media-link-category , () )
+    
+    let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
+    
+    return doc( $media-link-entry-doc-db-path )/atom:entry
+	 
+};
+
+
+
+
+declare function atomdb:create-virtual-media-resource(
+	$collection-path-info as xs:string , 
+	$media-uri as xs:string , 
+	$media-type as xs:string ,
+	$media-size as xs:integer ,
+	$media-hash as xs:string ,
+	$user-name as xs:string? ,
+	$media-link-title as xs:string? ,
+	$media-link-summary as xs:string? ,
+	$media-link-category as xs:string?
+) as element(atom:entry)?
+{
+
+	let $collection-db-path := atomdb:request-path-info-to-db-path( $collection-path-info )
+
+    let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
+    
+    let $media-link-entry := atomdb:create-media-link-entry-with-media-uri($collection-path-info, $member-id, $media-uri, $media-type, $media-size, $user-name, $media-link-title, $media-link-summary, $media-link-category, $media-hash)
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
     
@@ -1369,7 +1480,7 @@ declare function atomdb:lookup-member-by-id(
 ) as xs:string?
 {
     (: it is possible that two members could end up with the same ID, TODO how to handle that? :)
-    collection($config:base-collection-path)/atom:entry[atom:id=$id]/atom:link[@rel='edit']/@href/string()
+    collection($config:base-collection-path)/atom:entry[@id=$id]/atom:link[@rel='edit']/@href/string()
 };
 
 
