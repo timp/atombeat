@@ -479,17 +479,22 @@ declare function common-protocol:respond(
     
         if ( $response/body/@type = "media" and $config:media-storage-mode = "DB" )
         then
-            let $path := $response/body/text()
+            let $path := $response/body/string()
             let $binary-doc := atomdb:retrieve-media( $path )
             return response:stream-binary( $binary-doc , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
 
         else if ( $response/body/@type = "media" and $config:media-storage-mode = "FILE" )
         then
-            let $path := concat( $config:media-storage-dir , $response/body/text() )
+            let $path := concat( $config:media-storage-dir , $response/body/string() )
             return atombeat-util:stream-file-to-response( $path , $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/text() )
 
+        else if ( $response/body/@type = "unzip-media" and $config:media-storage-mode = "FILE" )
+        then
+            let $path := concat( $config:media-storage-dir , $response/body/string() )
+            return atombeat-util:stream-zip-entry-to-response( $path , $response/body/@zip-entry/string(), $response/headers/header[name=$CONSTANT:HEADER-CONTENT-TYPE]/value/string() )
+
         else if ( $response/body/@type = "text" )
-        then $response/body/text()
+        then $response/body/string()
 
         else if ( $response/body/@type = "xml" )
         then

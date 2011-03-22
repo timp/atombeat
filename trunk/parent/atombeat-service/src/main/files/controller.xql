@@ -35,6 +35,14 @@ return
 		    </forward>
 		</dispatch>
 		
+	else if ( $module = "unzip" ) then
+
+		<dispatch xmlns="http://exist.sourceforge.net/NS/exist">
+		    <forward url="{$service-path}/unzip.xql">
+		        <set-attribute name="request-path-info" value="{$request-path-info}"/>
+		    </forward>
+		</dispatch>
+		
     else if ( empty( $module ) or $module = "" ) then
 
         <dispatch xmlns="http://exist.sourceforge.net/NS/exist">
