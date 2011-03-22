@@ -17,6 +17,7 @@ import org.apache.commons.httpclient.Header;
 import org.apache.commons.httpclient.HttpClient;
 import org.apache.commons.httpclient.HttpException;
 import org.apache.commons.httpclient.HttpMethod;
+import org.apache.commons.httpclient.URIException;
 import org.apache.commons.httpclient.UsernamePasswordCredentials;
 import org.apache.commons.httpclient.auth.BasicScheme;
 import org.apache.commons.httpclient.methods.EntityEnclosingMethod;
@@ -135,17 +136,18 @@ public class AtomTestUtils {
 
 			result = client.executeMethod(method);
 
-		} catch (HttpException e) {
+    } catch (Throwable t) {
 
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
+      t.printStackTrace();
+      String uri = "";
+      try {
+        uri = method.getURI().toString();
+      } catch (URIException uriException) {
+        uri = "malformed uri (" + uriException.getLocalizedMessage() + ")";
+      }
+      fail("Problem with " + method.getName() + " for " + uri + " : " + t.getLocalizedMessage());
 
-		} catch (IOException e) {
-
-			e.printStackTrace();
-			fail(e.getLocalizedMessage());
-
-		}
+    }
 		
 		return result;
 		
