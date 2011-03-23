@@ -16,6 +16,8 @@ public class AtomBeatUtilModule extends AbstractInternalModule {
 		new FunctionDef(StreamRequestDataToFile.signature, StreamRequestDataToFile.class),
 		new FunctionDef(Mkdirs.signature, Mkdirs.class),
 		new FunctionDef(GetZipEntries.signature, GetZipEntries.class),
+		new FunctionDef(GetZipEntrySize.signature, GetZipEntrySize.class),
+		new FunctionDef(GetZipEntryCrc.signature, GetZipEntryCrc.class),
 		new FunctionDef(CopyFile.signature, CopyFile.class),
 		new FunctionDef(FileLength.signature, FileLength.class),
 		new FunctionDef(FileExists.signature, FileExists.class),
