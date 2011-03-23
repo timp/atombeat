@@ -2,12 +2,14 @@ xquery version "1.0";
 
 module namespace unzip-plugin = "http://purl.org/atombeat/xquery/unzip-plugin";
 declare namespace atom = "http://www.w3.org/2005/Atom" ;
+declare namespace app = "http://www.w3.org/2007/app" ;
 declare namespace atombeat = "http://purl.org/atombeat/xmlns";
 import module namespace util = "http://exist-db.org/xquery/util" ;
 import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" at "../lib/constants.xqm" ;
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace unzip-config = "http://purl.org/atombeat/xquery/unzip-config" at "../config/unzip.xqm" ;
 import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
 import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtomBeatUtilModule";
 
@@ -134,13 +136,18 @@ declare function local:unzip(
     let $entry := $response/body/atom:entry
     let $entry-path-info := substring-after($entry/atom:link[@rel='edit']/@href/string(), $config:edit-link-uri-base)
     let $unzip-collection-path-info := concat($entry-path-info, "/unzip")
+    let $feed-template := unzip-config:feed-template($unzip-collection-path-info, $entry)
     let $unzip-feed :=
         <atom:feed>
-            <atom:title type='text'>Unzipped Entries for: {$entry/atom:title/string()}</atom:title>
+        {
+            $feed-template/attribute::*,
+            $feed-template/child::*[not(. instance of element(app:collection))]
+        }
 			<app:collection xmlns:app="http://www.w3.org/2007/app">
-			    <f:features xmlns:f="http://purl.org/atompub/features/1.0">
-				    <f:feature ref="http://purl.org/atombeat/feature/HiddenFromServiceDocument"/>
-				</f:features>
+            {
+                $feed-template/app:collection/attribute::*,
+                $feed-template/app:collection/child::*[not(. instance of element(app:accept))]
+            }
                 <app:accept/>
             </app:collection>
         </atom:feed>
