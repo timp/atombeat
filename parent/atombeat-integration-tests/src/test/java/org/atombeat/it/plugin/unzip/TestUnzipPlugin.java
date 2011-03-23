@@ -3,6 +3,7 @@
  */
 package org.atombeat.it.plugin.unzip;
 
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.net.URISyntaxException;
 
@@ -90,21 +91,23 @@ public class TestUnzipPlugin extends TestCase {
 		request.setContentType("application/zip");
 		ClientResponse response = adam.post(collectionUri, content, request);
 
-		// test the initial response
+		// test the initial response - expect standard response for creating media resource
 		assertEquals(201, response.getStatus());
 		Document<Entry> d = response.getDocument();
 		Entry e = d.getRoot();
+		String parenturi = e.getEditLinkResolvedHref().toString();
 		assertNotNull(e.getEditMediaLink());
+		String parentmediauri = e.getEditMediaLinkResolvedHref().toString();
 		assertNotNull(e.getContentElement());
 		
-		// look for "down" link to zip contents
-		assertEquals(1, e.getLinks("down").size());
-		Link down = e.getLinks("down").get(0);
-		String downuri = down.getResolvedHref().toString();
+		// look for "http://purl.org/atombeat/rel/package-members" link to zip contents
+		assertEquals(1, e.getLinks("http://purl.org/atombeat/rel/package-members").size());
+		Link packageMembersLink = e.getLinks("http://purl.org/atombeat/rel/package-members").get(0);
+		String packageMembersUri = packageMembersLink.getResolvedHref().toString();
 		
-		// retrieve down feed, check members - expect 3
+		// retrieve package members feed, check members - expect 3
 		response.release();
-		response = adam.get(downuri);
+		response = adam.get(packageMembersUri);
 		assertEquals(200, response.getStatus());
 		Document<Feed> fd = response.getDocument();
 		Feed f = fd.getRoot();
@@ -112,19 +115,71 @@ public class TestUnzipPlugin extends TestCase {
 		
 		// retrieve media content from members - expect ok
 		for (Entry ml : f.getEntries()) {
+			
+			// check properties of the media-link entry
 			String src = ml.getContentSrc().toString();
 			String emu = ml.getEditMediaLink().getResolvedHref().toString(); 
 			String type = ml.getContentMimeType().toString();
 			assertEquals(src, emu);
+			assertEquals(1, ml.getLinks("http://purl.org/atombeat/rel/member-of-package").size());
+			Link up = ml.getLink("http://purl.org/atombeat/rel/member-of-package");
+			assertEquals(parenturi, up.getResolvedHref().toString());
+			assertEquals(1, ml.getLinks("http://purl.org/atombeat/rel/member-of-package-media").size());
+			Link upmedia = ml.getLink("http://purl.org/atombeat/rel/member-of-package-media");
+			assertEquals(parentmediauri, upmedia.getResolvedHref().toString());
+			assertTrue(ml.getEditMediaLink().getLength() > 0);
+			assertFalse(ml.getEditMediaLink().getAttributeValue("hash").contains("TODO"));
+			
+			// check can retrieve media content
 			response.release();
 			response = adam.get(src);
 			assertEquals(200, response.getStatus());
-			assertEquals(type, response.getContentType().toString());
+			assertTrue(response.getContentType().toString().startsWith(type));
+			
+			// check cannot update media content
+			RequestOptions options = new RequestOptions();
+			options.setContentType("text/plain");
+			response.release();
+			response = adam.put(src, new ByteArrayInputStream("foobar".getBytes()), options);
+			assertEquals(405, response.getStatus());
+			
+			// check can retrieve member
+			response.release();
+			response = adam.get(ml.getEditLinkResolvedHref().toString());
+			assertEquals(200, response.getStatus());
+			assertTrue(response.getContentType().toString().startsWith("application/atom+xml"));
+			Document<Entry> mld = response.getDocument();
+			ml = mld.getRoot();
+			
+			// check can update member
+			ml.setTitle("changed");
+			response.release();
+			response = adam.put(ml.getEditLinkResolvedHref().toString(), ml);
+			assertEquals(200, response.getStatus());
+			mld = response.getDocument();
+			ml = mld.getRoot();
+			assertEquals(1, ml.getLinks("http://purl.org/atombeat/rel/member-of-package").size());
+			up = ml.getLink("http://purl.org/atombeat/rel/member-of-package");
+			assertEquals(parenturi, up.getResolvedHref().toString());
+			assertEquals(1, ml.getLinks("http://purl.org/atombeat/rel/member-of-package-media").size());
+			upmedia = ml.getLink("http://purl.org/atombeat/rel/member-of-package-media");
+			assertEquals(parentmediauri, upmedia.getResolvedHref().toString());
+			
 		}
 		
-		// TODO try updating a member - ok
+		// try deleting parent member, should cascade
+		response.release();
+		response = adam.delete(parenturi);
+		assertTrue(200 <= response.getStatus() && response.getStatus() < 300);
+		response.release();
+		response = adam.get(parenturi); assertEquals(404, response.getStatus()); response.release();
+		response = adam.get(parentmediauri); assertEquals(404, response.getStatus()); response.release();
+		response = adam.get(packageMembersUri); assertEquals(404, response.getStatus()); response.release();
+		for (Entry ml : f.getEntries()) {
+			response = adam.get(ml.getEditLinkResolvedHref().toString()); assertEquals(404, response.getStatus()); response.release();
+			response = adam.get(ml.getEditMediaLinkResolvedHref().toString()); assertEquals(404, response.getStatus()); response.release();
+		}
 		
-		// TODO try updating media - not supported
 	}
 	
 }
