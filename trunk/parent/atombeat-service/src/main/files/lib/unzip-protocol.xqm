@@ -50,7 +50,7 @@ as element(response)
 		
 		then unzip-protocol:do-get( $request )
 		
-		else common-protocol:do-method-not-allowed( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request , ( "GET" , "PUT" ) )
+		else common-protocol:do-method-not-allowed( $CONSTANT:OP-SECURITY-PROTOCOL-ERROR , $request , ( "GET" ) )
 
 };
 
@@ -67,10 +67,10 @@ declare function unzip-protocol:do-get(
     let $request-path-info := $request/path-info/string() 
     let $op-name := $CONSTANT:OP-RETRIEVE-MEDIA
     let $available := atomdb:media-resource-available($request-path-info)
-    let $entry-param := xutil:get-parameter("entry", $request)
+    let $zip-entry := xutil:get-parameter("zip-entry", $request)
     return    
         if (not($available)) then common-protocol:do-not-found("UNZIP_PROTOCOL_ERROR" , $request)
-        else if (empty($entry-param)) then common-protocol:do-bad-request("UNZIP_PROTOCOL_ERROR", $request, "expected 'entry' URL query parameter, found none")
+        else if (empty($zip-entry)) then common-protocol:do-bad-request("UNZIP_PROTOCOL_ERROR", $request, "expected 'zip-entry' URL query parameter, found none")
         else
             let $op := util:function( QName( "http://purl.org/atombeat/xquery/unzip-protocol" , "unzip-protocol:op-retrieve-media" ) , 2 )
             return common-protocol:apply-op( $op-name , $op , $request , () )
@@ -87,13 +87,15 @@ declare function unzip-protocol:op-retrieve-media(
 {
 
     let $request-path-info := $request/path-info/string()
-    let $entry-param := xutil:get-parameter("entry", $request)
+    let $zip-entry := xutil:get-parameter("zip-entry", $request)
     let $file-path := concat($config:media-storage-dir, $request-path-info)
     let $zip-entries := atombeat-util:get-zip-entries($file-path)
     return
-        if ($entry-param = $zip-entries) then
-            let $mime-type := atomdb:get-mime-type($request-path-info)
-            let $title := text:groups($entry-param, "([^/]+)$")[2]
+        if ($zip-entry = $zip-entries) then
+            let $extension := text:groups( $zip-entry , "\.([^.]+)$" )[2]
+            let $media-type := $mime:mappings//mime-mapping[extension=$extension]/mime-type
+            let $media-type := if ( empty( $media-type ) ) then "application/octet-stream" else $media-type
+            let $title := text:groups($zip-entry, "([^/]+)$")[2]
             let $content-disposition-header :=
                 if ( $title ) then 
                     <header>
@@ -107,13 +109,13 @@ declare function unzip-protocol:op-retrieve-media(
                     <headers>
                         <header>
                             <name>Content-Type</name>
-                            <value>{$mime-type}</value>
+                            <value>{$media-type}</value>
                         </header>
                     {
                         $content-disposition-header
                     }
                     </headers>
-                    <body type="unzip-media" zip-entry="{$entry-param}">{$request-path-info}</body>
+                    <body type="unzip-media" zip-entry="{$zip-entry}">{$request-path-info}</body>
                 </response>
                 
         else

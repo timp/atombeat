@@ -528,7 +528,7 @@ declare function security-plugin:augment-entry(
             type="{$CONSTANT:MEDIA-TYPE-ATOM-ENTRY}"/>
         
     let $media-descriptor-link :=
-        if ( exists( $media-uri ) ) then
+        if ( exists($media-path-info) and $media-path-info ne '' ) then
             let $media-descriptor-href := concat( $config:security-service-url , $media-path-info )
             return 
                 <atom:link 
