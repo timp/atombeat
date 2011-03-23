@@ -20,6 +20,17 @@ import module namespace config = "http://purl.org/atombeat/xquery/config" at "..
 
 
 
+declare variable $atomdb:reserved-rels := (
+    "self" ,
+    "edit" ,
+    "edit-media" ,
+    "service" ,
+    "http://purl.org/atombeat/rel/member-of-package" ,
+    "http://purl.org/atombeat/rel/member-of-package-media" 
+);
+
+
+
 declare function atomdb:collection-available(
 	$request-path-info as xs:string
 ) as xs:boolean
@@ -653,10 +664,7 @@ declare function atomdb:mutable-entry-children(
             and not( $child instance of element(atom:updated) )
             and not( $child instance of element(atom:published) )
             and not( $child instance of element(atom:category) )
-            and not( $child instance of element(atom:link) and $child/@rel = "self" )
-            and not( $child instance of element(atom:link) and $child/@rel = "edit" )
-            and not( $child instance of element(atom:link) and $child/@rel = "edit-media" )
-            and not( $child instance of element(atom:link) and $child/@rel = "service" )
+            and not( $child instance of element(atom:link) and $child/@rel = $atomdb:reserved-rels )
             and not( $config:auto-author and $child instance of element(atom:author) )
             and not( atomdb:media-link-available( $request-path-info ) and $child instance of element(atom:content) )
         return $child
@@ -994,7 +1002,8 @@ declare function atomdb:create-media-link-entry-with-media-uri(
     $media-link-title as xs:string? ,
     $media-link-summary as xs:string? ,
     $media-link-category as xs:string? ,
-    $hash as xs:string?
+    $hash as xs:string? ,
+    $links as element(atom:link)*
 ) as element(atom:entry)
 {
 
@@ -1051,6 +1060,7 @@ declare function atomdb:create-media-link-entry-with-media-uri(
             <atom:summary type="text">{$summary}</atom:summary>
         {
             $categories , 
+            $links ,
             if ( $config:auto-author )
             then
                 <atom:author>
@@ -1088,10 +1098,7 @@ declare function atomdb:update-entry(
             }
             <atom:updated>{$updated}</atom:updated>
             {
-                $entry/atom:link[@rel="self"] ,
-                $entry/atom:link[@rel="edit"] ,
-                $entry/atom:link[@rel="edit-media"] ,
-                $entry/atom:link[@rel="service"] ,
+                $entry/atom:link[@rel=$atomdb:reserved-rels] ,
                 if ( $config:auto-author ) then $entry/atom:author else () ,
                 if ( atomdb:media-link-available( $path-info ) ) then $entry/atom:content else () ,
                 atomdb:mutable-entry-children( $path-info , $request-data )
@@ -1153,7 +1160,8 @@ declare function atomdb:create-virtual-media-resource(
 	$user-name as xs:string? ,
 	$media-link-title as xs:string? ,
 	$media-link-summary as xs:string? ,
-	$media-link-category as xs:string?
+	$media-link-category as xs:string? ,
+	$links as element(atom:link)*
 ) as element(atom:entry)?
 {
 
@@ -1161,7 +1169,7 @@ declare function atomdb:create-virtual-media-resource(
 
     let $member-id := atomdb:generate-member-identifier( $collection-path-info ) 
     
-    let $media-link-entry := atomdb:create-media-link-entry-with-media-uri($collection-path-info, $member-id, $media-uri, $media-type, $media-size, $user-name, $media-link-title, $media-link-summary, $media-link-category, $media-hash)
+    let $media-link-entry := atomdb:create-media-link-entry-with-media-uri($collection-path-info, $member-id, $media-uri, $media-type, $media-size, $user-name, $media-link-title, $media-link-summary, $media-link-category, $media-hash, $links)
     
     let $media-link-entry-doc-db-path := xmldb:store( $collection-db-path , concat( $member-id , ".atom" ) , $media-link-entry , $CONSTANT:MEDIA-TYPE-ATOM ) 
     

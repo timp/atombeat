@@ -8,6 +8,7 @@ import module namespace CONSTANT = "http://purl.org/atombeat/xquery/constants" a
 import module namespace xutil = "http://purl.org/atombeat/xquery/xutil" at "../lib/xutil.xqm" ;
 import module namespace atomdb = "http://purl.org/atombeat/xquery/atomdb" at "../lib/atomdb.xqm" ;
 import module namespace config = "http://purl.org/atombeat/xquery/config" at "../config/shared.xqm" ;
+import module namespace mime = "http://purl.org/atombeat/xquery/mime" at "../lib/mime.xqm" ;
 import module namespace atombeat-util = "http://purl.org/atombeat/xquery/atombeat-util" at "java:org.atombeat.xquery.functions.util.AtomBeatUtilModule";
 
 
@@ -23,6 +24,7 @@ declare function unzip-plugin:before(
 	let $message := concat( "unzip-plugin:before... " , $operation , ", request-path-info: " , $request-path-info ) 
 	return
         if ( $entity instance of element(atom:entry) ) then local:filter-entry( $entity )
+        else if ( $entity instance of element(atom:feed) ) then local:filter-feed( $entity )
         else if ( empty( $entity ) ) then <void/>
         else $entity
 };
@@ -38,7 +40,9 @@ declare function local:filter-entry(
     let $reserved :=
         <reserved>
             <atom-links>
-                <link rel="down"/>
+                <link rel="http://purl.org/atombeat/rel/package-members"/>
+                <link rel="http://purl.org/atombeat/rel/member-of-package"/>
+                <link rel="http://purl.org/atombeat/rel/member-of-package-media"/>
             </atom-links>
         </reserved>
     
@@ -46,6 +50,22 @@ declare function local:filter-entry(
     
     return $filtered-entry
 
+};
+
+
+
+
+declare function local:filter-feed(
+    $feed as element(atom:feed)
+) as element(atom:feed)
+{
+    <atom:feed>
+    {
+        $feed/attribute::*,
+        $feed/child::*[not(. instance of element(atom:entry))],
+        for $entry in $feed/atom:entry return local:filter-entry($entry)
+    }
+    </atom:feed>
 };
 
 
@@ -67,6 +87,7 @@ declare function unzip-plugin:after(
 	
         	let $side-effects := 
         	    if ( $operation = $CONSTANT:OP-CREATE-MEDIA ) then local:create-media-side-effects($request, $response)
+        	    else if ( $operation = $CONSTANT:OP-DELETE-MEDIA ) then local:delete-media-side-effects($request, $response)
         	    else true()
         	
         	return 
@@ -124,16 +145,51 @@ declare function local:unzip(
             </app:collection>
         </atom:feed>
     let $unzip-collection-created := atomdb:create-collection($unzip-collection-path-info, $unzip-feed, $request/user/string())
-    let $zip-entries := atombeat-util:get-zip-entries(concat($config:media-storage-dir, $entry-path-info, ".media"))
+    let $zip-file-path := concat($config:media-storage-dir, $entry-path-info, ".media")
+    let $zip-entries := atombeat-util:get-zip-entries($zip-file-path)
     let $zip-members-created :=
         for $zip-entry in $zip-entries
-        let $unzip-url := concat($config:service-url-base, '/unzip', $entry-path-info, ".media?entry=", $zip-entry)
+        let $unzip-url := concat($config:service-url-base, '/unzip', $entry-path-info, ".media?zip-entry=", $zip-entry)
         let $title := $zip-entry
         let $summary := 'zip file entry'
+        let $extension := text:groups( $zip-entry , "\.([^.]+)$" )[2]
+        let $media-type := $mime:mappings//mime-mapping[extension=$extension]/mime-type
+        let $media-type := if ( empty( $media-type ) ) then "application/octet-stream" else $media-type
         let $user := $request/user/string()
-        return atomdb:create-virtual-media-resource($unzip-collection-path-info, $unzip-url, "application/TODO", -1, 'crc-32:TODO', $user, $title, $summary, ())
+        let $size := atombeat-util:get-zip-entry-size($zip-file-path, $zip-entry)
+        let $hash := concat("crc-32:", atombeat-util:get-zip-entry-crc($zip-file-path, $zip-entry) cast as xs:string)
+        let $links := (
+            <atom:link rel="http://purl.org/atombeat/rel/member-of-package" type="application/atom+xml;type=entry" href="{$entry/atom:link[@rel='edit']/@href/string()}"/>,
+            <atom:link rel="http://purl.org/atombeat/rel/member-of-package-media" type="{$entry/atom:link[@rel='edit-media']/@type/string()}" href="{$entry/atom:link[@rel='edit-media']/@href/string()}"/>
+        )
+        return atomdb:create-virtual-media-resource($unzip-collection-path-info, $unzip-url, $media-type, $size, $hash, $user, $title, $summary, (), $links)
     return exists($unzip-collection-created)
 };
+
+
+
+
+declare function local:delete-media-side-effects(
+	$request as element(request) ,
+	$response as element(response)
+) as xs:boolean
+{
+
+    let $request-path-info := $request/path-info/string()
+    
+    let $member-path-info :=
+        if ( ends-with( $request-path-info , ".media" ) )
+        then replace( $request-path-info , "^(.*)\.media$" , "$1" )
+        else $request-path-info
+
+    let $collection-path-info := concat($member-path-info, '/unzip')
+    
+    let $collection-deleted := atomdb:delete-collection($collection-path-info, true())
+    
+    return exists($collection-deleted)
+    
+};
+
 
 
 
@@ -208,7 +264,7 @@ declare function local:augment-entry(
         {
             $entry/attribute::*,
             $entry/child::*,
-            <atom:link rel="down" type="application/atom+xml;type=feed" href="{$entry/atom:link[@rel='edit']/@href}/unzip"/>
+            <atom:link rel="http://purl.org/atombeat/rel/package-members" type="application/atom+xml;type=feed" href="{$entry/atom:link[@rel='edit']/@href}/unzip"/>
         }        
         </atom:entry>
     else $entry
