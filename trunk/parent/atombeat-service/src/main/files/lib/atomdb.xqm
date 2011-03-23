@@ -1488,7 +1488,7 @@ declare function atomdb:lookup-member-by-id(
 ) as xs:string?
 {
     (: it is possible that two members could end up with the same ID, TODO how to handle that? :)
-    collection($config:base-collection-path)/atom:entry[@id=$id]/atom:link[@rel='edit']/@href/string()
+    collection($config:base-collection-path)/atom:entry[atom:id=$id]/atom:link[@rel='edit']/@href/string()
 };
 
 

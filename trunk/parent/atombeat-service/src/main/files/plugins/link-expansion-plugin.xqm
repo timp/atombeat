@@ -240,8 +240,12 @@ declare function link-expansion-plugin:expand-atom-link(
 ) as element(atom:link)
 {
 
-    (: deal with cyclic expansion :)
+    let $depth-value := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.depth']/value 
+    let $depth := if (exists($depth-value)) then $depth-value cast as xs:integer else 0
     
+    let $path := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.path']/value/path
+    
+    (: deal with cyclic expansion :)
     let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
     let $uri := 
         if (exists($override-uri)) then $override-uri else $link/@href/string()
@@ -250,6 +254,8 @@ declare function link-expansion-plugin:expand-atom-link(
     
         if ( $uri = $visited ) then $link (: do not expand :) 
         
+        else if ( $depth gt 0 ) then $link (: keep conventional expansion to 1 deep :)
+        
         else
         
             (: TODO what if href uri has query params, need to parse out? :)
@@ -257,6 +263,11 @@ declare function link-expansion-plugin:expand-atom-link(
             let $new-visited := (
                 $visited ,
                 <visited>{$uri}</visited>
+            )
+            let $new-depth := $depth + 1
+            let $new-path := (
+                $path ,
+                <path>{$link/@rel/string()}</path>
             )
             let $path-info := substring-after( $uri , $config:self-link-uri-base )
             
@@ -275,6 +286,14 @@ declare function link-expansion-plugin:expand-atom-link(
                         <attribute>
                             <name>atombeat.link-expansion-plugin.visited</name>
                             <value>{$new-visited}</value>
+                        </attribute>
+                        <attribute>
+                            <name>atombeat.link-expansion-plugin.depth</name>
+                            <value>{$new-depth}</value>
+                        </attribute>
+                        <attribute>
+                            <name>atombeat.link-expansion-plugin.path</name>
+                            <value>{$new-path}</value>
                         </attribute>
                     </attributes>
                     {
@@ -312,15 +331,21 @@ declare function link-expansion-plugin:expand-security-link(
 ) as element(atom:link)
 {
 
-    (: deal with cyclic expansion :)
+    let $depth-value := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.depth']/value 
+    let $depth := if (exists($depth-value)) then $depth-value cast as xs:integer else 0
     
+    let $path := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.path']/value/path
+    
+    (: deal with cyclic expansion :)
     let $visited := $request/attributes/attribute[name eq 'atombeat.link-expansion-plugin.visited']/value/visited
     let $uri := $link/@href cast as xs:string
     
     return
     
         if ( $uri = $visited ) then $link (: do not expand :) 
-        
+
+        else if ( $depth gt 0 ) then $link (: keep conventional expansion to 1 deep :)
+
         else
         
             (: TODO what if href uri has query params, need to parse out? :)
@@ -328,6 +353,11 @@ declare function link-expansion-plugin:expand-security-link(
             let $new-visited := (
                 $visited ,
                 <visited>{$uri}</visited>
+            )
+            let $new-depth := $depth + 1
+            let $new-path := (
+                $path ,
+                <path>{$link/@rel/string()}</path>
             )
             let $path-info := substring-after( $uri , $config:security-service-url )
             
@@ -346,6 +376,14 @@ declare function link-expansion-plugin:expand-security-link(
                         <attribute>
                             <name>atombeat.link-expansion-plugin.visited</name>
                             <value>{$new-visited}</value>
+                        </attribute>
+                        <attribute>
+                            <name>atombeat.link-expansion-plugin.depth</name>
+                            <value>{$new-depth}</value>
+                        </attribute>
+                        <attribute>
+                            <name>atombeat.link-expansion-plugin.path</name>
+                            <value>{$new-path}</value>
                         </attribute>
                     </attributes>
                     {
