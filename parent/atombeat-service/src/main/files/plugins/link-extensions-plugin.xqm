@@ -229,6 +229,12 @@ declare function link-extensions-plugin:decorate-links(
             
             if ( $match-rels-allow = "*" or $link/@rel = $match-rels-allow ) then
             
+                let $allowed-methods := atomsec:decide-http-allow( $link/@href/string() , $user , $roles )
+                let $allow := string-join( $allowed-methods , ',' )
+                return <atom:link atombeat:allow="{$allow}">{$link/attribute::* , $link/child::*}</atom:link>
+                
+            else $link
+(:            
                 if ( starts-with( $link/@href , $config:self-link-uri-base ) ) then
     
                     let $path-info := substring-after( $link/@href , $config:self-link-uri-base )
@@ -333,7 +339,7 @@ declare function link-extensions-plugin:decorate-links(
                 else $link
                 
             else $link        
-    
+    :)
     let $links-with-count :=
     
         for $link in $links-with-allow return

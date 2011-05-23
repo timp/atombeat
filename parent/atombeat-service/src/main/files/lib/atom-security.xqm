@@ -234,6 +234,22 @@ declare function atomsec:retrieve-collection-descriptor(
 
 
 
+declare function atomsec:retrieve-collection-descriptor-nocheck(
+    $request-path-info as xs:string?
+) as element(atombeat:security-descriptor)?
+{
+
+    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , "/" , $atomsec:descriptor-suffix )
+
+    let $descriptor-doc := doc( $descriptor-doc-db-path )
+    
+    return $descriptor-doc/atombeat:security-descriptor
+        
+};
+
+
+
+
 declare function atomsec:retrieve-resource-descriptor(
     $request-path-info as xs:string?
 ) as element(atombeat:security-descriptor)?
@@ -270,6 +286,22 @@ declare function atomsec:retrieve-member-descriptor-nocheck(
 {
 
     let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , ".atom" , $atomsec:descriptor-suffix )
+
+    let $descriptor-doc := doc( $descriptor-doc-db-path )
+    
+    return $descriptor-doc/atombeat:security-descriptor
+    
+};
+
+
+
+
+declare function atomsec:retrieve-media-resource-descriptor-nocheck(
+    $request-path-info as xs:string
+) as element(atombeat:security-descriptor)?
+{
+
+    let $descriptor-doc-db-path := concat( $config:base-security-collection-path , atomdb:request-path-info-to-db-path( $request-path-info ) , $atomsec:descriptor-suffix )
 
     let $descriptor-doc := doc( $descriptor-doc-db-path )
     
@@ -748,7 +780,256 @@ declare function atomsec:wrap-with-entry(
 
 
 
+declare function atomsec:decide-http-allow(
+    $url as xs:string ,
+    $user as xs:string? ,
+    $roles as xs:string*
+) as item()* 
+{
+
+    let $in-content := starts-with( $url , $config:self-link-uri-base )
+    let $in-security := starts-with( $url , $config:security-service-url )
+    let $in-history := starts-with( $url , $config:history-service-url )
+    return
+        if ( not( $in-content or $in-security or $in-history ) ) then () (: bail out early :)
+        else
+            
+            (: what are we? :)
+            let $path-info :=
+                if ( $in-content ) then substring-after ( $url , $config:self-link-uri-base )
+                else if ( $in-security ) then substring-after ( $url , $config:security-service-url )
+                else if ( $in-history ) then substring-after ( $url , $config:history-service-url )
+                else ()
+            let $is-member := atomdb:member-available( $path-info )
+            let $is-media := 
+                if ( $is-member ) then false() else atomdb:media-resource-available( $path-info ) 
+            let $is-collection := 
+                if ( $is-member or $is-media ) then false() else atomdb:collection-available( $path-info )
+                
+            (: define the methods we're interested in, and mappings to atombeat operations :)
+            let $methods :=
+                if ( $is-member and $in-content ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-RETRIEVE-MEMBER}</op>
+                        </GET> ,
+                        <PUT>
+                            <op>{$CONSTANT:OP-UPDATE-MEMBER}</op>
+                        </PUT> ,
+                        <DELETE>
+                            <op>{$CONSTANT:OP-DELETE-MEMBER}</op>
+                        </DELETE>
+                    )
+                else if ( $is-media and $in-content ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-RETRIEVE-MEDIA}</op>
+                        </GET> ,
+                        <PUT>
+                            <op>{$CONSTANT:OP-UPDATE-MEDIA}</op>
+                        </PUT> ,
+                        <DELETE>
+                            <op>{$CONSTANT:OP-DELETE-MEDIA}</op>
+                        </DELETE>
+                    )
+                else if ( $is-collection and $in-content ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-LIST-COLLECTION}</op>
+                        </GET> ,
+                        <PUT>
+                            <op>{$CONSTANT:OP-UPDATE-COLLECTION}</op>
+                        </PUT> ,
+                        <POST>
+                            <op>{$CONSTANT:OP-CREATE-MEMBER}</op>
+                            <op>{$CONSTANT:OP-CREATE-MEDIA}</op>
+                            <op>{$CONSTANT:OP-MULTI-CREATE}</op>
+                        </POST>
+                    )
+                else if ( $is-member and $in-security ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-RETRIEVE-MEMBER-ACL}</op>
+                        </GET> ,
+                        <PUT>
+                            <op>{$CONSTANT:OP-UPDATE-MEMBER-ACL}</op>
+                        </PUT> 
+                    )
+                else if ( $is-media and $in-security ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-RETRIEVE-MEDIA-ACL}</op>
+                        </GET> ,
+                        <PUT>
+                            <op>{$CONSTANT:OP-UPDATE-MEDIA-ACL}</op>
+                        </PUT> 
+                    )
+                else if ( $is-collection and $in-security ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-RETRIEVE-COLLECTION-ACL}</op>
+                        </GET> ,
+                        <PUT>
+                            <op>{$CONSTANT:OP-UPDATE-COLLECTION-ACL}</op>
+                        </PUT> 
+                    )
+                else if ( $is-member and $in-history ) then
+                    (
+                        <GET>
+                            <op>{$CONSTANT:OP-RETRIEVE-HISTORY}</op>
+                        </GET>
+                    )
+                else ()
+
+            (: retrieve security descriptors to process :)
+            let $resource-descriptor := 
+                if ( $is-member ) then atomsec:retrieve-member-descriptor-nocheck( $path-info )
+                else if ( $is-media ) then atomsec:retrieve-media-resource-descriptor-nocheck( $path-info )
+                else ()
+            let $collection-descriptor :=
+                if ( $is-member or $is-media ) then atomsec:retrieve-collection-descriptor-nocheck( text:groups( $path-info , '^(.*)/[^/]*$' )[2] )
+                else if ( $is-collection ) then atomsec:retrieve-collection-descriptor-nocheck( $path-info )
+                else ()
+            let $workspace-descriptor := atomsec:retrieve-workspace-descriptor()
+            
+            (: put descriptors in priority order :)
+            let $descriptors :=
+                for $level in $security-config:priority
+                return
+                    if ($level = "WORKSPACE") then $workspace-descriptor
+                    else if ($level = "COLLECTION") then $collection-descriptor
+                    else if ($level = "RESOURCE") then $resource-descriptor
+                    else ()
+                    
+            (: now begin processing access control lists recursively :)
+            let $allowed-methods := atomsec:decide-http-allowed-methods( $path-info , $user , $roles , $descriptors , $methods )
+                
+            return $allowed-methods
+};
 
 
 
+declare function atomsec:decide-http-allowed-methods( 
+    $path-info as xs:string? ,
+    $user as xs:string? ,
+    $roles as xs:string* ,
+    $descriptors as element(atombeat:security-descriptor)* ,
+    $methods as element()* 
+) as xs:string*
+{
+    let $current-descriptor := $descriptors[1]
+    let $remaining-descriptors := subsequence( $descriptors , 2 )
+    let $current-ace := $current-descriptor/atombeat:acl/atombeat:ace[1]
+    let $remaining-aces := subsequence( $current-descriptor/atombeat:acl/atombeat:ace , 2 )
+    let $undecided-methods := $methods
+    let $allowed-methods := ()
+    return atomsec:recursive-decide-http-allowed-methods( $path-info , $user , $roles , $current-descriptor , $remaining-descriptors , $current-ace , $remaining-aces , $undecided-methods , $allowed-methods )
+    
+};
 
+
+
+declare function atomsec:recursive-decide-http-allowed-methods( 
+    $path-info as xs:string? ,
+    $user as xs:string? ,
+    $roles as xs:string* ,
+    $current-descriptor as element(atombeat:security-descriptor)? ,
+    $remaining-descriptors as element(atombeat:security-descriptor)* ,
+    $current-ace as element(atombeat:ace)? ,
+    $remaining-aces as element(atombeat:ace)* ,
+    $undecided-methods as element()* ,
+    $allowed-methods as xs:string*
+) as xs:string*
+{
+(:    
+    let $log := util:log( "debug" , "===== atomsec:recursive-decide-http-allowed-methods =====" )
+    let $log := util:log( "debug" , $path-info )
+    let $log := util:log( "debug" , $user )
+    let $log := util:log( "debug" , $roles )
+    let $log := util:log( "debug" , $current-descriptor )
+    let $log := util:log( "debug" , count($remaining-descriptors) )
+    let $log := util:log( "debug" , $current-ace )
+    let $log := util:log( "debug" , count($remaining-aces) )
+    let $log := util:log( "debug" , $undecided-methods )
+    let $log := util:log( "debug" , $allowed-methods )
+    
+    return
+:)    
+        if ( empty( $undecided-methods ) ) then 
+        (:
+            let $log := util:log( "debug" , "no more undecided methods, finished processing ACLs" )
+            return 
+        :)
+                $allowed-methods (: we've finished processing :)
+    
+        else if ( empty( $current-ace ) ) then (: we've run out of ACEs, need to use default decision for remaining methods :)
+        (:
+            let $log := util:log( "debug" , "no more ACEs, use default decision" )
+            return
+        :)
+                if ( $security-config:default-decision eq 'ALLOW' ) then (: all undecided methods are allowed :)
+                    ( $allowed-methods , $undecided-methods/local-name() )
+                else (: all undecided methods are denied :)
+                    $allowed-methods
+                
+        else (: let's process the current ace and recurse :)
+        
+            let $is-match :=
+                $current-ace/atombeat:permission = ( '*' , $undecided-methods/op )
+                and (
+                    $current-ace/atombeat:recipient eq "*" 
+                    or $current-ace/atombeat:recipient[@type="user"] eq $user
+                    or $current-ace/atombeat:recipient[@type="role"] = $roles 
+                    or atomsec:match-group( $current-ace , $user , $current-descriptor )            
+                )
+                and (
+                    empty( $current-ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"] )
+                    or atomsec:match-request-path-info-condition( $current-ace , $path-info )             
+                )
+                
+(:            let $log := util:log( "debug" , concat( "ace is match: " , $is-match ) ):)
+            
+            let $new-undecided-methods := 
+                if ( $is-match ) then $undecided-methods[not( $current-ace/atombeat:permission = ( '*', op ) )] (: subtract methods that have matched :)
+                else $undecided-methods (: no change :)
+            
+            let $new-allowed-methods := 
+                if ( $is-match and $current-ace/atombeat:type eq 'ALLOW' ) then ( $allowed-methods , $undecided-methods[$current-ace/atombeat:permission = ( '*', op )]/local-name() )
+                else $allowed-methods (: no change :)
+            
+            let $pop-descriptor := empty( $remaining-aces ) and exists( $remaining-descriptors )
+            return 
+                if ( $pop-descriptor ) then (: we need to move to the next security descriptor :)
+                    let $new-current-descriptor := $remaining-descriptors[1]
+                    let $new-remaining-descriptors := subsequence( $remaining-descriptors , 2 )
+                    let $new-current-ace := $new-current-descriptor/atombeat:acl/atombeat:ace[1]
+                    let $new-remaining-aces := subsequence( $new-current-descriptor/atombeat:acl/atombeat:ace , 2 )
+                    return atomsec:recursive-decide-http-allowed-methods( 
+                        $path-info , 
+                        $user , 
+                        $roles , 
+                        $new-current-descriptor , 
+                        $new-remaining-descriptors , 
+                        $new-current-ace , 
+                        $new-remaining-aces ,
+                        $new-undecided-methods ,
+                        $new-allowed-methods
+                    )
+                else (: we need to move to the next ACE on the current security descriptor :)
+                    let $new-current-ace := $remaining-aces[1]
+                    let $new-remaining-aces := subsequence( $remaining-aces , 2 )
+                    let $new-current-descriptor := $current-descriptor (: no change :)
+                    let $new-remaining-descriptors := $remaining-descriptors (: no change :)
+                    return atomsec:recursive-decide-http-allowed-methods( 
+                        $path-info , 
+                        $user , 
+                        $roles , 
+                        $new-current-descriptor , 
+                        $new-remaining-descriptors , 
+                        $new-current-ace , 
+                        $new-remaining-aces ,
+                        $new-undecided-methods ,
+                        $new-allowed-methods
+                    )
+                
+};
