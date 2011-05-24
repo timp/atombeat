@@ -17,8 +17,8 @@ declare function logger-plugin:before(
     let $request-path-info := $request/path-info/text()
 	let $message := concat( "before: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
-	let $log := util:log( "info" , $request )
-	let $log := util:log( "info" , $entity )
+(:	let $log := util:log( "info" , $request ) :)
+(:	let $log := util:log( "info" , $entity ) :)
 	
 	return $entity
 	
@@ -36,8 +36,8 @@ declare function logger-plugin:after(
     let $request-path-info := $request/path-info/text()
 	let $message := concat( "after: " , $operation , ", request-path-info: " , $request-path-info ) 
 	let $log := util:log( "info" , $message )
-	let $log := util:log( "info" , $request )
-	let $log := util:log( "info" , $response )
+(: 	let $log := util:log( "info" , $request ) :)
+(:	let $log := util:log( "info" , $response ) :)
 	
 	return $response
 
