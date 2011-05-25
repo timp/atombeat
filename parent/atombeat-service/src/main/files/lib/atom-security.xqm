@@ -541,10 +541,10 @@ declare function atomsec:apply-acl(
 ) as xs:string?
 {
 
-    let $matching-aces := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles, $request-path-info )
+    let $matching-ace := atomsec:match-acl($descriptor, $operation, $media-type, $user, $roles, $request-path-info )
     
     let $decision := 
-        if ( exists( $matching-aces ) ) then $matching-aces[1]/atombeat:type/text()
+        if ( exists( $matching-ace ) ) then $matching-ace/atombeat:type/string()
         else ()
     
     return $decision
@@ -560,10 +560,10 @@ declare function atomsec:match-acl(
     $user as xs:string? ,
     $roles as xs:string* ,
     $request-path-info as xs:string?
-) as element(atombeat:ace)*
+) as element(atombeat:ace)?
 {
 
-    let $matching-aces :=
+    let $matching-ace :=
     
         (:
          : This expression is optimised to improve efficiency and make use of indexes.
@@ -572,24 +572,26 @@ declare function atomsec:match-acl(
          
         $descriptor/atombeat:acl/atombeat:ace
             [ (: match operation :)
-                atombeat:permission = "*" or atombeat:permission = $operation
+                atombeat:permission = ( "*" , $operation )
             ]
             [ (: match recipient :)
                 (: match user :)
                 atombeat:recipient = "*" 
-                or atombeat:recipient[@type="user"] = $user
-                or atombeat:recipient[@type="role"] = $roles 
-                or atomsec:match-group( . , $user , $descriptor )
+                or atombeat:recipient[@type eq "user"] eq $user
+                or atombeat:recipient[@type eq "role"] = $roles 
+                or ( atombeat:recipient/@type eq "group" and atomsec:match-group( . , $user , $descriptor ) )
             ]
             [ 
                 empty( atombeat:conditions/atombeat:condition[@type="mediarange"] )
-                or atomsec:match-media-range-condition( . , $media-type ) ]
+                or atomsec:match-media-range-condition( . , $media-type ) 
+            ]
             [ 
                 empty( atombeat:conditions/atombeat:condition[@type="match-request-path-info"] )
                 or atomsec:match-request-path-info-condition( . , $request-path-info ) 
             ]
+            [1] (: first match wins :)
 
-    return $matching-aces
+    return $matching-ace
     
 };
 
@@ -744,6 +746,8 @@ declare function atomsec:is-denied(
         else ( atomsec:decide( $user , $roles , $request-path-info, $operation , $request-media-type ) = $atomsec:decision-deny )
         
     return $denied 
+    
+    
     
 };
 
@@ -941,13 +945,12 @@ declare function atomsec:decide-http-allowed-methods(
 {
     let $current-descriptor := $descriptors[1]
     let $remaining-descriptors := subsequence( $descriptors , 2 )
-    let $current-ace := $current-descriptor/atombeat:acl/atombeat:ace[1]
-    let $remaining-aces := subsequence( $current-descriptor/atombeat:acl/atombeat:ace , 2 )
     let $undecided-methods := $methods
     let $allowed-methods := ()
-    return atomsec:recursive-decide-http-allowed-methods( $path-info , $user , $roles , $current-descriptor , $remaining-descriptors , $current-ace , $remaining-aces , $undecided-methods , $allowed-methods )
+    return atomsec:recursive-decide-http-allowed-methods( $path-info , $user , $roles , $current-descriptor , $remaining-descriptors , $undecided-methods , $allowed-methods )
     
 };
+
 
 
 
@@ -957,101 +960,75 @@ declare function atomsec:recursive-decide-http-allowed-methods(
     $roles as xs:string* ,
     $current-descriptor as element(atombeat:security-descriptor)? ,
     $remaining-descriptors as element(atombeat:security-descriptor)* ,
-    $current-ace as element(atombeat:ace)? ,
-    $remaining-aces as element(atombeat:ace)* ,
     $undecided-methods as element()* ,
     $allowed-methods as xs:string*
 ) as xs:string*
 {
-(:    
-    let $log := util:log( "debug" , "===== atomsec:recursive-decide-http-allowed-methods =====" )
-    let $log := util:log( "debug" , $path-info )
-    let $log := util:log( "debug" , $user )
-    let $log := util:log( "debug" , $roles )
-    let $log := util:log( "debug" , $current-descriptor )
-    let $log := util:log( "debug" , count($remaining-descriptors) )
-    let $log := util:log( "debug" , $current-ace )
-    let $log := util:log( "debug" , count($remaining-aces) )
-    let $log := util:log( "debug" , $undecided-methods )
-    let $log := util:log( "debug" , $allowed-methods )
+
+    if ( empty( $undecided-methods ) ) then $allowed-methods (: no more methods need a decision, can bail out :)
     
-    return
-:)    
-        if ( empty( $undecided-methods ) ) then 
-        (:
-            let $log := util:log( "debug" , "no more undecided methods, finished processing ACLs" )
-            return 
-        :)
-                $allowed-methods (: we've finished processing :)
-    
-        else if ( empty( $current-ace ) ) then (: we've run out of ACEs, need to use default decision for remaining methods :)
-        (:
-            let $log := util:log( "debug" , "no more ACEs, use default decision" )
-            return
-        :)
-                if ( $security-config:default-decision eq 'ALLOW' ) then (: all undecided methods are allowed :)
-                    ( $allowed-methods , $undecided-methods/local-name() )
-                else (: all undecided methods are denied :)
-                    $allowed-methods
-                
-        else (: let's process the current ace and recurse :)
+    else if ( empty( $current-descriptor ) ) then (: no more descriptors, need to use default decision :)
+        if ( $security-config:default-decision eq 'ALLOW' ) then (: all undecided methods are allowed :)
+            ( $allowed-methods , $undecided-methods/local-name() )
+        else (: all undecided methods are denied :)
+            $allowed-methods
+            
+    else (: need to process the ACL :)
+
+        let $aces-matching-permission := $current-descriptor/atombeat:acl/atombeat:ace (: cut down the amount of recursion :)
+            [
+                atombeat:permission = ( '*' , $undecided-methods/op )
+            ] 
+            
+        let $aces-matching-permission-and-recipient := (
+            $aces-matching-permission[atombeat:recipient eq "*"] ,
+            $aces-matching-permission[atombeat:recipient[@type eq "user"] eq $user] ,
+            $aces-matching-permission[atombeat:recipient[@type eq "role"] = $roles] ,
+            $aces-matching-permission[atombeat:recipient/@type eq "group" and atomsec:match-group( . , $user , $current-descriptor )]        
+        )
         
-            let $is-match :=
-                $current-ace/atombeat:permission = ( '*' , $undecided-methods/op )
-                and (
-                    $current-ace/atombeat:recipient eq "*" 
-                    or $current-ace/atombeat:recipient[@type="user"] eq $user
-                    or $current-ace/atombeat:recipient[@type="role"] = $roles 
-                    or atomsec:match-group( $current-ace , $user , $current-descriptor )            
-                )
-                and (
-                    empty( $current-ace/atombeat:conditions/atombeat:condition[@type="match-request-path-info"] )
-                    or atomsec:match-request-path-info-condition( $current-ace , $path-info )             
-                )
-                
-(:            let $log := util:log( "debug" , concat( "ace is match: " , $is-match ) ):)
+        let $matching-aces :=
+            $aces-matching-permission-and-recipient
+            [
+                empty( atombeat:conditions/atombeat:condition[@type="match-request-path-info"] )
+                or atomsec:match-request-path-info-condition( . , $path-info )             
+            ]
             
-            let $new-undecided-methods := 
-                if ( $is-match ) then $undecided-methods[not( $current-ace/atombeat:permission = ( '*', op ) )] (: subtract methods that have matched :)
-                else $undecided-methods (: no change :)
+        (:
+        let $matching-aces := $current-descriptor/atombeat:acl/atombeat:ace (: cut down the amount of recursion :)
+            [
+                atombeat:permission = ( '*' , $undecided-methods/op )
+            ] 
+            [
+                atombeat:recipient eq "*" 
+                or atombeat:recipient[@type eq "user"] eq $user
+                or atombeat:recipient[@type eq "role"] = $roles 
+                or ( atombeat:recipient/@type eq "group" and atomsec:match-group( . , $user , $current-descriptor ) )          
+            ]
+            [
+                empty( atombeat:conditions/atombeat:condition[@type="match-request-path-info"] )
+                or atomsec:match-request-path-info-condition( . , $path-info )             
+            ]
+        :)
+    
+        let $new-undecided-methods := 
+            if ( exists( $matching-aces ) ) then
+                $undecided-methods[not( ( '*', op ) = $matching-aces/atombeat:permission )] (: subtract methods that have matched :)
+            else $undecided-methods (: no change :)
+        
+        let $new-allowed-methods := 
+            (
+                $allowed-methods ,
+                for $method in $undecided-methods
+                let $deciding-ace := $matching-aces[atombeat:permission = ( '*' , $method/op )][1] (: first match wins :)
+                return
+                    if ( $deciding-ace/atombeat:type eq "ALLOW" ) then $method/local-name() else ()
+            )
             
-            let $new-allowed-methods := 
-                if ( $is-match and $current-ace/atombeat:type eq 'ALLOW' ) then ( $allowed-methods , $undecided-methods[$current-ace/atombeat:permission = ( '*', op )]/local-name() )
-                else $allowed-methods (: no change :)
+        let $new-current-descriptor := $remaining-descriptors[1]
+        let $new-remaining-descriptors := subsequence( $remaining-descriptors , 2 )
             
-            let $pop-descriptor := empty( $remaining-aces ) and exists( $remaining-descriptors )
-            return 
-                if ( $pop-descriptor ) then (: we need to move to the next security descriptor :)
-                    let $new-current-descriptor := $remaining-descriptors[1]
-                    let $new-remaining-descriptors := subsequence( $remaining-descriptors , 2 )
-                    let $new-current-ace := $new-current-descriptor/atombeat:acl/atombeat:ace[1]
-                    let $new-remaining-aces := subsequence( $new-current-descriptor/atombeat:acl/atombeat:ace , 2 )
-                    return atomsec:recursive-decide-http-allowed-methods( 
-                        $path-info , 
-                        $user , 
-                        $roles , 
-                        $new-current-descriptor , 
-                        $new-remaining-descriptors , 
-                        $new-current-ace , 
-                        $new-remaining-aces ,
-                        $new-undecided-methods ,
-                        $new-allowed-methods
-                    )
-                else (: we need to move to the next ACE on the current security descriptor :)
-                    let $new-current-ace := $remaining-aces[1]
-                    let $new-remaining-aces := subsequence( $remaining-aces , 2 )
-                    let $new-current-descriptor := $current-descriptor (: no change :)
-                    let $new-remaining-descriptors := $remaining-descriptors (: no change :)
-                    return atomsec:recursive-decide-http-allowed-methods( 
-                        $path-info , 
-                        $user , 
-                        $roles , 
-                        $new-current-descriptor , 
-                        $new-remaining-descriptors , 
-                        $new-current-ace , 
-                        $new-remaining-aces ,
-                        $new-undecided-methods ,
-                        $new-allowed-methods
-                    )
-                
+        return atomsec:recursive-decide-http-allowed-methods( $path-info , $user , $roles , $new-current-descriptor , $new-remaining-descriptors , $new-undecided-methods , $new-allowed-methods )
+
 };
+
