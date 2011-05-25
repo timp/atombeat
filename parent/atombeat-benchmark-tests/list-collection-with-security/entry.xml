@@ -1,0 +1,6 @@
+<entry 
+    xmlns='http://www.w3.org/2005/Atom' 
+    xmlns:ab='http://purl.org/atombeat/xmlns'>
+    <title>Test Entry</title>
+    <summary>This is a test!</summary>
+</entry>
