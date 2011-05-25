@@ -1,6 +1,6 @@
-cd atombeat-xquery-functions
-mvn clean install
-cd ..
+#cd atombeat-xquery-functions
+#mvn clean install
+#cd ..
 #cd atombeat-servlet-filters
 #mvn clean install
 #cd ..

@@ -1,0 +1,13 @@
+<feed 
+    xmlns='http://www.w3.org/2005/Atom' 
+    xmlns:ab='http://purl.org/atombeat/xmlns'
+    ab:enable-versioning="true">
+    <title>Benchmark Allow Link Extensions</title>
+    <ab:config-link-extensions>
+        <ab:extension-attribute name='allow' namespace='http://purl.org/atombeat/xmlns'>
+            <ab:config context='entry-in-feed'>
+                <ab:param name='match-rels' value='edit edit-media history http://purl.org/atombeat/rel/security-descriptor'/>
+            </ab:config>    
+        </ab:extension-attribute>
+    </ab:config-link-extensions>
+</feed>
