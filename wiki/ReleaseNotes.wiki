@@ -5,7 +5,59 @@
 
 <wiki:toc/>
 
-= 0.2-alpha-10-SNAPSHOT =
+= 0.2-alpha-11-SNAPSHOT =
+
+= 0.2-alpha-10 =
+
+== issue 75 implement feed pagination (limit and offset for list collection) ==
+
+A new paging-plugin is available in this release. This plugin enables a collection to be configured to return a paged feed when a request is made to list the collection. For example, if a collection is configured with a default page size of 20, then a GET request on the collection URI will return a feed with the first 20 entries from the collection. Links are provided in the feed document to navigate to next, previous, first or last pages, if available. This conforms to the feed paging behaviour described in [http://tools.ietf.org/html/rfc5005 RFC 5005].
+
+To enable the paging-plugin, include the paging-plugin before and after functions in the [http://code.google.com/p/atombeat/source/browse/tags/atombeat-parent-0.2-alpha-10/atombeat-service/src/main/files/config/plugins.xqm config/plugins.xqm] configuration module. Note that the placement of the paging-plugin:after() function is important. Any other plugin functions executing in the after chain that might filter entries from the feed (such as the security-plugin:after() function) *must* come prior to the paging-plugin:after function, because otherwise the pages may be broken. The paging-plugin:after() should then be placed as early as possible in the chain, to cut down the amount of work done by downstream plugin functions and thus optimise the performance of the list collection operation (because downstream plugin functions only need to operate on the page, and not on the complete feed). This can dramatically improve performance for large collections where computationally expensive plugins like the link-extensions and link-expansion plugins are in use.
+
+To create a collection with paging enabled, add an `@atombeat:enable-paging="true"` attribute to the feed document root element. The default and maximum page sizes can also be configured by adding additional markup to the feed document. E.g.:
+
+{{{
+<atom:feed
+  xmlns:atom="http://www.w3.org/2005/Atom"
+		xmlns:atombeat="http://purl.org/atombeat/xmlns"
+		atombeat:enable-paging="true">
+  <atom:title>Collection With Paging</atom:title>
+  <atombeat:config-paging default-page-size="20" max-page-size="50"/>
+</atom:feed>
+}}}
+
+In addition to the next, previous, first and last links as specified in RFC 5005, the total number of entries, start index of the current page, and number of items per page are provided via the `opensearch:totalResults`, `opensearch:startIndex` and `opensearch:itemsPerPage` elements. Also, a link with a URI template is provided for clients wishing to specify the page and page size in a request.
+
+For more information, see the [http://code.google.com/p/atombeat/source/browse/tags/atombeat-parent-0.2-alpha-10/atombeat-integration-tests/src/test/java/org/atombeat/it/plugin/paging/TestPagingPlugin.java paging plugin test case].
+
+== issue 132 history plugin has bad reference to constants module location ==
+
+The import statements have been checked and normalised across all XQuery files.
+
+== issue 145 link expansion support for using atom:id as link target ==
+
+In this release the link expansion plugin has been modified to enable links to be expanded where the value of the `@href` attribute matches the `atom:id` of a collection member. 
+
+When expanding a link, the link expansion plugin first attempts to match the @href against the 'self' URI of a collection, collection member, security descriptor or history feed, and then falls back to attempting to find a collection member where the `atom:id` matches the link `@href` attribute.
+
+== issue 171 unzip plugin ==
+
+In this release a new experimental unzip plugin is available. For more information on how to enable, configure and use this plugin, see the [http://code.google.com/p/atombeat/source/browse/tags/atombeat-parent-0.2-alpha-10/atombeat-service/src/main/files/config/plugins.xqm config/plugins.xqm] configuration module and the [http://code.google.com/p/atombeat/source/browse/tags/atombeat-parent-0.2-alpha-10/atombeat-integration-tests/src/test/java/org/atombeat/it/plugin/unzip/TestUnzipPlugin.java unzip plugin test case].
+
+== issue 175 improve performance of link extensions plugin ==
+
+It has been found that, in previous releases, the link extensions plugin, and in particular the @atombeat:allow extension attribute, has a substantial performance cost when used on links within entries in a feed (the 'entry-in-feed' context). 
+
+In this release, a new algorithm is used to calculate the value of the @atombeat:allow extension attribute, which may reduce the time taken to generate a feed containing several hundred entries by a factor of between 1 and 6, depending on how many links are being decorated and on how the access control lists are configured and used. 
+
+However, note that calculating the value of the @atombeat:allow extension attribute for a significant number of entries is still an expensive operation, and will still dominate the costs of generating a large feed. If you are working with collections of more than 100 members, and performance when listing the collection is important, then it is recommended that the @atombeat:allow extension attribute is only used in entries within a feed where absolutely necessary, and that the link-extensions plugin is used in conjunction with the paging plugin.
+
+== issue 176 improve performance of list collection under security ==
+
+In the absence of any other plugins, the costs of generating a large feed will be dominated by the security-plugin:after() function, and in particular by the costs of filtering the entries in the feed according to the user's permissions.
+
+This release contains a performance optimisation for the cases where the workspace and collection ACLs have priority over resource ACLs, and where decisions are made at the workspace or collection level.
 
 = 0.2-alpha-9 =
 
