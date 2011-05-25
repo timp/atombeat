@@ -20,14 +20,14 @@ Some other documentation, may be part-baked: TombstonesDesign DevelopingPlugins
 Please note that WAR packages in the 0.2 series are *not* available from the AtomBeat Google Code project downloads page. To obtain a WAR package, you can either download directly from the [http://cloud1.cggh.org/maven2/org/atombeat/ CGGH maven repository], e.g.:
 
 {{{
-wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-9/atombeat-exist-minimal-secure-0.2-alpha-9.war
+wget http://cloud1.cggh.org/maven2/org/atombeat/atombeat-exist-minimal-secure/0.2-alpha-10/atombeat-exist-minimal-secure-0.2-alpha-10.war
 }}} 
 
 ...or you can check out and build it yourself (currently only works on Linux), e.g.:
 
 {{{
-svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-9
-cd atombeat-parent-0.2-alpha-9
+svn checkout http://atombeat.googlecode.com/svn/tags/atombeat-parent-0.2-alpha-10
+cd atombeat-parent-0.2-alpha-10
 export MAVEN_OPTS="-Xmx1024M -XX:MaxPermSize=256M"
 mvn install # might take a while first time - will package and test all WARs
 }}}
@@ -48,7 +48,7 @@ To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/or
     <dependency>
       <groupId>org.atombeat</groupId>
       <artifactId>atombeat-exist-minimal-secure</artifactId>
-      <version>0.2-alpha-9</version>
+      <version>0.2-alpha-10</version>
       <type>war</type>
       <scope>runtime</scope>
     </dependency>
@@ -73,6 +73,8 @@ To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/or
 = News =
 
 See also the ReleaseNotes wiki page and the [http://groups.google.com/group/atombeat AtomBeat mailing list].
+
+  * *25 May 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/27bc4eca23a4042 0.2-alpha-10 is released] - this release has a new paging-plugin to implement feed paging, some performance improvements for the link-extensions and security plugins, and a new unzip-plugin providing some special features for handling zipped media resources.
 
   * *8 March 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/f44c299bea016328 0.2-alpha-9 is released] - this is a minor release with a couple of bug-fixes and small features.
   
