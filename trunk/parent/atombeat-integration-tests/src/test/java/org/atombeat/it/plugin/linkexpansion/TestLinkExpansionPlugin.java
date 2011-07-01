@@ -328,5 +328,73 @@ public class TestLinkExpansionPlugin extends TestCase {
 	}
 	
 	
+	public void testExpansionWithQueryParams() throws Exception {
+		
+		// create a test member to link to
+		
+		String entry = 
+			"<atom:entry \n" +
+			"	xmlns:atom='http://www.w3.org/2005/Atom'>\n" +
+			"	<atom:title type='text'>Member To Link To</atom:title>\n" +
+			"</atom:entry>";
+		PostMethod post = new PostMethod(TEST_COLLECTION_URL);
+		setAtomRequestEntity(post, entry);
+		int postResult = executeMethod(post, "adam", "test");
+		assertEquals(201, postResult);
+		String memberUri = post.getResponseHeader("Location").getValue();
+
+		// create a collection with expansion configured
+		
+		String feed = 
+			"<atom:feed \n" +
+			"	xmlns:atom='http://www.w3.org/2005/Atom'\n" +
+			"	xmlns:atombeat='http://purl.org/atombeat/xmlns'>\n" +
+			"	<atom:title type='text'>Collection Testing Link Expansion</atom:title>\n" +
+			"	<atombeat:config-link-expansion>\n" +
+			"		<atombeat:config context='entry'>\n" +
+			"			<atombeat:param name='match-rels' value='related'/>\n" +
+			"		</atombeat:config>\n" +
+			"	</atombeat:config-link-expansion>" +
+			"</atom:feed>";
+		
+		String collectionUri = CONTENT_URL + Double.toString(Math.random());
+		PutMethod put = new PutMethod(collectionUri);
+		setAtomRequestEntity(put, feed);
+		int putResult = executeMethod(put, "adam", "test");
+		assertEquals(201, putResult);
+		
+		// create a member in the new collection
+		
+		String entry2 = 
+			"<atom:entry \n" +
+			"	xmlns:atom='http://www.w3.org/2005/Atom'>\n" +
+			"	<atom:title type='text'>Member Testing Link Expansion</atom:title>\n" +
+			"	<atom:link rel='related' href='"+memberUri+"?foo=bar&amp;baz=quux&amp;spong'/>\n" +
+			"</atom:entry>";
+		PostMethod post2 = new PostMethod(collectionUri);
+		setAtomRequestEntity(post2, entry2);
+		int postResult2 = executeMethod(post2, "adam", "test");
+		assertEquals(201, postResult2);
+		String memberUri2 = post2.getResponseHeader("Location").getValue();
+		
+		// retrieve new member, look for expansions
+		
+		GetMethod get2 = new GetMethod(memberUri2);
+		int get2Result = executeMethod(get2, "adam", "test");
+		assertEquals(200, get2Result);
+		Document d = getResponseBodyAsDocument(get2);
+		
+		// test entry context
+		
+		// use "related" as test for expand to other content
+		Element l = getLink(d, "related"); assertNotNull(l);
+		// look for inline content
+		List<Element> c = getChildrenByTagNameNS(l, "http://purl.org/atom/ext/", "inline");
+		assertEquals(1, c.size());
+
+	}
+	
+	
+	
 	
 }
