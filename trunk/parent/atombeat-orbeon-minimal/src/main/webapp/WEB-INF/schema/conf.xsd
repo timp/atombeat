@@ -125,6 +125,8 @@
                                                   type="xs:integer" default="10000"/>
                                                 <xs:attribute name="flushAfter" type="xs:integer"
                                                   default="300"/>
+                                                <xs:attribute name="buffer" type="xs:integer"
+                                                  default="32"/>
                                                 <xs:attribute name="n" type="xs:integer" default="3"
                                                 />
                                             </xs:complexType>
