@@ -2,6 +2,7 @@ package org.atombeat.xquery.functions.util;
 
 import java.util.Arrays;
 
+import org.atombeat.xquery.functions.fn.FunDeepEqual;
 import org.exist.xquery.AbstractInternalModule;
 import org.exist.xquery.FunctionDef;
 import org.exist.xquery.XPathException;
@@ -27,7 +28,13 @@ public class AtomBeatUtilModule extends AbstractInternalModule {
 		new FunctionDef(RequestGetData.signature, RequestGetData.class),
 		new FunctionDef(XMLDBStore.signatures[0], XMLDBStore.class),
 		new FunctionDef(XMLDBStore.signatures[1], XMLDBStore.class),
-		new FunctionDef(SaveUploadAs.signature, SaveUploadAs.class)
+		new FunctionDef(SaveUploadAs.signature, SaveUploadAs.class),
+		new FunctionDef(
+				FunDeepEqual.signatures[0], FunDeepEqual.class),
+		new FunctionDef(
+				FunDeepEqual.signatures[1], FunDeepEqual.class),
+		new FunctionDef(
+				FunDeepEqual.signatures[2], FunDeepEqual.class)
 	};
 
     static {
