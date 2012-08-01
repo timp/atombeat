@@ -7,6 +7,10 @@
 
 = 0.2-alpha-11-SNAPSHOT =
 
+== validated save ==
+
+For atomdb:update-member check that the saved member is as expected - read back and compare - this requires an enhanced xquery deep-equal function that can ignore white space changes (similar to that available in saxon)
+
 = 0.2-alpha-10 =
 
 == issue 75 implement feed pagination (limit and offset for list collection) ==
