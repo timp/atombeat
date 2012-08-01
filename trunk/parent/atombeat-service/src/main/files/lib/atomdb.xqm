@@ -488,11 +488,13 @@ declare function atomdb:store-member(
  : 
  : @param $member-path-info the path info identifying the member to be updated.
  : @param $request-data the Atom entry data to use to update the member.
+ : @param $retries the number of times to retry if the saved entry doesn't match the input
  : @return the updated Atom entry, or empty if no member is available at that location.
  :)
-declare function atomdb:update-member(
+declare function atomdb:validate-update-member(
 	$member-path-info as xs:string ,
-	$request-data as element(atom:entry) 
+	$request-data as element(atom:entry),
+	$retries as xs:integer 
 ) as element(atom:entry)?
 {
 
@@ -518,8 +520,53 @@ declare function atomdb:update-member(
 		
 		let $entry-doc-db-path := atomdb:store-member( $collection-path-info , $entry-resource-name , $new )
 
-		return doc( $entry-doc-db-path )/atom:entry
+		let $stored-doc := doc( $entry-doc-db-path )/atom:entry
+		
+		let $comp1 := $new
+		let $x := update rename $stored-doc//pAE as 'priorAntimalarialsExclusion'
+		let $comp2 := $stored-doc
+		
+		(: Comparison to validate that the entry has been stored correctly 
+		Since we don't have saxon are using a modified version of exist deep-equals
+		:)
+		let $check := if (not (atombeat-util:deep-equal($comp1,$comp2,"","w")))
+		then
+		 	let $retry := $retries - 1
+		 	let $redo := if ( $retry >= 0) 
+		 					then
+		 						let $err := util:log-app( "error" , "http://purl.org/atombeat/xquery/atomdb/atomdb.xqm" , concat("Retrying failed update member correctly:",$collection-path-info,"/",$entry-resource-name) )
+		 						return atomdb:validate-update-member($member-path-info,$request-data, $retry)
+		 					else
+			 					let $err := util:log-app( "error" , "http://purl.org/atombeat/xquery/atomdb/atomdb.xqm" , concat("Failed to update member correctly:",$collection-path-info,"/",$entry-resource-name) )
+			 					let $err1 := util:log-app( "error" , "http://purl.org/atombeat/xquery/atomdb/atomdb.xqm" ,$comp1)
+		 						let $err2 := util:log-app( "error" , "http://purl.org/atombeat/xquery/atomdb/atomdb.xqm" ,$comp2) 
+		 						return $stored-doc
+		 	return $redo
+		else 
+			let $info := util:log-app( "info" , "http://purl.org/atombeat/xquery/atomdb/atomdb.xqm" , concat("Updated member correctly:",$entry-resource-name) )
+			return $stored-doc
+		
+		
+		return $check
 
+};
+
+
+(:~
+ : Update an Atom collection member.
+ : 
+ : @param $member-path-info the path info identifying the member to be updated.
+ : @param $request-data the Atom entry data to use to update the member.
+ : @return the updated Atom entry, or empty if no member is available at that location.
+ :)
+declare function atomdb:update-member(
+	$member-path-info as xs:string ,
+	$request-data as element(atom:entry) 
+) as element(atom:entry)?
+{
+
+	let $stored-doc := atomdb:validate-update-member($member-path-info, $request-data, 2)
+	return $stored-doc
 };
 
 
