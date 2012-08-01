@@ -7,9 +7,9 @@
 
 = 0.2-alpha-11-SNAPSHOT =
 
-== validated save ==
+== issue 179 validated save ==
 
-For atomdb:update-member check that the saved member is as expected - read back and compare - this requires an enhanced xquery deep-equal function that can ignore white space changes (similar to that available in saxon)
+For atomdb:update-member check that the saved member is as expected - read back and compare - this requires an enhanced xquery deep-equal function in atombeat-xquery-functions that can ignore white space changes (similar to that available in saxon)
 
 = 0.2-alpha-10 =
 
