@@ -5,11 +5,17 @@
 
 <wiki:toc/>
 
-= 0.2-alpha-11-SNAPSHOT =
+= 0.2-alpha-12-SNAPSHOT =
+
+= 0.2-alpha-11 =
 
 == issue 179 validated save ==
 
 For atomdb:update-member check that the saved member is as expected - read back and compare - this requires an enhanced xquery deep-equal function in atombeat-xquery-functions that can ignore white space changes (similar to that available in saxon)
+
+== issue 180 media element consistency ==
+
+For media entries put the atom:content after the atom:title - while unnecessary according to the Atom spec it is more consistent
 
 = 0.2-alpha-10 =
 
