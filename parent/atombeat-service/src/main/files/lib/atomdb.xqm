@@ -1012,17 +1012,8 @@ declare function atomdb:create-media-link-entry(
             }
             </atom:link>
             <atom:link rel="service" type="{$CONSTANT:MEDIA-TYPE-ATOMSVC}" href="{concat( $config:service-url-base , '/' )}"/>
-            <atom:content src="{$media-uri}" type="{$media-type}" length="{$media-size}">
-            {
-                if ( exists( $md5 ) )
-                then attribute hash { concat( "md5:" , $md5 ) }
-                else ()
-            }
-            </atom:content>
-            <atom:title type="text">{$title}</atom:title>
-            <atom:summary type="text">{$summary}</atom:summary>
-        {
-            $categories , 
+             {
+          
             if ( $config:auto-author )
             then
                 <atom:author>
@@ -1033,6 +1024,18 @@ declare function atomdb:create-media-link-entry(
                 </atom:author>
             else ()
         }
+            <atom:title type="text">{$title}</atom:title>
+            <atom:summary type="text">{$summary}</atom:summary>
+            {
+         	   $categories 
+        	}
+            <atom:content src="{$media-uri}" type="{$media-type}" length="{$media-size}">
+            {
+                if ( exists( $md5 ) )
+                then attribute hash { concat( "md5:" , $md5 ) }
+                else ()
+            }
+            </atom:content>
         </atom:entry>  
      
 };
@@ -1096,6 +1099,20 @@ declare function atomdb:create-media-link-entry-with-media-uri(
             }
             </atom:link>
             <atom:link rel="service" type="{$CONSTANT:MEDIA-TYPE-ATOMSVC}" href="{concat( $config:service-url-base , '/' )}"/>
+            <atom:title type="text">{$title}</atom:title>
+            <atom:summary type="text">{$summary}</atom:summary>
+            {
+            	if ( $config:auto-author )
+            	then
+                	<atom:author>
+                	{
+                    	if ( $config:user-name-is-email ) then <atom:email>{$user-name}</atom:email>
+                    	else <atom:name>{$user-name}</atom:name>
+                	}                
+                	</atom:author>
+            	else (),
+            	$categories
+        	}
             <atom:content src="{$media-uri}" type="{$media-type}" length="{$media-size}">
             {
                 if ( exists( $hash ) )
@@ -1103,21 +1120,9 @@ declare function atomdb:create-media-link-entry-with-media-uri(
                 else ()
             }
             </atom:content>
-            <atom:title type="text">{$title}</atom:title>
-            <atom:summary type="text">{$summary}</atom:summary>
-        {
-            $categories , 
-            $links ,
-            if ( $config:auto-author )
-            then
-                <atom:author>
-                {
-                    if ( $config:user-name-is-email ) then <atom:email>{$user-name}</atom:email>
-                    else <atom:name>{$user-name}</atom:name>
-                }                
-                </atom:author>
-            else ()
-        }
+            {
+            	$links
+            }
         </atom:entry>  
      
 };
@@ -1147,8 +1152,8 @@ declare function atomdb:update-entry(
             {
                 $entry/atom:link[@rel=$atomdb:reserved-rels] ,
                 if ( $config:auto-author ) then $entry/atom:author else () ,
-                if ( atomdb:media-link-available( $path-info ) ) then $entry/atom:content else () ,
-                atomdb:mutable-entry-children( $path-info , $request-data )
+                atomdb:mutable-entry-children( $path-info , $request-data ),
+                if ( atomdb:media-link-available( $path-info ) ) then $entry/atom:content else () 
             }
         </atom:entry>  
 };
