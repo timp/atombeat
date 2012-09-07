@@ -74,6 +74,8 @@ To use one of the AtomBeat WAR packages (e.g., [http://cloud1.cggh.org/maven2/or
 
 See also the ReleaseNotes wiki page and the [http://groups.google.com/group/atombeat AtomBeat mailing list].
 
+  * *6 Sept 2012* - 0.2-alpha-11 and 0.2-alpha-12 released - a minor release attempting to resolve persistence problems
+
   * *25 May 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/27bc4eca23a4042 0.2-alpha-10 is released] - this release has a new paging-plugin to implement feed paging, some performance improvements for the link-extensions and security plugins, and a new unzip-plugin providing some special features for handling zipped media resources.
 
   * *8 March 2011* - [http://groups.google.com/group/atombeat/browse_thread/thread/f44c299bea016328 0.2-alpha-9 is released] - this is a minor release with a couple of bug-fixes and small features.
