@@ -1,0 +1,461 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+  <modelVersion>4.0.0</modelVersion>
+  
+  <parent>
+    <artifactId>atombeat-parent</artifactId>
+    <groupId>org.atombeat</groupId>
+    <version>0.2-alpha-12</version>
+  </parent>
+
+  <artifactId>atombeat-integration-tests</artifactId>
+  <packaging>jar</packaging>
+  <name>atombeat-integration-tests</name>
+  
+  <properties>
+    <jetty.port>8889</jetty.port>
+  </properties>
+
+  <build>
+  
+    <plugins>
+
+      <!-- Ensure that classes go into a separate test jar -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-jar-plugin</artifactId>
+        <executions>
+          <execution>
+            <goals>
+              <goal>test-jar</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+
+      <!--
+        Configure the surefire plugin to skip all tests during the test phase 
+        and to execute all tests during the integration-test phase.
+      -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+        <executions>
+        
+          <execution>
+            <id>test-atombeat-exist-full</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-full</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
+                </property>
+              </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-exist-full -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-exist-minimal</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-minimal</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
+                </property>
+              </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-exist-minimal -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-exist-full-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-full-secure</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-exist-minimal-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-exist-minimal-secure</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-orbeon-full</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-full</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
+                </property>
+              </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-orbeon-full -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-orbeon-minimal</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-minimal</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>false</value>
+                </property>
+              </systemProperties>
+              <!-- exclude tests that require security - security is disabled in atombeat-orbeon-minimal -->
+              <excludes>
+                <exclude>**/TestAtomSecurityLibrary.java</exclude>
+                <exclude>**/TestDefaultSecurityPolicy.java</exclude>
+                <exclude>**/TestSecurityProtocol.java</exclude>
+                <exclude>**/TestLinkExpansionPlugin.java</exclude>
+                <exclude>**/TestLinkExtensionsPlugin_Allow.java</exclude>
+              </excludes>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-orbeon-full-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-full-secure</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>test-atombeat-orbeon-minimal-secure</id>
+            <phase>integration-test</phase>
+            <goals>
+              <goal>test</goal>
+            </goals>
+            <configuration>
+              <skip>false</skip>
+              <systemProperties>
+                <property>
+                  <name>org.atombeat.it.host</name>
+                  <value>localhost</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.port</name>
+                  <value>${jetty.port}</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.servicePath</name>
+                  <value>/service/</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.contextPath</name>
+                  <value>/atombeat-orbeon-minimal-secure</value>
+                </property>
+                <property>
+                  <name>org.atombeat.it.secure</name>
+                  <value>true</value>
+                </property>
+              </systemProperties>
+            </configuration>
+          </execution>
+          
+        </executions>
+      </plugin>
+      
+      <!-- 
+        Configure the jetty plugin to start prior to integration tests and stop
+        afterwards. Also configure the jetty plugin to deploy the web applications.
+      -->
+      <plugin>
+        <groupId>org.mortbay.jetty</groupId>
+        <artifactId>maven-jetty-plugin</artifactId>
+        
+        <configuration>
+          <stopPort>9991</stopPort>
+          <stopKey>test</stopKey>
+          <systemProperties>
+            <systemProperty>
+              <name>jetty.port</name>
+              <value>${jetty.port}</value>
+            </systemProperty>
+          </systemProperties>
+        </configuration>
+        
+        <version>6.1.26</version>
+        <executions>
+        
+          <execution>
+            <id>start-jetty</id>
+            <phase>pre-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+              <goal>run</goal>
+            </goals>
+            <configuration>
+              <daemon>true</daemon>
+              <reload>manual</reload>
+              <!-- additional webapps (the ones we actually want to test) -->
+		          <contextHandlers>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-exist-full/target/atombeat-exist-full-${project.version}.war</war>
+                  <contextPath>/atombeat-exist-full</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-exist-minimal/target/atombeat-exist-minimal-${project.version}.war</war>
+                  <contextPath>/atombeat-exist-minimal</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-exist-full-secure/target/atombeat-exist-full-secure-${project.version}.war</war>
+                  <contextPath>/atombeat-exist-full-secure</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-exist-minimal-secure/target/atombeat-exist-minimal-secure-${project.version}.war</war>
+                  <contextPath>/atombeat-exist-minimal-secure</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-full/target/atombeat-orbeon-full-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-full</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-minimal/target/atombeat-orbeon-minimal-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-minimal</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-full-secure/target/atombeat-orbeon-full-secure-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-full-secure</contextPath>
+                </contextHandler>
+                <contextHandler implementation="org.mortbay.jetty.webapp.WebAppContext">
+                  <war>${basedir}/../atombeat-orbeon-minimal-secure/target/atombeat-orbeon-minimal-secure-${project.version}.war</war>
+                  <contextPath>/atombeat-orbeon-minimal-secure</contextPath>
+                </contextHandler>
+		          </contextHandlers>  
+            </configuration>
+          </execution>
+          
+          <execution>
+            <id>stop-jetty</id>
+            <phase>post-integration-test</phase>
+            <goals>
+              <goal>stop</goal>
+            </goals>
+          </execution>
+          
+        </executions>
+      </plugin>
+      
+    </plugins>
+
+  </build>
+  
+  <dependencies>
+  
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>3.8.1</version>
+      <scope>test</scope>
+    </dependency>
+    
+    <dependency>
+      <groupId>commons-httpclient</groupId>
+      <artifactId>commons-httpclient</artifactId>
+      <version>3.1</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+    	<groupId>org.apache.abdera</groupId>
+    	<artifactId>abdera-client</artifactId>
+    	<version>1.0</version>
+    	<scope>test</scope>
+    </dependency>
+    <dependency>
+    	<groupId>org.json</groupId>
+    	<artifactId>json</artifactId>
+    	<version>20090211</version>
+    </dependency>
+  </dependencies>
+
+</project>

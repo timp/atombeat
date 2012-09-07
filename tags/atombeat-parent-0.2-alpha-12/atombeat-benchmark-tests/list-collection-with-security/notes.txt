@@ -1,0 +1,65 @@
+initial results, prior to optimisation:
+
+1 request on collection with 1000 members takes ~3.5 seconds
+
+exist xquery profiler reports:
+
+util:catch 	org.exist.xquery.functions.util.CatchFunction 	1 	3.429
+atom-protocol:main 	content.xql 	1 	3.429
+atom-protocol:do-get 	atom-protocol.xqm 	1 	3.428
+atom-protocol:do-service 	atom-protocol.xqm 	1 	3.428
+util:call 	org.exist.xquery.functions.util.CallFunction 	17 	3.426
+security-plugin:after 	plugins.xqm 	1 	2.468
+security-plugin:after-list-collection 	security-plugin.xqm 	1 	2.468
+security-plugin:filter-feed-by-permissions 	security-plugin.xqm 	1 	2.461
+atomsec:filter-feed 	security-plugin.xqm 	1 	2.337
+atomsec:apply-acl 	atom-security.xqm 	1005 	2.058
+atomsec:match-acl 	atom-security.xqm 	1005 	1.873
+conneg-plugin:after 	plugins.xqm 	1 	0.338
+conneg-plugin:augment-feed 	conneg-plugin.xqm 	1 	0.313
+conneg-plugin:augment-entry 	conneg-plugin.xqm 	1000 	0.295
+util:log 	org.exist.xquery.functions.util.LogFunction 	7 	0.186
+logger-plugin:after 	plugins.xqm 	1 	0.185
+link-extensions-plugin:after 	plugins.xqm 	1 	0.181
+link-extensions-plugin:augment-feed 	link-extensions-plugin.xqm 	1 	0.168
+link-extensions-plugin:augment-entry 	link-extensions-plugin.xqm 	1000 	0.141
+link-expansion-plugin:after 	plugins.xqm 	1 	0.128
+atomsec:retrieve-member-descriptor-nocheck 	atom-security.xqm 	1000 	0.119
+security-plugin:augment-entry 	security-plugin.xqm 	1000 	0.107
+atom-protocol:op-list-collection 	atom-protocol.xqm 	1 	0.095
+concat 	org.exist.xquery.functions.FunConcat 	9058 	0.073
+link-extensions-plugin:decorate-links 	link-extensions-plugin.xqm 	1001 	0.066
+
+time is dominated by atomsec:filter-feed
+
+after optimisations...
+
+1 request on collection with 1000 members takes ~1.2 seconds
+
+atom-protocol:main 	content.xql 	1 	1.234
+util:catch 	org.exist.xquery.functions.util.CatchFunction 	1 	1.234
+atom-protocol:do-get-collection 	atom-protocol.xqm 	1 	1.233
+atom-protocol:do-service 	atom-protocol.xqm 	1 	1.233
+atom-protocol:do-get 	atom-protocol.xqm 	1 	1.233
+common-protocol:apply-op 	atom-protocol.xqm 	1 	1.233
+util:call 	org.exist.xquery.functions.util.CallFunction 	17 	1.229
+common-protocol:apply-after 	common-protocol.xqm 	1 	1.058
+conneg-plugin:after 	plugins.xqm 	1 	0.406
+conneg-plugin:augment-feed 	conneg-plugin.xqm 	1 	0.38
+conneg-plugin:augment-entry 	conneg-plugin.xqm 	1000 	0.363
+link-extensions-plugin:after 	plugins.xqm 	1 	0.195
+link-extensions-plugin:augment-feed 	link-extensions-plugin.xqm 	1 	0.181
+link-extensions-plugin:augment-entry 	link-extensions-plugin.xqm 	1000 	0.157
+link-expansion-plugin:after 	plugins.xqm 	1 	0.156
+security-plugin:after-list-collection 	security-plugin.xqm 	1 	0.155
+security-plugin:after 	plugins.xqm 	1 	0.155
+security-plugin:filter-feed-by-permissions 	security-plugin.xqm 	1 	0.148
+link-expansion-plugin:augment-feed 	link-expansion-plugin.xqm 	1 	0.139
+atom-protocol:op-list-collection 	atom-protocol.xqm 	1 	0.132
+security-plugin:augment-entry 	security-plugin.xqm 	1000 	0.123
+util:log 	org.exist.xquery.functions.util.LogFunction 	7 	0.12
+logger-plugin:after 	plugins.xqm 	1 	0.118
+link-expansion-plugin:augment-entry 	link-expansion-plugin.xqm 	1000 	0.112
+link-extensions-plugin:decorate-links 	link-extensions-plugin.xqm 	1001 	0.073
+
+time is no longer dominated by atomsec:filter-feed
